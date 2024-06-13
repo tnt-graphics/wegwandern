@@ -1,0 +1,30 @@
+.wp-block-button__link {
+    background-color: lightcoral;
+    color: white;
+    text-transform: uppercase;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    border-radius: 8px;
+    border: 2px solid lightcoral;
+    transition: all 0.3s ease;
+  
+    &:hover {
+      background-color: white;
+      color: lightcoral
+    }
+  }
+  
+  .is-style-secondary-button {
+    .wp-block-button__link {
+      background-color: #0d3b66;
+      border-color: #0d3b66 ;
+      color: white;
+      &:hover {
+        background-color: white;
+        color: #0d3b66;
+      }
+    }
+  }
+
+ 

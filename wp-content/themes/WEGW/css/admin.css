@@ -1,0 +1,46 @@
+.inside{
+	padding:16px;
+}
+.inside input[type="checkbox"] {
+    height: 20px;
+    width: 20px;
+   
+    -webkit-appearance: none;
+    appearance: none;
+    background: #fff;
+    border: 1px solid #1e1e1e;
+    border-radius: 2px;
+    box-shadow: 0 0 0 transparent;
+    clear: none;
+    color: #1e1e1e;
+    cursor: pointer;
+    display: inline-block;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;
+    font-size: 16px;
+    line-height: normal;
+    line-height: 0;
+    margin: 0 15px 8px 0;
+    outline: 0;
+    padding: 6px 8px;
+    padding: 0!important;
+    text-align: center;
+    transition: box-shadow .1s linear;
+    transition: none;
+    transition: border-color .1s ease-in-out;
+    vertical-align: top;
+}
+input[type=checkbox]:checked::before{
+
+     background: url("../img/tick_white.svg");
+     margin: -4px -3px !important;
+}
+input[type=checkbox]:checked{
+    background: var(--wp-components-color-accent,var(--wp-admin-theme-color,#007cba)) !important;
+    border-color: var(--wp-components-color-accent,var(--wp-admin-theme-color,#007cba)) !important;
+}
+.inside select{
+    min-width: 200px !important;
+    border: 1px solid #c3c4c7 !important;
+    margin-top:10px;
+}
+

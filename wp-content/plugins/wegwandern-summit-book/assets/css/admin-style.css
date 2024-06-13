@@ -1,0 +1,18 @@
+.type-pinnwand_eintrag .view{
+    display: none;
+}
+.comment-imgs-admin{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.comment-imgs-admin .each-comment-img img{
+    height:150px;
+    object-fit: cover;
+    width:150px;
+}
+.article-reject-status{
+    display: inline-block;
+    color: #D9000D;
+    margin-left: 5px;
+}

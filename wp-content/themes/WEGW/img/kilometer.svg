@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+  <g id="kilometer" transform="translate(-701.219 -359.593)">
+    <circle id="Ellipse_11-6" data-name="Ellipse 11-6" cx="10" cy="10" r="10" transform="translate(701.219 359.593)" fill="#b1b1b1"/>
+    <path id="Path_3800" data-name="Path 3800" d="M717.764,369.063l-3.237-3.236a.75.75,0,0,0-1.061,1.06l1.957,1.956h-8.48l1.956-1.956a.75.75,0,0,0-1.06-1.06l-3.237,3.236a.75.75,0,0,0,0,1.061l3.238,3.235a.75.75,0,0,0,1.06-1.06l-1.957-1.956h8.48l-1.956,1.956a.75.75,0,1,0,1.061,1.06l3.236-3.235a.75.75,0,0,0,0-1.061Z" fill="#fff"/>
+  </g>
+</svg>

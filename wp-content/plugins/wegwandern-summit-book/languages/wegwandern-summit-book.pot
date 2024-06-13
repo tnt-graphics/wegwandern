@@ -1,0 +1,670 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Wegwandern Summit Book\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-10-23 09:30+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.6; wp-6.3.2\n"
+"X-Domain: wegwandern-summit-book"
+
+#: inc/kommentar.php:26
+msgid ""
+" kannst du Wanderungen bewerten, Fotos hochladen und anderen Wanderinnen und "
+"Wandern wertvolle Tipps geben."
+msgstr ""
+
+#: inc/community-beitrag.php:113
+msgid "Abbrechen"
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:15
+msgid "Abgelaufen"
+msgstr ""
+
+#: templates/user-dashboard.php:146
+msgid "Abgelehnt"
+msgstr ""
+
+#: inc/registration-login.php:76
+msgid "Account erstellen"
+msgstr ""
+
+#: inc/summit-book-post-types.php:35
+msgid "Alle Einträge"
+msgstr ""
+
+#: inc/summit-book-post-types.php:63 inc/admin/kommentar.php:55
+msgid "Bewertung"
+msgstr ""
+
+#: inc/summit-book-post-types.php:62
+msgid "Bewertungen"
+msgstr ""
+
+#: inc/kommentar.php:36
+msgid "Bewertungen der Community"
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:130
+msgid "bis "
+msgstr ""
+
+#: inc/community-beitrag.php:117 inc/community-beitrag.php:141
+msgid "Bist du sicher, dass du diese Wanderung löschen möchtest?"
+msgstr ""
+
+#: inc/community-beitrag.php:153
+msgid "Bist du sicher, dass du diesen Kommentar löschen möchtest?"
+msgstr ""
+
+#: inc/community-beitrag.php:129
+msgid "Bist du sicher, dass du dieses Inserat löschen möchtest?"
+msgstr ""
+
+#: inc/kommentar.php:20
+msgid "Community"
+msgstr ""
+
+#: inc/summit-book-post-types.php:18
+msgid "Community-Beitrag"
+msgstr ""
+
+#: inc/summit-book-post-types.php:17
+msgid "Community-Beiträge"
+msgstr ""
+
+#: inc/user-navigation.php:24
+msgid "Dashboard"
+msgstr ""
+
+#: inc/admin/community-beitrag.php:21
+msgid "Date"
+msgstr ""
+
+#: templates/single-community_beitrag.php:85
+msgid "Datum der Tour"
+msgstr ""
+
+#: inc/registration-login.php:60
+msgid "Dein Benutzerkonto ist noch nicht aktiviert."
+msgstr ""
+
+#: inc/admin/pinnwand-eintrag.php:136
+msgid "Dein Inserat wurde abgelehnt"
+msgstr ""
+
+#: inc/admin/kommentar.php:97
+msgid "Dein Kommentar wurde abgelehnt"
+msgstr ""
+
+#: inc/admin/kommentar.php:98
+msgid ""
+"Dein Kommentar wurde zurückgewiesen. Bitte beachte unsere\n"
+"\t\t<a href=\"https://wegwandern.ch/agb/\">Nutzungsbedingungen</a>."
+msgstr ""
+
+#: templates/summit-book-user-profile.php:15
+msgid "Dein Profil"
+msgstr ""
+
+#: inc/admin/pinnwand-eintrag.php:19
+msgid "Dein Text"
+msgstr ""
+
+#: inc/admin/community-beitrag.php:137
+msgid "Dein Wanderbeschrieb wurde abgelehnt"
+msgstr ""
+
+#: inc/admin/community-beitrag.php:138
+msgid ""
+"Dein Wanderbeschrieb wurde zurückgewiesen. Bitte beachte unsere\n"
+"\t\t<a href=\"https://wegwandern.ch/agb/\">Nutzungsbedingungen</a>."
+msgstr ""
+
+#: inc/admin/kommentar.php:103 inc/admin/community-beitrag.php:143
+msgid "Dein WegWandern.ch-Team"
+msgstr ""
+
+#: templates/user-dashboard.php:285
+msgid "Delete"
+msgstr ""
+
+#: inc/registration-login.php:50
+msgid ""
+"Der Benutzername oder das Passwort ist falsch. Bitte versuchen Sie es erneut."
+msgstr ""
+
+#: inc/registration-login.php:22 inc/registration-login.php:26
+msgid ""
+"Die Aktivierung Ihres Kontos ist abgeschlossen! Bitte melden Sie sich hier "
+"an!"
+msgstr ""
+
+#: inc/registration-login.php:30
+msgid ""
+"Die E-Mail zum Zurücksetzen des Passworts wurde gesendet. Bitte überprüfen "
+"Sie Ihren Posteingang."
+msgstr ""
+
+#: inc/kommentar.php:34
+msgid "Du bist eingeloggt"
+msgstr ""
+
+#: templates/user-dashboard.php:205
+msgid ""
+"Du hast noch kein Inserat erstellt oder deine Einträge sind abgelaufen. "
+"Bitte beachte, die\n"
+"\t\t\t\t\tBeiträge haben eine maximale Laufzeit von 6 Monaten und werden "
+"dann automatisch\n"
+"\t\t\t\t\tgelöscht und können nicht wieder hergestellt werden. Dein Inserat "
+"wird vor\n"
+"\t\t\t\t\tVeröffentlichung geprüft. Dies kann einige Tage dauern. An "
+"Wochenenden und Feiertagen\n"
+"\t\t\t\t\twerden keine Inserate publiziert."
+msgstr ""
+
+#: templates/user-dashboard.php:102
+msgid ""
+"Du hast noch keine Bewertungen abgegeben. Wenn du eine Tour im Community-"
+"Bereich\n"
+"\t\t\t\t\tkommentierst, kannst du dort auch eine Bewertung abgeben. Dazu "
+"musst du eingeloggt\n"
+"\t\t\t\t\tsein."
+msgstr ""
+
+#: templates/user-dashboard.php:163
+msgid ""
+"Du hast noch keinen Kommentar abgegeben. Du kannst eine Tour jeweils im "
+"CommunityBereich kommentieren und deinem Kommentar auch bis zu 6 Bilder "
+"hinzufügen. Dort\n"
+"\t\t\t\t\tkannst du auch eine Bewertung abgeben. Dazu musst du eingeloggt "
+"sein. Dein Kommentar\n"
+"\t\t\t\t\twird vor Veröffentlichung geprüft. Dies kann einige Tage dauern. "
+"An Wochenenden und\n"
+"\t\t\t\t\tFeiertagen werden keine Kommentare publiziert."
+msgstr ""
+
+#: templates/user-dashboard.php:302
+msgid ""
+"Du hast noch keinen Wander-Beitrag erstellt oder hast diese gelöscht. Bitte "
+"beachte:\n"
+"gelöschte Beiträge können nicht wieder hergestellt werden"
+msgstr ""
+
+#: templates/inserat-erstellen.php:41
+msgid ""
+"Du kannst eine Laufzeit angeben, ohne diese Angabe wird das Inserat "
+"automatisch nach 6\n"
+"\t\t\t    Monaten gelöscht. Dein Inserat wird vor Veröffentlichung geprüft. "
+"Dies kann einige Tage\n"
+"\t\t\t    dauern. An Wochenenden und Feiertagen werden keine Inserate "
+"publiziert.\n"
+"\t\t\t    Du kannst die Anzeige vor der Veröffentlichung beliebig oft "
+"speichern und korrigieren.\n"
+"\t\t\t    Wenn du die Anzeige nicht sofort aufgeben möchtest, bleibt diese "
+"in deiner Übersicht als\n"
+"\t\t\t    gespeichert markiert stehen. Einmal veröffentlicht, kannst du das "
+"Insert nicht mehr\n"
+"\t\t\t    bearbeiten und nur löschen."
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:87
+msgid "E-Mail"
+msgstr ""
+
+#: inc/admin/pinnwand-eintrag.php:49
+msgid "E-Mail: "
+msgstr ""
+
+#: templates/user-dashboard.php:282
+msgid "Edit"
+msgstr ""
+
+#: templates/single-community_beitrag.php:88
+msgid "Endpunkt"
+msgstr ""
+
+#: templates/user-dashboard.php:53
+msgid ""
+"Es befinden sich noch keine Touren in deiner Merkliste. Zum Hinzufügen "
+"klicke im\n"
+"\t\t\t\t\tTourenportal einfach auf das kleine Herz. Damit die Touren hierher "
+"übertragen werden,\n"
+"\t\t\t\t\tmusst du eingeloggt sein."
+msgstr ""
+
+#: inc/registration-login.php:34
+msgid "Es gibt kein Konto mit diesem Benutzernamen oder dieser E-Mail-Adresse."
+msgstr ""
+
+#: inc/summit-book-post-types.php:98
+msgid "Expired"
+msgstr ""
+
+#: inc/summit-book-post-types.php:103
+#, php-format
+msgid "Expired <span class=\"count\">(%s)</span>"
+msgid_plural "Expired <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/pinnwand-eintrag.php:11 inc/community-beitrag.php:11
+msgid "Gespeichert"
+msgstr ""
+
+#: inc/templates/inserat-erstellen-content.php:34
+msgid "Gipfelbuch Inserat Erstellen"
+msgstr ""
+
+#: inc/templates/neue-tour-posten-content.php:34
+msgid "Gipfelbuch Neue Tour Posten"
+msgstr ""
+
+#: inc/templates/pinnwand-content.php:34
+msgid "Gipfelbuch Pinwand"
+msgstr ""
+
+#: inc/templates/user-dashboard-content.php:34
+msgid "Gipfelbuch User Dashboard"
+msgstr ""
+
+#: inc/templates/profile-content.php:36
+msgid "Gipfelbuch User Profile"
+msgstr ""
+
+#: inc/kommentar.php:76
+msgid "Gratis-Account (hier erstellen)"
+msgstr ""
+
+#: templates/inserat-erstellen.php:27
+msgid ""
+"Hier kannst du ein Inserat erstellen. In deinem Post wird dein Avatarbild "
+"und\n"
+"\t\t        Nickname angezeigt. Wenn du beides in deinem Profil nicht "
+"angelegt hast, erscheint ein\n"
+"\t\t        grauer Platzhalter und dein Vorname. Bei der Anzeige stehen dir "
+"70 Zeichen für eine\n"
+"\t\t        aussagekräftige Überschrift und 500 Zeichen für dein Inserat zur "
+"Verfügung. Zur\n"
+"\t\t        Kontaktaufnahme ist die Angabe einer E-Mail-Adresse "
+"verpflichtend. Optional kannst du\n"
+"\t\t        auch deine Telefonnummer angeben."
+msgstr ""
+
+#: templates/neue-tour-posten.php:26
+msgid ""
+"Hier kannst du einen Wanderbeschrieb erstellen. Zu deinem Beitrag wird dein\n"
+"\t\t\t\tAvatarbild und Nickname angezeigt. Wenn du beides in deinem Profil "
+"nicht angelegt hast,\n"
+"\t\t\t\terscheint ein grauer Platzhalter und dein Vorname."
+msgstr ""
+
+#: templates/single-community_beitrag.php:113
+msgid "Highlights"
+msgstr ""
+
+#. URI of the plugin
+#. Author URI of the plugin
+msgid "https://www.pitsolutions.ch/"
+msgstr ""
+
+#: inc/kommentar.php:67
+msgid "Ihr Konto verfügt noch nicht über Community-Funktionen."
+msgstr ""
+
+#: inc/registration-login.php:38
+msgid ""
+"Ihr Passwort wurde erfolgreich zurückgesetzt. Bitte loggen Sie sich ein.."
+msgstr ""
+
+#: inc/registration-login.php:46
+msgid ""
+"Ihre E-Mail und Ihr Passwort wurden erfolgreich zurückgesetzt. Bitte melden "
+"Sie sich erneut an..."
+msgstr ""
+
+#: inc/registration-login.php:42
+msgid ""
+"Ihre E-Mail wurde erfolgreich zurückgesetzt. Bitte melden Sie sich an..."
+msgstr ""
+
+#: templates/neue-tour-posten.php:37
+msgid ""
+"In deinem Beitrag stehen dir 70 Zeichen für eine aussagekräftige Überschrift,"
+" 250 Zeichen\n"
+"\t\t\t\tfür eine Einleitung und 4000 Zeichen für deinen Wanderbeschrieb zur "
+"Verfügung. Darüber\n"
+"\t\t\t\thinaus kannst du in deinem Beitrag bis zu 6 Bilder hochladen (ideal "
+"zwischen 1500 und 1800\n"
+"\t\t\t\tPixel Breite), die dann in einer Bildergalerie angezeigt werden. Das "
+"erste Bild wird als\n"
+"\t\t\t\tAufmacher-Bild (Headerbild) des Beitrags für die Teaserboxen "
+"verwendet."
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:12 inc/community-beitrag.php:12
+#: templates/user-dashboard.php:140
+msgid "In Prüfung"
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:14
+msgid "Inserat Abgelehnt"
+msgstr ""
+
+#: templates/inserat-erstellen.php:19
+msgid "Inserat bearbeiten"
+msgstr ""
+
+#: templates/pinnwand.php:12
+msgid "Inserat erfassen"
+msgstr ""
+
+#: inc/user-navigation.php:28 templates/pinnwand.php:11
+#: templates/inserat-erstellen.php:17
+msgid "Inserat erstellen"
+msgstr ""
+
+#: inc/community-beitrag.php:128
+msgid "Inserat löschen?"
+msgstr ""
+
+#: inc/registration-login.php:132 inc/community-beitrag.php:112
+msgid "Ja, löschen"
+msgstr ""
+
+#: inc/community-beitrag.php:152
+msgid "Kommentar löschen?"
+msgstr ""
+
+#: inc/kommentar.php:37
+msgid ""
+"Kommentare und Fotos werden vor der Veröffentlichung geprüft. Dies kann "
+"einige Tage dauern. An Wochenenden und Feiertagen werden keine Kommentare "
+"veroffentlicht publiziert."
+msgstr ""
+
+#: inc/admin/pinnwand-eintrag.php:20
+msgid "Kontakt"
+msgstr ""
+
+#: inc/admin/pinnwand-eintrag.php:57
+msgid "Laufzeit des Inserats: "
+msgstr ""
+
+#: inc/kommentar.php:82
+msgid "Login"
+msgstr ""
+
+#: inc/registration-login.php:69
+msgid "Login Gipfelbuch"
+msgstr ""
+
+#: inc/registration-login.php:119
+msgid "Logout"
+msgstr ""
+
+#: inc/kommentar.php:39
+msgid "Mehr anzeigen"
+msgstr ""
+
+#: templates/user-dashboard.php:130
+msgid "Mein Kommentar im Wanderbeschrieb"
+msgstr ""
+
+#: inc/kommentar.php:35
+msgid "Meine Bewertung"
+msgstr ""
+
+#: templates/user-dashboard.php:66
+msgid "Meine Bewertungen"
+msgstr ""
+
+#: templates/user-dashboard.php:85
+msgid "Meine Bewertungen im Wanderbeschrieb"
+msgstr ""
+
+#: templates/user-dashboard.php:115
+msgid "Meine Kommentare"
+msgstr ""
+
+#: templates/user-dashboard.php:29
+msgid "Meine Merkliste"
+msgstr ""
+
+#: templates/user-dashboard.php:177
+msgid "Meine Pinnwand"
+msgstr ""
+
+#: templates/user-dashboard.php:220
+msgid "Meine Wanderungen"
+msgstr ""
+
+#: inc/kommentar.php:188
+msgid "Minute"
+msgstr ""
+
+#: inc/kommentar.php:189
+msgid "Minuten"
+msgstr ""
+
+#: inc/kommentar.php:22
+msgid "Mit einem "
+msgstr ""
+
+#: inc/kommentar.php:196
+msgid "Monat"
+msgstr ""
+
+#: inc/kommentar.php:197
+msgid "Monaten"
+msgstr ""
+
+#: inc/summit-book-post-types.php:37 inc/summit-book-post-types.php:38
+msgid "Neu hinzufügen"
+msgstr ""
+
+#: inc/user-navigation.php:32
+msgid "Neue Tour posten"
+msgstr ""
+
+#: inc/summit-book-register-scripts.php:31
+msgid "Neues Kennwort wiederholen"
+msgstr ""
+
+#: inc/summit-book-post-types.php:42
+msgid "Nicht gefunden"
+msgstr ""
+
+#: inc/summit-book-post-types.php:43
+msgid "Nicht im Papierkorb gefunden"
+msgstr ""
+
+#: inc/registration-login.php:75
+msgid "Noch kein Gratis-Account?"
+msgstr ""
+
+#: inc/summit-book-post-types.php:32 inc/summit-book-post-types.php:33
+#: inc/summit-book-post-types.php:34
+msgid "Pinnwand-Eintrag"
+msgstr ""
+
+#: inc/summit-book-post-types.php:39
+msgid "Pinnwand-Eintrag bearbeiten"
+msgstr ""
+
+#: inc/summit-book-post-types.php:41
+msgid "Pinnwand-Eintrag suchen"
+msgstr ""
+
+#: inc/summit-book-post-types.php:31
+msgid "Pinnwand-Einträge"
+msgstr ""
+
+#: templates/pinnwand.php:9
+msgid "Pinwand"
+msgstr ""
+
+#. Author of the plugin
+msgid "PITS"
+msgstr ""
+
+#: inc/registration-login.php:77
+msgid ""
+"Privatsphäre und Datenschutz ist uns wichtig. Wir geben keine Informationen "
+"weiter."
+msgstr ""
+
+#: inc/user-navigation.php:20
+msgid "Profil bearbeiten"
+msgstr ""
+
+#: inc/summit-book-post-types.php:82 inc/community-beitrag.php:14
+msgid "Rejected"
+msgstr ""
+
+#: inc/summit-book-post-types.php:88
+#, php-format
+msgid "Rejected <span class=\"count\">(%s)</span>"
+msgid_plural "Rejected <span class=\"count\">(%s)</span>"
+msgstr[0] ""
+msgstr[1] ""
+
+#: inc/kommentar.php:186
+msgid "Sekunde"
+msgstr ""
+
+#: inc/kommentar.php:187
+msgid "Sekunden"
+msgstr ""
+
+#: inc/kommentar.php:80
+msgid "Sie haben bereits ein Konto?"
+msgstr ""
+
+#: inc/registration-login.php:55
+msgid "Sie sind nicht berechtigt, sich hier einzuloggen."
+msgstr ""
+
+#: inc/summit-book-post-types.php:36
+msgid "Siehe "
+msgstr ""
+
+#: templates/neue-tour-posten.php:50
+msgid ""
+"So bald du den Beitrag zur Veröffentlichung frei gegeben hast geht dieser zu "
+"uns zur\n"
+"\t\t\t\tKontrolle und wird dann frei geschalten oder abgelehnt. Bei einer "
+"Ablehnung bekommst du\n"
+"\t\t\t\tein E-Mail von uns zur Information. Dedizierte Gründe für eine "
+"Ablehnung nennen wir nicht,\n"
+"\t\t\t\tbitte schau dir in so einem Fall unsere Regeln für die "
+"Beitragserstellung an."
+msgstr ""
+
+#: templates/single-community_beitrag.php:87
+msgid "Startpunkt"
+msgstr ""
+
+#: inc/admin/community-beitrag.php:20 inc/admin/pinnwand-eintrag.php:21
+msgid "Status"
+msgstr ""
+
+#: inc/kommentar.php:190
+msgid "Stunde"
+msgstr ""
+
+#: inc/kommentar.php:191
+msgid "Stunden"
+msgstr ""
+
+#. Description of the plugin
+msgid "Summit Book Module for Wegwandern"
+msgstr ""
+
+#: templates/pinnwand.php:10
+msgid ""
+"Sundendestis aped mos volorio nsequos et aut diciae conecus evendisima quam, "
+"se molore minia del int, similis sitat ma qui sum quis ab ipsaectur assinum, "
+"ut eostem ex eum et volupis quosto Mottet."
+msgstr ""
+
+#: inc/kommentar.php:192
+msgid "Tag"
+msgstr ""
+
+#: inc/kommentar.php:193
+msgid "Tagen"
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:88 inc/admin/pinnwand-eintrag.php:52
+msgid "Tel. "
+msgstr ""
+
+#: inc/admin/kommentar.php:54
+msgid "Tour"
+msgstr ""
+
+#: inc/summit-book-post-types.php:40
+msgid "Update Pinnwand-Eintrag"
+msgstr ""
+
+#: inc/admin/kommentar.php:56 inc/admin/community-beitrag.php:19
+msgid "User"
+msgstr ""
+
+#: inc/pinnwand-eintrag.php:13 inc/community-beitrag.php:13
+#: templates/user-dashboard.php:142
+msgid "Veröffentlicht"
+msgstr ""
+
+#: templates/user-dashboard.php:269
+msgid "Veröffentlicht am "
+msgstr ""
+
+#: inc/kommentar.php:38
+msgid "vor"
+msgstr ""
+
+#: templates/neue-tour-posten.php:19
+msgid "Wanderbeschrieb bearbeiten"
+msgstr ""
+
+#: templates/neue-tour-posten.php:16
+msgid "Wanderbeschrieb erstellen"
+msgstr ""
+
+#: inc/community-beitrag.php:116 inc/community-beitrag.php:140
+msgid "Wanderung löschen?"
+msgstr ""
+
+#: inc/kommentar.php:147
+msgid "Wanderungen der Community"
+msgstr ""
+
+#. Name of the plugin
+msgid "Wegwandern Summit Book"
+msgstr ""
+
+#: templates/inserat-erstellen.php:56
+msgid ""
+"Wir behalten uns vor, unpassende Beiträge ohne Rücksprache abzulehnen. Bitte "
+"beachte\n"
+"\t\t\t    unsere Nutzungsbedingungen."
+msgstr ""
+
+#: inc/kommentar.php:194
+msgid "Woche"
+msgstr ""
+
+#: inc/kommentar.php:195
+msgid "Wochen"
+msgstr ""

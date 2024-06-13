@@ -1,0 +1,2134 @@
+.summit-book-create-article-form-section form .frm_button_submit,
+.summit-book-create-article-form-section form .publish-button,
+.summit-book-create-article-form-section form .cancel-button,
+.summit-book-create-pinwall-ad-form-section form .frm_button_submit{
+
+    font-size: 20px !important;
+    line-height: 30px !important;
+    font-family: 'Roboto Regular' !important;
+    color: #FFFFFF !important;
+    border-radius: 35px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    padding: 12px 24px !important;
+    text-decoration: none !important;
+    margin-right: 20px !important;
+    border: 0 !important;
+}
+.summit-book-create-article-form-section form textarea,
+.summit-book-create-pinwall-ad-form-section form textarea {
+    color: #1A1A1A;
+    padding: 10px 16px;
+    border: 1px solid #D6D6D6;
+    font-size: 20px;
+    line-height: 30px;
+    background-color: #ffff;
+    min-height: 150px;
+    font-family: 'Roboto Regular';
+}
+.summit-book-create-article-form-section form .frm_pro_max_limit_desc,
+.summit-book-create-pinwall-ad-form-section form .frm_pro_max_limit_desc,
+.comment-section form .frm_pro_max_limit_desc {
+    margin-top: 5px;
+    font-family: 'Roboto Regular';
+}
+.summit-book-create-article-form-section form .frm_add_form_row.frm_button,
+.summit-book-create-article-form-section form .frm_remove_form_row.frm_button,
+.summit-book-create-pinwall-ad-form-section form .pinwand-ad-publish-button,
+.summit-book-create-pinwall-ad-form-section form .pinwand-ad-cancel-button {
+    font-size: 20px !important;
+    line-height: 30px !important;
+    font-family: 'Roboto Regular';
+    color: #FFFFFF !important;
+    border-radius: 35px !important;
+    cursor: pointer;
+    display: flex !important;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 24px !important;
+    text-decoration: none;
+    margin-right: 20px !important;
+    width: max-content !important;
+    border: 0 !important;
+}
+.summit-book-create-article-form-section form .frm_add_form_row.frm_button,
+.summit-book-create-article-form-section form .frm_remove_form_row.frm_button {
+    margin-right: 0 !important;
+}
+.summit-book-create-article-form-section form .publish-button,
+.summit-book-create-article-form-section form .frm_add_form_row.frm_button,
+.summit-book-create-pinwall-ad-form-section .pinwand-ad-publish-button,
+.user-edit-profile-form-section .frm_style_formidable-style.with_frm_style input[type=submit],
+.summit-book-create-pinwall-ad-form-section form .frm_button_submit,
+.summit-book-create-article-form-section form .frm_button_submit,
+.user-edit-profile-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit {
+    background: #00B453 !important;
+    border-color: transparent !important;
+}
+.summit-book-create-article-form-section form .frm_repeat_buttons {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: row;
+    gap: 20px;
+    font-family: 'Roboto Regular';
+}
+.summit-book-create-article-form-section form .dz-message.needsclick button, 
+.user-avatar-shortcode, .community-beitrag-file-upload a.dz-remove.frm_remove_link svg,
+.summit-book-create-article-form-section .with_frm_style .frm_dropzone .frmsvg,
+.user-edit-profile-form-section .with_frm_style .frm_dropzone .frmsvg,
+.user-watchlists .single-wander-map,
+.user-edit-profile-form-section a.dz-remove.frm_remove_link svg {
+    display: none;
+}
+.summit-book-create-article-form-section form .dz-image-preview {
+    line-height: 0;
+    position: relative;
+    padding: 0;
+    border-bottom: none;
+}
+.summit-book-create-article-form-section form .publish-button:hover,
+.summit-book-create-article-form-section form .frm_add_form_row.frm_button:hover,
+.summit-book-create-pinwall-ad-form-section .pinwand-ad-publish-button:hover,
+.user-edit-profile-form-section .frm_style_formidable-style.with_frm_style input[type=submit]:hover,
+.summit-book-create-pinwall-ad-form-section form .frm_button_submit:hover,
+.summit-book-create-article-form-section form .frm_button_submit:hover,
+.user-edit-profile-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit:hover,
+.article-edit-link:hover, .each-pinwall-ad-dashboard .pinwand-ad-edit-link:hover{
+    background: #03e36b !important;
+}
+.summit-book-create-article-form-section form .cancel-button,
+.user-edit-profile-form-section .frm_style_formidable-style button.cancel-summit-book-user-profile{
+    background: #D9000D !important;
+    border: 0 !important;
+}
+.summit-book-create-article-form-section form .frm_remove_form_row.frm_button,
+.summit-book-create-pinwall-ad-form-section .pinwand-ad-cancel-button {
+    background: #D9000D !important;
+    border: none;
+    outline: none;
+    border-color: transparent !important;
+}
+.summit-book-create-article-form-section form .cancel-button:hover,
+.summit-book-create-article-form-section form .frm_remove_form_row.frm_button:hover,
+.summit-book-create-pinwall-ad-form-section .pinwand-ad-cancel-button:hover,
+.cancel-summit-book-user-profile:hover  {
+    background: #BE000B !important;
+    color: #fff;
+}
+.summit-book-create-article-form-section .frm_style_formidable-style.with_frm_style .form-field{
+    margin-bottom: 25px;
+}
+.summit-book-create-article-form-section .with_frm_style .frm_repeat_sec{
+    border-bottom: none;
+    z-index: 0 !important;
+}
+
+.summit-book-create-article-form-section form .frm_error,
+.summit-book-create-pinwall-ad-form-section form .frm_error {
+    color: #D9000D !important;
+    margin-bottom: 5px;
+    font-size: 14px !important;
+    line-height: 20px;
+    margin-top: 5px;
+    font-family: "Roboto Regular";
+}
+
+.summit-book-create-article-form-section form .dz-preview.dz-error .dz-error-message {
+    /* top: 50%; */
+    position: relative;
+    display: table-cell !important;
+    vertical-align: middle;
+    height: 132px;
+}
+
+/* pinwand page */
+.pinwand-page .breadcrumb {
+    margin-top: 25px;
+    display:flex;
+}
+.pinwand-page h1.page-title {
+    margin-bottom: 21px;
+}
+
+.pinwand-page .pinwand-desc {
+    font-size: 24px;
+    line-height: 36px;
+    margin-top: 0;
+    margin-bottom: 29px;
+    margin-right: 17%;
+}
+.pinwand-action, .pinwand-action-below{
+    background: #00B453;
+    display: flex;
+    border-radius: 35px;
+    width: max-content;
+    padding: 13px 30px;
+    cursor: pointer;
+    align-items: center;
+}
+.pinwand-action:hover, .pinwand-action-below:hover{
+    background:#03e36b;
+}
+.pinwand-action-below{
+    margin-bottom: 90px;
+}
+.pinwand-create-btn-icon{
+    background: url("../images/edit.svg");
+    width: 21px;
+    height: 21px;
+    background-size: cover;
+    margin-right: 15px;
+}
+.saveProfileIcon{
+    background: url("../images/saveProfile.svg");
+    width: 21px;
+    height: 21px;
+    background-size: cover;
+    margin-right: 15px;
+}
+.deleteprofileIcon{
+    background: url("../images/delete.svg");
+    width: 20px;
+    height: 21px;
+    background-size: cover;
+    margin-right: 15px;
+}
+.pinwand-create-btn-text{
+    width: auto;
+    color: #FFFFFF;
+    font-size: 20px;
+    line-height: 30px;
+    font-family: 'Roboto Regular';
+    font-weight: normal;
+}
+.pinwand-list {
+    column-count: 3;
+    column-gap: 4%;
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+.pinwand-list .each-pinwall-ad {
+    break-inside: avoid;
+    margin-bottom: 30px;
+    padding: 13px 20px 17px 20px;
+    box-sizing: border-box;
+    background: #F5F5F5;
+    display: grid;
+    grid-template-rows: 1fr auto;
+}
+.pinwall-ad-publishing-date,
+.pinwall-ad-user-name, .hide-connect-1, .community-beitrag-author-name, 
+.user-ratings .each-rating a, .each-user-comment a, .comment-status{
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Roboto Bold';
+}
+.pinwall-ad-publishing-date,
+.pinwall-ad-user-name{
+    color: #1A1A1A;
+}
+.hide-connect-1{
+    color: #D9000D;
+}
+.hide-connect-1:hover, .community-beitrag-tagged-item:hover, .each-user-comment a:hover, .community-beitrag-tagged-item a:hover{
+    color: #BE000B;
+}
+.pinwall-ad-publishing-date{
+    margin-bottom: 4px;
+}
+.pinwall-ad-headline, .each-hiking-article .hiking-article-title, .comment-sub-heading, .community-beitrag-region,
+.user-ratings .each-rating .rating-text, .each-hiking-article .hiking-article-title a {
+    font-size: 20px;
+    line-height: 30px;
+    color: #1A1A1A;
+    font-family: 'Roboto Bold';
+}
+.pinwall-ad-headline {
+    margin: 0px 0 10px 0;
+}
+.pinwall-ad-text, .hide-connect-2 , .each-hiking-article .hiking-article-desc, .community-beitrag-hiking-info, .user-dash-no-content-msg{
+    font-size: 16px;
+    line-height: 24px;
+    color: #1A1A1A;
+    font-family: 'Roboto Regular';
+}
+.pinwall-ad-text {
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+.pinwall-ad-user-avatar{
+    border: 2px solid #FFFFFF;
+}
+.pinwall-ad-user-avatar, .pinwall-ad-user-avatar img{
+    width: 50px;
+    height: 50px;
+    box-shadow: 1px 1px 2px #0000001A;
+    border-radius: 50%;
+    margin-bottom: 11px;
+}
+/*dashborad*/
+.user-hiking-articles, .user-pinwall-ads{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 48px 4%;
+}
+.user-ratings, .user-comments{
+    column-count: 3;
+    column-gap: 4%;
+}
+.each-hiking-article .hiking-article-teaser-img img{
+    aspect-ratio: 3/2;
+    width: 100%;
+    object-fit: cover;
+    height: auto;
+}
+.each-hiking-article .hiking-article-region, .hiking-article-actions .hiking-article-actions-left,
+.pinwall-ad-status-info{
+    font-size: 16px;
+    line-height: 24px;
+    color: #1A1A1A;
+    font-family: 'Roboto Bold';
+}
+.hiking-article-actions{
+    background: #E6E6E6;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px 12px 20px;
+    align-items: center;
+    position: absolute;
+    bottom: 0;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    height: 44px;
+}
+.pinwall-ad-actions{
+    background: #E6E6E6;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 20px;
+    align-items: center;
+    height: 44px;
+    bottom: 0;
+    position: absolute;
+    width: -webkit-fill-available;
+    width: -moz-available;
+}
+/*comments*/
+.comments-section-wrapper{
+    max-width: calc(100% - 8%);
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    position: relative;
+    margin-top: 80px;
+    padding-top: 25px;
+    padding-bottom: 66px;
+    margin-bottom: -80px;
+}
+.comment-section{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4%;
+}
+.frm-star-group .frmsvg{
+    fill: #D9000D !important;
+}
+.frm-star-group .star-rating:before{
+    color: #D9000D !important;
+}
+.comment-heading{
+    font-size: 40px;
+    line-height: 50px;
+    margin-top: 0;
+    margin-bottom: 17px;
+}
+.comment-desc{
+    margin-top: 0;
+    margin-bottom: 27px;
+}
+.comment-desc, .community-beitrag-maintext{
+    font-size:20px;
+    line-height:30px;
+    color: #1A1A1A;
+    font-family: 'Roboto Regular';
+}
+.comment-sub-heading{
+     margin-top: 0;
+     margin-bottom: 9px;
+}
+.disabled{
+    opacity:0.4;
+    pointer-events:none;
+}
+.comment-desc-section .frm_login_form .login-username{
+    margin-bottom:20px !important;
+}
+.comment-form-section .frm_opt_container{
+     margin-bottom: 20px;
+}
+.star-rating .frmsvg {
+    height: 41px !important;
+    width: 42px !important;
+}
+.comment-desc-section .frm_form_field input{
+    padding:18px 18px 18px 23px
+}
+.comment-form-section textarea{
+    padding:17px 20px;
+    min-height: 140px;
+}
+.comment-form-section textarea, .each-comment-inner, .logged-in-description, .each-user-comment .comment-content{
+    font-size:16px;
+    line-height:24px;
+    font-family: 'Roboto Regular';
+}
+.comment-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit{
+    font-size:20px;
+    line-height:30px;
+    border-radius: 35px;
+    padding: 12px 25px;
+    margin-top: 0px;
+    margin-bottom: 0;
+}
+.comment-desc-section fieldset, .comment-form-section fieldset{
+    padding-bottom: 0 !important;
+}
+
+.average-rating-display{
+    font-size: 20px;
+    line-height: 30px;
+    font-family: 'Roboto Regular';
+    font-weight: normal;
+    margin-top: 18px;
+    margin-bottom: 0;
+}
+.single-region-rating .average-rating-display{
+    font-size: 16px;
+    line-height: 24px;
+    margin: 0;
+}
+.detail-region-rating, .single-region-rating{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.detail-region-rating .fa-star:before, .single-region-rating .fa-star:before{
+    color: #7B7B7B;
+    margin-left: 6px;
+}
+/*.comment-form-section .frm_pro_max_limit_desc,*/ .comment-form-section .frm_dropzone .dz-message.needsclick svg{
+    display: none;
+}
+.comment-form-section .frm_dropzone .dz-message.needsclick{
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #D9000D !important;
+    font-size: 20px !important;
+    line-height: 30px !important;
+    font-family: 'Roboto Bold' !important;
+    padding: 0 !important;
+    display: block;
+    width: 100% !important;
+    text-align: left !important;
+}
+.comment-form-section .frm_dropzone .frm_compact_text button{
+    margin-top: 3px;
+    text-decoration: underline;
+}
+.comment-form-section .frm_dropzone .frm_compact_text button:hover, .comment-desc-section .forgot-password:hover{
+    color: #BE000B !important;
+}
+.comment-form-section .frm_dropzone{
+    margin-bottom: 15px;
+    min-height: 1px;
+    display: flex;
+    flex-wrap: wrap;
+}
+.comment-desc-section .with_frm_style .frm_checkbox input[type=checkbox]{
+    width: 30px !important;
+    height: 30px !important;
+    margin-right: 12px;
+}
+.comment-desc-section .with_frm_style .frm_checkbox input[type=checkbox]:checked:before {
+    left: 9px;
+    bottom: 7px;
+    width: 6px;
+    height: 15px;
+    border-width: 0 4px 4px 0;
+}
+.comment-desc-section .login-remember{
+    margin-top: 20px;
+}
+.comment-desc-section .login-password{
+    margin-bottom: 0 !important;
+}
+.comment-desc-section .forgot-password{
+    text-decoration: underline !important;
+    color: #D9000D; 
+}
+.comment-desc-section .forgot-password, .comment-author-name, .article-title, .logged-in-user-avatar-name h3,
+.each-user-comment .comment-text{
+    font-size: 20px;
+    line-height: 30px;
+    font-family: 'Roboto Bold';
+}
+.comment-desc-section .login_lost_pw{
+    margin-bottom: 10px;
+    margin-top: 18px;
+    margin-left: 35px;
+}
+.comment-desc-section  .hikeLoginRememSubmitWrapper{
+    display: flex;
+    align-items: center;
+}
+.hikeLoginRememSubmitWrapper .frm_submit input,
+.comment-form-section .frm_dropzone .dz-preview .dz-details .dz-filename span{
+    font-family: 'Roboto Regular';
+}
+.comment-form-section .frm_dropzone .dz-preview{
+    line-height: 0;
+    position: relative;
+    padding: 0;
+    border-bottom: none;
+    max-width: max-content;
+    margin-bottom: 15px;
+    margin-right: 15px;
+}
+.comment-form-section .frm_dropzone .dz-preview , 
+.show-full-comment{
+    display: block;
+}
+.comment-form-section .frm_dropzone .dz-preview .dz-details .dz-filename{
+    display: inline-block !important;
+}
+/*.comment-form-section  .frm_dropzone .dz-preview .dz-remove{
+    width: auto;
+    height: auto;
+    background: none;
+}*/
+.comment-form-section .dz-preview.dz-error .dz-error-message {
+    position: relative;
+    display: table-cell !important;
+    vertical-align: middle;
+    height: 132px;
+}
+.comments-list{
+    margin-top: 49px;
+}
+.comment-list-heading{
+    border-bottom: 1px solid #D6D6D6;
+    padding-bottom: 23px;
+    margin-bottom: 26px;
+}
+.each-comment{
+    display: grid;
+    gap: 4%;
+    grid-template-columns: 30% 66%;
+    margin-bottom: 50px;
+}
+.comment-author-info{
+    display: flex;
+}
+.comment-author-img img, .logged-in-user-avatar-name img {
+    margin-right: 23px;
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+}
+.comment-date{
+    color: #B1B1B1;
+    margin-bottom: 7px;
+}
+.comment-date, li.summit-book-user-menu-item{
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Roboto Regular';
+}
+.each-comment-inner{
+    margin: 0;
+}
+.comment-detail .frm-star-group .star-rating:before{
+    font-size: 22px;
+    margin-right: 5px;
+}
+.comment-imgs{
+    margin-top: 23px;
+}
+.comment-imgs.owl-carousel .owl-item img{
+    object-fit: cover;
+    height: 150px;
+}
+.comment-imgs .nav-btn.prev-slide{
+    width: 17.27px;
+    height: 30px;
+    position: absolute;
+    left: 10px;
+    top: calc(50% - 22px);
+    display: inline-block;
+    background: url("../images/prev-nav.svg");
+    background-size: cover;
+}
+.comment-imgs .nav-btn.next-slide{
+    width: 17.27px;
+    height: 30px;
+    position: absolute;
+    right: 10px;
+    top: calc(50% - 22px);
+    display: inline-block;
+    background: url("../images/next-nav.svg");
+    background-size: cover;
+}
+.community-articles{
+    margin-top: 63px;
+}
+.community-articles h2{
+    border-bottom: 1px solid #D6D6D6;
+    padding-bottom: 23px;
+    margin-bottom: 30px;
+}
+.each-article-wrapper{
+    display: grid;
+    gap: 4%;
+    grid-template-columns: 1fr 1fr;
+}
+.article-img img{
+    aspect-ratio: 3/2;
+    object-fit: cover;
+    width: 100%;
+}
+.each-article{
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 240px auto;
+}
+.article-region{
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Roboto Bold';
+    margin-top: -5px;
+}
+.article-title a, .each-hiking-article .hiking-article-title a{
+    color: #1A1A1A;
+    text-decoration: none;
+}
+.article-author{
+    font-size: 14px;
+    line-height: 20px;
+    font-family: 'Roboto Regular';
+    display: flex;
+    align-items: center;
+    margin-top: 7px;
+}
+.article-author img{
+    object-fit: cover;
+    width: 30px;
+    height: 30px;
+    box-shadow: 1px 1px 2px #0000001A;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    margin-right: 11px;
+}
+.comment-imgs.owl-theme .owl-nav{
+    margin-top: 0;
+}
+/*.logged-in-user-avatar-name h3{
+    margin-top: -15px;
+    margin-bottom: 45px;
+}*/
+.logged-in-user-avatar-name h3{
+    margin-right: 15px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.logged-in-user-info{
+    margin-top: -15px;
+}
+.logged-in-user-avatar-name, .summit-book-create-article-form-section .frm_fields_container .frm_submit,
+.summit-book-create-pinwall-ad-form-section .frm_fields_container .frm_submit{
+    display: flex;
+    align-items: center;
+}
+.community-beitrag-maintext{
+    margin-top: 53px;
+}
+.community-beitrag-tag-section{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+.community-beitrag-tagged-item {
+    border: 1px solid #EBEBEB;
+    border-radius: 30px;
+    padding: 7px 17px;
+    color: #7B7B7B;
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Roboto Regular';
+    cursor: pointer;
+    background: #fff;
+}
+.community-beitrag-tagged-item a{
+    text-decoration: none;
+    color: #7B7B7B;
+}
+.community-beitrag-infobox{
+    display: flex;
+    gap: 23px;
+    align-items: flex-start;
+    margin-bottom: 60px;
+}
+.community-beitrag-info-left-avatar img{
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.community-beitrag-hiking-info .average-star-rating{
+    margin-top: 6px;
+    margin-bottom: 19px;
+}
+.community-beitrag-hiking-info .frm-star-group .star-rating:before {
+    font-size: 30px;
+    margin-right: 4px;
+}
+.community-beitrag-leadtext{
+    font-size: 24px;
+    line-height: 36px;
+    font-family: 'Roboto Regular';
+    margin-top: -7px;
+    margin-bottom: 47px;
+}
+.community-beitrag-headline{
+    margin-bottom: 46px;
+    margin-top: 0;
+}
+.community-beitrag-region{
+    margin-top: 23px;
+}
+.summit-book-user-navigation {
+    background: #F5F5F5;
+}
+/* .user-navigation.horizontal {
+    max-width: calc(100% - 8%);
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+    justify-content: space-between;
+} */
+.user-navigation.horizontal .menu-summit-book-user-menu-container ul {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    list-style: none;
+}
+li.summit-book-user-menu-item{
+    margin-bottom: 0;
+    padding: 17px 0px;
+    margin-right: 28px;
+    white-space: nowrap;
+}
+li.summit-book-user-menu-item a{
+    text-decoration: none;
+    color: #1a1a1a;
+    font-weight: normal;
+}
+li.summit-book-user-menu-item a:hover{
+    text-decoration: underline;
+    color: #D9000D;
+}
+li.summit-book-user-menu-item.active a{
+    text-decoration: underline;
+    color: #D9000D;
+    font-weight: 700;
+}
+.community-beitrag-file-upload .frm_dropzone .dz-preview .dz-remove,
+.comment-form-section .frm_dropzone .dz-preview .dz-remove{
+    left: 82px;
+    right: unset;
+}
+.community-beitrag-file-upload a.dz-remove.frm_remove_link:after, .user-edit-profile-form-section a.dz-remove.frm_remove_link:after,
+.comment-form-section a.dz-remove.frm_remove_link:after {
+    content: "";
+    background: url("../images/close_white.svg");
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    background-size: cover;
+    top: 12px;
+    left: 12px;
+    transition: transform .3s;
+}
+.community-beitrag-file-upload a.dz-remove.frm_remove_link:hover:after, .user-edit-profile-form-section a.dz-remove.frm_remove_link:hover:after,
+.comment-form-section a.dz-remove.frm_remove_link:hover:after {
+    transform: rotate(90deg);
+}
+.summit-book-create-article-form-section .dz-message.needsclick:before,
+.user-edit-profile-form-section .dz-message.needsclick:before {
+    content: "";
+    position: absolute;
+    /* left: 82px; */
+    right: 0;
+    bottom: 0;
+    width: 40px;
+    height: 40px;
+    background: #D9000D;
+    border-radius: 50%;
+}
+.summit-book-create-article-form-section .dz-message.needsclick:after,
+.user-edit-profile-form-section .dz-message.needsclick:after {
+    content: "";
+    width: 20px;
+    height: 18px;
+    background: url("../images/profile.svg");
+    position: absolute;
+    /* left: 91px; */
+    left:102px;
+    bottom: 12px;
+    background-size: cover;
+}
+.summit-book-create-article-form-section .frm_dropzone.frm_multi_upload.dz-clickable {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.frm_style_formidable-style.with_frm_style .frm_blank_field select:not(.ui-datepicker-month):not(.ui-datepicker-year) + .select-selected{
+    border-color: #B94A48;
+}
+.user-watchlists-section h2{
+    margin-top: 64px;   
+}
+.user-ratings-section h2, .user-comments-section h2, .user-pinwall-ads-section h2, .user-hiking-articles-section h2{
+    margin-top: 63px;
+}
+.user-watchlists-section h2, .user-ratings-section h2, .user-comments-section h2,
+.user-pinwall-ads-section h2, .user-hiking-articles-section h2{
+    margin-bottom: 25px;
+}
+.user-watchlists .single-wander-wrappe{
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 55px 4%;
+}
+.user-watchlists .wander-img{
+    width: 100%;
+}
+.user-ratings .each-rating {
+    background: #F5F5F5;
+    padding: 12px 20px 20px;
+    margin: 0 0 48px;
+    page-break-inside: avoid;
+}
+.user-ratings .each-rating .rating-text{
+    margin: 0;
+    margin-bottom: 8px;
+}
+.user-ratings .each-rating a, .each-user-comment a{
+    color: #D9000D;
+}
+.user-ratings .each-rating .average-star-rating{
+    margin-top: 16px;
+}
+.user-ratings .each-rating .average-star-rating .frm-star-group .star-rating:before {
+    font-size: 29px;
+    margin-right: 5px;
+}
+.each-user-comment{
+    page-break-inside: avoid;
+    margin: 0 0 48px;
+}
+.each-user-comment-content {
+    background: #F5F5F5;
+    padding: 12px 20px 15px;
+}
+.each-user-comment .comment-text{
+    margin: 0;
+    margin-bottom: 9px;
+}
+.each-user-comment .user-comment-imgs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+}
+.each-user-comment .user-comment-imgs  img{
+    width: 100%;
+    height: 94px;
+    object-fit: cover;
+}
+.each-user-comment .comment-actions {
+    background: #E6E6E6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px
+}
+.each-user-comment .delete-comment, .each-pinwall-ad-dashboard .delete-pinwand-ad, .delete-hiking-article {
+    background: #D9000D;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+}
+.each-pinwall-ad-dashboard .pinwand-ad-edit-link, .article-edit-link{
+    background: #00B453;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    position: relative;
+}
+.each-user-comment .delete-comment:before, .each-pinwall-ad-dashboard .delete-pinwand-ad:before, .delete-hiking-article:before{
+    background: url("../images/delete.svg");
+    content: "";
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+}
+.each-pinwall-ad-dashboard .pinwand-ad-edit-link:before, .article-edit-link:before{
+    background: url("../images/edit.svg");
+    content: "";
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+}
+.each-user-comment .comment-content{
+    margin-top: 14px;
+    margin-bottom: 21px;
+    word-break: break-word;
+}
+.pinwand-ad-action-links, .hiking-article-actions-right {
+    display: flex;
+    gap: 10px;
+}
+.each-pinwall-ad-dashboard {
+    background: #F5F5F5;
+    position: relative;
+    padding-bottom: 74px;
+}
+.each-pinwall-ad-content {
+    padding: 12px 20px;
+}
+.each-hiking-article{
+    position: relative;
+    padding-bottom: 74px;
+}
+.each-hiking-article .hiking-article-region{
+    margin-top: 2px;
+}
+.each-hiking-article .hiking-article-desc{
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+#summit-book-login .frm_form_fields .frm_fields_container{
+    display: block;
+}
+.pinwall-ad-user-avatar img{
+    width: inherit;
+    height: inherit;
+}
+.userNavigationMenu ul#menu-summit-book-user-menu,.userNavigationMenu .summit-book-logout-menu ul,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed{
+    margin: 0;
+    list-style: none;
+    padding: 0;
+}
+.userNavigationMenu ul#menu-summit-book-user-menu li,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li{
+    border-radius: 30px;
+    background: #D9000D;
+    margin-bottom: 15px;
+    margin-right: 0;
+    padding: 12px 0px;
+}
+.userNavigationMenu ul#menu-summit-book-user-menu li a,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li a{
+    color: #FFFFFF;
+    font-size: 20px;
+    line-height: 30px;
+    font-family: 'Roboto Regular';
+    display: flex;
+    justify-content: center;
+}
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li a{
+    text-decoration: none;
+}
+.userNavigationMenu .summit-book-logout-menu ul li a{
+    color: #D9000D;
+    font-size: 20px;
+    line-height: 30px;
+    font-family: 'Roboto Bold';
+    text-decoration: underline;
+}
+.userNavigationMenu .summit-book-logout-menu{
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.userNavigationMenu ul#menu-summit-book-user-menu li:hover,
+.userNavigationMenu ul#menu-summit-book-user-menu li.active,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li:hover,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li.active{
+    text-decoration: none;
+    background: #BE000B;
+}
+.user-edit-profile-form-section .dz-message.needsclick:hover::before,
+.summit-book-create-article-form-section .dz-message.needsclick:hover:before,
+.community-beitrag-file-upload .frm_dropzone .dz-preview .dz-remove:hover,
+.frm_dropzone .dz-preview .dz-remove:hover,
+.each-pinwall-ad-dashboard .delete-pinwand-ad:hover,
+.delete-hiking-article:hover,
+.each-user-comment .delete-comment:hover {
+    background: #BE000B;
+
+}
+.userNavigationMenu ul#menu-summit-book-user-menu li:hover a,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li:hover a{
+    text-decoration: none;
+}
+.user-confirmation {
+    width: 436px;
+    background: #F5F5F5;
+    border: 2px solid #FFFFFF;
+    border-radius: 8px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 40%;
+    z-index: 9999;
+    margin: auto;
+    padding: 25px 30px 30px;
+    box-shadow: 2px 2px 10px #0000001A;
+}
+.summit-delete-title{
+    font-size: 20px;
+    line-height: 30px;
+    font-family: 'Roboto Bold';
+    margin-top: 0;
+    margin-bottom: 37px;
+}
+.summit-delete-content{
+    margin-bottom: 13px;
+}
+.summit-delete-content, .summit-confirmDeleteBtn button{
+    font-size: 16px;
+    line-height: 24px;
+    font-family: 'Roboto Regular';
+}
+.summit-confirmDeleteBtn button{
+    padding: 8px 21px;
+    font-family: 'Roboto Bold';
+}
+.summit-confirmDeleteBtn .summit-delete-edit-submit{
+    border: 1px solid #7B7B7B;
+    background: transparent;
+    color: #7B7B7B;
+    margin-left: 21px;
+}
+.user-edit-profile-form-section .frm_style_formidable-style button.delete-summit-book-user-profile{
+    margin-right: 20px !important;
+}
+.cancel-summit-book-user-profile{
+    margin-top: 18px !important;
+}
+.summit-book-create-article-form-section .frm_style_formidable-style.with_frm_style .community-beitrag-file-upload .frm_description{
+    display: block !important;
+    margin-top: 5px;
+    font-family: 'Roboto Regular';
+}
+.pinwand-list .ad-section-wrap {
+    column-span: all;
+    width: 100%;
+}
+.user-edit-profile-page .frm_conf_field label{
+    display: block !important;
+}
+.userNavigationMenu ul#menu-summit-book-user-menu li.active a,
+.userNavigationMenu ul#menu-summit-book-user-profile-not-completed li.active a{
+    font-weight: normal;
+    text-decoration: none;
+}
+.pinwand-action-below a, .pinwand-action a{
+    color: #FFFFFF;
+    text-decoration: none;
+}
+.avatar-with-nickname{
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.avatar-with-nickname .summit_nickname{
+    margin-left: 24px;
+}
+.frm_style_formidable-style.with_frm_style .avatar-with-nickname .frm_description{
+    display: flex !important;
+    position: absolute;
+    bottom: -20px;
+    font-family: 'Roboto Regular';
+}
+.avatar-with-nickname .dz-preview.dz-error .dz-error-message{
+    bottom: 0;
+    margin-left: 24px;
+    font-family: 'Roboto Regular';
+}
+.community-beitrag-file-upload .dz-message.needsclick{
+    background: url("../images/platzhalter_image_gipfelbuch.svg");
+    height: 93.40px;
+}
+.community-beitrag-file-upload .frm_dropzone .dz-preview .dz-image{
+    height: 93.40px;
+    border-radius: 0;
+}
+.summit-book-create-pinwall-ad-form-section form .frm_button_submit,
+.summit-book-create-article-form-section form .frm_button_submit{
+    align-items: center;
+}
+.user-edit-profile-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit,
+.user-edit-profile-form-section .frm_style_formidable-style button.delete-summit-book-user-profile,
+.user-edit-profile-form-section .frm_style_formidable-style button.cancel-summit-book-user-profile{
+    font-size: 20px;
+    line-height: 30px;
+    background: #D9000D;
+    font-family: 'Roboto Regular';
+    color: #FFFFFF;
+    border-radius: 35px;
+    cursor: pointer;
+    display: inline-flex;
+    padding: 12px 24px;
+    border: 0;
+    box-shadow: none;
+    margin-top: 18px;
+    align-items: center;
+}
+.comment-form-section .frm_dropzone.frm_multi_upload .dz-preview .dz-image{
+    display: flex !important;
+}
+.comment-form-section .frm_dropzone .dz-preview .dz-column .dz-filename,
+.comment-form-section a.dz-remove.frm_remove_link svg,
+.with_frm_style .frm_dropzone .dz-preview .dz-progress{
+    display: none !important;
+}
+.summit-book-create-article-form-section .frm_dropzone.frm_single_upload.dz-started{
+    max-width: 300px;
+}
+main.b2b-access-denied, .b2b-access-denied-container{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.summit-book-create-article-form-section .dz-preview .dz-column{
+    width: 100%;
+    float: none;
+}
+.summit-book-create-article-form-section .frm_dropzone .dz-preview .dz-details{
+    margin-top: 0;
+}
+.community-teaser-heading{
+    font-size: 40px;
+    line-height: 50px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+.community-teaser-sub-text{
+    font-size: 27px;
+    line-height: 37px; 
+    font-family: 'Roboto Regular';
+    margin-bottom: 32px;
+    margin-top: 0;
+}
+.community-teaser{
+    padding-bottom: 37px;
+    padding-top: 29px;
+}
+.community-teaser-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4%;
+}
+.community-teaser-articles-section{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 25px;
+}
+.each-community-teaser-article{
+    display: grid;
+    gap: 4%;
+    grid-template-columns: 46% 50%;
+}
+.community-teaser-feature-list{
+    margin-top: -7px;
+    list-style-type: none;
+    margin-bottom: 21px;
+}
+.community-teaser-reg-button{
+    margin-right: 20px;
+}
+.community-teaser-list-item {
+    position: relative;
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+.community-teaser-list-item:before {
+    display: flex;
+    content: "";
+    position: absolute;
+    left: -36px;
+    top: 4px;
+    width: 8px;
+    height: 18px;
+    border: solid #D9000D;
+    border-width: 0 5px 5px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+.summit-book-create-article-form-section form .frm_repeat_buttons a:hover svg{
+    fill: #ffff !important;
+}
+.pinwand-page a.create-pinwand-ad-link{
+    text-decoration: none;
+}
+
+@media only screen and (max-width: 1199px){
+    .community-teaser {
+        padding-bottom: 31px;
+        padding-top: 21px;
+    }
+    .community-teaser-heading {
+        font-size: 32px;
+        line-height: 42px;
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+    .community-teaser-sub-text {
+        font-size: 24px;
+        line-height: 32px;
+        font-family: 'Roboto Regular';
+        margin-bottom: 22px;
+        margin-top: 0;
+    }
+    .community-teaser-feature-list {
+        margin-bottom: 17px;
+    }
+    .community-teaser-list-item {
+        margin-left: 16px;
+        margin-bottom: 12px;
+        font-size: 18px;
+        line-height: 27px;
+    }
+    .community-teaser-list-item:before{
+        left: -30px;
+    }
+    .community-teaser-articles-section {
+        gap: 20px;
+    }
+    .pinwand-page .pinwand-desc {
+        font-size: 21px;
+        line-height: 32px;
+        margin-top: 0;
+        margin-bottom: 23px;
+        margin-right: 7%;;
+    }
+    .pinwand-page h1.page-title {
+        margin-bottom: 11px;
+    }
+    .pinwand-create-btn-icon {
+        width: 19px;
+        height: 19px;
+        background-size:cover;
+    }
+    .pinwand-create-btn-text, .community-beitrag-region,
+    .summit-book-create-article-form-section form textarea, .summit-book-create-pinwall-ad-form-section form textarea,
+    .each-user-comment .comment-text, .userNavigationMenu ul#menu-summit-book-user-menu li a,
+    .userNavigationMenu ul#menu-summit-book-user-profile-not-completed li a,
+    .userNavigationMenu .summit-book-logout-menu ul li a, .user-edit-profile-form-section .frm_style_formidable-style button.cancel-summit-book-user-profile, 
+    .user-edit-profile-form-section .frm_style_formidable-style button.delete-summit-book-user-profile,
+    .user-edit-profile-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit{
+        font-size: 18px;
+        line-height: 27px;
+    }
+    .pinwand-action, .pinwand-action-below{
+        padding: 12px 24px;
+    }
+    .pinwand-action-below {
+        margin-bottom: 0px;
+    }
+    .pinwand-list {
+        margin-bottom: 45px;
+    }
+    .pinwall-ad-publishing-date,
+    .pinwall-ad-user-name, .hide-connect-1,
+    .pinwall-ad-text, .hide-connect-2, 
+    li.summit-book-user-menu-item, .each-user-comment a, .each-user-comment .comment-content, .comment-status,
+    .pinwall-ad-status-info, .each-hiking-article .hiking-article-region{
+        font-size: 15px;
+        line-height: 23px;
+    }
+    .pinwand-list .each-pinwall-ad {
+        margin-bottom: 36px;
+        padding: 12px 15px 6px 15px;
+    }
+    .pinwall-ad-text{
+        margin-bottom:5px;
+    }
+    /*comments*/
+    .detail-region-rating .fa-star:before {
+        margin-left: 4px;
+    }
+    .comments-section-wrapper {
+        margin-top: 60px;
+        padding-top: 21px;
+        padding-bottom: 56px;
+        margin-bottom: -60px;
+    }
+    .comment-heading {
+        font-size: 32px;
+        line-height: 42px;
+        margin-top: 0;
+        margin-bottom: 13px;
+    }
+    .comment-desc , .comment-desc-section .forgot-password, .comment-sub-heading, .comment-author-name, .logged-in-user-avatar-name h3,
+    .article-title, .average-rating-display, .user-ratings .each-rating .rating-text, .each-hiking-article .hiking-article-title,
+    .each-hiking-article .hiking-article-title a{
+        font-size: 18px;
+        line-height: 27px;
+    }
+    .comment-form-section .frm_dropzone .dz-message.needsclick,
+    .summit-book-create-article-form-section form .frm_add_form_row.frm_button, 
+    .summit-book-create-article-form-section form .frm_remove_form_row.frm_button, 
+    .summit-book-create-pinwall-ad-form-section form .pinwand-ad-publish-button, 
+    .summit-book-create-pinwall-ad-form-section form .pinwand-ad-cancel-button,
+    .summit-book-create-article-form-section form .frm_button_submit, 
+    .summit-book-create-article-form-section form .publish-button, 
+    .summit-book-create-article-form-section form .cancel-button, 
+    .summit-book-create-pinwall-ad-form-section form .frm_button_submit{
+        font-size: 18px !important;
+        line-height: 27px !important;
+    }
+    .summit-book-create-article-form-section form .frm_add_form_row.frm_button, 
+    .summit-book-create-article-form-section form .frm_remove_form_row.frm_button, 
+    .summit-book-create-pinwall-ad-form-section form .pinwand-ad-publish-button, 
+    .summit-book-create-pinwall-ad-form-section form .pinwand-ad-cancel-button,
+    .summit-book-create-article-form-section form .frm_button_submit, 
+    .summit-book-create-article-form-section form .publish-button, 
+    .summit-book-create-article-form-section form .cancel-button, 
+    .summit-book-create-pinwall-ad-form-section form .frm_button_submit{
+        padding: 11px 22px !important;
+    }
+    .comment-desc{
+        margin-bottom: 22px;
+    }
+    .comment-desc-section .frm_form_field input {
+        padding: 18px 18px 18px 19px;
+    }
+    .comment-desc-section .with_frm_style .frm_checkbox input[type=checkbox]:checked:before {
+        left: 9px;
+        bottom: 7px;
+        width: 5px;
+        height: 13px;
+        border-width: 0px 4px 4px 0;
+    }
+    .comment-desc-section .with_frm_style .frm_checkbox input[type=checkbox] {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    .comment-sub-heading {
+        margin-bottom: 12px;
+    }
+    .comment-form-section textarea {
+        min-height: 126px;
+        margin-top: 20px;
+    }
+    .hikeLoginRememSubmitWrapper .frm_submit input, 
+    .comment-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit{
+        border-radius: 30px;
+    }
+    .star-rating .frmsvg {
+        height: 35px !important;
+        width: 37px !important;
+    }
+    .comment-list-heading {
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+    }
+    .each-comment {
+        margin-bottom: 35px;
+    }
+    .comment-author-img img, .logged-in-user-avatar-name img {
+        margin-right: 20px;
+        width: 78px;
+        height: 78px;
+    }
+    .comment-date, .each-comment-inner, .article-region, .logged-in-description, .community-beitrag-author-name, .community-beitrag-hiking-info,
+    .community-beitrag-tagged-item, .single-region-rating .average-rating-display, .user-ratings .each-rating a, .each-hiking-article .hiking-article-desc,
+    .hiking-article-actions .hiking-article-actions-left, .user-dash-no-content-msg {
+        font-size: 15px;
+        line-height: 23px;
+    }
+    .comment-detail .frm-star-group .star-rating:before {
+        font-size: 20px;
+        margin-right: 4px;
+    }
+    .comment-imgs {
+        margin-top: 18px;
+    }
+    .community-articles {
+        margin-top: 44px;
+    }
+    .community-articles h2 {
+        padding-bottom: 17px;
+        margin-bottom: 25px;
+    }
+    .each-article {
+        gap: 4%;
+        grid-template-columns: 46% 50%;
+    }
+    .article-author{
+        font-size: 13px;
+        line-height: 19px;
+    }
+    .article-author img {
+        width: 28px;
+        height: 28px;
+        margin-right: 8px;
+    }
+    .community-beitrag-maintext{
+        font-size: 18px;
+        line-height: 31px;
+    }
+    .community-beitrag-maintext{
+        margin-top: 43px;
+    }
+    .community-beitrag-leadtext{
+        font-size: 21px;
+        line-height: 32px;
+    }
+    .community-beitrag-info-left-avatar img {
+        width: 85px;
+        height: 85px;
+    }
+    .community-beitrag-tag-section{
+        gap:20px;
+    }
+    .community-beitrag-region{
+        margin-bottom: 5px;
+    }
+    .community-beitrag-headline {
+        margin-bottom: 25px;
+        margin-right: 125px;
+    }
+    .community-beitrag-leadtext {
+        margin-top: 0px;
+        margin-bottom: 29px;
+    }
+    .community-beitrag-infobox{
+        gap: 21px;
+        margin-bottom: 45px;
+    }
+    .community-beitrag-hiking-info .average-star-rating {
+        margin-top: 10px;
+        margin-bottom: 18px;
+    }
+    .community-beitrag-tagged-item{
+        padding: 5px 15px;
+    }
+    .community-beitrag-region{
+        margin-top: 18px;
+    }
+    li.summit-book-user-menu-item {
+        padding: 14px 0px;
+        margin-right: 23px;
+    }
+    .summit-book-create-article-form-section .dz-message.needsclick:before,
+    .user-edit-profile-form-section .dz-message.needsclick:before {
+        width: 35px;
+        height: 35px;
+    }
+    .community-beitrag-file-upload a.dz-remove.frm_remove_link:after, .user-edit-profile-form-section a.dz-remove.frm_remove_link:after,
+    .comment-form-section a.dz-remove.frm_remove_link:after {
+        width: 14px;
+        height: 14px;
+        top: 10px;
+        left: 11px;
+    }
+    .summit-book-create-article-form-section .dz-message.needsclick:after,
+    .user-edit-profile-form-section .dz-message.needsclick:after {
+        width: 17px;
+        height: 15px;
+        left: 97px;
+        bottom: 10.5px;
+    }
+    .user-watchlists-section h2 {
+        margin-top: 53px;
+    }
+    .user-ratings-section h2,.user-comments-section h2, .user-pinwall-ads-section h2, .user-hiking-articles-section h2{
+        margin-top: 54px;
+    }
+    .user-watchlists-section h2, .user-ratings-section h2, .user-comments-section h2, .user-pinwall-ads-section h2, .user-hiking-articles-section h2 {
+        margin-bottom: 22px;
+    }
+    .user-watchlists .single-wander-wrappe {
+        gap: 45px 4%;
+    }
+    .user-ratings .each-rating {
+        padding: 11px 15px 15px;
+        margin: 0 0 36px;
+    }
+    .user-ratings .each-rating .rating-text {
+        margin-bottom: 10px;
+    }
+    .user-ratings .each-rating .average-star-rating {
+        margin-top: 18px;
+    }
+    .each-user-comment .delete-comment, .each-pinwall-ad-dashboard .delete-pinwand-ad, .delete-hiking-article,
+    .each-pinwall-ad-dashboard .pinwand-ad-edit-link, .article-edit-link {
+        width: 38px;
+        height: 38px;
+    }
+    .each-user-comment .delete-comment:before, .each-pinwall-ad-dashboard .delete-pinwand-ad:before, .delete-hiking-article:before
+    .each-pinwall-ad-dashboard .pinwand-ad-edit-link:before, .article-edit-link:before {
+        width: 18px;
+        height: 18px;
+    }
+    .each-user-comment .comment-actions{
+        padding: 15px;
+    }
+    .each-user-comment-content {
+        padding: 9px 20px 15px;
+    }
+    .each-user-comment .user-comment-imgs img {
+        height: 70px;
+    }
+    .each-user-comment .user-comment-imgs {
+        gap: 5px 10px;
+    }
+    .each-user-comment{
+        margin: 0 0 36px;
+    }
+    .pinwall-ad-actions{
+        padding: 15px;
+    }
+    .user-hiking-articles, .user-pinwall-ads{
+        gap: 36px 4%;
+    }
+    .each-pinwall-ad-dashboard, .each-hiking-article{
+        padding-bottom: 68px;
+    }
+    .pinwall-ad-actions, .hiking-article-actions{
+        height: 38px;
+    }
+    .each-hiking-article .hiking-article-desc {
+        margin-top: 12px;
+        margin-bottom: 4px;
+    }
+    .each-hiking-article .hiking-article-region {
+        margin-top: 7px;
+    }
+    .each-hiking-article .hiking-article-title{
+        margin-top: 4px;
+    }
+    .userNavigationMenu ul#menu-summit-book-user-menu li,
+    .userNavigationMenu ul#menu-summit-book-user-profile-not-completed li{
+        margin-bottom: 14px;
+        padding: 10px 0px;
+    }
+    .userNavigationMenu .summit-book-logout-menu {
+        margin-top: 17px;
+        margin-bottom: 17px;
+    }
+    .user-confirmation {
+        width: 394px;
+        padding: 16px 25px 25px;
+    }
+    .summit-delete-title {
+        font-size: 18px;
+        line-height: 27px;
+        margin-bottom: 35px;
+    }
+    .summit-delete-content, .summit-confirmDeleteBtn button {
+        font-size: 15px;
+        line-height: 23px;
+    }
+    .summit-confirmDeleteBtn button {
+        padding: 7px 21px;
+    }
+    .saveProfileIcon{
+        width: 19px;
+        height: 19px;
+    }
+    .deleteprofileIcon{
+        width: 18px;
+        height: 19px;
+    }
+    .comment-imgs.owl-carousel .owl-item img{
+        height: 112px;
+    }
+    .comment-form-section .dz-preview.dz-error .dz-error-message,
+    .summit-book-create-article-form-section form .dz-preview.dz-error .dz-error-message {
+        height: 123px;
+    }
+    .community-beitrag-file-upload .dz-message.needsclick, .community-beitrag-file-upload .frm_dropzone .dz-preview .dz-image{
+        height: 87.03px;
+    }
+}
+
+@media only screen and (max-width: 899px) {
+    .community-teaser {
+        padding-bottom: 25px;
+        padding-top: 17px;
+    }
+    .community-teaser-heading {
+        font-size: 25px;
+        line-height: 32px;
+        margin-bottom: 12px;
+    }
+    .community-teaser-sub-text {
+        font-size: 19px;
+        line-height: 26px;
+        font-family: 'Roboto Regular';
+        margin-bottom: 19px;
+    }
+    .community-teaser-feature-list {
+        margin-bottom: 13px;
+    }
+    .community-teaser-list-item:before {
+        left: -26px;
+        width: 6px;
+        height: 14px;
+        border-width: 0 4px 4px 0;
+    }
+    .community-teaser-reg-button {
+        margin-right: 15px;
+    }
+    .community-teaser-articles-section {
+        gap: 15px;
+    }
+    .each-community-teaser-article {
+        grid-template-columns: 40% 56%;
+    }
+    .community-teaser-content .article-region{
+        margin-top: -3px;
+    }
+    .community-teaser-list-item {
+        margin-left: 10px;
+        margin-bottom: 7px;
+        font-size: 16px;
+        line-height: 24px;
+    }
+    .pinwand-list {
+        column-count: 2;
+        margin-top: 50px;
+        margin-bottom: 50px;
+    }
+    .pinwand-page .breadcrumb {
+        margin-top: 21px;
+    }
+    .pinwand-page .breadcrumb li a, .comment-date, .article-region, .article-author{
+        font-size: 12px;
+        line-height: 16px;
+    }
+    .pinwand-page h1.page-title{
+        margin-top:0;
+        margin-bottom: 16px;
+    }
+    .pinwand-page .pinwand-desc {
+        font-size: 19px;
+        line-height: 26px;
+        margin-bottom: 25px;
+        margin-right: 11%;
+    }
+    .pinwand-create-btn-icon {
+        width: 21px;
+        height: 21px;
+        background-size: cover;
+    }
+    .pinwand-create-btn-text, .community-beitrag-leadtext, .each-hiking-article .hiking-article-title,.each-hiking-article .hiking-article-title a,
+    .user-edit-profile-form-section .frm_style_formidable-style button.delete-summit-book-user-profile,
+    .user-edit-profile-form-section .frm_style_formidable-style button.cancel-summit-book-user-profile,
+    .user-edit-profile-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit {
+        font-size: 19px;
+        line-height: 26px;
+    }
+    .summit-book-create-article-form-section form .frm_add_form_row.frm_button, 
+    .summit-book-create-article-form-section form .frm_remove_form_row.frm_button, 
+    .summit-book-create-pinwall-ad-form-section form .pinwand-ad-publish-button, 
+    .summit-book-create-pinwall-ad-form-section form .pinwand-ad-cancel-button{
+        font-size: 19px !important;
+        line-height: 26px !important;
+    }
+    .pinwand-action, .pinwand-action-below {
+        padding: 13px 26px;
+    }
+    .pinwall-ad-publishing-date, .pinwall-ad-user-name, .hide-connect-1, .pinwall-ad-text, .hide-connect-2 , .article-title,
+    .community-beitrag-region, .community-beitrag-author-name, .community-beitrag-hiking-info, .community-beitrag-tagged-item,
+    li.summit-book-user-menu-item, .average-rating-display, .user-ratings .each-rating a, .each-user-comment a,
+    .each-user-comment .comment-content, .comment-status, .pinwall-ad-status-info, .each-hiking-article .hiking-article-region, .user-dash-no-content-msg
+    .each-hiking-article .hiking-article-desc, .hiking-article-actions .hiking-article-actions-left, .summit-delete-content, .summit-confirmDeleteBtn button{
+        font-size: 14px;
+        line-height: 20px;
+    }
+    .pinwand-list .each-pinwall-ad {
+        margin-bottom: 28px;
+        padding: 10px 15px 10px 15px;
+    }
+    .pinwall-ad-headline {
+        font-size: 16px;
+        line-height: 24px;
+        margin: 0px 0 7px 0;
+    }
+    .pinwall-ad-text {
+        margin-bottom: 18px;
+    }
+    .pinwall-ad-user-avatar {
+        width: 45px;
+        height: 45px;
+        margin-bottom: 9px;
+    }
+    .detail-region-rating .fa-star:before {
+        margin-left: 2px;
+    }
+    /*comments*/
+    .comments-section-wrapper {
+        margin-top: 50px;
+        padding-top: 16px;
+        padding-bottom: 47px;
+        margin-bottom: -50px;
+    }
+    .comment-heading {
+        font-size: 25px;
+        line-height: 32px;
+        margin-top: 0;
+        margin-bottom: 11px;
+    }
+    .comment-desc, .comment-desc-section .forgot-password, .comment-sub-heading, .comment-author-img img, .comment-author-name, 
+     .logged-in-user-avatar-name h3, .community-beitrag-maintext ,
+     .summit-book-create-article-form-section form textarea, .summit-book-create-pinwall-ad-form-section form textarea,
+     .user-ratings .each-rating .rating-text, .each-user-comment .comment-text, .userNavigationMenu ul#menu-summit-book-user-menu li a,
+     .userNavigationMenu ul#menu-summit-book-user-profile-not-completed li a,
+     .userNavigationMenu .summit-book-logout-menu ul li a, .summit-delete-title{
+        font-size: 16px;
+        line-height: 24px;
+    }
+    .comment-desc {
+        margin-bottom: 18px;
+    }
+    .comment-desc-section .frm_login_form .login-username {
+        margin-bottom: 15px !important;
+    }
+    .comment-desc-section .login-remember {
+        margin-top: 15px;
+        margin-bottom: 0 !important;
+    }
+    .hikeLoginRememSubmitWrapper .frm_submit input, 
+    .comment-form-section .frm_style_formidable-style.with_frm_style .frm_button_submit.frm_final_submit{
+        border-radius: 26px !important;
+        font-size: 16px !important;
+        line-height: 24px !important;
+    }
+    .comment-desc-section .with_frm_style .frm_checkbox input[type=checkbox]:checked:before {
+        border-width: 0px 3px 3px 0;
+        left: 7px;
+        bottom: 5px;
+        width: 4px;
+        height: 11px;
+    }
+    .star-rating .frmsvg {
+        height: 30px !important;
+        width: 32px !important;
+    }
+    .comment-desc-section .with_frm_style .frm_checkbox input[type=checkbox] {
+        width: 22px !important;
+        height: 22px !important;
+    }
+    .comment-sub-heading {
+        margin-bottom: 8px;
+    }
+    .comment-form-section textarea {
+        min-height: 109px;
+        padding: 8px 16px;
+        /* font-size: 14px; */
+        font-size: 16px;
+        line-height: 19px;
+    }
+    .comment-form-section .frm_dropzone .dz-message.needsclick {
+        font-size: 16px !important;
+        line-height: 24px !important;
+    }
+    .comment-form-section .frm_dropzone {
+        margin-bottom: 12px;
+        margin-top: 0px;
+    }
+    .comment-desc-section .login_lost_pw {
+        margin-left: 27px;
+    }
+    .comment-list-heading {
+        padding-bottom: 14px;
+        margin-bottom: 20px;
+    }
+    .comment-author-img img, .logged-in-user-avatar-name img {
+        margin-right: 15px;
+        width: 56px;
+        height: 56px;
+    }
+    .each-comment-inner, .logged-in-description{
+        font-size: 14px;
+        line-height: 19px;
+    }
+    .comment-detail .frm-star-group .star-rating:before {
+        font-size: 16px;
+        margin-right: 2px;
+    }
+    .comment-imgs {
+        margin-top: 16px;
+    }
+    .each-comment {
+        margin-bottom: 27px;
+    }
+    .community-articles {
+        margin-top: 35px;
+    }
+    .community-articles h2 {
+        padding-bottom: 13px;
+        margin-bottom: 21px;
+    }
+    .article-img img {
+        aspect-ratio: 1/1;
+    }
+    .article-author img {
+        width: 25px;
+        height: 25px;
+        margin-right: 6px;
+    }
+    .community-beitrag-maintext{
+        margin-top: 29px;
+    }
+    .community-beitrag-info-left-avatar img {
+        width: 76px;
+        height: 76px;
+    }
+    .community-beitrag-headline {
+        margin-bottom: 14px;
+        margin-right: 50px;
+    }
+    .community-beitrag-leadtext {
+        margin-bottom: 25px;
+    }
+    .community-beitrag-infobox {
+        gap: 18px;
+        margin-bottom: 35px;
+    }
+    .community-beitrag-hiking-info .frm-star-group .star-rating:before {
+        font-size: 24px;
+        margin-right: 3px;
+    }
+    .community-beitrag-hiking-info .average-star-rating {
+        margin-top: 5px;
+        margin-bottom: 12px;
+    }
+    .community-beitrag-tagged-item {
+        padding: 7px 17px;
+    }
+    .community-beitrag-tag-section {
+        gap: 15px;
+    }
+    .community-beitrag-region{
+        margin-top: 16px;
+    }
+    li.summit-book-user-menu-item {
+        padding: 10px 0px;
+        margin-right: 18px;
+    }
+    .summit-book-create-article-form-section .dz-message.needsclick:before,
+    .user-edit-profile-form-section .dz-message.needsclick:before{
+        width: 26px;
+        height: 26px;
+        left: 55px;
+    }
+    .summit-book-create-article-form-section .dz-message.needsclick:after,
+    .user-edit-profile-form-section .dz-message.needsclick:after {
+        width: 13px;
+        height: 11.7px;
+        left: 62px;
+        bottom: 8px;
+    }
+    .community-beitrag-file-upload .frm_dropzone .dz-preview .dz-remove,
+    .comment-form-section .frm_dropzone .dz-preview .dz-remove {
+        left: 55px;
+    }
+    .community-beitrag-file-upload a.dz-remove.frm_remove_link:after, .user-edit-profile-form-section a.dz-remove.frm_remove_link:after,
+    .comment-form-section a.dz-remove.frm_remove_link:after  {
+        width: 10px;
+        height: 10px;
+        top: 8px;
+        left: 8px;
+    }
+    .user-watchlists-section h2 {
+        margin-top: 43px;
+    }
+    .user-ratings-section h2{
+        margin-top: 48px;
+    }
+    .user-comments-section h2, .user-pinwall-ads-section h2, .user-hiking-articles-section h2{
+        margin-top: 37px;
+    }
+    .user-watchlists-section h2, .user-ratings-section h2, .user-comments-section h2, .user-pinwall-ads-section h2, .user-hiking-articles-section h2 {
+        margin-bottom: 14px;
+    }
+    .user-watchlists .single-wander-wrappe {
+        grid-template-columns: 1fr 1fr;
+        gap: 37px 4%;
+    }
+    .user-pinwall-ads, .user-hiking-articles{
+        grid-template-columns: 1fr 1fr;
+        gap: 28px 4%;
+    }
+    .user-ratings, .user-comments {
+        column-count: 2;
+        column-gap: 4%;
+    }
+    .user-ratings .each-rating {
+        margin: 0 0 28px;
+    }
+    .user-ratings .each-rating .average-star-rating {
+        margin-top: 13px;
+    }
+    .user-ratings .each-rating .rating-text {
+        margin-bottom: 7px;
+    }
+    .user-ratings .each-rating .average-star-rating .frm-star-group .star-rating:before {
+        font-size: 20px;
+        margin-right: 3px;
+    }
+    .each-user-comment .delete-comment,.each-pinwall-ad-dashboard .delete-pinwand-ad, .delete-hiking-article,
+    .each-pinwall-ad-dashboard .pinwand-ad-edit-link, .article-edit-link {
+        width: 34px;
+        height: 34px;
+    }
+    .each-user-comment .delete-comment:before, .each-pinwall-ad-dashboard .delete-pinwand-ad:before, .delete-hiking-article:before
+    .each-pinwall-ad-dashboard .pinwand-ad-edit-link:before, .article-edit-link:before {
+        width: 15px;
+        height: 16px;
+    }
+    .each-user-comment .user-comment-imgs img {
+        height: 86px;
+    }
+    .each-user-comment-content {
+        padding: 9px 15px 10px;
+    }
+    .each-user-comment{
+        margin: 0 0 28px;
+    }
+    .each-pinwall-ad-dashboard, .each-hiking-article {
+        padding-bottom: 64px;
+    }
+    .pinwall-ad-actions, .hiking-article-actions{
+        height: 34px;
+    }
+    .each-hiking-article .hiking-article-desc {
+        margin-top: 8px;
+    }
+    .userNavigationMenu ul#menu-summit-book-user-menu li,
+    .userNavigationMenu ul#menu-summit-book-user-profile-not-completed li{
+        padding: 9px 0px;
+    }
+    .userNavigationMenu .summit-book-logout-menu {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .user-confirmation {
+        width: 406px;
+        padding: 16px 20px 20px;
+    }
+    .saveProfileIcon{
+        width: 21px;
+        height: 21px;
+    }
+    .deleteprofileIcon{
+        width: 20px;
+        height: 21px;
+    }
+    .comment-imgs.owl-carousel .owl-item img{
+        height: 88px;
+    }
+    .comment-form-section .dz-preview.dz-error .dz-error-message,
+    .summit-book-create-article-form-section form .dz-preview.dz-error .dz-error-message {
+        height: 80px;
+    }
+    .community-beitrag-file-upload .dz-message.needsclick, .community-beitrag-file-upload .frm_dropzone .dz-preview .dz-image{
+        height: 56.60px;
+    }
+    
+}
+
+@media only screen and (max-width: 699px) {
+    .pinwand-page .breadcrumb{
+        display:none;
+    }
+    .pinwand-page .pinwand-desc {
+        margin: 0 0 26px 0;
+        font-size: 19px;
+        line-height: 26px;
+    }
+    .pinwand-page h1.page-title {
+        margin-top: 22px;
+        margin-bottom: 17px;
+    }
+    .pinwand-list {
+        column-count: 1;
+        margin-top: 50px;
+        margin-bottom: 30px;
+    }
+    .pinwand-list .each-pinwall-ad {
+        margin-bottom: 20px;
+        padding: 11px 15px;
+    }
+    .pinwall-ad-publishing-date {
+        margin-bottom: 4px;
+    }
+    .pinwall-ad-text {
+        margin-bottom: 14px;
+    }
+    .pinwall-ad-headline {
+        margin: 0px 0 8px 0;
+    }
+    .pinwall-ad-user-avatar {
+        margin-bottom: 10px;
+    }
+    /*comments*/
+    .comments-section-wrapper{
+        margin-right: 5%;
+        margin-left: 5%;
+        max-width: 100%;
+        padding-top: 20px;
+        width: auto;
+    }
+    .comment-section {
+        grid-template-columns: 1fr ;
+        gap: 4px;
+    }
+    .comment-desc-section .frm_login_form .login-username {
+        margin-bottom: 10px !important;
+    }
+    .comment-desc-section .frm_checkbox label{
+        font-size: 14px !important;
+        line-height: 19px !important;
+    }
+    .comment-desc-section .login-remember {
+        margin-top: 11px;
+    }
+    .hikeLoginRememSubmitWrapper .frm_submit input{
+        font-size: 16px !important;
+        line-height: 24px !important;
+    }
+    .comment-desc-section .hikeLoginRememSubmitWrapper {
+        margin-top: 5px;
+    }
+    .comment-sub-heading {
+        margin-bottom: 5px;
+    }
+    .comment-form-section .frm_opt_container {
+        margin-bottom: 0px;
+    }
+    .comment-form-section textarea {
+        min-height: 144px;
+        padding: 12px 15px;
+        margin-top: 4px;
+    }
+    .comment-form-section .frm_dropzone {
+        margin-bottom: 7px;
+    }
+    .each-comment{
+        grid-template-columns: 1fr ;
+        gap: 12px;
+    }
+    .comments-section-wrapper .each-comment{
+        gap: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+    .comment-date {
+        margin-bottom: 0;
+    }
+    .community-articles h2 {
+        padding-bottom: 10px;
+        margin-bottom: 19px;
+    }
+    .each-article-wrapper {
+        gap: 20px;
+        grid-template-columns: 1fr;
+    }
+    .each-article {
+        gap: 4%;
+        grid-template-columns: 40% 56%;
+    }
+    .community-beitrag-infobox{
+        flex-direction: column;
+        gap: 12px;
+    }
+    .community-beitrag-info-left-avatar img {
+        width: 64px;
+        height: 64px;
+    }
+    .community-beitrag-tag-section {
+        gap: 10px;
+    }
+    .community-beitrag-headline {
+        margin-right: 0;
+    }
+    .summit-book-create-article-form-section form .frm_repeat_buttons,
+    .summit-book-create-article-form-section .frm_fields_container .frm_submit, 
+    .summit-book-create-pinwall-ad-form-section .frm_fields_container .frm_submit{
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .summit-book-create-article-form-section .frm_fields_container .frm_submit button, 
+    .summit-book-create-pinwall-ad-form-section .frm_fields_container .frm_submit button{
+        margin: 0;
+    }
+    .user-watchlists .single-wander-wrappe {
+        grid-template-columns: 1fr;
+        gap: 37px 4%;
+    }
+    .user-ratings, .user-comments {
+        column-count: 1;
+        column-gap: 4%;
+    }
+    .user-ratings .each-rating {
+        margin: 0 0 20px;
+    }
+    .each-user-comment .user-comment-imgs img {
+        height: 86px;
+    }
+    .each-user-comment{
+        margin: 0 0 20px;
+    }
+    .user-pinwall-ads, .user-hiking-articles{
+        grid-template-columns: 1fr;
+        gap: 20px 4%;
+    }
+    .comment-imgs.owl-carousel .owl-item img{
+        height: 60px;
+    }
+    .community-teaser-content {
+        grid-template-columns: 1fr;
+        gap: 45px;
+    }
+    .community-teaser-list-item:before {
+        left: -23px;
+        top: 0;
+    }
+    .community-teaser-list-item {
+        margin-left: 6px;
+    }
+}
