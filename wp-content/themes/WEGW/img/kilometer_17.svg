@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 17 17">
-  <g id="kilometer" transform="translate(-701.219 -359.593)">
-    <circle id="Ellipse_11-6" data-name="Ellipse 11-6" cx="8.5" cy="8.5" r="8.5" transform="translate(701.219 359.593)" fill="#b1b1b1"/>
-    <path id="Pfad_3800" data-name="Pfad 3800" d="M715.757,368.545l-2.751-2.751a.637.637,0,0,0-.9.9l1.663,1.663h-7.208l1.663-1.663a.637.637,0,0,0-.9-.9l-2.751,2.751a.637.637,0,0,0,0,.9l2.752,2.75a.637.637,0,0,0,.9-.9l-1.663-1.663h7.208L712.1,371.3a.637.637,0,1,0,.9.9l2.751-2.75a.637.637,0,0,0,0-.9Z" transform="translate(-0.474 -0.902)" fill="#fff"/>
-  </g>
-</svg>
