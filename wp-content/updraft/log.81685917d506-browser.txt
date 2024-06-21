@@ -1,0 +1,739 @@
+0000.013 (R) [notice] Looking for db archive: file name: backup_2024-06-21-1310_WegWandernch_5805af689d2a-db.gz
+0000.013 (R) [notice] Archive is expected to be size: 68425.4 KB: OK
+0000.020 (R) [notice] Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-db.gz, 66.8 Mb)
+0000.067 (R) [notice] Restoring the database (on a large site this can take a long time - if it times out (which can happen if your web hosting company has configured your hosting to limit resources) then you should use a different method, such as phpMyAdmin)...
+0000.086 (R) [notice] Enabling Maintenance mode&#8230;
+0000.096 (R) [notice] Backup of: https://wegwandern.ch
+0000.096 (R) [notice] Content URL: https://wegwandern.ch/wp-content
+0000.096 (R) [notice] Uploads URL: https://wegwandern.ch/wp-content/uploads
+0000.097 (R) [notice] Old table prefix: wp_
+0000.097 (R) [notice] Old ABSPATH: /home/wegwande/www/wegwandern.ch/
+0000.097 (R) [notice] UpdraftPlus plugin slug: updraftplus/updraftplus.php
+0000.097 (R) [notice] Site information: multisite = 0
+0000.097 (R) [notice] Site information: sql_mode = ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+0000.097 (R) [notice] New table prefix: 5j_
+0000.104 (R) [notice] Processing table (InnoDB):  wp_options - will restore as: 5j_options
+0000.264 (R) [notice] Atomic restore: dropping original table (wp_options)
+0000.270 (R) [notice] Atomic restore: renaming new table (5j_options) to final table name (wp_options)
+0000.367 (R) [notice] Search and replacing table: wp_options: rows: 1168
+0000.403 (R) [warning] A PHP fatal error (TypeError) has occurred: Cannot assign null to property mysqli_result::$current_field of type int
+0000.459 (R) [warning] Error:
+0000.470 (R) [warning] A PHP Fatal error (recoverable, TypeError) occurred during the recursive search/replace. Exception message: Error message: Cannot assign null to property mysqli_result::$current_field of type int (Code: 0, line 411 in /Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/plugins/updraftplus/includes/class-search-replace.php)
+0000.471 (R) [notice] Processing table (InnoDB):  wp_users - will restore as: 5j_users
+0000.540 (R) [notice] Atomic restore: dropping original table (wp_users)
+0000.543 (R) [notice] Atomic restore: renaming new table (5j_users) to final table name (wp_users)
+0000.548 (R) [notice] Search and replacing table: wp_users: rows: 1642
+0000.570 (R) [notice] Processing table (InnoDB):  wp_usermeta - will restore as: 5j_usermeta
+0000.909 (R) [notice] Atomic restore: dropping original table (wp_usermeta)
+0000.912 (R) [notice] Atomic restore: renaming new table (5j_usermeta) to final table name (wp_usermeta)
+0000.917 (R) [notice] Search and replacing table: wp_usermeta: rows: 42652
+0000.955 (R) [notice] Searching and replacing reached row: 5000
+0001.011 (R) [notice] Searching and replacing reached row: 10000
+0001.050 (R) [notice] Searching and replacing reached row: 15000
+0001.089 (R) [notice] Searching and replacing reached row: 20000
+0001.129 (R) [notice] Searching and replacing reached row: 25000
+0001.170 (R) [notice] Searching and replacing reached row: 30000
+0001.213 (R) [notice] Searching and replacing reached row: 35000
+0001.267 (R) [notice] Searching and replacing reached row: 40000
+0001.296 (R) [notice] Processing table (InnoDB):  wp_actionscheduler_actions - will restore as: 5j_actionscheduler_actions
+0001.312 (R) [notice] Atomic restore: dropping original table (wp_actionscheduler_actions)
+0001.316 (R) [notice] Atomic restore: renaming new table (5j_actionscheduler_actions) to final table name (wp_actionscheduler_actions)
+0001.321 (R) [notice] Search and replacing table: wp_actionscheduler_actions: rows: 31
+0001.322 (R) [notice] Processing table (InnoDB):  wp_actionscheduler_claims - will restore as: 5j_actionscheduler_claims
+0001.332 (R) [notice] Atomic restore: dropping original table (wp_actionscheduler_claims)
+0001.334 (R) [notice] Atomic restore: renaming new table (5j_actionscheduler_claims) to final table name (wp_actionscheduler_claims)
+0001.338 (R) [notice] Search and replacing table: wp_actionscheduler_claims: rows: 0
+0001.338 (R) [notice] Processing table (InnoDB):  wp_actionscheduler_groups - will restore as: 5j_actionscheduler_groups
+0001.342 (R) [notice] Database queries processed: 50 in 1.27 seconds
+0001.348 (R) [notice] Atomic restore: dropping original table (wp_actionscheduler_groups)
+0001.350 (R) [notice] Atomic restore: renaming new table (5j_actionscheduler_groups) to final table name (wp_actionscheduler_groups)
+0001.354 (R) [notice] Search and replacing table: wp_actionscheduler_groups: rows: 2
+0001.354 (R) [notice] Processing table (InnoDB):  wp_actionscheduler_logs - will restore as: 5j_actionscheduler_logs
+0001.366 (R) [notice] Atomic restore: dropping original table (wp_actionscheduler_logs)
+0001.368 (R) [notice] Atomic restore: renaming new table (5j_actionscheduler_logs) to final table name (wp_actionscheduler_logs)
+0001.372 (R) [notice] Search and replacing table: wp_actionscheduler_logs: rows: 87
+0001.373 (R) [notice] Processing table (InnoDB):  wp_commentmeta - will restore as: 5j_commentmeta
+0001.384 (R) [notice] Atomic restore: dropping original table (wp_commentmeta)
+0001.389 (R) [notice] Atomic restore: renaming new table (5j_commentmeta) to final table name (wp_commentmeta)
+0001.393 (R) [notice] Search and replacing table: wp_commentmeta: rows: 18
+0001.393 (R) [notice] Processing table (InnoDB):  wp_comments - will restore as: 5j_comments
+0001.406 (R) [notice] Atomic restore: dropping original table (wp_comments)
+0001.409 (R) [notice] Atomic restore: renaming new table (5j_comments) to final table name (wp_comments)
+0001.413 (R) [notice] Search and replacing table: wp_comments: rows: 8
+0001.414 (R) [notice] Processing table (InnoDB):  wp_links - will restore as: 5j_links
+0001.426 (R) [notice] Atomic restore: dropping original table (wp_links)
+0001.428 (R) [notice] Atomic restore: renaming new table (5j_links) to final table name (wp_links)
+0001.433 (R) [notice] Search and replacing table: wp_links: rows: 0
+0001.433 (R) [notice] Processing table (InnoDB):  wp_postmeta - will restore as: 5j_postmeta
+0002.420 (R) [notice] Database queries processed: 100 in 2.35 seconds
+0005.635 (R) [notice] Database queries processed: 150 in 5.57 seconds
+0012.518 (R) [notice] Database queries processed: 200 in 12.45 seconds
+0017.480 (R) [notice] Database queries processed: 250 in 17.41 seconds
+0030.639 (R) [notice] Atomic restore: dropping original table (wp_postmeta)
+0030.698 (R) [notice] Atomic restore: renaming new table (5j_postmeta) to final table name (wp_postmeta)
+0031.556 (R) [notice] Search and replacing table: wp_postmeta: rows: 29727
+0036.896 (R) [notice] Searching and replacing reached row: 5000
+0039.057 (R) [notice] Searching and replacing reached row: 10000
+0043.074 (R) [notice] Searching and replacing reached row: 15000
+0047.214 (R) [notice] Searching and replacing reached row: 20000
+0051.264 (R) [notice] Searching and replacing reached row: 25000
+0055.414 (R) [notice] Processing table (InnoDB):  wp_posts - will restore as: 5j_posts
+0058.574 (R) [notice] Atomic restore: dropping original table (wp_posts)
+0058.600 (R) [notice] Atomic restore: renaming new table (5j_posts) to final table name (wp_posts)
+0058.617 (R) [notice] Search and replacing table: wp_posts: rows: 20705
+0058.878 (R) [notice] Searching and replacing reached row: 5000
+0059.043 (R) [notice] Searching and replacing reached row: 10000
+0059.969 (R) [notice] Searching and replacing reached row: 15000
+0061.902 (R) [notice] Searching and replacing reached row: 20000
+0062.225 (R) [notice] Processing table (InnoDB):  wp_term_relationships - will restore as: 5j_term_relationships
+0062.611 (R) [notice] Atomic restore: dropping original table (wp_term_relationships)
+0062.618 (R) [notice] Atomic restore: renaming new table (5j_term_relationships) to final table name (wp_term_relationships)
+0062.621 (R) [notice] Skipping this table: data in this table (wp_term_relationships) should not be search/replaced
+0062.621 (R) [notice] Processing table (InnoDB):  wp_term_taxonomy - will restore as: 5j_term_taxonomy
+0062.648 (R) [notice] Atomic restore: dropping original table (wp_term_taxonomy)
+0062.650 (R) [notice] Atomic restore: renaming new table (5j_term_taxonomy) to final table name (wp_term_taxonomy)
+0062.656 (R) [notice] Search and replacing table: wp_term_taxonomy: rows: 1335
+0062.670 (R) [notice] Processing table (InnoDB):  wp_termmeta - will restore as: 5j_termmeta
+0062.692 (R) [notice] Atomic restore: dropping original table (wp_termmeta)
+0062.694 (R) [notice] Atomic restore: renaming new table (5j_termmeta) to final table name (wp_termmeta)
+0062.698 (R) [notice] Search and replacing table: wp_termmeta: rows: 750
+0062.706 (R) [notice] Processing table (InnoDB):  wp_terms - will restore as: 5j_terms
+0062.737 (R) [notice] Database queries processed: 500 in 62.67 seconds
+0062.737 (R) [notice] Atomic restore: dropping original table (wp_terms)
+0062.739 (R) [notice] Atomic restore: renaming new table (5j_terms) to final table name (wp_terms)
+0062.743 (R) [notice] Search and replacing table: wp_terms: rows: 1335
+0062.753 (R) [notice] Processing table (InnoDB):  wp_aioseo_cache - will restore as: 5j_aioseo_cache
+0062.779 (R) [notice] Atomic restore: dropping original table (wp_aioseo_cache)
+0062.781 (R) [notice] Atomic restore: renaming new table (5j_aioseo_cache) to final table name (wp_aioseo_cache)
+0062.785 (R) [notice] Search and replacing table: wp_aioseo_cache: rows: 169
+0062.796 (R) [notice] Processing table (InnoDB):  wp_aioseo_crawl_cleanup_blocked_args - will restore as: 5j_aioseo_crawl_cleanup_blocked_args
+0062.806 (R) [notice] Atomic restore: dropping original table (wp_aioseo_crawl_cleanup_blocked_args)
+0062.809 (R) [notice] Atomic restore: renaming new table (5j_aioseo_crawl_cleanup_blocked_args) to final table name (wp_aioseo_crawl_cleanup_blocked_args)
+0062.813 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_blocked_args: rows: 0
+0062.813 (R) [notice] Processing table (InnoDB):  wp_aioseo_crawl_cleanup_logs - will restore as: 5j_aioseo_crawl_cleanup_logs
+0062.822 (R) [notice] Atomic restore: dropping original table (wp_aioseo_crawl_cleanup_logs)
+0062.825 (R) [notice] Atomic restore: renaming new table (5j_aioseo_crawl_cleanup_logs) to final table name (wp_aioseo_crawl_cleanup_logs)
+0062.829 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_logs: rows: 0
+0062.829 (R) [notice] Processing table (InnoDB):  wp_aioseo_notifications - will restore as: 5j_aioseo_notifications
+0062.850 (R) [notice] Atomic restore: dropping original table (wp_aioseo_notifications)
+0062.854 (R) [notice] Atomic restore: renaming new table (5j_aioseo_notifications) to final table name (wp_aioseo_notifications)
+0062.858 (R) [notice] Search and replacing table: wp_aioseo_notifications: rows: 28
+0062.860 (R) [notice] Processing table (InnoDB):  wp_aioseo_posts - will restore as: 5j_aioseo_posts
+0067.330 (R) [notice] Atomic restore: dropping original table (wp_aioseo_posts)
+0067.336 (R) [notice] Atomic restore: renaming new table (5j_aioseo_posts) to final table name (wp_aioseo_posts)
+0067.355 (R) [notice] Search and replacing table: wp_aioseo_posts: rows: 14795
+0073.220 (R) [notice] Searching and replacing reached row: 5000
+0075.505 (R) [notice] Searching and replacing reached row: 10000
+0079.461 (R) [notice] Processing table (InnoDB):  wp_aryo_activity_log - will restore as: 5j_aryo_activity_log
+0079.640 (R) [notice] Atomic restore: dropping original table (wp_aryo_activity_log)
+0079.646 (R) [notice] Atomic restore: renaming new table (5j_aryo_activity_log) to final table name (wp_aryo_activity_log)
+0079.652 (R) [notice] Search and replacing table: wp_aryo_activity_log: rows: 3018
+0079.730 (R) [notice] Processing table (InnoDB):  wp_b2b_ad_clicks - will restore as: 5j_b2b_ad_clicks
+0079.807 (R) [notice] Atomic restore: dropping original table (wp_b2b_ad_clicks)
+0079.811 (R) [notice] Atomic restore: renaming new table (5j_b2b_ad_clicks) to final table name (wp_b2b_ad_clicks)
+0079.814 (R) [notice] Search and replacing table: wp_b2b_ad_clicks: rows: 6156
+0079.852 (R) [notice] Searching and replacing reached row: 5000
+0079.861 (R) [notice] Processing table (InnoDB):  wp_b2b_payment_details - will restore as: 5j_b2b_payment_details
+0079.882 (R) [notice] Atomic restore: dropping original table (wp_b2b_payment_details)
+0079.885 (R) [notice] Atomic restore: renaming new table (5j_b2b_payment_details) to final table name (wp_b2b_payment_details)
+0079.888 (R) [notice] Search and replacing table: wp_b2b_payment_details: rows: 99
+0079.904 (R) [notice] Processing table (InnoDB):  wp_cmplz_cookiebanners - will restore as: 5j_cmplz_cookiebanners
+0079.922 (R) [notice] Atomic restore: dropping original table (wp_cmplz_cookiebanners)
+0079.922 (R) [notice] Atomic restore: renaming new table (5j_cmplz_cookiebanners) to final table name (wp_cmplz_cookiebanners)
+0079.928 (R) [notice] Search and replacing table: wp_cmplz_cookiebanners: rows: 1
+0079.930 (R) [notice] Processing table (InnoDB):  wp_cmplz_cookies - will restore as: 5j_cmplz_cookies
+0079.947 (R) [notice] Atomic restore: dropping original table (wp_cmplz_cookies)
+0079.948 (R) [notice] Atomic restore: renaming new table (5j_cmplz_cookies) to final table name (wp_cmplz_cookies)
+0079.952 (R) [notice] Search and replacing table: wp_cmplz_cookies: rows: 130
+0079.956 (R) [notice] Processing table (InnoDB):  wp_cmplz_dnsmpd - will restore as: 5j_cmplz_dnsmpd
+0079.971 (R) [notice] Atomic restore: dropping original table (wp_cmplz_dnsmpd)
+0079.971 (R) [notice] Atomic restore: renaming new table (5j_cmplz_dnsmpd) to final table name (wp_cmplz_dnsmpd)
+0079.975 (R) [notice] Search and replacing table: wp_cmplz_dnsmpd: rows: 0
+0079.975 (R) [notice] Processing table (InnoDB):  wp_cmplz_services - will restore as: 5j_cmplz_services
+0079.987 (R) [notice] Atomic restore: dropping original table (wp_cmplz_services)
+0079.988 (R) [notice] Atomic restore: renaming new table (5j_cmplz_services) to final table name (wp_cmplz_services)
+0079.992 (R) [notice] Search and replacing table: wp_cmplz_services: rows: 24
+0079.992 (R) [notice] Processing table (InnoDB):  wp_esp_answer - will restore as: 5j_esp_answer
+0080.003 (R) [notice] Atomic restore: dropping original table (wp_esp_answer)
+0080.005 (R) [notice] Atomic restore: renaming new table (5j_esp_answer) to final table name (wp_esp_answer)
+0080.009 (R) [notice] Search and replacing table: wp_esp_answer: rows: 0
+0080.009 (R) [notice] Processing table (InnoDB):  wp_esp_attendee_meta - will restore as: 5j_esp_attendee_meta
+0080.023 (R) [notice] Atomic restore: dropping original table (wp_esp_attendee_meta)
+0080.025 (R) [notice] Atomic restore: renaming new table (5j_esp_attendee_meta) to final table name (wp_esp_attendee_meta)
+0080.030 (R) [notice] Search and replacing table: wp_esp_attendee_meta: rows: 0
+0080.030 (R) [notice] Processing table (InnoDB):  wp_esp_checkin - will restore as: 5j_esp_checkin
+0080.040 (R) [notice] Atomic restore: dropping original table (wp_esp_checkin)
+0080.041 (R) [notice] Atomic restore: renaming new table (5j_esp_checkin) to final table name (wp_esp_checkin)
+0080.045 (R) [notice] Search and replacing table: wp_esp_checkin: rows: 0
+0080.045 (R) [notice] Processing table (InnoDB):  wp_esp_country - will restore as: 5j_esp_country
+0080.063 (R) [notice] Atomic restore: dropping original table (wp_esp_country)
+0080.065 (R) [notice] Atomic restore: renaming new table (5j_esp_country) to final table name (wp_esp_country)
+0080.070 (R) [notice] Search and replacing table: wp_esp_country: rows: 250
+0080.075 (R) [notice] Processing table (InnoDB):  wp_esp_currency - will restore as: 5j_esp_currency
+0080.088 (R) [notice] Atomic restore: dropping original table (wp_esp_currency)
+0080.090 (R) [notice] Atomic restore: renaming new table (5j_esp_currency) to final table name (wp_esp_currency)
+0080.094 (R) [notice] Search and replacing table: wp_esp_currency: rows: 153
+0080.095 (R) [notice] Processing table (InnoDB):  wp_esp_currency_payment_method - will restore as: 5j_esp_currency_payment_method
+0080.105 (R) [notice] Atomic restore: dropping original table (wp_esp_currency_payment_method)
+0080.107 (R) [notice] Atomic restore: renaming new table (5j_esp_currency_payment_method) to final table name (wp_esp_currency_payment_method)
+0080.111 (R) [notice] Search and replacing table: wp_esp_currency_payment_method: rows: 0
+0080.111 (R) [notice] Processing table (InnoDB):  wp_esp_datetime - will restore as: 5j_esp_datetime
+0080.123 (R) [notice] Atomic restore: dropping original table (wp_esp_datetime)
+0080.126 (R) [notice] Atomic restore: renaming new table (5j_esp_datetime) to final table name (wp_esp_datetime)
+0080.130 (R) [notice] Search and replacing table: wp_esp_datetime: rows: 0
+0080.130 (R) [notice] Processing table (InnoDB):  wp_esp_datetime_ticket - will restore as: 5j_esp_datetime_ticket
+0080.139 (R) [notice] Atomic restore: dropping original table (wp_esp_datetime_ticket)
+0080.141 (R) [notice] Atomic restore: renaming new table (5j_esp_datetime_ticket) to final table name (wp_esp_datetime_ticket)
+0080.144 (R) [notice] Search and replacing table: wp_esp_datetime_ticket: rows: 0
+0080.144 (R) [notice] Processing table (InnoDB):  wp_esp_event_message_template - will restore as: 5j_esp_event_message_template
+0080.153 (R) [notice] Atomic restore: dropping original table (wp_esp_event_message_template)
+0080.155 (R) [notice] Atomic restore: renaming new table (5j_esp_event_message_template) to final table name (wp_esp_event_message_template)
+0080.159 (R) [notice] Search and replacing table: wp_esp_event_message_template: rows: 0
+0080.159 (R) [notice] Processing table (InnoDB):  wp_esp_event_meta - will restore as: 5j_esp_event_meta
+0080.171 (R) [notice] Atomic restore: dropping original table (wp_esp_event_meta)
+0080.174 (R) [notice] Atomic restore: renaming new table (5j_esp_event_meta) to final table name (wp_esp_event_meta)
+0080.178 (R) [notice] Search and replacing table: wp_esp_event_meta: rows: 0
+0080.178 (R) [notice] Processing table (InnoDB):  wp_esp_event_question_group - will restore as: 5j_esp_event_question_group
+0080.189 (R) [notice] Atomic restore: dropping original table (wp_esp_event_question_group)
+0080.191 (R) [notice] Atomic restore: renaming new table (5j_esp_event_question_group) to final table name (wp_esp_event_question_group)
+0080.194 (R) [notice] Search and replacing table: wp_esp_event_question_group: rows: 0
+0080.194 (R) [notice] Processing table (InnoDB):  wp_esp_event_venue - will restore as: 5j_esp_event_venue
+0080.203 (R) [notice] Atomic restore: dropping original table (wp_esp_event_venue)
+0080.205 (R) [notice] Atomic restore: renaming new table (5j_esp_event_venue) to final table name (wp_esp_event_venue)
+0080.208 (R) [notice] Search and replacing table: wp_esp_event_venue: rows: 0
+0080.208 (R) [notice] Processing table (InnoDB):  wp_esp_extra_join - will restore as: 5j_esp_extra_join
+0080.218 (R) [notice] Atomic restore: dropping original table (wp_esp_extra_join)
+0080.220 (R) [notice] Atomic restore: renaming new table (5j_esp_extra_join) to final table name (wp_esp_extra_join)
+0080.224 (R) [notice] Search and replacing table: wp_esp_extra_join: rows: 0
+0080.225 (R) [notice] Processing table (InnoDB):  wp_esp_extra_meta - will restore as: 5j_esp_extra_meta
+0080.235 (R) [notice] Atomic restore: dropping original table (wp_esp_extra_meta)
+0080.238 (R) [notice] Atomic restore: renaming new table (5j_esp_extra_meta) to final table name (wp_esp_extra_meta)
+0080.241 (R) [notice] Search and replacing table: wp_esp_extra_meta: rows: 8
+0080.242 (R) [notice] Processing table (InnoDB):  wp_esp_line_item - will restore as: 5j_esp_line_item
+0080.252 (R) [notice] Atomic restore: dropping original table (wp_esp_line_item)
+0080.255 (R) [notice] Atomic restore: renaming new table (5j_esp_line_item) to final table name (wp_esp_line_item)
+0080.260 (R) [notice] Search and replacing table: wp_esp_line_item: rows: 0
+0080.260 (R) [notice] Processing table (InnoDB):  wp_esp_log - will restore as: 5j_esp_log
+0080.272 (R) [notice] Atomic restore: dropping original table (wp_esp_log)
+0080.274 (R) [notice] Atomic restore: renaming new table (5j_esp_log) to final table name (wp_esp_log)
+0080.278 (R) [notice] Search and replacing table: wp_esp_log: rows: 0
+0080.278 (R) [notice] Processing table (InnoDB):  wp_esp_message - will restore as: 5j_esp_message
+0080.293 (R) [notice] Atomic restore: dropping original table (wp_esp_message)
+0080.296 (R) [notice] Atomic restore: renaming new table (5j_esp_message) to final table name (wp_esp_message)
+0080.301 (R) [notice] Search and replacing table: wp_esp_message: rows: 0
+0080.301 (R) [notice] Processing table (InnoDB):  wp_esp_message_template - will restore as: 5j_esp_message_template
+0080.315 (R) [notice] Atomic restore: dropping original table (wp_esp_message_template)
+0080.317 (R) [notice] Atomic restore: renaming new table (5j_esp_message_template) to final table name (wp_esp_message_template)
+0080.320 (R) [notice] Search and replacing table: wp_esp_message_template: rows: 0
+0080.320 (R) [notice] Processing table (InnoDB):  wp_esp_message_template_group - will restore as: 5j_esp_message_template_group
+0080.329 (R) [notice] Atomic restore: dropping original table (wp_esp_message_template_group)
+0080.332 (R) [notice] Atomic restore: renaming new table (5j_esp_message_template_group) to final table name (wp_esp_message_template_group)
+0080.336 (R) [notice] Search and replacing table: wp_esp_message_template_group: rows: 0
+0080.336 (R) [notice] Processing table (InnoDB):  wp_esp_payment - will restore as: 5j_esp_payment
+0080.346 (R) [notice] Atomic restore: dropping original table (wp_esp_payment)
+0080.349 (R) [notice] Atomic restore: renaming new table (5j_esp_payment) to final table name (wp_esp_payment)
+0080.353 (R) [notice] Search and replacing table: wp_esp_payment: rows: 0
+0080.353 (R) [notice] Processing table (InnoDB):  wp_esp_payment_method - will restore as: 5j_esp_payment_method
+0080.364 (R) [notice] Atomic restore: dropping original table (wp_esp_payment_method)
+0080.366 (R) [notice] Atomic restore: renaming new table (5j_esp_payment_method) to final table name (wp_esp_payment_method)
+0080.370 (R) [notice] Search and replacing table: wp_esp_payment_method: rows: 9
+0080.371 (R) [notice] Processing table (InnoDB):  wp_esp_price - will restore as: 5j_esp_price
+0080.381 (R) [notice] Atomic restore: dropping original table (wp_esp_price)
+0080.384 (R) [notice] Atomic restore: renaming new table (5j_esp_price) to final table name (wp_esp_price)
+0080.387 (R) [notice] Search and replacing table: wp_esp_price: rows: 2
+0080.388 (R) [notice] Processing table (InnoDB):  wp_esp_price_type - will restore as: 5j_esp_price_type
+0080.398 (R) [notice] Atomic restore: dropping original table (wp_esp_price_type)
+0080.401 (R) [notice] Atomic restore: renaming new table (5j_esp_price_type) to final table name (wp_esp_price_type)
+0080.404 (R) [notice] Search and replacing table: wp_esp_price_type: rows: 7
+0080.405 (R) [notice] Processing table (InnoDB):  wp_esp_question - will restore as: 5j_esp_question
+0080.419 (R) [notice] Atomic restore: dropping original table (wp_esp_question)
+0080.421 (R) [notice] Atomic restore: renaming new table (5j_esp_question) to final table name (wp_esp_question)
+0080.425 (R) [notice] Search and replacing table: wp_esp_question: rows: 10
+0080.425 (R) [notice] Processing table (InnoDB):  wp_esp_question_group - will restore as: 5j_esp_question_group
+0080.436 (R) [notice] Database queries processed: 750 in 80.37 seconds
+0080.436 (R) [notice] Atomic restore: dropping original table (wp_esp_question_group)
+0080.438 (R) [notice] Atomic restore: renaming new table (5j_esp_question_group) to final table name (wp_esp_question_group)
+0080.441 (R) [notice] Search and replacing table: wp_esp_question_group: rows: 2
+0080.442 (R) [notice] Processing table (InnoDB):  wp_esp_question_group_question - will restore as: 5j_esp_question_group_question
+0080.455 (R) [notice] Atomic restore: dropping original table (wp_esp_question_group_question)
+0080.457 (R) [notice] Atomic restore: renaming new table (5j_esp_question_group_question) to final table name (wp_esp_question_group_question)
+0080.462 (R) [notice] Search and replacing table: wp_esp_question_group_question: rows: 10
+0080.462 (R) [notice] Processing table (InnoDB):  wp_esp_question_option - will restore as: 5j_esp_question_option
+0080.472 (R) [notice] Atomic restore: dropping original table (wp_esp_question_option)
+0080.475 (R) [notice] Atomic restore: renaming new table (5j_esp_question_option) to final table name (wp_esp_question_option)
+0080.478 (R) [notice] Search and replacing table: wp_esp_question_option: rows: 0
+0080.478 (R) [notice] Processing table (InnoDB):  wp_esp_registration - will restore as: 5j_esp_registration
+0080.490 (R) [notice] Atomic restore: dropping original table (wp_esp_registration)
+0080.492 (R) [notice] Atomic restore: renaming new table (5j_esp_registration) to final table name (wp_esp_registration)
+0080.497 (R) [notice] Search and replacing table: wp_esp_registration: rows: 0
+0080.497 (R) [notice] Processing table (InnoDB):  wp_esp_registration_payment - will restore as: 5j_esp_registration_payment
+0080.507 (R) [notice] Atomic restore: dropping original table (wp_esp_registration_payment)
+0080.509 (R) [notice] Atomic restore: renaming new table (5j_esp_registration_payment) to final table name (wp_esp_registration_payment)
+0080.513 (R) [notice] Search and replacing table: wp_esp_registration_payment: rows: 0
+0080.513 (R) [notice] Processing table (InnoDB):  wp_esp_state - will restore as: 5j_esp_state
+0080.524 (R) [notice] Atomic restore: dropping original table (wp_esp_state)
+0080.526 (R) [notice] Atomic restore: renaming new table (5j_esp_state) to final table name (wp_esp_state)
+0080.529 (R) [notice] Search and replacing table: wp_esp_state: rows: 69
+0080.530 (R) [notice] Processing table (InnoDB):  wp_esp_status - will restore as: 5j_esp_status
+0080.541 (R) [notice] Atomic restore: dropping original table (wp_esp_status)
+0080.544 (R) [notice] Atomic restore: renaming new table (5j_esp_status) to final table name (wp_esp_status)
+0080.549 (R) [notice] Search and replacing table: wp_esp_status: rows: 38
+0080.550 (R) [notice] Processing table (InnoDB):  wp_esp_ticket - will restore as: 5j_esp_ticket
+0080.570 (R) [notice] Atomic restore: dropping original table (wp_esp_ticket)
+0080.572 (R) [notice] Atomic restore: renaming new table (5j_esp_ticket) to final table name (wp_esp_ticket)
+0080.576 (R) [notice] Search and replacing table: wp_esp_ticket: rows: 1
+0080.576 (R) [notice] Processing table (InnoDB):  wp_esp_ticket_price - will restore as: 5j_esp_ticket_price
+0080.586 (R) [notice] Atomic restore: dropping original table (wp_esp_ticket_price)
+0080.587 (R) [notice] Atomic restore: renaming new table (5j_esp_ticket_price) to final table name (wp_esp_ticket_price)
+0080.590 (R) [notice] Search and replacing table: wp_esp_ticket_price: rows: 1
+0080.590 (R) [notice] Processing table (InnoDB):  wp_esp_ticket_template - will restore as: 5j_esp_ticket_template
+0080.599 (R) [notice] Atomic restore: dropping original table (wp_esp_ticket_template)
+0080.601 (R) [notice] Atomic restore: renaming new table (5j_esp_ticket_template) to final table name (wp_esp_ticket_template)
+0080.604 (R) [notice] Search and replacing table: wp_esp_ticket_template: rows: 0
+0080.604 (R) [notice] Processing table (InnoDB):  wp_esp_transaction - will restore as: 5j_esp_transaction
+0080.616 (R) [notice] Atomic restore: dropping original table (wp_esp_transaction)
+0080.619 (R) [notice] Atomic restore: renaming new table (5j_esp_transaction) to final table name (wp_esp_transaction)
+0080.623 (R) [notice] Search and replacing table: wp_esp_transaction: rows: 0
+0080.624 (R) [notice] Processing table (InnoDB):  wp_esp_venue_meta - will restore as: 5j_esp_venue_meta
+0080.635 (R) [notice] Atomic restore: dropping original table (wp_esp_venue_meta)
+0080.637 (R) [notice] Atomic restore: renaming new table (5j_esp_venue_meta) to final table name (wp_esp_venue_meta)
+0080.641 (R) [notice] Search and replacing table: wp_esp_venue_meta: rows: 0
+0080.641 (R) [notice] Processing table (InnoDB):  wp_frm_fields - will restore as: 5j_frm_fields
+0080.662 (R) [notice] Atomic restore: dropping original table (wp_frm_fields)
+0080.665 (R) [notice] Atomic restore: renaming new table (5j_frm_fields) to final table name (wp_frm_fields)
+0080.668 (R) [notice] Search and replacing table: wp_frm_fields: rows: 79
+0080.674 (R) [notice] Processing table (InnoDB):  wp_frm_forms - will restore as: 5j_frm_forms
+0080.687 (R) [notice] Atomic restore: dropping original table (wp_frm_forms)
+0080.689 (R) [notice] Atomic restore: renaming new table (5j_frm_forms) to final table name (wp_frm_forms)
+0080.693 (R) [notice] Search and replacing table: wp_frm_forms: rows: 11
+0080.694 (R) [notice] Processing table (InnoDB):  wp_frm_item_metas - will restore as: 5j_frm_item_metas
+0080.871 (R) [notice] Atomic restore: dropping original table (wp_frm_item_metas)
+0080.873 (R) [notice] Atomic restore: renaming new table (5j_frm_item_metas) to final table name (wp_frm_item_metas)
+0080.877 (R) [notice] Search and replacing table: wp_frm_item_metas: rows: 19722
+0080.996 (R) [notice] Searching and replacing reached row: 5000
+0081.121 (R) [notice] Searching and replacing reached row: 10000
+0081.251 (R) [notice] Searching and replacing reached row: 15000
+0081.368 (R) [notice] Processing table (InnoDB):  wp_frm_items - will restore as: 5j_frm_items
+0081.537 (R) [notice] Atomic restore: dropping original table (wp_frm_items)
+0081.540 (R) [notice] Atomic restore: renaming new table (5j_frm_items) to final table name (wp_frm_items)
+0081.544 (R) [notice] Search and replacing table: wp_frm_items: rows: 3856
+0082.431 (R) [notice] Processing table (InnoDB):  wp_ju_queue - will restore as: 5j_ju_queue
+0082.441 (R) [notice] Atomic restore: dropping original table (wp_ju_queue)
+0082.443 (R) [notice] Atomic restore: renaming new table (5j_ju_queue) to final table name (wp_ju_queue)
+0082.447 (R) [notice] Search and replacing table: wp_ju_queue: rows: 0
+0082.447 (R) [notice] Processing table (InnoDB):  wp_pmxe_exports - will restore as: 5j_pmxe_exports
+0082.468 (R) [notice] Atomic restore: dropping original table (wp_pmxe_exports)
+0082.470 (R) [notice] Atomic restore: renaming new table (5j_pmxe_exports) to final table name (wp_pmxe_exports)
+0082.475 (R) [notice] Search and replacing table: wp_pmxe_exports: rows: 2
+0082.485 (R) [notice] Processing table (InnoDB):  wp_pmxe_google_cats - will restore as: 5j_pmxe_google_cats
+0082.542 (R) [notice] Atomic restore: dropping original table (wp_pmxe_google_cats)
+0082.546 (R) [notice] Atomic restore: renaming new table (5j_pmxe_google_cats) to final table name (wp_pmxe_google_cats)
+0082.550 (R) [notice] Search and replacing table: wp_pmxe_google_cats: rows: 5371
+0082.588 (R) [notice] Searching and replacing reached row: 5000
+0082.592 (R) [notice] Processing table (InnoDB):  wp_pmxe_posts - will restore as: 5j_pmxe_posts
+0082.613 (R) [notice] Atomic restore: dropping original table (wp_pmxe_posts)
+0082.615 (R) [notice] Atomic restore: renaming new table (5j_pmxe_posts) to final table name (wp_pmxe_posts)
+0082.618 (R) [notice] Search and replacing table: wp_pmxe_posts: rows: 1162
+0082.625 (R) [notice] Processing table (InnoDB):  wp_pmxe_templates - will restore as: 5j_pmxe_templates
+0082.633 (R) [notice] Atomic restore: dropping original table (wp_pmxe_templates)
+0082.635 (R) [notice] Atomic restore: renaming new table (5j_pmxe_templates) to final table name (wp_pmxe_templates)
+0082.639 (R) [notice] Search and replacing table: wp_pmxe_templates: rows: 0
+0082.639 (R) [notice] Processing table (InnoDB):  wp_pmxi_files - will restore as: 5j_pmxi_files
+0082.647 (R) [notice] Atomic restore: dropping original table (wp_pmxi_files)
+0082.649 (R) [notice] Atomic restore: renaming new table (5j_pmxi_files) to final table name (wp_pmxi_files)
+0082.652 (R) [notice] Search and replacing table: wp_pmxi_files: rows: 12
+0082.653 (R) [notice] Processing table (InnoDB):  wp_pmxi_hash - will restore as: 5j_pmxi_hash
+0082.705 (R) [notice] Atomic restore: dropping original table (wp_pmxi_hash)
+0082.706 (R) [notice] Atomic restore: renaming new table (5j_pmxi_hash) to final table name (wp_pmxi_hash)
+0082.711 (R) [notice] Search and replacing table: wp_pmxi_hash: rows: 4863
+0082.743 (R) [notice] Processing table (InnoDB):  wp_pmxi_history - will restore as: 5j_pmxi_history
+0082.753 (R) [notice] Atomic restore: dropping original table (wp_pmxi_history)
+0082.755 (R) [notice] Atomic restore: renaming new table (5j_pmxi_history) to final table name (wp_pmxi_history)
+0082.761 (R) [notice] Search and replacing table: wp_pmxi_history: rows: 9
+0082.761 (R) [notice] Processing table (InnoDB):  wp_pmxi_images - will restore as: 5j_pmxi_images
+0082.785 (R) [notice] Atomic restore: dropping original table (wp_pmxi_images)
+0082.787 (R) [notice] Atomic restore: renaming new table (5j_pmxi_images) to final table name (wp_pmxi_images)
+0082.789 (R) [notice] Search and replacing table: wp_pmxi_images: rows: 952
+0083.022 (R) [notice] Processing table (InnoDB):  wp_pmxi_imports - will restore as: 5j_pmxi_imports
+0083.047 (R) [notice] Atomic restore: dropping original table (wp_pmxi_imports)
+0083.051 (R) [notice] Atomic restore: renaming new table (5j_pmxi_imports) to final table name (wp_pmxi_imports)
+0083.058 (R) [notice] Search and replacing table: wp_pmxi_imports: rows: 11
+0083.066 (R) [notice] Processing table (InnoDB):  wp_pmxi_posts - will restore as: 5j_pmxi_posts
+0083.163 (R) [notice] Atomic restore: dropping original table (wp_pmxi_posts)
+0083.165 (R) [notice] Atomic restore: renaming new table (5j_pmxi_posts) to final table name (wp_pmxi_posts)
+0083.169 (R) [notice] Search and replacing table: wp_pmxi_posts: rows: 6479
+0083.333 (R) [notice] Searching and replacing reached row: 5000
+0083.347 (R) [notice] Processing table (InnoDB):  wp_pmxi_templates - will restore as: 5j_pmxi_templates
+0083.358 (R) [notice] Atomic restore: dropping original table (wp_pmxi_templates)
+0083.360 (R) [notice] Atomic restore: renaming new table (5j_pmxi_templates) to final table name (wp_pmxi_templates)
+0083.364 (R) [notice] Search and replacing table: wp_pmxi_templates: rows: 0
+0083.364 (R) [notice] Processing table (InnoDB):  wp_rcb_asset_seo_redirect - will restore as: 5j_rcb_asset_seo_redirect
+0083.373 (R) [notice] Atomic restore: dropping original table (wp_rcb_asset_seo_redirect)
+0083.374 (R) [notice] Atomic restore: renaming new table (5j_rcb_asset_seo_redirect) to final table name (wp_rcb_asset_seo_redirect)
+0083.376 (R) [notice] Search and replacing table: wp_rcb_asset_seo_redirect: rows: 4
+0083.377 (R) [notice] Processing table (InnoDB):  wp_rcb_blocker_thumbnails - will restore as: 5j_rcb_blocker_thumbnails
+0083.387 (R) [notice] Atomic restore: dropping original table (wp_rcb_blocker_thumbnails)
+0083.387 (R) [notice] Atomic restore: renaming new table (5j_rcb_blocker_thumbnails) to final table name (wp_rcb_blocker_thumbnails)
+0083.391 (R) [notice] Search and replacing table: wp_rcb_blocker_thumbnails: rows: 0
+0083.391 (R) [notice] Processing table (InnoDB):  wp_rcb_consent - will restore as: 5j_rcb_consent
+0083.970 (R) [notice] Atomic restore: dropping original table (wp_rcb_consent)
+0083.970 (R) [notice] Atomic restore: renaming new table (5j_rcb_consent) to final table name (wp_rcb_consent)
+0083.979 (R) [notice] Search and replacing table: wp_rcb_consent: rows: 12174
+0085.387 (R) [notice] Searching and replacing reached row: 5000
+0086.844 (R) [notice] Searching and replacing reached row: 10000
+0087.447 (R) [notice] Processing table (InnoDB):  wp_rcb_revision - will restore as: 5j_rcb_revision
+0087.519 (R) [notice] Atomic restore: dropping original table (wp_rcb_revision)
+0087.520 (R) [notice] Atomic restore: renaming new table (5j_rcb_revision) to final table name (wp_rcb_revision)
+0087.523 (R) [notice] Search and replacing table: wp_rcb_revision: rows: 23
+0087.680 (R) [notice] Processing table (InnoDB):  wp_rcb_revision_independent - will restore as: 5j_rcb_revision_independent
+0087.701 (R) [notice] Atomic restore: dropping original table (wp_rcb_revision_independent)
+0087.701 (R) [notice] Atomic restore: renaming new table (5j_rcb_revision_independent) to final table name (wp_rcb_revision_independent)
+0087.705 (R) [notice] Search and replacing table: wp_rcb_revision_independent: rows: 15
+0087.733 (R) [notice] Processing table (InnoDB):  wp_rcb_scan - will restore as: 5j_rcb_scan
+0088.257 (R) [notice] Atomic restore: dropping original table (wp_rcb_scan)
+0088.257 (R) [notice] Atomic restore: renaming new table (5j_rcb_scan) to final table name (wp_rcb_scan)
+0088.262 (R) [notice] Search and replacing table: wp_rcb_scan: rows: 18531
+0089.377 (R) [notice] Searching and replacing reached row: 5000
+0090.457 (R) [notice] Searching and replacing reached row: 10000
+0091.557 (R) [notice] Searching and replacing reached row: 15000
+0092.315 (R) [notice] Processing table (InnoDB):  wp_rcb_scan_markup - will restore as: 5j_rcb_scan_markup
+0092.327 (R) [notice] Atomic restore: dropping original table (wp_rcb_scan_markup)
+0092.327 (R) [notice] Atomic restore: renaming new table (5j_rcb_scan_markup) to final table name (wp_rcb_scan_markup)
+0092.330 (R) [notice] Search and replacing table: wp_rcb_scan_markup: rows: 52
+0092.331 (R) [notice] Processing table (InnoDB):  wp_rcb_stats - will restore as: 5j_rcb_stats
+0092.342 (R) [notice] Atomic restore: dropping original table (wp_rcb_stats)
+0092.342 (R) [notice] Atomic restore: renaming new table (5j_rcb_stats) to final table name (wp_rcb_stats)
+0092.345 (R) [notice] Search and replacing table: wp_rcb_stats: rows: 36
+0092.346 (R) [notice] Processing table (InnoDB):  wp_rcb_stats_buttons_clicked - will restore as: 5j_rcb_stats_buttons_clicked
+0092.356 (R) [notice] Atomic restore: dropping original table (wp_rcb_stats_buttons_clicked)
+0092.356 (R) [notice] Atomic restore: renaming new table (5j_rcb_stats_buttons_clicked) to final table name (wp_rcb_stats_buttons_clicked)
+0092.361 (R) [notice] Search and replacing table: wp_rcb_stats_buttons_clicked: rows: 24
+0092.361 (R) [notice] Processing table (InnoDB):  wp_rcb_stats_custom_bypass - will restore as: 5j_rcb_stats_custom_bypass
+0092.371 (R) [notice] Atomic restore: dropping original table (wp_rcb_stats_custom_bypass)
+0092.371 (R) [notice] Atomic restore: renaming new table (5j_rcb_stats_custom_bypass) to final table name (wp_rcb_stats_custom_bypass)
+0092.374 (R) [notice] Search and replacing table: wp_rcb_stats_custom_bypass: rows: 4
+0092.374 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_data_categories - will restore as: 5j_rcb_tcf_data_categories
+0092.386 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_data_categories)
+0092.386 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_data_categories) to final table name (wp_rcb_tcf_data_categories)
+0092.390 (R) [notice] Search and replacing table: wp_rcb_tcf_data_categories: rows: 22
+0092.391 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_features - will restore as: 5j_rcb_tcf_features
+0092.401 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_features)
+0092.402 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_features) to final table name (wp_rcb_tcf_features)
+0092.405 (R) [notice] Search and replacing table: wp_rcb_tcf_features: rows: 6
+0092.406 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_purposes - will restore as: 5j_rcb_tcf_purposes
+0092.419 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_purposes)
+0092.419 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_purposes) to final table name (wp_rcb_tcf_purposes)
+0092.422 (R) [notice] Search and replacing table: wp_rcb_tcf_purposes: rows: 22
+0092.423 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_special_features - will restore as: 5j_rcb_tcf_special_features
+0092.432 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_special_features)
+0092.433 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_special_features) to final table name (wp_rcb_tcf_special_features)
+0092.437 (R) [notice] Search and replacing table: wp_rcb_tcf_special_features: rows: 4
+0092.437 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_special_purposes - will restore as: 5j_rcb_tcf_special_purposes
+0092.448 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_special_purposes)
+0092.448 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_special_purposes) to final table name (wp_rcb_tcf_special_purposes)
+0092.452 (R) [notice] Search and replacing table: wp_rcb_tcf_special_purposes: rows: 4
+0092.452 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_stacks - will restore as: 5j_rcb_tcf_stacks
+0092.466 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_stacks)
+0092.466 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_stacks) to final table name (wp_rcb_tcf_stacks)
+0092.469 (R) [notice] Search and replacing table: wp_rcb_tcf_stacks: rows: 90
+0092.471 (R) [notice] Processing table (InnoDB):  wp_rcb_tcf_vendors - will restore as: 5j_rcb_tcf_vendors
+0092.662 (R) [notice] Atomic restore: dropping original table (wp_rcb_tcf_vendors)
+0092.662 (R) [notice] Atomic restore: renaming new table (5j_rcb_tcf_vendors) to final table name (wp_rcb_tcf_vendors)
+0092.668 (R) [notice] Search and replacing table: wp_rcb_tcf_vendors: rows: 1746
+0092.924 (R) [notice] Processing table (InnoDB):  wp_rcb_template - will restore as: 5j_rcb_template
+0093.133 (R) [notice] Atomic restore: dropping original table (wp_rcb_template)
+0093.134 (R) [notice] Atomic restore: renaming new table (5j_rcb_template) to final table name (wp_rcb_template)
+0093.138 (R) [notice] Search and replacing table: wp_rcb_template: rows: 556
+0093.449 (R) [notice] Processing table (InnoDB):  wp_rcb_template_translation - will restore as: 5j_rcb_template_translation
+0093.474 (R) [notice] Atomic restore: dropping original table (wp_rcb_template_translation)
+0093.474 (R) [notice] Atomic restore: renaming new table (5j_rcb_template_translation) to final table name (wp_rcb_template_translation)
+0093.478 (R) [notice] Search and replacing table: wp_rcb_template_translation: rows: 320
+0093.482 (R) [notice] Processing table (InnoDB):  wp_real_queue - will restore as: 5j_real_queue
+0093.492 (R) [notice] Atomic restore: dropping original table (wp_real_queue)
+0093.492 (R) [notice] Atomic restore: renaming new table (5j_real_queue) to final table name (wp_real_queue)
+0093.497 (R) [notice] Search and replacing table: wp_real_queue: rows: 0
+0093.497 (R) [notice] Processing table (InnoDB):  wp_redirection_404 - will restore as: 5j_redirection_404
+0093.507 (R) [notice] Atomic restore: dropping original table (wp_redirection_404)
+0093.510 (R) [notice] Atomic restore: renaming new table (5j_redirection_404) to final table name (wp_redirection_404)
+0093.514 (R) [notice] Skipping this table: data in this table (wp_redirection_404) should not be search/replaced
+0093.514 (R) [notice] Processing table (InnoDB):  wp_redirection_groups - will restore as: 5j_redirection_groups
+0093.526 (R) [notice] Atomic restore: dropping original table (wp_redirection_groups)
+0093.528 (R) [notice] Atomic restore: renaming new table (5j_redirection_groups) to final table name (wp_redirection_groups)
+0093.532 (R) [notice] Search and replacing table: wp_redirection_groups: rows: 2
+0093.532 (R) [notice] Processing table (InnoDB):  wp_redirection_items - will restore as: 5j_redirection_items
+0093.550 (R) [notice] Atomic restore: dropping original table (wp_redirection_items)
+0093.554 (R) [notice] Atomic restore: renaming new table (5j_redirection_items) to final table name (wp_redirection_items)
+0093.558 (R) [notice] Search and replacing table: wp_redirection_items: rows: 199
+0093.612 (R) [notice] Processing table (InnoDB):  wp_redirection_logs - will restore as: 5j_redirection_logs
+0093.624 (R) [notice] Atomic restore: dropping original table (wp_redirection_logs)
+0093.626 (R) [notice] Atomic restore: renaming new table (5j_redirection_logs) to final table name (wp_redirection_logs)
+0093.629 (R) [notice] Skipping this table: data in this table (wp_redirection_logs) should not be search/replaced
+0093.629 (R) [notice] Processing table (InnoDB):  wp_rtafar_rules - will restore as: 5j_rtafar_rules
+0093.639 (R) [notice] Database queries processed: 1000 in 93.57 seconds
+0093.639 (R) [notice] Atomic restore: dropping original table (wp_rtafar_rules)
+0093.640 (R) [notice] Atomic restore: renaming new table (5j_rtafar_rules) to final table name (wp_rtafar_rules)
+0093.643 (R) [notice] Search and replacing table: wp_rtafar_rules: rows: 0
+0093.643 (R) [notice] Processing table (InnoDB):  wp_wfblockediplog - will restore as: 5j_wfblockediplog
+0093.643 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0093.667 (R) [notice] Atomic restore: dropping original table (wp_wfblockediplog)
+0093.670 (R) [notice] Atomic restore: renaming new table (5j_wfblockediplog) to final table name (wp_wfblockediplog)
+0093.672 (R) [notice] Skipping this table: data in this table (wp_wfblockediplog) should not be search/replaced
+0093.672 (R) [notice] Processing table (InnoDB):  wp_wfblocks7 - will restore as: 5j_wfblocks7
+0093.672 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0093.685 (R) [notice] Atomic restore: dropping original table (wp_wfblocks7)
+0093.687 (R) [notice] Atomic restore: renaming new table (5j_wfblocks7) to final table name (wp_wfblocks7)
+0093.691 (R) [notice] Search and replacing table: wp_wfblocks7: rows: 13
+0093.691 (R) [notice] Processing table (InnoDB):  wp_wfconfig - will restore as: 5j_wfconfig
+0093.691 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0093.727 (R) [notice] Atomic restore: dropping original table (wp_wfconfig)
+0093.730 (R) [notice] Atomic restore: renaming new table (5j_wfconfig) to final table name (wp_wfconfig)
+0093.733 (R) [notice] Search and replacing table: wp_wfconfig: rows: 281
+0093.743 (R) [notice] Processing table (InnoDB):  wp_wfcrawlers - will restore as: 5j_wfcrawlers
+0093.743 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0093.754 (R) [notice] Atomic restore: dropping original table (wp_wfcrawlers)
+0093.756 (R) [notice] Atomic restore: renaming new table (5j_wfcrawlers) to final table name (wp_wfcrawlers)
+0093.759 (R) [notice] Search and replacing table: wp_wfcrawlers: rows: 74
+0093.760 (R) [notice] Processing table (InnoDB):  wp_wffilechanges - will restore as: 5j_wffilechanges
+0093.760 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0093.769 (R) [notice] Atomic restore: dropping original table (wp_wffilechanges)
+0093.771 (R) [notice] Atomic restore: renaming new table (5j_wffilechanges) to final table name (wp_wffilechanges)
+0093.774 (R) [notice] Search and replacing table: wp_wffilechanges: rows: 0
+0093.774 (R) [notice] Processing table (InnoDB):  wp_wffilemods - will restore as: 5j_wffilemods
+0093.774 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0093.992 (R) [notice] Atomic restore: dropping original table (wp_wffilemods)
+0093.996 (R) [notice] Atomic restore: renaming new table (5j_wffilemods) to final table name (wp_wffilemods)
+0093.999 (R) [notice] Skipping this table: data in this table (wp_wffilemods) should not be search/replaced
+0093.999 (R) [notice] Processing table (InnoDB):  wp_wfhits - will restore as: 5j_wfhits
+0093.999 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0094.086 (R) [notice] Atomic restore: dropping original table (wp_wfhits)
+0094.089 (R) [notice] Atomic restore: renaming new table (5j_wfhits) to final table name (wp_wfhits)
+0094.091 (R) [notice] Skipping this table: data in this table (wp_wfhits) should not be search/replaced
+0094.091 (R) [notice] Processing table (InnoDB):  wp_wfhoover - will restore as: 5j_wfhoover
+0094.091 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0094.100 (R) [notice] Atomic restore: dropping original table (wp_wfhoover)
+0094.102 (R) [notice] Atomic restore: renaming new table (5j_wfhoover) to final table name (wp_wfhoover)
+0094.105 (R) [notice] Search and replacing table: wp_wfhoover: rows: 0
+0094.105 (R) [notice] Processing table (InnoDB):  wp_wfissues - will restore as: 5j_wfissues
+0094.106 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0094.119 (R) [notice] Atomic restore: dropping original table (wp_wfissues)
+0094.121 (R) [notice] Atomic restore: renaming new table (5j_wfissues) to final table name (wp_wfissues)
+0094.125 (R) [notice] Search and replacing table: wp_wfissues: rows: 10
+0094.128 (R) [notice] Processing table (InnoDB):  wp_wfknownfilelist - will restore as: 5j_wfknownfilelist
+0094.128 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0094.262 (R) [notice] Atomic restore: dropping original table (wp_wfknownfilelist)
+0094.269 (R) [notice] Atomic restore: renaming new table (5j_wfknownfilelist) to final table name (wp_wfknownfilelist)
+0094.273 (R) [notice] Search and replacing table: wp_wfknownfilelist: rows: 11892
+0095.325 (R) [notice] Searching and replacing reached row: 5000
+0096.337 (R) [notice] Searching and replacing reached row: 10000
+0096.710 (R) [notice] Processing table (InnoDB):  wp_wflivetraffichuman - will restore as: 5j_wflivetraffichuman
+0096.710 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.720 (R) [notice] Atomic restore: dropping original table (wp_wflivetraffichuman)
+0096.723 (R) [notice] Atomic restore: renaming new table (5j_wflivetraffichuman) to final table name (wp_wflivetraffichuman)
+0096.726 (R) [notice] Search and replacing table: wp_wflivetraffichuman: rows: 0
+0096.726 (R) [notice] Processing table (InnoDB):  wp_wflocs - will restore as: 5j_wflocs
+0096.726 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.736 (R) [notice] Atomic restore: dropping original table (wp_wflocs)
+0096.740 (R) [notice] Atomic restore: renaming new table (5j_wflocs) to final table name (wp_wflocs)
+0096.744 (R) [notice] Search and replacing table: wp_wflocs: rows: 6
+0096.744 (R) [notice] Processing table (InnoDB):  wp_wflogins - will restore as: 5j_wflogins
+0096.744 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.807 (R) [notice] Atomic restore: dropping original table (wp_wflogins)
+0096.810 (R) [notice] Atomic restore: renaming new table (5j_wflogins) to final table name (wp_wflogins)
+0096.814 (R) [notice] Search and replacing table: wp_wflogins: rows: 2028
+0096.841 (R) [notice] Processing table (InnoDB):  wp_wfls_2fa_secrets - will restore as: 5j_wfls_2fa_secrets
+0096.841 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.851 (R) [notice] Atomic restore: dropping original table (wp_wfls_2fa_secrets)
+0096.853 (R) [notice] Atomic restore: renaming new table (5j_wfls_2fa_secrets) to final table name (wp_wfls_2fa_secrets)
+0096.856 (R) [notice] Search and replacing table: wp_wfls_2fa_secrets: rows: 0
+0096.856 (R) [notice] Processing table (MEMORY):  wp_wfls_role_counts - will restore as: 5j_wfls_role_counts
+0096.864 (R) [notice] Atomic restore: dropping original table (wp_wfls_role_counts)
+0096.865 (R) [notice] Atomic restore: renaming new table (5j_wfls_role_counts) to final table name (wp_wfls_role_counts)
+0096.867 (R) [notice] Search and replacing table: wp_wfls_role_counts: rows: 0
+0096.867 (R) [notice] Processing table (InnoDB):  wp_wfls_settings - will restore as: 5j_wfls_settings
+0096.867 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.877 (R) [notice] Atomic restore: dropping original table (wp_wfls_settings)
+0096.879 (R) [notice] Atomic restore: renaming new table (5j_wfls_settings) to final table name (wp_wfls_settings)
+0096.882 (R) [notice] Search and replacing table: wp_wfls_settings: rows: 30
+0096.882 (R) [notice] Processing table (InnoDB):  wp_wfnotifications - will restore as: 5j_wfnotifications
+0096.882 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.892 (R) [notice] Atomic restore: dropping original table (wp_wfnotifications)
+0096.894 (R) [notice] Atomic restore: renaming new table (5j_wfnotifications) to final table name (wp_wfnotifications)
+0096.897 (R) [notice] Search and replacing table: wp_wfnotifications: rows: 11
+0096.900 (R) [notice] Processing table (InnoDB):  wp_wfpendingissues - will restore as: 5j_wfpendingissues
+0096.900 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.913 (R) [notice] Atomic restore: dropping original table (wp_wfpendingissues)
+0096.916 (R) [notice] Atomic restore: renaming new table (5j_wfpendingissues) to final table name (wp_wfpendingissues)
+0096.920 (R) [notice] Search and replacing table: wp_wfpendingissues: rows: 0
+0096.920 (R) [notice] Processing table (InnoDB):  wp_wfreversecache - will restore as: 5j_wfreversecache
+0096.920 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.930 (R) [notice] Atomic restore: dropping original table (wp_wfreversecache)
+0096.932 (R) [notice] Atomic restore: renaming new table (5j_wfreversecache) to final table name (wp_wfreversecache)
+0096.935 (R) [notice] Search and replacing table: wp_wfreversecache: rows: 13
+0096.935 (R) [notice] Processing table (InnoDB):  wp_wfsecurityevents - will restore as: 5j_wfsecurityevents
+0096.935 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.944 (R) [notice] Atomic restore: dropping original table (wp_wfsecurityevents)
+0096.945 (R) [notice] Atomic restore: renaming new table (5j_wfsecurityevents) to final table name (wp_wfsecurityevents)
+0096.948 (R) [notice] Search and replacing table: wp_wfsecurityevents: rows: 0
+0096.948 (R) [notice] Processing table (InnoDB):  wp_wfsnipcache - will restore as: 5j_wfsnipcache
+0096.948 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.962 (R) [notice] Atomic restore: dropping original table (wp_wfsnipcache)
+0096.965 (R) [notice] Atomic restore: renaming new table (5j_wfsnipcache) to final table name (wp_wfsnipcache)
+0096.969 (R) [notice] Search and replacing table: wp_wfsnipcache: rows: 20
+0096.969 (R) [notice] Processing table (InnoDB):  wp_wfstatus - will restore as: 5j_wfstatus
+0096.969 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0096.994 (R) [notice] Atomic restore: dropping original table (wp_wfstatus)
+0096.996 (R) [notice] Atomic restore: renaming new table (5j_wfstatus) to final table name (wp_wfstatus)
+0096.999 (R) [notice] Search and replacing table: wp_wfstatus: rows: 961
+0097.007 (R) [notice] Processing table (InnoDB):  wp_wftrafficrates - will restore as: 5j_wftrafficrates
+0097.007 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0097.017 (R) [notice] Atomic restore: dropping original table (wp_wftrafficrates)
+0097.019 (R) [notice] Atomic restore: renaming new table (5j_wftrafficrates) to final table name (wp_wftrafficrates)
+0097.022 (R) [notice] Search and replacing table: wp_wftrafficrates: rows: 0
+0097.022 (R) [notice] Processing table (InnoDB):  wp_wfwaffailures - will restore as: 5j_wfwaffailures
+0097.022 (R) [notice] Requested table character set (utf8mb3) is not present - changing to utf8.
+0097.027 (R) [notice] Disabling Maintenance mode&#8230;
+0097.027 (R) [notice] Atomic restore: dropping original table (wp_wfwaffailures)
+0097.027 (R) [notice] Atomic restore: renaming new table (5j_wfwaffailures) to final table name (wp_wfwaffailures)
+0097.030 (R) [notice] Search and replacing table: wp_wfwaffailures: rows: 0
+0097.030 (R) [notice] Finished: lines processed: 1112 in 96.96 seconds
+0097.042 (R) [notice] Cleaning up rubbish...
+0097.044 (R) [notice] Database search and replace: replace https://wegwandern.ch in backup dump with http://localhost:10028
+0097.044 (R) [notice] Database search and replace: replace http://www.wegwandern.ch in backup dump with http://localhost:10028
+0097.044 (R) [notice] Database search and replace: replace http://wegwandern.ch in backup dump with http://localhost:10028
+0097.045 (R) [notice] Database search and replace: replace https://www.wegwandern.ch in backup dump with http://localhost:10028
+0097.045 (R) [notice] Database search and replace: replace /home/wegwande/www/wegwandern.ch in backup dump with /Users/rilanatnt/Local Sites/wegwandernch/app/public
+0097.045 (R) [notice] Search and replacing table: wp_actionscheduler_actions: already done
+0097.045 (R) [notice] Search and replacing table: wp_actionscheduler_claims: already done
+0097.046 (R) [notice] Search and replacing table: wp_actionscheduler_groups: already done
+0097.046 (R) [notice] Search and replacing table: wp_actionscheduler_logs: already done
+0097.046 (R) [notice] Search and replacing table: wp_aioseo_cache: already done
+0097.046 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_blocked_args: already done
+0097.046 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_logs: already done
+0097.046 (R) [notice] Search and replacing table: wp_aioseo_notifications: already done
+0097.046 (R) [notice] Search and replacing table: wp_aioseo_posts: already done
+0097.046 (R) [notice] Search and replacing table: wp_aryo_activity_log: already done
+0097.046 (R) [notice] Search and replacing table: wp_b2b_ad_clicks: already done
+0097.046 (R) [notice] Search and replacing table: wp_b2b_payment_details: already done
+0097.046 (R) [notice] Search and replacing table: wp_cmplz_cookiebanners: already done
+0097.046 (R) [notice] Search and replacing table: wp_cmplz_cookies: already done
+0097.046 (R) [notice] Search and replacing table: wp_cmplz_dnsmpd: already done
+0097.046 (R) [notice] Search and replacing table: wp_cmplz_services: already done
+0097.046 (R) [notice] Search and replacing table: wp_commentmeta: already done
+0097.046 (R) [notice] Search and replacing table: wp_comments: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_answer: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_attendee_meta: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_checkin: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_country: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_currency: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_currency_payment_method: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_datetime: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_datetime_ticket: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_event_message_template: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_event_meta: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_event_question_group: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_event_venue: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_extra_join: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_extra_meta: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_line_item: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_log: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_message: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_message_template: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_message_template_group: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_payment: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_payment_method: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_price: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_price_type: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_question: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_question_group: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_question_group_question: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_question_option: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_registration: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_registration_payment: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_state: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_status: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_ticket: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_ticket_price: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_ticket_template: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_transaction: already done
+0097.046 (R) [notice] Search and replacing table: wp_esp_venue_meta: already done
+0097.046 (R) [notice] Search and replacing table: wp_frm_fields: already done
+0097.046 (R) [notice] Search and replacing table: wp_frm_forms: already done
+0097.046 (R) [notice] Search and replacing table: wp_frm_item_metas: already done
+0097.046 (R) [notice] Search and replacing table: wp_frm_items: already done
+0097.047 (R) [notice] Search and replacing table: wp_ju_queue: already done
+0097.047 (R) [notice] Search and replacing table: wp_links: already done
+0097.047 (R) [notice] Search and replacing table: wp_options: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxe_exports: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxe_google_cats: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxe_posts: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxe_templates: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_files: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_hash: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_history: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_images: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_imports: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_posts: already done
+0097.047 (R) [notice] Search and replacing table: wp_pmxi_templates: already done
+0097.047 (R) [notice] Search and replacing table: wp_postmeta: already done
+0097.047 (R) [notice] Search and replacing table: wp_posts: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_asset_seo_redirect: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_blocker_thumbnails: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_consent: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_revision: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_revision_independent: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_scan: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_scan_markup: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_stats: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_stats_buttons_clicked: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_stats_custom_bypass: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_data_categories: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_features: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_purposes: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_special_features: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_special_purposes: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_stacks: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_tcf_vendors: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_template: already done
+0097.047 (R) [notice] Search and replacing table: wp_rcb_template_translation: already done
+0097.047 (R) [notice] Search and replacing table: wp_real_queue: already done
+0097.047 (R) [notice] Search and replacing table: wp_redirection_404: already done
+0097.047 (R) [notice] Search and replacing table: wp_redirection_groups: already done
+0097.047 (R) [notice] Search and replacing table: wp_redirection_items: already done
+0097.047 (R) [notice] Search and replacing table: wp_redirection_logs: already done
+0097.047 (R) [notice] Search and replacing table: wp_rtafar_rules: already done
+0097.047 (R) [notice] Search and replacing table: wp_term_relationships: already done
+0097.047 (R) [notice] Search and replacing table: wp_term_taxonomy: already done
+0097.047 (R) [notice] Search and replacing table: wp_termmeta: already done
+0097.047 (R) [notice] Search and replacing table: wp_terms: already done
+0097.047 (R) [notice] Search and replacing table: wp_usermeta: already done
+0097.047 (R) [notice] Search and replacing table: wp_users: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfblockediplog: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfblocks7: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfconfig: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfcrawlers: already done
+0097.047 (R) [notice] Search and replacing table: wp_wffilechanges: already done
+0097.047 (R) [notice] Search and replacing table: wp_wffilemods: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfhits: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfhoover: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfissues: already done
+0097.047 (R) [notice] Search and replacing table: wp_wfknownfilelist: already done
+0097.047 (R) [notice] Search and replacing table: wp_wflivetraffichuman: already done
+0097.048 (R) [notice] Search and replacing table: wp_wflocs: already done
+0097.048 (R) [notice] Search and replacing table: wp_wflogins: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfls_2fa_secrets: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfls_role_counts: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfls_settings: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfnotifications: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfpendingissues: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfreversecache: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfsecurityevents: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfsnipcache: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfstatus: already done
+0097.048 (R) [notice] Search and replacing table: wp_wftrafficrates: already done
+0097.048 (R) [notice] Search and replacing table: wp_wfwaffailures: already done
+0097.048 (R) [notice] Tables examined: 123
+0097.048 (R) [notice] Rows examined: 216142
+0097.048 (R) [notice] Changes made: 85101
+0097.048 (R) [notice] SQL update commands run: 72843
+0097.048 (R) [notice] Errors: 0
+0097.048 (R) [notice] Time taken (seconds): 54.029

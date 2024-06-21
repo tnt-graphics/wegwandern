@@ -1,0 +1,35 @@
+0000.003 (R) [notice] Looking for plugins archive: file name: backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins3.zip
+0000.004 (R) [notice] Archive is expected to be size: 18297.4 KB: OK
+0000.004 (R) [notice] Looking for plugins archive: file name: backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins2.zip
+0000.004 (R) [notice] Archive is expected to be size: 25234.2 KB: OK
+0000.004 (R) [notice] Looking for plugins archive: file name: backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins.zip
+0000.004 (R) [notice] Archive is expected to be size: 6663.8 KB: OK
+0000.004 (R) [notice] Looking for themes archive: file name: backup_2024-06-21-1310_WegWandernch_5805af689d2a-themes.zip
+0000.004 (R) [notice] Archive is expected to be size: 11450.5 KB: OK
+0000.005 (R) [notice] Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins.zip, 6.5 MB)
+0000.453 (R) [notice] Unzip progress: 1341 out of 2005 files (5.4 KB, plugins/advanced-custom-fields-pro/assets/build/css/pro/acf-pro-field-group.css)
+0000.607 (R) [notice] Unzip progress: 2005 out of 2005 files (22.5 MB, plugins/advanced-custom-fields-pro/assets/build/css/pro/acf-pro-field-group.css.map)
+0000.611 (R) [notice] Moving old data out of the way...
+0001.741 (R) [notice] Moving unpacked backup into place...
+0002.044 (R) [notice] Cleaning up rubbish...
+0002.045 (R) [notice] Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins2.zip, 24.6 MB)
+0003.159 (R) [notice] Unzip progress: 1002 out of 4977 files (14.4 MB, plugins/updraftplus/vendor/guzzlehttp/guzzle/src/Handler/Proxy.php)
+0003.310 (R) [notice] Unzip progress: 2003 out of 4977 files (24.9 MB, plugins/updraftplus/vendor/rackspace/php-opencloud/lib/OpenCloud/Common/Log/Logger.php)
+0003.454 (R) [notice] Unzip progress: 3004 out of 4977 files (35.2 MB, plugins/formidable/classes/views/addons/settings.php)
+0003.623 (R) [notice] Unzip progress: 4005 out of 4977 files (45.9 MB, plugins/formidable-pro/languages/formidable-pro-fr_FR-be726b1a8cba9770b7e4395958579cfd.json)
+0003.830 (R) [notice] Unzip progress: 4977 out of 4977 files (69.4 MB, plugins/redirection/database/schema/233.php)
+0003.835 (R) [notice] Moving unpacked backup into place...
+0005.127 (R) [notice] Cleaning up rubbish...
+0005.128 (R) [notice] Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins3.zip, 17.9 MB)
+0005.977 (R) [notice] Unzip progress: 1002 out of 3719 files (10.3 MB, plugins/complianz-gdpr/settings/src/Dashboard/TaskElement.js)
+0006.153 (R) [notice] Unzip progress: 2003 out of 3719 files (25.2 MB, plugins/real-cookie-banner-pro/vendor/devowl-wp/deliver-anonymous-asset/LICENSE)
+0006.345 (R) [notice] Unzip progress: 3004 out of 3719 files (41.8 MB, plugins/index.php)
+0006.439 (R) [notice] Unzip progress: 3719 out of 3719 files (46.2 MB, plugins/real-cookie-banner-pro/vendor/devowl-wp/deliver-anonymous-asset/LICENSE_3RD_PARTY_JS.md)
+0006.443 (R) [notice] Moving unpacked backup into place...
+0007.427 (R) [notice] Cleaning up rubbish...
+0007.430 (R) [notice] Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-themes.zip, 11.2 MB)
+0007.671 (R) [notice] Unzip progress: 407 out of 407 files (19.7 MB, themes/WEGW/archive.php)
+0007.673 (R) [notice] Moving old data out of the way...
+0007.750 (R) [notice] Moving unpacked backup into place...
+0007.800 (R) [notice] Cleaning up rubbish...
+0007.806 (R) [notice] Restore successful!

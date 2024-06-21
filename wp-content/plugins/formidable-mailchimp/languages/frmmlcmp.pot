@@ -1,0 +1,97 @@
+# Copyright (C) 2021 Strategy11
+# This file is distributed under the same license as the Formidable MailChimp plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Formidable MailChimp 2.06\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/formidable-mailchimp\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2021-06-23T17:12:22+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.4.0\n"
+"X-Domain: frmmlcmp\n"
+
+#. Plugin Name of the plugin
+msgid "Formidable MailChimp"
+msgstr ""
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+msgid "https://formidableforms.com/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Add new MailChimp contacts from your Formidable forms"
+msgstr ""
+
+#. Author of the plugin
+msgid "Strategy11"
+msgstr ""
+
+#: controllers/FrmMlcmpAppController.php:22
+msgid "You are running an outdated version of Formidable. This plugin may not work correctly if you do not update Formidable."
+msgstr ""
+
+#: controllers/FrmMlcmpAppController.php:615
+#: controllers/FrmMlcmpAppController.php:619
+msgid "You had an error communicating with the MailChimp API."
+msgstr ""
+
+#: controllers/FrmMlcmpAppController.php:693
+msgid "Mailchimp:"
+msgstr ""
+
+#: controllers/FrmMlcmpSettingsController.php:107
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: controllers/FrmMlcmpSettingsController.php:112
+msgid "No api key code was sent"
+msgstr ""
+
+#: models/FrmMlcmpAction.php:17
+msgid "Add to MailChimp"
+msgstr ""
+
+#: views/action-settings/address_action_setting.php:7
+msgid "Action"
+msgstr ""
+
+#: views/action-settings/mailchimp_options.php:4
+msgid "List"
+msgstr ""
+
+#: views/action-settings/mailchimp_options.php:15
+msgid "No MailChimp mailing lists found"
+msgstr ""
+
+#: views/action-settings/_match_fields.php:92
+msgid "Marketing Preferences"
+msgstr ""
+
+#: views/action-settings/_match_fields.php:122
+msgid "Opt In"
+msgstr ""
+
+#: views/action-settings/_match_fields.php:124
+msgid "Single"
+msgstr ""
+
+#: views/action-settings/_match_fields.php:125
+msgid "Double"
+msgstr ""
+
+#: views/notices/update_database.php:3
+msgid "Your Formidable MailChimp database needs to be updated.%1$sPlease deactivate and reactivate the plugin or %2$sUpdate Now%3$s"
+msgstr ""
+
+#: views/notices/update_formidable.php:4
+msgid "Formidable MailChimp requires that Formidable Pro version 2.0 or greater be installed. Until then, keep Formidable MailChimp activated only to continue enjoying this insightful message."
+msgstr ""
+
+#: views/settings/form.php:3
+msgid "API Key"
+msgstr ""

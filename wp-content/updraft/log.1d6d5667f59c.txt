@@ -1,0 +1,59 @@
+0000.003 () Opened log file at time: Fri, 21 Jun 2024 11:19:40 +0000 on http://localhost:10028
+0000.004 () UpdraftPlus WordPress backup plugin (https://updraftplus.com): 2.23.3.1 WP: 6.3 PHP: 8.1.23 (fpm-fcgi, Darwin MBP-von-Rilana.lan 23.2.0 Darwin Kernel Version 23.2.0: Wed Nov 15 21:53:18 PST 2023; root:xnu-10002.61.3~2/RELEASE_ARM64_T6000 x86_64) MySQL: 8.0.16 (max packet size=16777216) WPLANG: en_US Server: nginx/1.16.0 safe_mode: 0 max_execution_time: 900 memory_limit: 256M (used: 8.6M | 10M) multisite: N openssl: OpenSSL 1.1.1w  11 Sep 2023 mcrypt: N LANG:  ZipArchive::addFile: Y
+0000.004 () Free space on disk containing Updraft's temporary directory: 9209.3 MB
+0000.023 () Restore setup, now closing connection and starting restore over AJAX.
+0000.001 () Opened log file at time: Fri, 21 Jun 2024 11:19:40 +0000 on http://localhost:10028
+0000.001 () UpdraftPlus WordPress backup plugin (https://updraftplus.com): 2.23.3.1 WP: 6.3 PHP: 8.1.23 (fpm-fcgi, Darwin MBP-von-Rilana.lan 23.2.0 Darwin Kernel Version 23.2.0: Wed Nov 15 21:53:18 PST 2023; root:xnu-10002.61.3~2/RELEASE_ARM64_T6000 x86_64) MySQL: 8.0.16 (max packet size=16777216) WPLANG: en_US Server: nginx/1.16.0 safe_mode: 0 max_execution_time: 900 memory_limit: 256M (used: 6.8M | 10M) multisite: N openssl: OpenSSL 1.1.1w  11 Sep 2023 mcrypt: N LANG:  ZipArchive::addFile: Y
+0000.001 () Free space on disk containing Updraft's temporary directory: 9209.2 MB
+0000.001 () Ensuring WP_Filesystem is setup for a restore
+0000.001 () WP_Filesystem is setup and ready for a restore
+0000.003 () Restore job started. Entities to restore: plugins, themes. Restore options: {"updraft_encryptionphrase":"","updraft_restorer_wpcore_includewpconfig":false,"updraft_incremental_restore_point":-1}
+0000.004 () PHP event: code E_WARNING: mkdir(): File exists (line 558, wp-admin/includes/class-wp-filesystem-direct.php)
+0000.005 () Entity: plugins
+0000.005 () restore_backup(backup_file=backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins.zip, type=plugins, info=a:3:{s:4:"path";s:71:"/Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/plugins";s:11:"description";s:7:"Plugins";s:20:"singular_description";s:6:"Plugin";}, last_one=)
+0000.005 () Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins.zip, 6.5 MB)
+0000.005 () Unzipping backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins.zip to /Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/upgrade/4d093f2a/ using UpdraftPlus_ZipArchive, starting index 0
+0000.453 () Unzip progress: 1341 out of 2005 files (5.4 KB, plugins/advanced-custom-fields-pro/assets/build/css/pro/acf-pro-field-group.css)
+0000.607 () Unzip progress: 2005 out of 2005 files (22.5 MB, plugins/advanced-custom-fields-pro/assets/build/css/pro/acf-pro-field-group.css.map)
+0000.611 () Moving old data: filesystem method / updraft_dir is potentially possible
+0000.611 () Moving old data: can potentially use wp_filesystem method / -old
+0000.611 () Moving old data out of the way...
+0001.739 () Top-level entities being moved: formidable-pro, formidable, wp-all-import-pro, duplicate-post-page-menu-custom-post-type, wegw-b2b, index.php, all-in-one-wp-migration, wegwandern-summit-book, redirection, all-in-one-seo-pack, regenerate-thumbnails, duplicate-page, wp-add-mime-types, wp-all-export-pro, wp-media-folder, advanced-database-cleaner, advanced-custom-fields-pro, updraftplus, wordfence, wpai-acf-add-on, aryo-activity-log, formidable-mailchimp
+0001.741 () Moving unpacked backup into place...
+0002.041 () Top-level entities being moved: formidable-pro, formidable, duplicate-post-page-menu-custom-post-type, wegw-b2b, complianz-gdpr, formidable-dates, wegwandern-summit-book, redirection, formidable-acf, all-in-one-seo-pack, formidable-registration, real-cookie-banner-pro, wp-media-folder, advanced-custom-fields-pro, updraftplus, loco-translate, hm-multiple-roles, wordfence, wp-fastest-cache, svg-support, aryo-activity-log, formidable-mailchimp
+0002.044 () Cleaning up rubbish...
+0002.045 () restore_backup(backup_file=backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins2.zip, type=plugins, info=a:3:{s:4:"path";s:71:"/Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/plugins";s:11:"description";s:7:"Plugins";s:20:"singular_description";s:6:"Plugin";}, last_one=)
+0002.045 () Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins2.zip, 24.6 MB)
+0002.045 () Unzipping backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins2.zip to /Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/upgrade/e9e41258/ using UpdraftPlus_ZipArchive, starting index 0
+0003.159 () Unzip progress: 1002 out of 4977 files (14.4 MB, plugins/updraftplus/vendor/guzzlehttp/guzzle/src/Handler/Proxy.php)
+0003.310 () Unzip progress: 2003 out of 4977 files (24.9 MB, plugins/updraftplus/vendor/rackspace/php-opencloud/lib/OpenCloud/Common/Log/Logger.php)
+0003.454 () Unzip progress: 3004 out of 4977 files (35.2 MB, plugins/formidable/classes/views/addons/settings.php)
+0003.623 () Unzip progress: 4005 out of 4977 files (45.9 MB, plugins/formidable-pro/languages/formidable-pro-fr_FR-be726b1a8cba9770b7e4395958579cfd.json)
+0003.830 () Unzip progress: 4977 out of 4977 files (69.4 MB, plugins/redirection/database/schema/233.php)
+0003.835 () Moving unpacked backup into place...
+0004.612 () Top-level entities being moved: formidable-pro, formidable, duplicate-post-page-menu-custom-post-type, formidable-dates, redirection, formidable-acf, all-in-one-seo-pack, formidable-registration, updraftplus, loco-translate, hm-multiple-roles, wordfence, aryo-activity-log, formidable-mailchimp
+0005.127 () Cleaning up rubbish...
+0005.128 () restore_backup(backup_file=backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins3.zip, type=plugins, info=a:3:{s:4:"path";s:71:"/Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/plugins";s:11:"description";s:7:"Plugins";s:20:"singular_description";s:6:"Plugin";}, last_one=)
+0005.128 () Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins3.zip, 17.9 MB)
+0005.128 () Unzipping backup_2024-06-21-1310_WegWandernch_5805af689d2a-plugins3.zip to /Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/upgrade/701e3e3b/ using UpdraftPlus_ZipArchive, starting index 0
+0005.977 () Unzip progress: 1002 out of 3719 files (10.3 MB, plugins/complianz-gdpr/settings/src/Dashboard/TaskElement.js)
+0006.153 () Unzip progress: 2003 out of 3719 files (25.2 MB, plugins/real-cookie-banner-pro/vendor/devowl-wp/deliver-anonymous-asset/LICENSE)
+0006.345 () Unzip progress: 3004 out of 3719 files (41.8 MB, plugins/index.php)
+0006.439 () Unzip progress: 3719 out of 3719 files (46.2 MB, plugins/real-cookie-banner-pro/vendor/devowl-wp/deliver-anonymous-asset/LICENSE_3RD_PARTY_JS.md)
+0006.443 () Moving unpacked backup into place...
+0007.012 () Top-level entities being moved: wegw-b2b, complianz-gdpr, index.php, wegwandern-summit-book, real-cookie-banner-pro, wp-media-folder, wordfence, wp-fastest-cache, svg-support
+0007.426 () Cleaning up rubbish...
+0007.430 () Entity: themes
+0007.430 () restore_backup(backup_file=backup_2024-06-21-1310_WegWandernch_5805af689d2a-themes.zip, type=themes, info=a:3:{s:4:"path";s:70:"/Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/themes";s:11:"description";s:6:"Themes";s:20:"singular_description";s:5:"Theme";}, last_one=1)
+0007.430 () Unpacking backup... (backup_2024-06-21-1310_WegWandernch_5805af689d2a-themes.zip, 11.2 MB)
+0007.430 () Unzipping backup_2024-06-21-1310_WegWandernch_5805af689d2a-themes.zip to /Users/rilanatnt/Local Sites/wegwandernch/app/public/wp-content/upgrade/20023496/ using UpdraftPlus_ZipArchive, starting index 0
+0007.671 () Unzip progress: 407 out of 407 files (19.7 MB, themes/WEGW/archive.php)
+0007.672 () Moving old data: filesystem method / updraft_dir is potentially possible
+0007.673 () Moving old data: can potentially use wp_filesystem method / -old
+0007.673 () Moving old data out of the way...
+0007.750 () Top-level entities being moved: .DS_Store, index.php, WEGW-bkp-04-07-2023.zip, twentytwentythree, WEGW
+0007.750 () Moving unpacked backup into place...
+0007.800 () Top-level entities being moved: index.php, twentytwentyfour, WEGW
+0007.800 () Cleaning up rubbish...
+0007.806 () Restore successful!
+0007.806 () Restore successful
