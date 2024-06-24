@@ -16,13 +16,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'  # Change to your required Node.js version
+          node-version: '20'  # Update to Node.js version 20
 
       - name: Install dependencies
         run: npm install
 
       - name: Build project
-        run: npm run build  # Change to your build script
+        run: npm run build  # Adjust to your build script
 
       - name: Run tests
         run: npm test
@@ -33,5 +33,5 @@ jobs:
           ftp-server: ${{ secrets.FTP_SERVER }}
           ftp-username: ${{ secrets.FTP_USERNAME }}
           ftp-password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./build  # Change to your build output directory
+          local-dir: ./build  # Adjust to your build output directory
           git-ftp-args: --insecure  # Optional: use if needed for your FTP server
