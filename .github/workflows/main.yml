@@ -1,4 +1,4 @@
-name: Deploy via SSH
+name: Deploy to Mittwald via SSH
 
 on:
   push:
@@ -18,13 +18,11 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to Server
+    - name: Deploy to Mittwald
       run: |
         ssh -o StrictHostKeyChecking=no p625131@p625131.webspaceconfig.de << 'EOF'
           cd /html/wordpress
-          git pull origin main
+          ls -la  # List files in the WordPress directory
           # Add any additional deployment commands here
-          npm install
-          npm run build
-          pm2 restart all
+          # e.g., git pull, build commands, etc.
         EOF
