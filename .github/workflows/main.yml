@@ -1,17 +1,30 @@
-on: push
-name: 🚀 Deploy website on push
+name: Deploy via SSH
+
+on:
+  push:
+    branches:
+      - main  # Change this to your deployment branch if needed
+
 jobs:
-  web-deploy:
-    name: 🎉 Deploy
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: 🚚 Get latest code
-      uses: actions/checkout@v4
-    
-    - name: 📂 Sync files
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        server: p625131.webspaceconfig.de
-        username: p625131
-        password: ${{ secrets.ftp_password }}
-        server-dir: html/wordpress/
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to Server
+      run: |
+        ssh -o StrictHostKeyChecking=no user@yourserver.com << 'EOF'
+          cd /path/to/your/project
+          git pull origin main
+          # Add any additional deployment commands here
+          npm install
+          npm run build
+          pm2 restart all
+        EOF
