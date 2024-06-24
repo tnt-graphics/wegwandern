@@ -20,8 +20,8 @@ jobs:
 
     - name: Deploy to Server
       run: |
-        ssh -o StrictHostKeyChecking=no user@yourserver.com << 'EOF'
-          cd /path/to/your/project
+        ssh -o StrictHostKeyChecking=no p625131@p625131.webspaceconfig.de << 'EOF'
+          cd /html/wordpress
           git pull origin main
           # Add any additional deployment commands here
           npm install
