@@ -1,23 +1,32 @@
 name: Deploy to FTP
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: FTP Deploy
-        uses: SamKirkland/FTP-Deploy-Action@3.1.1
-        with:
-          ftp-server: sftp://p625131.webspaceconfig.de/html/
-          ftp-username: p625131
-          ftp-password: ${{ secrets.ftp_password }}
-          local-dir: ./  # Adjust if your code is in a specific directory
-          server-dir: /testing  # Adjust according to your server directory structure
+          
+          on:
+            push:
+              branches:
+                - main
+          
+          jobs:
+            deploy:
+              runs-on: ubuntu-latest
+          
+              steps:
+                - name: Checkout repository
+                  uses: actions/checkout@v2
+                  with:
+                    fetch-depth: 0  # Fetch all history for all branches and tags
+                    submodules: true  # Checkout submodules if any
+          
+                - name: Install required packages
+                  run: sudo apt-get update && sudo apt-get install -y git-lfs
+          
+                - name: Pull large files
+                  run: git lfs pull
+          
+                - name: FTP Deploy
+                  uses: SamKirkland/FTP-Deploy-Action@3.1.1
+                  with:
+                    ftp-server: sftp://p625131.webspaceconfig.de/html/
+                    ftp-username: p625131
+                    ftp-password: ${{ secrets.ftp_password }}
+                    local-dir: ./  # Adjust if your code is in a specific directory
+                    server-dir: /testing  # Adjust according to your server directory structure
