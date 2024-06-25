@@ -19,6 +19,9 @@ jobs:
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
+      - name: List repository contents
+        run: ls -al
+
       - name: Deploy to FTP server
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
@@ -28,5 +31,6 @@ jobs:
           echo "Connecting to FTP server: $FTP_SERVER"
           lftp -c "set ftp:ssl-allow no; \
                    open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER; \
-                   mkdir -f -p testing; \
+                   ls; \
+                   mkdir -p html/testing || true; \
                    mirror -R ./testing"
