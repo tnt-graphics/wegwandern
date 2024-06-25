@@ -1,34 +1,23 @@
-name: FTP Deploy
+name: Deploy to FTP
 
-on: 
+on:
   push:
     branches:
-      - main  # or the branch you want to trigger the workflow
+      - main
 
 jobs:
-  ftp-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Install lftp
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y lftp
-
-    - name: Verify lftp installation
-      run: lftp --version
-
-    - name: Deploy to FTP server
-      env:
-        FTP_SERVER: ${{ secrets.FTP_SERVER }}
-        FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-        FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-      run: |
-        echo "Connecting to FTP server: $FTP_SERVER"
-        lftp -c "set ftp:ssl-allow no; \
-                 open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER; \
-                 mkdir -p html/testing; \
-                 mirror -R ./html/testing"
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@3.1.1
+        with:
+          ftp-server: sftp://p625131.webspaceconfig.de/html/
+          ftp-username: p625131
+          ftp-password: ${{ secrets.ftp_password }}
+          local-dir: ./  # Adjust if your code is in a specific directory
+          server-dir: /testing  # Adjust according to your server directory structure
