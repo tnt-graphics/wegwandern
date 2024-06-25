@@ -22,6 +22,9 @@ jobs:
       - name: List repository contents
         run: ls -al
 
+      - name: List specific directory contents
+        run: ls -al ./html/testing
+
       - name: Deploy to FTP server
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
@@ -33,4 +36,4 @@ jobs:
                    open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER; \
                    ls; \
                    mkdir -p html/testing || true; \
-                   mirror -R ./testing"
+                   mirror -R . html/testing"
