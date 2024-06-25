@@ -24,4 +24,4 @@ jobs:
       run: |
         lftp -c "set ftp:ssl-allow no; \
                  open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER; \
-                 mirror -R ./ html/testing"
+                 mirror -R ./html/testing"
