@@ -22,8 +22,8 @@ jobs:
       - name: List repository contents
         run: ls -al
 
-      - name: List specific directory contents
-        run: ls -al ./html/testing
+      - name: Check local directory structure
+        run: ls -al ./html/testing || echo "Directory ./html/testing does not exist"
 
       - name: Deploy to FTP server
         env:
@@ -34,6 +34,6 @@ jobs:
           echo "Connecting to FTP server: $FTP_SERVER"
           lftp -c "set ftp:ssl-allow no; \
                    open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER; \
-                   ls; \
+                   ls html/testing || echo 'Directory html/testing does not exist on server'; \
                    mkdir -p html/testing || true; \
-                   mirror -R . html/testing"
+                   mirror -R ./html/testing html/testing"
