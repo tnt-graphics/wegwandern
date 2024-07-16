@@ -128,7 +128,7 @@ if ( ! empty( $block['data']['map_regionen'] ) ) {
 							<span class="redmark"></span>
 						</label>
 						<label class="check_wrapper">
-							<?php echo __( 'Schneehöhe Exolabs', 'wegwandern' ); ?>
+							<?php echo __( 'Schneehöhe ExoLabs', 'wegwandern' ); ?>
 							<input type="checkbox" id="snow_depth_layer" name="" value="">
 							<span class="redmark"></span>
 							<div class="info_icon" onclick="infoIconClicked(event,'map-resp')"></div>
@@ -268,7 +268,7 @@ if ( ! empty( $block['data']['map_regionen'] ) ) {
 							<span class="redmark"></span>
 						</label>
 						<label class="check_wrapper">
-							<?php echo __( 'Schneehöhe Exolabs', 'wegwandern' ); ?>
+							<?php echo __( 'Schneehöhe ExoLabs', 'wegwandern' ); ?>
 							<input type="checkbox" id="snow_depth_layer" name="" value="">
 							<span class="redmark"></span>
 							<div class="info_icon" onclick="infoIconClicked(event,'map_desktop')"></div>

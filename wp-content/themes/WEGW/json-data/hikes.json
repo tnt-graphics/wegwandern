@@ -1,11 +1,430 @@
 {
     "hikes": [
         {
+            "longitude": "8.6507002795115",
+            "latitude": "46.922901315615",
+            "location_regionen_name": "Urnerland",
+            "location_regionen_id": [
+                1788
+            ],
+            "location_regionen_parent_id": [
+                26
+            ],
+            "location_angebote": [
+                485,
+                480,
+                481
+            ],
+            "location_thema": [
+                512,
+                56
+            ],
+            "location_routenverlauf": [
+                506
+            ],
+            "location_ausdauer": [
+                41
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                11,
+                10
+            ],
+            "location_altitude": "Urnerland",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/07\/wildheupfad_eggberge_oberaxen_flueelen_wanderung-450x300.jpg",
+            "location_name": "Wildheupfad, Eggberge (Fl\u00fcelen) \u2013 Oberaxen",
+            "location_desc": "Im Urnerland ist das Wildheuen noch Tradition. Auf dem Wildheupfad gehts von der Bergstation Eggberge (Fl\u00fcelen) nach Oberaxen durch Wildheugebiete an steilen Bergflanken entlang. Traumhafte Aussichten auf den Urnersee, die Bergwelt und zum Schluss noch eine spektakul\u00e4re Seilbahnfahrt inklusive. Pr\u00e4dikat: Top-Wanderung!",
+            "location_level_cls": "hike-red",
+            "location_level_name": "T2",
+            "location_level_id": [
+                29
+            ],
+            "location_hike_time": "02:30",
+            "location_travel_distance": "7.43",
+            "location_hike_ascent": "285",
+            "location_hike_descent": "735",
+            "location_hike_tiefster_punkt": "996.8",
+            "location_hike_hochster_punkt": "1545.1",
+            "location_wander_saison_name": "Jun-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/wildheupfad-eggberge-flueelen-oberaxen-wandern\/",
+            "location_id": 134105,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/eggbergefluelenoberaxen.gpx"
+        },
+        {
+            "longitude": "9.3843203433789",
+            "latitude": "47.307969829068",
+            "location_regionen_name": "Appenzell",
+            "location_regionen_id": [
+                78
+            ],
+            "location_regionen_parent_id": [
+                23
+            ],
+            "location_angebote": [
+                485,
+                487,
+                1793,
+                480,
+                481
+            ],
+            "location_thema": [
+                51,
+                1790,
+                512,
+                56
+            ],
+            "location_routenverlauf": [
+                506
+            ],
+            "location_ausdauer": [
+                41
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                11,
+                10
+            ],
+            "location_altitude": "Appenzell",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/07\/kronberg_jakobskapelle_appenzell_wandern-450x300.jpg",
+            "location_name": "Kronberg \u2013 Appenzell",
+            "location_desc": "Fantastische Aussichten garantiert! Zum Alpstein, ins Appenzellerland bis zum Bodensee. Vom Kronberg auf einem herrlichen Gratweg via Jakobskapelle, Berggasthaus Scheidegg, Kaubad nach Appenzell. Eine Top-Wanderung mit Besuch der idyllischen Altstadt von Appenzell zum Abschluss.",
+            "location_level_cls": "hike-yellow",
+            "location_level_name": "T1",
+            "location_level_id": [
+                28
+            ],
+            "location_hike_time": "02:40",
+            "location_travel_distance": "9.69",
+            "location_hike_ascent": "95",
+            "location_hike_descent": "955",
+            "location_hike_tiefster_punkt": "783.4",
+            "location_hike_hochster_punkt": "1658",
+            "location_wander_saison_name": "Jun-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/kronberg-appenzell-wandern\/",
+            "location_id": 134018,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [
+                "1818",
+                "1965",
+                "1858",
+                "1929",
+                "1906",
+                "1887"
+            ],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/kronbergkaubadappenzell.gpx"
+        },
+        {
+            "longitude": "7.4776002974249",
+            "latitude": "46.046790332999",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
+            "location_regionen_id": [
+                1967
+            ],
+            "location_regionen_parent_id": [
+                25
+            ],
+            "location_angebote": [
+                485,
+                480,
+                481
+            ],
+            "location_thema": [
+                1851,
+                1840
+            ],
+            "location_routenverlauf": [
+                506
+            ],
+            "location_ausdauer": [
+                41
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                11,
+                10
+            ],
+            "location_altitude": "Val d\u2019H\u00e9rens",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/06\/arolla_lac_bleu_la_gouille_wandern-450x300.jpg",
+            "location_name": "Arolla \u2013 Lac Bleu \u2013 La Gouille",
+            "location_desc": "Idyllisch und t\u00fcrkisblau ist der Lac Bleu d'Arolla im Val d'H\u00e9rens (Eringertal). Ein Bergsee, wie aus dem Bilderbuch. Ebenso malerisch der nahe Weiler mit typischen, sonnenverbrannten Walliser Holzh\u00e4usern und Alpbeizli. Von Arolla startet die Wanderung und f\u00fchrt durch eine traumhafte Landschaft mit grandiosen Aussichten nach La Gouille. Eine Top-Tour!",
+            "location_level_cls": "hike-red",
+            "location_level_name": "T2",
+            "location_level_id": [
+                29
+            ],
+            "location_hike_time": "02:20",
+            "location_travel_distance": "6.85",
+            "location_hike_ascent": "370",
+            "location_hike_descent": "547",
+            "location_hike_tiefster_punkt": "1830.9",
+            "location_hike_hochster_punkt": "2103.5",
+            "location_wander_saison_name": "Jun-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/arolla-lac-bleu-la-gouille-val-dherens-eringertal-wandern\/",
+            "location_id": 133931,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [
+                "1989",
+                "1832",
+                "1901",
+                "902",
+                "1840",
+                "149",
+                "1110"
+            ],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/arollalacbleulagouille.gpx"
+        },
+        {
+            "longitude": "7.4302305113524",
+            "latitude": "46.167509855237",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
+            "location_regionen_id": [
+                1967
+            ],
+            "location_regionen_parent_id": [
+                25
+            ],
+            "location_angebote": [],
+            "location_thema": [
+                1806,
+                1840
+            ],
+            "location_routenverlauf": [
+                506
+            ],
+            "location_ausdauer": [
+                40
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                6,
+                11,
+                10
+            ],
+            "location_altitude": "Val d\u2019H\u00e9rens",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/06\/erdpyramiden_euseigne_wallis_wandern-450x300.jpg",
+            "location_name": "Erdpyramiden von Euseigne \u2013 Euseigne \u2013 La Luette",
+            "location_desc": "Sie geh\u00f6ren zu den bekanntesten Naturdenkm\u00e4lern des Val d'H\u00e9rens (Eringertal) und des Wallis: Die bizarren Pyramiden von\u00a0Euseigne. Ein spektakul\u00e4res und einzigartiges Naturph\u00e4nomen. Eine kurze, lohnende Wanderung mit Highlight gleich zu Beginn. Der Weg f\u00fchrt durch offenes Gel\u00e4nde mit sch\u00f6nen Ausblicken sowie Waldpassagen und eine kleine Schlucht bis La Luette.",
+            "location_level_cls": "hike-yellow",
+            "location_level_name": "T1",
+            "location_level_id": [
+                28
+            ],
+            "location_hike_time": "00:55",
+            "location_travel_distance": "3.25",
+            "location_hike_ascent": "118",
+            "location_hike_descent": "86",
+            "location_hike_tiefster_punkt": "957.4",
+            "location_hike_hochster_punkt": "1055.8",
+            "location_wander_saison_name": "Mai-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/erdpyramiden-von-euseigne-la-luette-val-dherens-eringertal-wandern\/",
+            "location_id": 133820,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [
+                "1972",
+                "237",
+                "902",
+                "499",
+                "442",
+                "1110"
+            ],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/pyramidesdeuseignelaluette.gpx"
+        },
+        {
+            "longitude": "7.5181898968294",
+            "latitude": "46.086000420153",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
+            "location_regionen_id": [
+                1967
+            ],
+            "location_regionen_parent_id": [
+                25
+            ],
+            "location_angebote": [
+                487,
+                480,
+                481
+            ],
+            "location_thema": [],
+            "location_routenverlauf": [
+                49
+            ],
+            "location_ausdauer": [
+                41
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                11,
+                10
+            ],
+            "location_altitude": "Val d\u2019H\u00e9rens",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/06\/wandern_eringertal_la_forclaz-450x300.jpg",
+            "location_name": "Chemin des villages d\u2019Evol\u00e8ne",
+            "location_desc": "Chemin des villages d\u2019Evol\u00e8ne \u2013 Der Name der Rundwanderung ist Programm: Von einem historischen und idyllischen Dorf ins n\u00e4chste. Vom Talboden am Fluss La Borgne entlang, hinauf zu den D\u00f6rfer auf den Felsen und zur Sonnenterrasse. Mitten ins Herz des wilden Val d\u2019H\u00e9rens (Eringertal).",
+            "location_level_cls": "hike-yellow",
+            "location_level_name": "T1",
+            "location_level_id": [
+                28
+            ],
+            "location_hike_time": "03:35",
+            "location_travel_distance": "11.65",
+            "location_hike_ascent": "525",
+            "location_hike_descent": "525",
+            "location_hike_tiefster_punkt": "1342.5",
+            "location_hike_hochster_punkt": "1730.2",
+            "location_wander_saison_name": "Jun-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/chemin-des-villages-evolene-val-dherens-eringertal-wandern\/",
+            "location_id": 133705,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [
+                "902",
+                "1110"
+            ],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/chemindesvillagesdevolene.gpx"
+        },
+        {
+            "longitude": "7.5132608059794",
+            "latitude": "46.098660438322",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
+            "location_regionen_id": [
+                1967
+            ],
+            "location_regionen_parent_id": [
+                25
+            ],
+            "location_angebote": [
+                480,
+                481
+            ],
+            "location_thema": [],
+            "location_routenverlauf": [
+                506
+            ],
+            "location_ausdauer": [
+                41
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                11,
+                10
+            ],
+            "location_altitude": "Val d\u2019H\u00e9rens",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/06\/eringertal_la_forclaz_wandern-450x300.jpg",
+            "location_name": "Les Haud\u00e8res \u2013 La Forclaz \u2013 La Sage \u2013 Evol\u00e8ne",
+            "location_desc": "Wanderung im Val d\u2019H\u00e9rens \/ Eringertal, von Les Haud\u00e8res via La Forclaz, La Sage nach Evol\u00e8ne. Vom Talboden auf die Sonnenterrasse zu historischen, malerischen D\u00f6rfern und mit grandiosen Ausblicken ins Tal und in die Bergwelt!",
+            "location_level_cls": "hike-yellow",
+            "location_level_name": "T1",
+            "location_level_id": [
+                28
+            ],
+            "location_hike_time": "02:20",
+            "location_travel_distance": "7.12",
+            "location_hike_ascent": "374",
+            "location_hike_descent": "425",
+            "location_hike_tiefster_punkt": "1371",
+            "location_hike_hochster_punkt": "1730.2",
+            "location_wander_saison_name": "Jun-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/les-hauderes-la-forclaz-la-sage-evolene-val-dherens-eringertal-wandern\/",
+            "location_id": 133624,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/leshaudereslaforclazlasageevolene.gpx"
+        },
+        {
+            "longitude": "7.5030397246592",
+            "latitude": "46.098210534547",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
+            "location_regionen_id": [
+                1967
+            ],
+            "location_regionen_parent_id": [
+                25
+            ],
+            "location_angebote": [
+                487,
+                480,
+                481
+            ],
+            "location_thema": [
+                52,
+                53
+            ],
+            "location_routenverlauf": [
+                506
+            ],
+            "location_ausdauer": [
+                40
+            ],
+            "location_wander_saison": [
+                9,
+                8,
+                7,
+                6,
+                11,
+                10
+            ],
+            "location_altitude": "Val d\u2019H\u00e9rens",
+            "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/06\/les_hauderes_evolene_wanderung-450x300.jpg",
+            "location_name": "Les Haud\u00e8res \u2013 Evol\u00e8ne",
+            "location_desc": "Wanderung im Val d\u2019H\u00e9rens (Eringertal) von Les Haud\u00e8res nach Evol\u00e8ne am Fluss La Borgne entlang, durch ein wundersch\u00f6nes Auengebiet und artenreiche Blumenwiesen, mit lohnenden Streifz\u00fcgen durch die beiden Orte, die zu den sch\u00f6nsten Bergd\u00f6rfern der Schweiz z\u00e4hlen. Top!",
+            "location_level_cls": "hike-yellow",
+            "location_level_name": "T1",
+            "location_level_id": [
+                28
+            ],
+            "location_hike_time": "01:10",
+            "location_travel_distance": "4.66",
+            "location_hike_ascent": "101",
+            "location_hike_descent": "152",
+            "location_hike_tiefster_punkt": "1342.5",
+            "location_hike_hochster_punkt": "1452.7",
+            "location_wander_saison_name": "Mai-Okt",
+            "location_link": "https:\/\/wegwandern.ch\/wanderung\/les-hauderes-evolene-val-dherens-eringertal-wandern\/",
+            "location_id": 133509,
+            "location_aktivitat": [
+                18
+            ],
+            "watchlisted_by": [],
+            "average_rating": 0,
+            "gpx_file": "https:\/\/wegwandern.ch\/gpx\/leshauderesevolene.gpx"
+        },
+        {
             "longitude": "7.4234999949113",
             "latitude": "46.182600048836",
-            "location_regionen_name": "Wallis",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
             "location_regionen_id": [
-                25
+                1967
             ],
             "location_regionen_parent_id": [
                 25
@@ -32,9 +451,9 @@
                 11,
                 10
             ],
-            "location_altitude": "Wallis",
+            "location_altitude": "Val d\u2019H\u00e9rens",
             "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2024\/06\/passerelle_de_la_grande_combe-450x300.jpg",
-            "location_name": "Vernami\u00e8ge, Les Prixes \u2013 Ossona \u2013 H\u00e4ngebr\u00fccke \u00abPasserelle de la Grande Combe\u00bb \u2013 La Luette (Val d\u2019H\u00e9rens \/ Eringertal)",
+            "location_name": "Vernami\u00e8ge, Les Prixes \u2013 Ossona \u2013 H\u00e4ngebr\u00fccke \u00abPasserelle de la Grande Combe\u00bb \u2013 La Luette",
             "location_desc": "Wanderung im Herzen des Val d\u2019H\u00e9rens (Eringertal), auf dem Chemin d\u2019Ossona von Vernami\u00e8ge Les Prixes nach La Luette. Unterwegs passiert man den authentischen Weiler Ossona mit Alpbeizli und die spektakul\u00e4re 133 Meter lange H\u00e4ngebr\u00fccke \u00abPasserelle de la Grande Combe\u00bb. Aussichten auf die bizzaren Erdpyramiden von Euseigne inklusive. Ein herrlicher H\u00f6henweg!",
             "location_level_cls": "hike-red",
             "location_level_name": "T2",
@@ -53,7 +472,10 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "237",
+                "902"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/vernamiegelesprixesossonalaluette.gpx"
         },
@@ -116,7 +538,9 @@
             "watchlisted_by": [
                 "1566",
                 "87",
-                "930"
+                "1963",
+                "930",
+                "1720"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/badzurzachkoblenzdorfwaldshutd.gpx"
@@ -179,7 +603,8 @@
             ],
             "watchlisted_by": [
                 "1510",
-                "87"
+                "87",
+                "1930"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/grimmialpoeydiemtigendiemtigtal.gpx"
@@ -241,14 +666,19 @@
                 18
             ],
             "watchlisted_by": [
+                "1946",
                 "1566",
                 "1444",
                 "453",
                 "453",
                 "1237",
+                "1836",
+                "1968",
                 "1371",
                 "1494",
                 "87",
+                "1963",
+                "1720",
                 "1505"
             ],
             "average_rating": 0,
@@ -317,6 +747,7 @@
             ],
             "watchlisted_by": [
                 "414",
+                "1946",
                 "1230",
                 "1385",
                 "1504",
@@ -328,6 +759,7 @@
                 "1312",
                 "1235",
                 "87",
+                "1907",
                 "1363",
                 "1720",
                 "1331",
@@ -465,6 +897,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1866",
                 "414",
                 "1102",
                 "1136",
@@ -472,12 +905,15 @@
                 "1247",
                 "1200",
                 "1306",
+                "1961",
                 "1210",
                 "1396",
                 "1370",
                 "1647",
                 "1240",
                 "1225",
+                "1836",
+                "1856",
                 "1235",
                 "1450",
                 "1376",
@@ -492,7 +928,9 @@
                 "1152",
                 "1476",
                 "1331",
-                "1044"
+                "1044",
+                "1879",
+                "1685"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/holderbankroggenfluebalsthal.gpx"
@@ -553,6 +991,7 @@
             ],
             "watchlisted_by": [
                 "991",
+                "1866",
                 "414",
                 "948",
                 "1183",
@@ -570,6 +1009,7 @@
                 "1031",
                 "1720",
                 "1027",
+                "1879",
                 "1028"
             ],
             "average_rating": 0,
@@ -702,6 +1142,7 @@
             ],
             "watchlisted_by": [
                 "1158",
+                "1761",
                 "915",
                 "966",
                 "1102",
@@ -803,7 +1244,8 @@
                 "942",
                 "87",
                 "829",
-                "930"
+                "930",
+                "1884"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/versciopontebrolla.gpx"
@@ -1194,16 +1636,20 @@
                 "852",
                 "789",
                 "966",
+                "1750",
                 "676",
                 "724",
                 "1160",
+                "1758",
                 "453",
                 "1048",
                 "858",
                 "1469",
                 "1068",
+                "1723",
                 "1031",
                 "1276",
+                "1952",
                 "721",
                 "772"
             ],
@@ -1270,8 +1716,12 @@
             ],
             "watchlisted_by": [
                 "703",
+                "1891",
+                "1891",
+                "1762",
                 "1085",
                 "1296",
+                "1866",
                 "1490",
                 "1102",
                 "826",
@@ -1283,6 +1733,7 @@
                 "624",
                 "1429",
                 "661",
+                "1961",
                 "806",
                 "775",
                 "828",
@@ -1297,6 +1748,7 @@
                 "817",
                 "1240",
                 "1225",
+                "1836",
                 "762",
                 "1288",
                 "1404",
@@ -1315,12 +1767,17 @@
                 "1031",
                 "838",
                 "982",
+                "1772",
                 "297",
                 "1276",
+                "1138",
                 "683",
+                "1884",
+                "1720",
                 "1152",
                 "800",
                 "1044",
+                "1879",
                 "1286",
                 "1668",
                 "1274"
@@ -1397,6 +1854,7 @@
                 "1566",
                 "889",
                 "661",
+                "1961",
                 "731",
                 "959",
                 "571",
@@ -1406,6 +1864,8 @@
                 "941",
                 "1195",
                 "1225",
+                "1836",
+                "1832",
                 "781",
                 "872",
                 "1113",
@@ -1414,10 +1874,12 @@
                 "662",
                 "583",
                 "930",
+                "1884",
                 "1587",
                 "721",
                 "1331",
-                "1331"
+                "1331",
+                "1879"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/sigriswilthun.gpx"
@@ -1477,6 +1939,7 @@
             ],
             "watchlisted_by": [
                 "1296",
+                "1866",
                 "826",
                 "1004",
                 "948",
@@ -1484,6 +1947,7 @@
                 "895",
                 "967",
                 "1148",
+                "1961",
                 "806",
                 "769",
                 "1145",
@@ -1496,6 +1960,8 @@
                 "1482",
                 "810",
                 "1225",
+                "1836",
+                "1832",
                 "818",
                 "1281",
                 "1021",
@@ -1516,8 +1982,10 @@
                 "646",
                 "578",
                 "1168",
+                "1784",
                 "1149",
                 "1236",
+                "1720",
                 "1280",
                 "1066",
                 "1003",
@@ -1885,7 +2353,8 @@
             ],
             "watchlisted_by": [
                 "495",
-                "1160"
+                "1160",
+                "1967"
             ],
             "average_rating": 5,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/rigikulmchaserenholzschneeschuhtrail.gpx"
@@ -2782,6 +3251,10 @@
             ],
             "watchlisted_by": [
                 "322",
+                "1891",
+                "1891",
+                "1762",
+                "1851",
                 "1700",
                 "1679",
                 "189",
@@ -2791,6 +3264,7 @@
                 "487",
                 "676",
                 "1370",
+                "1914",
                 "599",
                 "1613",
                 "1647",
@@ -2801,14 +3275,18 @@
                 "1364",
                 "1399",
                 "667",
+                "1812",
                 "297",
                 "1022",
                 "1104",
                 "1591",
+                "1780",
                 "1553",
                 "518",
                 "1043",
+                "1720",
                 "1508",
+                "1722",
                 "301"
             ],
             "average_rating": 0,
@@ -2956,25 +3434,34 @@
             ],
             "watchlisted_by": [
                 "601",
+                "1965",
+                "1973",
                 "1700",
                 "1083",
                 "1092",
                 "1445",
                 "1395",
+                "1730",
                 "967",
                 "814",
                 "599",
                 "1647",
                 "1647",
+                "1857",
                 "1000",
+                "1968",
                 "1364",
                 "1021",
                 "1371",
                 "864",
                 "1031",
                 "370",
+                "1929",
                 "297",
+                "1738",
                 "1104",
+                "1939",
+                "1710",
                 "518"
             ],
             "average_rating": 0,
@@ -3045,6 +3532,8 @@
                 "787",
                 "787",
                 "889",
+                "1961",
+                "1917",
                 "676",
                 "791",
                 "21",
@@ -3052,6 +3541,8 @@
                 "1647",
                 "1647",
                 "1195",
+                "1800",
+                "1836",
                 "1705",
                 "762",
                 "566",
@@ -3062,11 +3553,16 @@
                 "1371",
                 "350",
                 "1377",
+                "1812",
                 "149",
                 "1022",
+                "1738",
                 "1591",
+                "1780",
+                "1722",
                 "1696",
                 "1427",
+                "1879",
                 "920",
                 "1689"
             ],
@@ -3140,8 +3636,12 @@
                 "826",
                 "839",
                 "1370",
+                "120",
                 "583",
-                "1098"
+                "1591",
+                "1098",
+                "1815",
+                "1811"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/derborencelesplanssurbex.gpx"
@@ -3213,8 +3713,11 @@
                 "279",
                 "1705",
                 "1469",
+                "120",
                 "1031",
                 "899",
+                "1738",
+                "1591",
                 "382"
             ],
             "average_rating": 0,
@@ -3280,11 +3783,14 @@
             ],
             "watchlisted_by": [
                 "703",
+                "1891",
                 "1085",
                 "1700",
                 "966",
                 "826",
                 "889",
+                "1928",
+                "1928",
                 "661",
                 "374",
                 "433",
@@ -3371,15 +3877,19 @@
             "watchlisted_by": [
                 "1397",
                 "1526",
+                "1896",
                 "1510",
                 "814",
                 "1444",
                 "1412",
+                "1758",
                 "1400",
                 "1400",
                 "613",
                 "264",
+                "1901",
                 "646",
+                "1738",
                 "1363",
                 "1508",
                 "1318"
@@ -3457,6 +3967,7 @@
                 "599",
                 "1237",
                 "433",
+                "1901",
                 "1474",
                 "752",
                 "1113",
@@ -3465,6 +3976,7 @@
                 "1314",
                 "442",
                 "1276",
+                "1738",
                 "1671",
                 "1476",
                 "1476",
@@ -3531,6 +4043,7 @@
             ],
             "watchlisted_by": [
                 "322",
+                "1761",
                 "852",
                 "1004",
                 "785",
@@ -3607,6 +4120,7 @@
                 "279",
                 "781",
                 "594",
+                "1907",
                 "783",
                 "873",
                 "357",
@@ -3746,6 +4260,7 @@
                 "1396",
                 "1396",
                 "941",
+                "1048",
                 "279",
                 "1467",
                 "672",
@@ -3754,6 +4269,7 @@
                 "942",
                 "982",
                 "583",
+                "1738",
                 "721",
                 "1080",
                 "1044"
@@ -3815,6 +4331,7 @@
             ],
             "watchlisted_by": [
                 "981",
+                "1767",
                 "1700",
                 "1020",
                 "966",
@@ -3831,6 +4348,7 @@
                 "49",
                 "1233",
                 "831",
+                "761",
                 "228",
                 "615",
                 "1257",
@@ -3907,8 +4425,11 @@
                 "1444",
                 "916",
                 "600",
+                "1967",
+                "1907",
                 "1276",
                 "578",
+                "1720",
                 "944"
             ],
             "average_rating": 0,
@@ -5465,6 +5986,7 @@
                 "838",
                 "228",
                 "615",
+                "1720",
                 "1110"
             ],
             "average_rating": 0,
@@ -5543,6 +6065,7 @@
                 "647",
                 "1423",
                 "1038",
+                "1857",
                 "532",
                 "1498",
                 "136",
@@ -5550,8 +6073,11 @@
                 "1060",
                 "982",
                 "1022",
+                "1738",
                 "1591",
-                "721"
+                "1720",
+                "721",
+                "1685"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/seebodenalpchanzelirigikaltbadfirst.gpx"
@@ -5620,7 +6146,8 @@
                 "647",
                 "362",
                 "343",
-                "1082"
+                "1082",
+                "1720"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/immenseeseebodenalp.gpx"
@@ -5687,7 +6214,8 @@
                 "487",
                 "1068",
                 "373",
-                "343"
+                "343",
+                "1720"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/inselufenaurundweg.gpx"
@@ -5747,6 +6275,8 @@
                 18
             ],
             "watchlisted_by": [
+                "120",
+                "1738",
                 "1041"
             ],
             "average_rating": 0,
@@ -5826,9 +6356,12 @@
                 "594",
                 "1548",
                 "842",
+                "1876",
                 "1031",
+                "1489",
                 "792",
                 "297",
+                "1738",
                 "721",
                 "357",
                 "1044",
@@ -5906,6 +6439,7 @@
                 "350",
                 "1276",
                 "148",
+                "1879",
                 "1003",
                 "1470",
                 "856",
@@ -5976,8 +6510,11 @@
                 "1083",
                 "817",
                 "739",
+                "1738",
+                "1919",
                 "443",
-                "1043"
+                "1043",
+                "1720"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/schatzalpstrelapassheimelilangwiesgr.gpx"
@@ -6046,8 +6583,10 @@
             "watchlisted_by": [
                 "1158",
                 "913",
+                "1975",
                 "966",
                 "740",
+                "1870",
                 "647",
                 "724",
                 "1326",
@@ -6055,8 +6594,8 @@
                 "752",
                 "985",
                 "491",
-                "761",
                 "485",
+                "1591",
                 "1082",
                 "1257"
             ],
@@ -6117,6 +6656,7 @@
             ],
             "watchlisted_by": [
                 "334",
+                "1872",
                 "1083",
                 "1325",
                 "777",
@@ -6124,15 +6664,30 @@
                 "1067",
                 "599",
                 "1647",
+                "1857",
                 "817",
                 "1364",
+                "1793",
+                "1856",
                 "1371",
                 "1005",
                 "1595",
+                "761",
+                "1843",
                 "1031",
+                "1812",
+                "1921",
+                "1772",
                 "297",
                 "1437",
+                "1138",
+                "1138",
+                "1738",
                 "1104",
+                "1939",
+                "721",
+                "1744",
+                "1835",
                 "1110"
             ],
             "average_rating": 5,
@@ -6201,9 +6756,12 @@
                 "1131",
                 "817",
                 "1453",
+                "1795",
                 "874",
                 "899",
+                "1812",
                 "297",
+                "1738",
                 "255",
                 "255",
                 "1043",
@@ -6302,31 +6860,42 @@
                 "1647",
                 "388",
                 "1594",
+                "1960",
                 "1131",
                 "757",
                 "781",
+                "1903",
                 "762",
                 "566",
                 "506",
                 "605",
+                "1795",
                 "934",
                 "872",
                 "872",
                 "507",
                 "1467",
                 "1371",
+                "1843",
+                "1812",
                 "149",
                 "297",
+                "1138",
                 "1022",
+                "1738",
+                "1745",
+                "1710",
                 "1522",
                 "443",
                 "1043",
                 "721",
                 "1508",
+                "1722",
                 "382",
                 "1331",
                 "1427",
                 "920",
+                "1744",
                 "1110",
                 "1689"
             ],
@@ -6393,6 +6962,7 @@
                 "1375",
                 "1085",
                 "1700",
+                "1786",
                 "624",
                 "791",
                 "1067",
@@ -6402,16 +6972,24 @@
                 "817",
                 "433",
                 "1705",
+                "1903",
+                "1856",
                 "1467",
                 "1469",
                 "1371",
+                "1843",
                 "874",
                 "1031",
                 "298",
                 "297",
+                "1138",
+                "1738",
+                "1591",
                 "577",
+                "1553",
                 "1043",
                 "1427",
+                "1744",
                 "1110"
             ],
             "average_rating": 0,
@@ -6474,6 +7052,11 @@
                 "492",
                 "345",
                 "1467",
+                "120",
+                "1738",
+                "1591",
+                "1554",
+                "1811",
                 "1650"
             ],
             "average_rating": 0,
@@ -6537,20 +7120,30 @@
                 "1405",
                 "601",
                 "592",
+                "1891",
+                "1762",
                 "1085",
                 "804",
                 "1700",
                 "1186",
                 "1083",
                 "1451",
+                "1946",
+                "1946",
                 "787",
                 "878",
                 "889",
+                "1928",
                 "1306",
                 "791",
+                "1807",
                 "1647",
+                "1776",
                 "1000",
+                "1832",
+                "1833",
                 "781",
+                "1901",
                 "1364",
                 "1173",
                 "872",
@@ -6558,18 +7151,25 @@
                 "350",
                 "874",
                 "485",
-                "149",
+                "1812",
+                "1849",
                 "297",
                 "1022",
+                "1738",
                 "1104",
                 "1671",
+                "1939",
+                "1753",
                 "518",
                 "518",
                 "518",
                 "1043",
                 "721",
+                "1722",
                 "1427",
+                "1879",
                 "920",
+                "1744",
                 "1689"
             ],
             "average_rating": 0,
@@ -6635,11 +7235,14 @@
                 "1115",
                 "1535",
                 "1418",
+                "120",
                 "1078",
                 "792",
                 "297",
                 "1093",
                 "1448",
+                "1591",
+                "1554",
                 "687",
                 "1645"
             ],
@@ -6705,7 +7308,9 @@
                 "583",
                 "583",
                 "1093",
+                "1738",
                 "1448",
+                "1884",
                 "1043",
                 "1650"
             ],
@@ -6770,6 +7375,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1850",
                 "722",
                 "470",
                 "1444",
@@ -6777,6 +7383,7 @@
                 "992",
                 "872",
                 "1235",
+                "1967",
                 "944"
             ],
             "average_rating": 0,
@@ -6848,8 +7455,15 @@
                 "1577",
                 "1370",
                 "613",
+                "1048",
                 "1453",
+                "1795",
                 "594",
+                "1723",
+                "1990",
+                "1899",
+                "1876",
+                "1738",
                 "721",
                 "382",
                 "1427",
@@ -6914,6 +7528,8 @@
             "watchlisted_by": [
                 "703",
                 "1083",
+                "1946",
+                "1946",
                 "878",
                 "1306",
                 "1148",
@@ -6924,8 +7540,10 @@
                 "1467",
                 "1264",
                 "583",
+                "1738",
                 "721",
-                "357"
+                "357",
+                "1794"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/cimettacimadellatrosacardada.gpx"
@@ -6994,6 +7612,8 @@
                 "1004",
                 "1004",
                 "1340",
+                "1946",
+                "1896",
                 "895",
                 "967",
                 "1224",
@@ -7003,6 +7623,7 @@
                 "916",
                 "1504",
                 "881",
+                "1419",
                 "781",
                 "1601",
                 "313",
@@ -7012,9 +7633,11 @@
                 "1157",
                 "485",
                 "370",
+                "442",
                 "1022",
                 "578",
-                "1553",
+                "1881",
+                "1879",
                 "944",
                 "1394",
                 "1110"
@@ -7099,6 +7722,7 @@
                 "513",
                 "257",
                 "1022",
+                "1738",
                 "1152",
                 "856"
             ],
@@ -7176,7 +7800,8 @@
                 "992",
                 "1283",
                 "911",
-                "1353"
+                "1353",
+                "1720"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/aathalseegrabenpfaffikonzh.gpx"
@@ -7241,6 +7866,7 @@
             ],
             "watchlisted_by": [
                 "981",
+                "1762",
                 "1431",
                 "1203",
                 "1325",
@@ -7260,6 +7886,7 @@
                 "1104",
                 "1279",
                 "615",
+                "1720",
                 "944",
                 "1216"
             ],
@@ -7470,9 +8097,11 @@
             ],
             "watchlisted_by": [
                 "1085",
+                "1866",
                 "1083",
                 "1102",
                 "823",
+                "1961",
                 "1444",
                 "1647",
                 "1021",
@@ -7548,6 +8177,7 @@
                 "948",
                 "740",
                 "1395",
+                "1730",
                 "845",
                 "688",
                 "916",
@@ -8319,6 +8949,7 @@
                 "402",
                 "305",
                 "136",
+                "1967",
                 "420"
             ],
             "average_rating": 0,
@@ -8516,7 +9147,8 @@
             "watchlisted_by": [
                 "390",
                 "328",
-                "415"
+                "415",
+                "1553"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/elmampachlibischofalpelmampachli.gpx"
@@ -8596,6 +9228,7 @@
                 "263",
                 "1043",
                 "721",
+                "1722",
                 "1044",
                 "832"
             ],
@@ -8664,6 +9297,7 @@
                 "981",
                 "624",
                 "845",
+                "1793",
                 "872",
                 "944"
             ],
@@ -8743,7 +9377,8 @@
                 "228",
                 "284",
                 "964",
-                "1434"
+                "1434",
+                "1257"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/brunnadernbaumwipfelpfadmogelsberg.gpx"
@@ -8807,10 +9442,13 @@
                 18
             ],
             "watchlisted_by": [
+                "1761",
                 "592",
+                "1866",
                 "1083",
                 "777",
                 "1316",
+                "1961",
                 "596",
                 "130",
                 "1210",
@@ -8828,6 +9466,7 @@
                 "1604",
                 "513",
                 "284",
+                "1138",
                 "1082",
                 "148",
                 "1044",
@@ -9038,6 +9677,7 @@
             ],
             "watchlisted_by": [
                 "709",
+                "1965",
                 "1567",
                 "647",
                 "895",
@@ -9053,10 +9693,12 @@
                 "1400",
                 "1237",
                 "1647",
+                "1960",
                 "1284",
                 "1386",
                 "1494",
                 "212",
+                "149",
                 "982",
                 "284",
                 "1276",
@@ -9192,6 +9834,7 @@
             ],
             "watchlisted_by": [
                 "703",
+                "851",
                 "1148",
                 "556",
                 "781",
@@ -9263,9 +9906,13 @@
                 "1456",
                 "561",
                 "1647",
+                "1832",
+                "1901",
                 "1364",
                 "872",
                 "874",
+                "1922",
+                "1738",
                 "1104",
                 "1587",
                 "1553",
@@ -9357,6 +10004,7 @@
                 "838",
                 "298",
                 "578",
+                "1881",
                 "508",
                 "1432",
                 "944"
@@ -9421,12 +10069,15 @@
             ],
             "watchlisted_by": [
                 "1688",
+                "1965",
                 "979",
                 "779",
+                "1762",
                 "1083",
                 "787",
                 "1397",
                 "1585",
+                "1730",
                 "967",
                 "492",
                 "1129",
@@ -9437,8 +10088,13 @@
                 "1398",
                 "1031",
                 "370",
+                "1812",
+                "1929",
                 "297",
+                "1138",
+                "1738",
                 "1104",
+                "1780",
                 "1720"
             ],
             "average_rating": 0,
@@ -9577,7 +10233,9 @@
                 "781",
                 "984",
                 "297",
+                "1738",
                 "371",
+                "1893",
                 "1041"
             ],
             "average_rating": 0,
@@ -9636,7 +10294,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1700"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/promontognocastelmurstampa.gpx"
         },
@@ -9764,11 +10424,20 @@
                 18
             ],
             "watchlisted_by": [
+                "1891",
+                "1891",
                 "1700",
                 "1325",
                 "967",
                 "332",
                 "599",
+                "1990",
+                "1843",
+                "1929",
+                "1738",
+                "1591",
+                "1939",
+                "1720",
                 "371"
             ],
             "average_rating": 0,
@@ -9834,14 +10503,18 @@
             "watchlisted_by": [
                 "1700",
                 "624",
+                "1870",
                 "676",
                 "791",
                 "1048",
                 "1705",
                 "781",
+                "1795",
                 "1641",
                 "298",
                 "297",
+                "1738",
+                "1508",
                 "371"
             ],
             "average_rating": 0,
@@ -10253,6 +10926,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1965",
                 "926",
                 "740",
                 "813",
@@ -10277,6 +10951,7 @@
                 "742",
                 "212",
                 "137",
+                "1738",
                 "1227",
                 "683",
                 "993",
@@ -11094,6 +11769,7 @@
                 "966",
                 "1226",
                 "647",
+                "1845",
                 "724",
                 "561",
                 "613",
@@ -11169,10 +11845,12 @@
                 18
             ],
             "watchlisted_by": [
+                "1761",
                 "852",
                 "1494",
                 "1031",
                 "1341",
+                "1738",
                 "1001"
             ],
             "average_rating": 0,
@@ -11230,8 +11908,10 @@
             ],
             "watchlisted_by": [
                 "1585",
+                "1138",
                 "1591",
-                "1720"
+                "1720",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/sihltalflaschlihoechiwagitalersee.gpx"
@@ -11383,6 +12063,7 @@
                 "149",
                 "257",
                 "1138",
+                "1738",
                 "683",
                 "1720",
                 "1044",
@@ -11451,6 +12132,7 @@
                 "1167",
                 "1601",
                 "297",
+                "1738",
                 "1104",
                 "371"
             ],
@@ -11659,6 +12341,7 @@
                 "322",
                 "1700",
                 "1340",
+                "1896",
                 "487",
                 "916",
                 "1352",
@@ -11666,8 +12349,10 @@
                 "313",
                 "1312",
                 "373",
+                "1881",
                 "518",
-                "944"
+                "944",
+                "1948"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/kindhausenegelseeheitersbergkindhause.gpx"
@@ -11728,22 +12413,29 @@
                 18
             ],
             "watchlisted_by": [
+                "1762",
                 "1083",
                 "1679",
                 "787",
                 "1397",
                 "889",
                 "1510",
+                "1730",
                 "967",
                 "676",
                 "1370",
+                "1828",
                 "1000",
                 "1364",
                 "502",
                 "1681",
                 "1641",
+                "1812",
+                "1772",
                 "976",
+                "1738",
                 "1104",
+                "1775",
                 "1591",
                 "1669",
                 "518",
@@ -11813,9 +12505,11 @@
                 "1700",
                 "966",
                 "1203",
+                "1943",
                 "1572",
                 "1397",
                 "1510",
+                "1730",
                 "1306",
                 "814",
                 "1400",
@@ -11825,9 +12519,11 @@
                 "1010",
                 "1029",
                 "1022",
+                "1591",
                 "1236",
                 "1669",
-                "721"
+                "721",
+                "1773"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/habergschwandtalalpseefilzbach.gpx"
@@ -11889,6 +12585,7 @@
             "watchlisted_by": [
                 "1083",
                 "1118",
+                "1901",
                 "122",
                 "1633",
                 "1676",
@@ -11956,6 +12653,10 @@
                 18
             ],
             "watchlisted_by": [
+                "1870",
+                "1730",
+                "1750",
+                "1856",
                 "343",
                 "1476"
             ],
@@ -12020,8 +12721,7 @@
                 "1400",
                 "433",
                 "1276",
-                "683",
-                "1110"
+                "683"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/romoosbramboden.gpx"
@@ -12084,6 +12784,7 @@
                 "972",
                 "523",
                 "1326",
+                "1138",
                 "1476",
                 "1476"
             ],
@@ -12109,6 +12810,7 @@
             "location_thema": [
                 1790,
                 512,
+                1806,
                 56
             ],
             "location_routenverlauf": [
@@ -12156,8 +12858,10 @@
                 "1131",
                 "506",
                 "1467",
+                "1843",
                 "1671",
-                "1044"
+                "1044",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/hirseggschrattenfluhsorenberg.gpx"
@@ -12221,16 +12925,22 @@
             "watchlisted_by": [
                 "852",
                 "1329",
+                "1750",
                 "288",
                 "492",
                 "599",
                 "331",
                 "285",
+                "1795",
+                "1583",
                 "350",
                 "1527",
                 "513",
+                "1803",
+                "1812",
                 "149",
                 "1709",
+                "1780",
                 "1522",
                 "443",
                 "721"
@@ -12295,6 +13005,7 @@
                 "334",
                 "285",
                 "1371",
+                "1710",
                 "1044",
                 "1110"
             ],
@@ -12361,6 +13072,7 @@
                 "534",
                 "1400",
                 "433",
+                "1833",
                 "808",
                 "1386",
                 "1005",
@@ -12434,6 +13146,7 @@
                 "781",
                 "1312",
                 "902",
+                "1899",
                 "721",
                 "357",
                 "687"
@@ -12580,6 +13293,7 @@
                 "857",
                 "647",
                 "1541",
+                "1877",
                 "1706",
                 "21",
                 "21",
@@ -12597,12 +13311,15 @@
                 "668",
                 "752",
                 "1320",
+                "1813",
                 "1509",
                 "1312",
                 "1494",
                 "499",
+                "1940",
                 "137",
                 "298",
+                "1812",
                 "149",
                 "1074",
                 "1022",
@@ -12612,7 +13329,8 @@
                 "1669",
                 "780",
                 "721",
-                "1651"
+                "1651",
+                "1773"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/unterwassergrapplenseealtstjohann.gpx"
@@ -12693,6 +13411,7 @@
                 "859",
                 "953",
                 "578",
+                "1881",
                 "944"
             ],
             "average_rating": 0,
@@ -12899,6 +13618,7 @@
             ],
             "watchlisted_by": [
                 "1203",
+                "1730",
                 "688",
                 "916",
                 "1067",
@@ -13197,6 +13917,7 @@
                 "1195",
                 "243",
                 "1065",
+                "1899",
                 "721",
                 "687"
             ],
@@ -13272,7 +13993,9 @@
                 "997",
                 "1195",
                 "781",
+                "1795",
                 "1065",
+                "1812",
                 "721",
                 "357",
                 "687"
@@ -13341,7 +14064,9 @@
                 "1526",
                 "647",
                 "647",
+                "1730",
                 "1247",
+                "1845",
                 "967",
                 "863",
                 "992",
@@ -14099,6 +14824,7 @@
                 "857",
                 "647",
                 "843",
+                "1845",
                 "561",
                 "561",
                 "531",
@@ -14107,7 +14833,8 @@
                 "553",
                 "553",
                 "657",
-                "683"
+                "683",
+                "721"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gontenhundwilerhohizurchersmuhle.gpx"
@@ -14423,6 +15150,7 @@
                 "427",
                 "395",
                 "400",
+                "1906",
                 "348"
             ],
             "average_rating": 0,
@@ -14794,7 +15522,8 @@
                 481
             ],
             "location_thema": [
-                51
+                51,
+                1806
             ],
             "location_routenverlauf": [
                 506
@@ -14833,7 +15562,10 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1870",
+                "1868"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/ratenwildspitzbiberbrugg.gpx"
         },
@@ -14949,6 +15681,7 @@
             ],
             "watchlisted_by": [
                 "1325",
+                "1730",
                 "1519"
             ],
             "average_rating": 0,
@@ -15082,6 +15815,7 @@
                 "243",
                 "1065",
                 "987",
+                "1876",
                 "1031",
                 "783",
                 "721",
@@ -15158,8 +15892,10 @@
                 "647",
                 "775",
                 "775",
+                "1822",
                 "1281",
-                "343"
+                "343",
+                "1773"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/rigikulmrigiklosterli.gpx"
@@ -15226,9 +15962,11 @@
                 18
             ],
             "watchlisted_by": [
+                "1767",
                 "1020",
                 "787",
                 "647",
+                "1730",
                 "470",
                 "938",
                 "938",
@@ -15297,7 +16035,9 @@
             ],
             "watchlisted_by": [
                 "1601",
-                "297"
+                "297",
+                "1919",
+                "1773"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/arosamaranpratschalparosabhf.gpx"
@@ -15374,6 +16114,7 @@
                 "791",
                 "1391",
                 "1647",
+                "1960",
                 "1131",
                 "788",
                 "1056",
@@ -15381,10 +16122,13 @@
                 "644",
                 "488",
                 "1494",
+                "1812",
                 "1097",
                 "297",
                 "1227",
+                "1710",
                 "721",
+                "1722",
                 "920",
                 "1286"
             ],
@@ -15514,6 +16258,7 @@
                 "1577",
                 "1619",
                 "1232",
+                "1895",
                 "721",
                 "832"
             ],
@@ -15582,8 +16327,10 @@
                 "1083",
                 "688",
                 "916",
+                "1795",
                 "1399",
                 "513",
+                "1743",
                 "721"
             ],
             "average_rating": 0,
@@ -15661,9 +16408,12 @@
                 "874",
                 "485",
                 "298",
+                "1812",
+                "1745",
                 "443",
                 "721",
-                "357"
+                "357",
+                "1110"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/moosfluhbettmeralpriederalp.gpx"
@@ -15793,9 +16543,11 @@
             "watchlisted_by": [
                 "1572",
                 "422",
+                "1896",
                 "1577",
                 "1619",
                 "874",
+                "1895",
                 "1104",
                 "357"
             ],
@@ -15870,11 +16622,14 @@
                 "688",
                 "916",
                 "561",
+                "1832",
                 "872",
                 "350",
+                "1812",
                 "297",
                 "780",
-                "1476"
+                "1476",
+                "1773"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gasterntalseldenkanderstegsunnbuel.gpx"
@@ -15937,7 +16692,9 @@
             "watchlisted_by": [
                 "1083",
                 "422",
-                "1397"
+                "1397",
+                "1758",
+                "1722"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/partnuncarschinahuttebargli.gpx"
@@ -16011,6 +16768,7 @@
                 "1444",
                 "486",
                 "1067",
+                "1758",
                 "332",
                 "492",
                 "1647",
@@ -16018,10 +16776,17 @@
                 "1380",
                 "762",
                 "506",
+                "1795",
+                "1856",
                 "872",
                 "1371",
                 "350",
+                "1843",
+                "1812",
                 "1671",
+                "1753",
+                "1710",
+                "1780",
                 "780",
                 "1476",
                 "920"
@@ -16095,27 +16860,46 @@
                 "580",
                 "1700",
                 "1445",
+                "1943",
+                "1946",
                 "624",
+                "1870",
+                "1928",
                 "1306",
                 "1715",
+                "1917",
+                "1953",
                 "1615",
                 "791",
                 "486",
                 "561",
                 "492",
+                "1972",
                 "1418",
                 "1131",
                 "1559",
                 "781",
+                "1903",
                 "762",
+                "1795",
                 "860",
+                "1982",
+                "1843",
+                "1812",
                 "583",
                 "297",
+                "1138",
                 "1098",
+                "1939",
                 "577",
+                "1710",
+                "1927",
                 "721",
                 "1476",
-                "920"
+                "920",
+                "1773",
+                "1744",
+                "1835"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/vierseentrubseemelchseefrutt.gpx"
@@ -16182,9 +16966,12 @@
                 "1083",
                 "1360",
                 "781",
+                "1795",
+                "1173",
                 "872",
                 "1377",
                 "1427",
+                "1879",
                 "1318",
                 "1470"
             ],
@@ -16251,8 +17038,10 @@
             "watchlisted_by": [
                 "1457",
                 "1572",
+                "1845",
                 "1494",
                 "137",
+                "1906",
                 "1139"
             ],
             "average_rating": 0,
@@ -16440,7 +17229,8 @@
             ],
             "watchlisted_by": [
                 "1581",
-                "502"
+                "502",
+                "761"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/madrisaklostersstantonien.gpx"
@@ -16514,8 +17304,10 @@
                 "212",
                 "1014",
                 "298",
+                "1812",
                 "518",
                 "721",
+                "1986",
                 "1106",
                 "1106"
             ],
@@ -16572,7 +17364,8 @@
             "watchlisted_by": [
                 "550",
                 "1083",
-                "1246"
+                "1246",
+                "1843"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/umbrailpasspizumbrailstamaria.gpx"
@@ -16636,7 +17429,8 @@
                 "1676",
                 "297",
                 "1104",
-                "371"
+                "371",
+                "1773"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/champlonchalpgrimmelschamplonch.gpx"
@@ -16724,9 +17518,12 @@
                 "1120",
                 "1376",
                 "1005",
+                "761",
                 "1314",
                 "149",
+                "1929",
                 "1029",
+                "1772",
                 "284",
                 "297",
                 "976",
@@ -16994,10 +17791,12 @@
                 "1577",
                 "724",
                 "1453",
+                "1795",
                 "1065",
                 "808",
                 "1312",
                 "902",
+                "1899",
                 "466",
                 "687"
             ],
@@ -17065,6 +17864,7 @@
             "watchlisted_by": [
                 "703",
                 "902",
+                "1899",
                 "61",
                 "357",
                 "687"
@@ -17137,7 +17937,8 @@
                 "1376",
                 "1449",
                 "745",
-                "257"
+                "257",
+                "1879"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/salhohewasserflueaarau.gpx"
@@ -17201,17 +18002,23 @@
                 18
             ],
             "watchlisted_by": [
+                "1851",
+                "1786",
                 "966",
+                "1870",
                 "1397",
+                "1730",
                 "470",
                 "1360",
                 "676",
                 "486",
                 "781",
+                "1795",
                 "122",
                 "1312",
                 "1641",
                 "1031",
+                "1812",
                 "646",
                 "920",
                 "1110"
@@ -17324,6 +18131,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1859",
                 "1676"
             ],
             "average_rating": 0,
@@ -17708,7 +18516,8 @@
                 "442",
                 "1661",
                 "1476",
-                "1044"
+                "1044",
+                "1879"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/hauensteinbelchenfluehagendorf.gpx"
@@ -17769,7 +18578,8 @@
             ],
             "watchlisted_by": [
                 "1364",
-                "1676"
+                "1676",
+                "1906"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/schanfvaltrupchunschanf.gpx"
@@ -19286,8 +20096,11 @@
                 "1679",
                 "787",
                 "1397",
+                "1730",
+                "1845",
                 "967",
                 "556",
+                "1796",
                 "518"
             ],
             "average_rating": 0,
@@ -19471,6 +20284,7 @@
                 "1695",
                 "277",
                 "263",
+                "1152",
                 "1427"
             ],
             "average_rating": 0,
@@ -19672,6 +20486,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1850",
                 "1053",
                 "868",
                 "522",
@@ -19811,6 +20626,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1743",
                 "297",
                 "371"
             ],
@@ -20283,6 +21099,7 @@
             "watchlisted_by": [
                 "631",
                 "852",
+                "1810",
                 "857",
                 "647",
                 "1412",
@@ -20428,6 +21245,7 @@
                 "1068",
                 "298",
                 "343",
+                "1784",
                 "944",
                 "1394"
             ],
@@ -20492,9 +21310,14 @@
             ],
             "watchlisted_by": [
                 "979",
+                "1851",
                 "1083",
+                "1768",
                 "762",
                 "297",
+                "1710",
+                "1868",
+                "1720",
                 "920"
             ],
             "average_rating": 0,
@@ -20558,7 +21381,10 @@
             ],
             "watchlisted_by": [
                 "979",
+                "1851",
+                "1845",
                 "752",
+                "1812",
                 "297",
                 "1434"
             ],
@@ -20686,7 +21512,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1944"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/riggisalpbreccaschwarzseegypsera.gpx"
         },
@@ -20748,12 +21576,15 @@
                 18
             ],
             "watchlisted_by": [
+                "1865",
                 "837",
                 "890",
                 "150",
                 "1424",
+                "1795",
                 "1065",
                 "594",
+                "1899",
                 "1031",
                 "721",
                 "357",
@@ -20823,13 +21654,18 @@
                 "1047",
                 "592",
                 "979",
+                "1762",
                 "1608",
+                "1975",
+                "1786",
                 "1083",
                 "1340",
                 "777",
                 "1397",
                 "971",
+                "1896",
                 "889",
+                "1730",
                 "967",
                 "661",
                 "1319",
@@ -20838,6 +21674,7 @@
                 "486",
                 "1067",
                 "1592",
+                "1749",
                 "880",
                 "1131",
                 "1000",
@@ -20845,18 +21682,22 @@
                 "644",
                 "506",
                 "1281",
+                "1795",
                 "1173",
                 "872",
                 "1467",
                 "1031",
                 "1036",
+                "1929",
+                "1772",
                 "297",
                 "976",
                 "1149",
                 "1043",
                 "998",
                 "1331",
-                "1432"
+                "1432",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/burgenstockfelsenweg.gpx"
@@ -20920,7 +21761,8 @@
                 "278",
                 "297",
                 "413",
-                "413"
+                "413",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/niederhornwaldegg.gpx"
@@ -20992,9 +21834,11 @@
                 "1306",
                 "791",
                 "1240",
+                "1901",
                 "872",
                 "1494",
                 "278",
+                "1812",
                 "1029",
                 "1427"
             ],
@@ -21061,7 +21905,8 @@
                 "596",
                 "433",
                 "243",
-                "721"
+                "721",
+                "1508"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/calancatalarvigosantamaria.gpx"
@@ -21122,12 +21967,13 @@
             ],
             "watchlisted_by": [
                 "601",
+                "1824",
                 "1083",
                 "433",
-                "149",
                 "297",
                 "297",
-                "297"
+                "297",
+                "1710"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/stanserhornwirzweli.gpx"
@@ -21197,6 +22043,7 @@
                 "1118",
                 "1583",
                 "1695",
+                "1812",
                 "1522"
             ],
             "average_rating": 0,
@@ -21320,8 +22167,11 @@
                 18
             ],
             "watchlisted_by": [
+                "1829",
                 "1306",
                 "959",
+                "1758",
+                "1901",
                 "850",
                 "762",
                 "872",
@@ -21385,7 +22235,8 @@
             ],
             "watchlisted_by": [
                 "281",
-                "624"
+                "624",
+                "1929"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/diavolezzamuntpersdiavolezza.gpx"
@@ -21446,6 +22297,8 @@
             ],
             "watchlisted_by": [
                 "1083",
+                "1799",
+                "761",
                 "297",
                 "297",
                 "721"
@@ -21647,7 +22500,10 @@
             "watchlisted_by": [
                 "931",
                 "472",
-                "984"
+                "1758",
+                "1793",
+                "984",
+                "1811"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/schwarzseeeuschelspassjaun.gpx"
@@ -21763,10 +22619,15 @@
             "watchlisted_by": [
                 "1700",
                 "1083",
+                "1801",
                 "1321",
+                "1758",
                 "433",
+                "1799",
+                "761",
                 "297",
                 "297",
+                "1553",
                 "1720",
                 "301"
             ],
@@ -21826,7 +22687,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "120"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/arosamedergenlangwies.gpx"
         },
@@ -21887,15 +22750,21 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
+                "1896",
                 "1577",
                 "492",
                 "433",
                 "1364",
+                "1856",
                 "1371",
                 "1494",
                 "1377",
                 "1005",
+                "1929",
+                "1772",
                 "297",
+                "1138",
                 "1476"
             ],
             "average_rating": 0,
@@ -22019,14 +22888,17 @@
                 "1171",
                 "779",
                 "1194",
+                "1866",
                 "1102",
                 "189",
                 "1446",
                 "153",
                 "878",
                 "840",
+                "1877",
                 "641",
                 "682",
+                "1822",
                 "1453",
                 "433",
                 "879",
@@ -22034,9 +22906,13 @@
                 "858",
                 "762",
                 "1113",
+                "1583",
                 "1120",
                 "1223",
                 "350",
+                "1449",
+                "1766",
+                "1930",
                 "443",
                 "721",
                 "1311",
@@ -22100,7 +22976,8 @@
             ],
             "watchlisted_by": [
                 "1083",
-                "297"
+                "297",
+                "1753"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/stndejamanrochersdenaye.gpx"
@@ -22285,6 +23162,7 @@
                 "150",
                 "1577",
                 "1630",
+                "1795",
                 "721",
                 "1044"
             ],
@@ -22347,6 +23225,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1883",
                 "492",
                 "502"
             ],
@@ -22412,10 +23291,14 @@
                 "492",
                 "492",
                 "122",
+                "1856",
                 "872",
                 "499",
+                "1812",
                 "1022",
-                "780"
+                "1952",
+                "780",
+                "1986"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/rosenlauigrossescheidegg.gpx"
@@ -22477,18 +23360,26 @@
                 18
             ],
             "watchlisted_by": [
+                "1788",
                 "592",
                 "1269",
                 "806",
+                "1758",
+                "1972",
                 "841",
                 "781",
+                "1903",
                 "1364",
                 "1173",
                 "872",
                 "350",
+                "1812",
                 "149",
                 "583",
                 "297",
+                "1738",
+                "1780",
+                "1553",
                 "443",
                 "1696",
                 "920",
@@ -22559,6 +23450,7 @@
                 "1247",
                 "1360",
                 "791",
+                "1048",
                 "433",
                 "872",
                 "350",
@@ -22700,6 +23592,7 @@
                 "502",
                 "149",
                 "646",
+                "1138",
                 "721"
             ],
             "average_rating": 0,
@@ -22765,9 +23658,12 @@
             "watchlisted_by": [
                 "1451",
                 "889",
+                "1883",
                 "492",
                 "1647",
-                "1098"
+                "1940",
+                "1098",
+                "1754"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/flumserbergmaschgenkammtannenbodenalp.gpx"
@@ -22832,12 +23728,14 @@
                 18
             ],
             "watchlisted_by": [
+                "1818",
                 "777",
                 "868",
                 "1136",
                 "857",
                 "1247",
                 "150",
+                "1883",
                 "1176",
                 "1237",
                 "433",
@@ -22913,6 +23811,7 @@
                 "279",
                 "1065",
                 "594",
+                "1899",
                 "1031",
                 "942",
                 "964",
@@ -23039,7 +23938,7 @@
             ],
             "watchlisted_by": [
                 "1083",
-                "1710"
+                "1508"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/davosclavadelsertigdorfli.gpx"
@@ -23103,6 +24002,7 @@
             "watchlisted_by": [
                 "546",
                 "1567",
+                "1730",
                 "1396",
                 "1048",
                 "342"
@@ -23224,7 +24124,8 @@
                 "561",
                 "1188",
                 "433",
-                "350"
+                "350",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/panoramaweghasliberg.gpx"
@@ -23286,8 +24187,10 @@
                 18
             ],
             "watchlisted_by": [
+                "1870",
                 "901",
                 "1173",
+                "1739",
                 "969"
             ],
             "average_rating": 0,
@@ -23351,6 +24254,7 @@
             "watchlisted_by": [
                 "1083",
                 "823",
+                "1870",
                 "661",
                 "992",
                 "1281",
@@ -23493,6 +24397,7 @@
                 "1700",
                 "1083",
                 "1446",
+                "1736",
                 "892",
                 "1418",
                 "1559",
@@ -23500,7 +24405,8 @@
                 "1371",
                 "1527",
                 "583",
-                "1522"
+                "1522",
+                "1554"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/grimselpassoberaargrimselpass.gpx"
@@ -23568,6 +24474,7 @@
                 "1364",
                 "762",
                 "1371",
+                "1843",
                 "820",
                 "1427"
             ],
@@ -23869,7 +24776,8 @@
             ],
             "watchlisted_by": [
                 "1171",
-                "1418"
+                "1418",
+                "1554"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/savogninalpflixbivio.gpx"
@@ -24120,17 +25028,29 @@
             "watchlisted_by": [
                 "592",
                 "979",
+                "1851",
+                "1870",
                 "889",
+                "1989",
                 "1408",
+                "1795",
                 "544",
                 "872",
                 "350",
                 "277",
                 "662",
+                "1899",
+                "1812",
+                "1952",
+                "1709",
+                "1780",
+                "1784",
                 "721",
                 "820",
+                "1879",
                 "920",
-                "856"
+                "856",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/iseltwaldgiessbach.gpx"
@@ -24193,11 +25113,15 @@
             "watchlisted_by": [
                 "703",
                 "347",
+                "1758",
                 "841",
                 "872",
                 "350",
+                "120",
+                "1952",
                 "1229",
-                "820"
+                "820",
+                "1696"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/sunnbuelschwarenbachgemmi.gpx"
@@ -24319,7 +25243,9 @@
             ],
             "watchlisted_by": [
                 "1700",
-                "1083"
+                "1083",
+                "120",
+                "1110"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gornergratriffelberg.gpx"
@@ -24386,6 +25312,7 @@
                 "561",
                 "1559",
                 "502",
+                "761",
                 "1522"
             ],
             "average_rating": 0,
@@ -24445,6 +25372,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1806",
                 "492",
                 "721"
             ],
@@ -24503,7 +25431,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1806"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/silsmuottotafextalsils.gpx"
         },
@@ -24703,16 +25633,20 @@
                 18
             ],
             "watchlisted_by": [
+                "1851",
                 "1700",
                 "1327",
                 "624",
                 "889",
+                "1928",
+                "1928",
                 "561",
                 "1647",
                 "1131",
                 "872",
                 "1371",
                 "1587",
+                "1927",
                 "1476"
             ],
             "average_rating": 0,
@@ -24843,10 +25777,13 @@
                 "1319",
                 "487",
                 "1147",
+                "1832",
+                "1795",
                 "1021",
                 "872",
                 "1480",
                 "1098",
+                "1784",
                 "518",
                 "944",
                 "1434"
@@ -24924,15 +25861,20 @@
                 "1175",
                 "916",
                 "1176",
+                "1972",
+                "1749",
                 "1137",
                 "1173",
                 "1122",
                 "1399",
                 "1494",
+                "1940",
                 "1068",
                 "277",
+                "1840",
                 "984",
                 "297",
+                "1784",
                 "518",
                 "1106"
             ],
@@ -26769,6 +27711,7 @@
                 20
             ],
             "watchlisted_by": [
+                "1989",
                 "208",
                 "249",
                 "255"
@@ -27090,9 +28033,11 @@
                 "150",
                 "941",
                 "941",
+                "1972",
                 "1048",
                 "279",
                 "1228",
+                "1795",
                 "1469",
                 "902",
                 "594",
@@ -27102,6 +28047,7 @@
                 "277",
                 "842",
                 "1031",
+                "1936",
                 "721",
                 "301",
                 "687"
@@ -27179,6 +28125,7 @@
                 "1065",
                 "902",
                 "1068",
+                "1876",
                 "795",
                 "357",
                 "687"
@@ -28899,7 +29846,9 @@
             "location_aktivitat": [
                 19
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1750"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/eggligstaad.gpx"
         },
@@ -30007,7 +30956,9 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
                 "1083",
+                "1730",
                 "791",
                 "1067",
                 "433",
@@ -30016,6 +30967,7 @@
                 "1122",
                 "136",
                 "1022",
+                "1868",
                 "1110"
             ],
             "average_rating": 0,
@@ -30133,6 +31085,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1943",
                 "1397",
                 "647",
                 "647",
@@ -30140,6 +31093,7 @@
                 "1056",
                 "1364",
                 "1494",
+                "1929",
                 "1227",
                 "518"
             ],
@@ -30316,6 +31270,7 @@
             ],
             "watchlisted_by": [
                 "1117",
+                "1961",
                 "433",
                 "1015",
                 "1450",
@@ -31030,6 +31985,7 @@
             ],
             "watchlisted_by": [
                 "854",
+                "1909",
                 "1469",
                 "1633",
                 "687"
@@ -31164,14 +32120,18 @@
                 "1083",
                 "1102",
                 "840",
+                "1877",
                 "1321",
                 "1464",
                 "774",
                 "1559",
+                "1864",
                 "1364",
+                "1987",
                 "336",
                 "1005",
                 "1078",
+                "1766",
                 "263",
                 "1522",
                 "721",
@@ -31366,8 +32326,11 @@
                 "183",
                 "791",
                 "762",
+                "1795",
+                "1940",
                 "277",
                 "1227",
+                "1906",
                 "1098",
                 "721"
             ],
@@ -31433,6 +32396,7 @@
             "watchlisted_by": [
                 "791",
                 "433",
+                "1843",
                 "721",
                 "371"
             ],
@@ -31553,6 +32517,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1819",
                 "433",
                 "1399",
                 "298",
@@ -31687,7 +32652,11 @@
             "watchlisted_by": [
                 "1083",
                 "889",
-                "1182"
+                "1822",
+                "1795",
+                "1182",
+                "1843",
+                "1685"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gastlosen.gpx"
@@ -31756,6 +32725,7 @@
                 "661",
                 "279",
                 "781",
+                "1795",
                 "721",
                 "357"
             ],
@@ -31821,6 +32791,7 @@
             "watchlisted_by": [
                 "889",
                 "786",
+                "1961",
                 "892",
                 "1620"
             ],
@@ -31895,7 +32866,8 @@
                 "561",
                 "655",
                 "992",
-                "1283"
+                "1283",
+                "761"
             ],
             "average_rating": 4,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/zumikonbluemlisalperlenbach.gpx"
@@ -31960,6 +32932,8 @@
                 "1083",
                 "1693",
                 "1404",
+                "1795",
+                "1952",
                 "357",
                 "1274"
             ],
@@ -32099,6 +33073,7 @@
                 "1386",
                 "1377",
                 "1014",
+                "1876",
                 "1031",
                 "1080",
                 "357",
@@ -32166,12 +33141,14 @@
                 "1306",
                 "279",
                 "781",
+                "1795",
                 "1374",
                 "1467",
                 "1469",
                 "1386",
                 "594",
                 "1014",
+                "1780",
                 "721"
             ],
             "average_rating": 0,
@@ -32236,12 +33213,16 @@
                 "889",
                 "1306",
                 "806",
+                "1877",
                 "1647",
                 "781",
                 "1364",
                 "506",
+                "1734",
+                "1843",
                 "149",
                 "1108",
+                "1780",
                 "721"
             ],
             "average_rating": 0,
@@ -32305,7 +33286,8 @@
             "watchlisted_by": [
                 "1672",
                 "613",
-                "1131"
+                "1131",
+                "1110"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/obergestelnfurkapass.gpx"
@@ -32494,7 +33476,8 @@
             ],
             "watchlisted_by": [
                 "1131",
-                "792"
+                "792",
+                "1554"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/vermigelhuttesellapassgotthardpass.gpx"
@@ -32562,7 +33545,11 @@
                 "774",
                 "388",
                 "1131",
-                "345"
+                "1833",
+                "345",
+                "1759",
+                "1043",
+                "1554"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/vierquellenwegoberalppassrheinquellevermigelhutte.gpx"
@@ -32628,6 +33615,7 @@
                 "1083",
                 "1680",
                 "723",
+                "1834",
                 "1522"
             ],
             "average_rating": 0,
@@ -32693,6 +33681,7 @@
                 "1131",
                 "1377",
                 "277",
+                "1843",
                 "149",
                 "583",
                 "721"
@@ -32756,7 +33745,8 @@
             ],
             "watchlisted_by": [
                 "550",
-                "1680"
+                "1680",
+                "1834"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/sardonahuttefoopasselm.gpx"
@@ -32817,7 +33807,8 @@
             ],
             "watchlisted_by": [
                 "550",
-                "1680"
+                "1680",
+                "1834"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/weisstannensardonahutte.gpx"
@@ -32877,7 +33868,8 @@
                 18
             ],
             "watchlisted_by": [
-                "1014"
+                "1014",
+                "1876"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/rasaroncosopraascona.gpx"
@@ -32943,8 +33935,10 @@
                 "1672",
                 "1539",
                 "1719",
+                "1153",
                 "336",
                 "1377",
+                "1757",
                 "1078",
                 "115",
                 "1311"
@@ -33013,6 +34007,7 @@
                 "1194",
                 "804",
                 "891",
+                "1795",
                 "1469",
                 "1014",
                 "1031",
@@ -33079,6 +34074,7 @@
             ],
             "watchlisted_by": [
                 "1680",
+                "1834",
                 "887"
             ],
             "average_rating": 0,
@@ -33143,6 +34139,7 @@
                 "472",
                 "1680",
                 "1715",
+                "1834",
                 "749",
                 "1434"
             ],
@@ -33290,7 +34287,8 @@
                 "1453",
                 "1527",
                 "277",
-                "270"
+                "270",
+                "1766"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/rinderhuttekummenalplotschepassselden.gpx"
@@ -33356,6 +34354,7 @@
                 "472",
                 "1200",
                 "1680",
+                "1796",
                 "1669"
             ],
             "average_rating": 0,
@@ -33422,6 +34421,7 @@
             ],
             "watchlisted_by": [
                 "592",
+                "1870",
                 "731",
                 "959",
                 "791",
@@ -33431,6 +34431,7 @@
                 "872",
                 "1494",
                 "350",
+                "1723",
                 "842",
                 "278",
                 "721",
@@ -33500,7 +34501,10 @@
                 "472",
                 "1581",
                 "1700",
+                "1870",
+                "1896",
                 "814",
+                "1846",
                 "791",
                 "1687",
                 "1000",
@@ -33508,9 +34512,13 @@
                 "1364",
                 "1469",
                 "1494",
+                "1940",
                 "1005",
+                "761",
                 "149",
+                "1929",
                 "1669",
+                "1553",
                 "721",
                 "1434"
             ],
@@ -33567,6 +34575,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
                 "422",
                 "1397",
                 "561",
@@ -33700,7 +34709,11 @@
                 18
             ],
             "watchlisted_by": [
-                "839"
+                "1946",
+                "1946",
+                "839",
+                "1929",
+                "1720"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/maschgenkammspitzmeilenhuttemaschgenk.gpx"
@@ -33764,12 +34777,16 @@
                 "189",
                 "878",
                 "889",
+                "1961",
                 "892",
                 "791",
                 "492",
                 "1240",
+                "1795",
                 "122",
                 "872",
+                "1138",
+                "1780",
                 "721"
             ],
             "average_rating": 0,
@@ -33778,9 +34795,9 @@
         {
             "longitude": "7.4049397294875",
             "latitude": "46.179460077547",
-            "location_regionen_name": "Wallis",
+            "location_regionen_name": "Val d\u2019H\u00e9rens",
             "location_regionen_id": [
-                25
+                1967
             ],
             "location_regionen_parent_id": [
                 25
@@ -33807,7 +34824,7 @@
                 11,
                 10
             ],
-            "location_altitude": "Wallis",
+            "location_altitude": "Val d\u2019H\u00e9rens",
             "location_feature_image": "https:\/\/wegwandern.ch\/wp-content\/uploads\/2023\/07\/veysonnaz_heremence_erdpyramiden_euseigne-450x300.jpg",
             "location_name": "Veysonnaz \u2013 H\u00e9r\u00e9mence \u2013 Pyramiden von Euseigne",
             "location_desc": "Spektakul\u00e4res Naturschauspiel, bizarr und einmalig: Die Pyramiden von Euseigne! Die Wanderung f\u00fchrt von Veysonnaz an der Grand Bisse de Vex entlang via Les Mayens-de-Sion, Les Mayens des Plans, H\u00e9r\u00e9mence zu den bekanntesten Naturdenkm\u00e4lern des Eringertales und des Wallis. Die bizarren Erdpyramiden geh\u00f6ren zu den bedeutendsten erdwissenschaftlichen Sehensw\u00fcrdigkeiten der Alpen und stehen unter dem Schutz der Eidgenossenschaft.",
@@ -33834,7 +34851,8 @@
                 "561",
                 "1048",
                 "1469",
-                "357"
+                "357",
+                "1110"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/veysonnazheremenceeuseigne.gpx"
@@ -33964,7 +34982,8 @@
             ],
             "watchlisted_by": [
                 "1083",
-                "1720"
+                "1720",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/balmklausenwaldiseeschlanggen.gpx"
@@ -34026,7 +35045,9 @@
                 18
             ],
             "watchlisted_by": [
-                "724"
+                "1891",
+                "724",
+                "1908"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/amdenerhohenweg.gpx"
@@ -34083,7 +35104,9 @@
                 18
             ],
             "watchlisted_by": [
-                "908"
+                "908",
+                "1725",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gelmerseegelmerhuttekunzentannlein.gpx"
@@ -34145,6 +35168,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1822",
                 "1120",
                 "1720"
             ],
@@ -34275,9 +35299,12 @@
                 18
             ],
             "watchlisted_by": [
+                "1851",
                 "1364",
                 "762",
+                "1173",
                 "370",
+                "1929",
                 "518",
                 "920"
             ],
@@ -34410,7 +35437,8 @@
                 "858",
                 "1062",
                 "1633",
-                "1557"
+                "1557",
+                "1110"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/sierrepfynwaldleuk.gpx"
@@ -34540,6 +35568,7 @@
                 "823",
                 "636",
                 "777",
+                "1896",
                 "1704",
                 "596",
                 "806",
@@ -34547,6 +35576,7 @@
                 "388",
                 "1364",
                 "1480",
+                "1843",
                 "1709",
                 "1149",
                 "721",
@@ -35204,6 +36234,7 @@
                 "1194",
                 "1112",
                 "1131",
+                "1048",
                 "1614"
             ],
             "average_rating": 0,
@@ -35267,6 +36298,7 @@
                 "1194",
                 "1112",
                 "1131",
+                "1048",
                 "1614",
                 "1031",
                 "357"
@@ -35334,6 +36366,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1730",
                 "1391"
             ],
             "average_rating": 0,
@@ -35394,6 +36427,7 @@
             ],
             "watchlisted_by": [
                 "1112",
+                "1048",
                 "1614"
             ],
             "average_rating": 0,
@@ -35731,12 +36765,15 @@
                 "624",
                 "1444",
                 "781",
+                "1795",
                 "872",
                 "350",
                 "485",
                 "298",
                 "1022",
-                "780"
+                "1930",
+                "780",
+                "1879"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/kientalgriesschluchtgriesalp.gpx"
@@ -35801,9 +36838,11 @@
                 "550",
                 "1170",
                 "1083",
+                "1953",
                 "605",
                 "1371",
                 "346",
+                "1843",
                 "1522"
             ],
             "average_rating": 0,
@@ -35872,7 +36911,8 @@
                 "550",
                 "550",
                 "550",
-                "1371"
+                "1371",
+                "1905"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gurtnellentreschhutteoberalppass.gpx"
@@ -35929,7 +36969,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1152"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/silsmariatscheppaseesilvaplana.gpx"
         },
@@ -35996,6 +37038,8 @@
                 "1381",
                 "1494",
                 "1068",
+                "1812",
+                "1780",
                 "1331",
                 "357"
             ],
@@ -36069,8 +37113,11 @@
                 "892",
                 "331",
                 "605",
+                "1725",
+                "1843",
                 "1422",
-                "1522"
+                "1522",
+                "1685"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/griesalpspaltenhornhuttegriesalp.gpx"
@@ -36136,6 +37183,7 @@
             ],
             "watchlisted_by": [
                 "690",
+                "1730",
                 "1391",
                 "1142",
                 "1216"
@@ -36281,8 +37329,12 @@
                 "762",
                 "506",
                 "605",
+                "1795",
+                "1734",
                 "277",
+                "1843",
                 "149",
+                "1781",
                 "583"
             ],
             "average_rating": 0,
@@ -36347,20 +37399,28 @@
                 "1205",
                 "601",
                 "592",
+                "1866",
                 "889",
                 "786",
                 "1306",
+                "1917",
                 "892",
                 "1658",
                 "781",
                 "762",
                 "506",
                 "605",
+                "1795",
+                "1021",
+                "1734",
                 "277",
                 "662",
                 "149",
                 "1098",
-                "920"
+                "1753",
+                "1780",
+                "920",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/alplombachsuggitureharderkulm.gpx"
@@ -36424,8 +37484,10 @@
                 "472",
                 "1083",
                 "889",
+                "1729",
                 "752",
                 "277",
+                "1780",
                 "1152",
                 "1434"
             ],
@@ -36494,8 +37556,13 @@
                 "1083",
                 "787",
                 "889",
+                "1961",
+                "1877",
+                "1877",
                 "1647",
-                "393"
+                "393",
+                "721",
+                "1794"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/brulisaustaubernhoherkasten.gpx"
@@ -36558,6 +37625,8 @@
                 "1083",
                 "318",
                 "1364",
+                "1929",
+                "721",
                 "950",
                 "1434"
             ],
@@ -36619,6 +37688,7 @@
             "watchlisted_by": [
                 "286",
                 "550",
+                "1850",
                 "661",
                 "605"
             ],
@@ -36871,6 +37941,7 @@
                 "347",
                 "492",
                 "1658",
+                "1795",
                 "1641"
             ],
             "average_rating": 0,
@@ -36936,9 +38007,11 @@
             "watchlisted_by": [
                 "1306",
                 "854",
+                "1795",
                 "1467",
                 "902",
                 "61",
+                "1780",
                 "721",
                 "357"
             ],
@@ -37002,6 +38075,7 @@
             ],
             "watchlisted_by": [
                 "1083",
+                "1883",
                 "492",
                 "244",
                 "149"
@@ -37067,20 +38141,25 @@
                 18
             ],
             "watchlisted_by": [
+                "1818",
                 "592",
                 "823",
                 "1053",
                 "1340",
+                "1883",
                 "1176",
                 "1515",
                 "788",
                 "433",
                 "1379",
                 "1364",
+                "1795",
                 "1377",
+                "1799",
                 "298",
                 "1166",
                 "1279",
+                "1553",
                 "780",
                 "1331",
                 "1318",
@@ -37152,6 +38231,7 @@
                 "1377",
                 "277",
                 "149",
+                "1745",
                 "357"
             ],
             "average_rating": 0,
@@ -37214,6 +38294,7 @@
                 "703",
                 "791",
                 "1377",
+                "1508",
                 "357"
             ],
             "average_rating": 0,
@@ -37591,12 +38672,19 @@
                 18
             ],
             "watchlisted_by": [
+                "1872",
                 "601",
                 "344",
+                "1870",
+                "1961",
                 "839",
                 "791",
+                "1795",
+                "149",
+                "1849",
                 "1363",
-                "920"
+                "920",
+                "1835"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/ristisbrunnihuttechruzhutte.gpx"
@@ -37654,7 +38742,8 @@
                 18
             ],
             "watchlisted_by": [
-                "703"
+                "703",
+                "1801"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/trockenersteggandegghuttefuri.gpx"
@@ -37718,7 +38807,9 @@
                 18
             ],
             "watchlisted_by": [
+                "1896",
                 "786",
+                "1801",
                 "1321",
                 "1522"
             ],
@@ -37904,7 +38995,8 @@
             ],
             "watchlisted_by": [
                 "1078",
-                "115"
+                "115",
+                "1817"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/dangioadulahuttendagro.gpx"
@@ -38031,6 +39123,7 @@
                 "1325",
                 "1711",
                 "492",
+                "1766",
                 "1099"
             ],
             "average_rating": 0,
@@ -38094,6 +39187,7 @@
             ],
             "watchlisted_by": [
                 "1217",
+                "1767",
                 "787",
                 "787",
                 "624",
@@ -38163,10 +39257,12 @@
                 18
             ],
             "watchlisted_by": [
+                "1771",
                 "1049",
                 "605",
                 "1583",
                 "1371",
+                "1843",
                 "115"
             ],
             "average_rating": 0,
@@ -38352,6 +39448,8 @@
                 "1700",
                 "1049",
                 "605",
+                "1843",
+                "1745",
                 "1522"
             ],
             "average_rating": 0,
@@ -38414,7 +39512,8 @@
                 18
             ],
             "watchlisted_by": [
-                "892"
+                "892",
+                "1725"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/iffigenalpwildhornhutteiffigenalp.gpx"
@@ -38473,8 +39572,10 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
                 "945",
                 "806",
+                "1953",
                 "388",
                 "1364",
                 "1371"
@@ -38715,6 +39816,7 @@
                 "291",
                 "1170",
                 "1325",
+                "1896",
                 "1719",
                 "908",
                 "599",
@@ -38723,10 +39825,13 @@
                 "1371",
                 "336",
                 "1527",
+                "1725",
                 "1078",
                 "700",
+                "1778",
                 "263",
-                "1522"
+                "1522",
+                "1554"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/grimsellauteraarhuttegrimsel.gpx"
@@ -39019,6 +40124,7 @@
                 "605",
                 "1371",
                 "336",
+                "1757",
                 "1078",
                 "115"
             ],
@@ -39200,6 +40306,7 @@
             ],
             "watchlisted_by": [
                 "294",
+                "1801",
                 "892",
                 "1620",
                 "1620",
@@ -39586,6 +40693,7 @@
                 "992",
                 "911",
                 "121",
+                "1878",
                 "842"
             ],
             "average_rating": 0,
@@ -39705,6 +40813,7 @@
             "watchlisted_by": [
                 "1049",
                 "492",
+                "1906",
                 "920"
             ],
             "average_rating": 0,
@@ -39763,6 +40872,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
                 "1397",
                 "1371"
             ],
@@ -39825,8 +40935,10 @@
             ],
             "watchlisted_by": [
                 "1170",
+                "1771",
                 "1559",
-                "1371"
+                "1371",
+                "1817"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/iffigenalpwildstrubelhuttesimmenfalle.gpx"
@@ -39951,7 +41063,9 @@
                 "839",
                 "641",
                 "1453",
-                "1494"
+                "1494",
+                "1554",
+                "1152"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/tuorschantskeschhuttelaresgia.gpx"
@@ -40094,11 +41208,13 @@
                 "901",
                 "872",
                 "1113",
+                "1799",
                 "1480",
                 "1597",
                 "1036",
                 "149",
                 "149",
+                "1929",
                 "297",
                 "930",
                 "1298",
@@ -40171,6 +41287,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1863",
                 "731",
                 "561",
                 "872",
@@ -40311,9 +41428,11 @@
                 "791",
                 "1370",
                 "1601",
+                "1795",
                 "872",
                 "1480",
-                "298"
+                "298",
+                "1784"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/champdumoulinareuseschluchtboudry.gpx"
@@ -40740,9 +41859,11 @@
                 "225",
                 "1083",
                 "1049",
+                "1877",
                 "1347",
                 "336",
                 "1078",
+                "1766",
                 "1099",
                 "1650"
             ],
@@ -40871,7 +41992,10 @@
                 18
             ],
             "watchlisted_by": [
+                "1870",
+                "1961",
                 "791",
+                "1758",
                 "1480",
                 "984",
                 "780",
@@ -40935,7 +42059,9 @@
                 18
             ],
             "watchlisted_by": [
+                "1771",
                 "1418",
+                "1583",
                 "1371",
                 "115",
                 "616"
@@ -41244,6 +42370,7 @@
                 "1719",
                 "1371",
                 "748",
+                "1757",
                 "1078",
                 "115",
                 "1522",
@@ -41335,6 +42462,7 @@
                 481
             ],
             "location_thema": [
+                1806,
                 56,
                 54
             ],
@@ -41373,7 +42501,10 @@
             ],
             "watchlisted_by": [
                 "422",
-                "433"
+                "433",
+                "1843",
+                "1138",
+                "1710"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gumenbraunwaldglattalp.gpx"
@@ -41434,7 +42565,8 @@
                 18
             ],
             "watchlisted_by": [
-                "1083"
+                "1083",
+                "1152"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/murtelcnacoazpontresina.gpx"
@@ -41786,6 +42918,7 @@
             "watchlisted_by": [
                 "839",
                 "1418",
+                "1153",
                 "1371"
             ],
             "average_rating": 0,
@@ -42029,10 +43162,12 @@
             ],
             "watchlisted_by": [
                 "966",
+                "1870",
                 "917",
                 "561",
                 "599",
                 "992",
+                "1833",
                 "842"
             ],
             "average_rating": 0,
@@ -42090,7 +43225,9 @@
             ],
             "watchlisted_by": [
                 "1049",
-                "1371"
+                "1371",
+                "1843",
+                "1817"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/voralphuttesalbitbruckesalbithutte.gpx"
@@ -42145,7 +43282,8 @@
             ],
             "watchlisted_by": [
                 "1371",
-                "370"
+                "370",
+                "1929"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/abzwvoralpvoralphutteabzwvoralp.gpx"
@@ -42460,6 +43598,7 @@
             ],
             "watchlisted_by": [
                 "1465",
+                "1877",
                 "752"
             ],
             "average_rating": 0,
@@ -42518,8 +43657,11 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
                 "839",
-                "1418"
+                "1953",
+                "1418",
+                "1799"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/goscheneralpdammahuttegoscheneralp.gpx"
@@ -42693,6 +43835,8 @@
             ],
             "watchlisted_by": [
                 "1719",
+                "1778",
+                "1152",
                 "1650"
             ],
             "average_rating": 0,
@@ -42758,6 +43902,7 @@
             "watchlisted_by": [
                 "1719",
                 "839",
+                "1953",
                 "1177",
                 "749",
                 "1522"
@@ -42937,7 +44082,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1843"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/raterichsbodenbachlitalhutte.gpx"
         },
@@ -43000,9 +44147,11 @@
             "watchlisted_by": [
                 "890",
                 "854",
+                "1876",
                 "1031",
                 "149",
-                "61"
+                "61",
+                "1685"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/tesseretelugano.gpx"
@@ -43123,6 +44272,7 @@
             ],
             "watchlisted_by": [
                 "1048",
+                "1876",
                 "783",
                 "1286"
             ],
@@ -43188,10 +44338,13 @@
             "watchlisted_by": [
                 "703",
                 "1306",
+                "1048",
                 "279",
                 "506",
+                "1795",
                 "1120",
                 "1377",
+                "1780",
                 "1149",
                 "721"
             ],
@@ -43258,6 +44411,7 @@
                 "703",
                 "1370",
                 "279",
+                "1795",
                 "902",
                 "792",
                 "721"
@@ -43387,6 +44541,7 @@
                 "872",
                 "1235",
                 "1039",
+                "1879",
                 "944"
             ],
             "average_rating": 0,
@@ -43450,16 +44605,19 @@
             ],
             "watchlisted_by": [
                 "740",
+                "1870",
                 "661",
                 "1352",
                 "433",
                 "1315",
                 "821",
+                "1795",
                 "1681",
                 "1480",
                 "794",
                 "297",
                 "780",
+                "721",
                 "1044"
             ],
             "average_rating": 0,
@@ -43518,7 +44676,10 @@
                 18
             ],
             "watchlisted_by": [
+                "1806",
                 "889",
+                "1780",
+                "1152",
                 "371"
             ],
             "average_rating": 0,
@@ -43633,6 +44794,7 @@
             ],
             "watchlisted_by": [
                 "889",
+                "1917",
                 "791",
                 "277",
                 "149"
@@ -43759,7 +44921,8 @@
                 "889",
                 "839",
                 "1641",
-                "860"
+                "860",
+                "1799"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/morteratschbovalhuttemorteratsch.gpx"
@@ -43832,7 +44995,8 @@
                 "1467",
                 "343",
                 "297",
-                "887"
+                "887",
+                "1710"
             ],
             "average_rating": 5,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/urmibergrigischeidegg.gpx"
@@ -43970,13 +45134,17 @@
                 "1193",
                 "644",
                 "506",
+                "1795",
                 "1173",
                 "1374",
                 "1371",
                 "1029",
+                "1753",
                 "1587",
                 "1353",
+                "1720",
                 "920",
+                "1744",
                 "1624"
             ],
             "average_rating": 0,
@@ -44049,11 +45217,13 @@
                 "1047",
                 "601",
                 "979",
+                "1975",
                 "1327",
                 "1340",
                 "153",
                 "1397",
                 "1136",
+                "1730",
                 "176",
                 "967",
                 "1319",
@@ -44063,14 +45233,15 @@
                 "1067",
                 "90",
                 "585",
+                "1795",
                 "1036",
                 "298",
                 "965",
                 "343",
                 "1029",
+                "1772",
                 "976",
                 "969",
-                "1553",
                 "518",
                 "1434",
                 "671"
@@ -44135,22 +45306,29 @@
                 18
             ],
             "watchlisted_by": [
+                "1788",
                 "601",
                 "1269",
                 "1540",
                 "889",
                 "786",
+                "1917",
                 "791",
                 "561",
                 "1620",
                 "1535",
                 "492",
                 "1658",
+                "1795",
                 "1371",
                 "1681",
                 "1031",
                 "149",
                 "1422",
+                "1780",
+                "1930",
+                "721",
+                "1893",
                 "920"
             ],
             "average_rating": 0,
@@ -44425,6 +45603,7 @@
                 "1120",
                 "1036",
                 "578",
+                "1881",
                 "508",
                 "1432",
                 "1286"
@@ -44706,6 +45885,7 @@
                 "1403",
                 "150",
                 "1237",
+                "1795",
                 "1469",
                 "902",
                 "1548",
@@ -44770,7 +45950,9 @@
             ],
             "watchlisted_by": [
                 "624",
+                "1870",
                 "238",
+                "1758",
                 "279",
                 "808",
                 "902"
@@ -44837,7 +46019,10 @@
                 "1325",
                 "837",
                 "889",
+                "1917",
                 "1535",
+                "1795",
+                "1765",
                 "1377",
                 "1641",
                 "1097",
@@ -44912,11 +46097,13 @@
                 "1188",
                 "841",
                 "433",
+                "1832",
                 "781",
                 "872",
                 "1014",
                 "1480",
-                "721"
+                "721",
+                "1879"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/reichenbachfallaareschluchtmeiringen.gpx"
@@ -44981,10 +46168,12 @@
                 "889",
                 "791",
                 "1188",
+                "1832",
                 "872",
                 "1068",
                 "350",
-                "513"
+                "513",
+                "1784"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/haslibergreutiaareschluchtmeiringen.gpx"
@@ -45050,7 +46239,8 @@
                 "388",
                 "350",
                 "513",
-                "1709"
+                "1709",
+                "1930"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/stechelbergtrummelbachfallelauterb.gpx"
@@ -45116,11 +46306,13 @@
                 "703",
                 "1083",
                 "1567",
+                "1870",
                 "1306",
                 "1176",
                 "992",
                 "1601",
                 "901",
+                "1173",
                 "1494",
                 "1014",
                 "244",
@@ -45258,7 +46450,11 @@
             ],
             "watchlisted_by": [
                 "592",
+                "1851",
+                "1825",
+                "1832",
                 "1364",
+                "1795",
                 "872",
                 "1685"
             ],
@@ -45319,7 +46515,8 @@
             ],
             "watchlisted_by": [
                 "492",
-                "1641"
+                "1641",
+                "1780"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/simmenfalleammertenpassengstligenalp.gpx"
@@ -45381,17 +46578,23 @@
             "watchlisted_by": [
                 "1325",
                 "889",
+                "1953",
                 "1615",
                 "791",
                 "1687",
                 "1519",
+                "1833",
                 "1364",
                 "1641",
                 "1005",
+                "1843",
                 "149",
+                "1929",
+                "1780",
                 "780",
                 "1369",
-                "920"
+                "920",
+                "1835"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/pizol5seenwanderung.gpx"
@@ -45450,8 +46653,10 @@
                 18
             ],
             "watchlisted_by": [
+                "1795",
                 "1399",
                 "768",
+                "1759",
                 "721"
             ],
             "average_rating": 0,
@@ -45582,8 +46787,10 @@
                 "1510",
                 "1025",
                 "599",
+                "1795",
                 "872",
-                "297"
+                "297",
+                "721"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/luderenalpnapfluthernbad.gpx"
@@ -45648,6 +46855,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1761",
                 "1217",
                 "1266",
                 "777",
@@ -45664,7 +46872,10 @@
                 "1141",
                 "1449",
                 "1604",
-                "896"
+                "761",
+                "896",
+                "1775",
+                "1766"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/regensberglagernbaden.gpx"
@@ -45850,6 +47061,7 @@
                 "703",
                 "889",
                 "786",
+                "1917",
                 "872",
                 "149",
                 "984"
@@ -45996,11 +47208,15 @@
                 18
             ],
             "watchlisted_by": [
+                "1818",
                 "1266",
                 "1247",
+                "1883",
                 "788",
                 "1379",
-                "887"
+                "1795",
+                "887",
+                "1780"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/weesenquinten.gpx"
@@ -46198,6 +47414,7 @@
                 "1526",
                 "1136",
                 "647",
+                "1845",
                 "561",
                 "855",
                 "992",
@@ -46279,6 +47496,7 @@
                 "343",
                 "1192",
                 "578",
+                "1881",
                 "944"
             ],
             "average_rating": 0,
@@ -46334,7 +47552,9 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1110"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/blauherdstelliseefluhalpblauherd.gpx"
         },
@@ -46592,6 +47812,7 @@
             "watchlisted_by": [
                 "927",
                 "624",
+                "1895",
                 "721"
             ],
             "average_rating": 0,
@@ -46653,7 +47874,10 @@
             "location_aktivitat": [
                 18
             ],
-            "watchlisted_by": [],
+            "watchlisted_by": [
+                "1851",
+                "1795"
+            ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/starkenbachalpsellamatt.gpx"
         },
@@ -46712,6 +47936,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1852",
                 "839",
                 "1650"
             ],
@@ -46892,6 +48117,7 @@
             "watchlisted_by": [
                 "1217",
                 "106",
+                "1767",
                 "1053",
                 "1340",
                 "777",
@@ -46901,6 +48127,7 @@
                 "1364",
                 "925",
                 "488",
+                "1795",
                 "1467",
                 "297",
                 "1149",
@@ -47026,7 +48253,8 @@
                 "1397",
                 "839",
                 "1615",
-                "370"
+                "370",
+                "1929"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/brunnirugghubelhuttebrunni.gpx"
@@ -47093,7 +48321,8 @@
                 "561",
                 "938",
                 "872",
-                "1633"
+                "1633",
+                "1257"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/forchpfannenstielmeilen.gpx"
@@ -47155,10 +48384,12 @@
                 18
             ],
             "watchlisted_by": [
+                "1917",
                 "839",
                 "1038",
                 "1338",
-                "1364"
+                "1364",
+                "1780"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/oberalppasspazolastocktomaseeeoberalp.gpx"
@@ -47352,7 +48583,9 @@
             ],
             "watchlisted_by": [
                 "703",
-                "780"
+                "1795",
+                "780",
+                "1110"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/lauchernalpstafelfafleralpblatten.gpx"
@@ -47471,6 +48704,7 @@
             "watchlisted_by": [
                 "1170",
                 "1719",
+                "1757",
                 "1099"
             ],
             "average_rating": 0,
@@ -47533,9 +48767,14 @@
                 "1700",
                 "889",
                 "791",
+                "1832",
                 "1364",
+                "1173",
                 "350",
-                "1553"
+                "1843",
+                "1780",
+                "1553",
+                "1879"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/trifttriftbruckewindegghuttetrift.gpx"
@@ -47596,7 +48835,8 @@
                 18
             ],
             "watchlisted_by": [
-                "1446"
+                "1446",
+                "1801"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/lauenenseetungelpassiffigenalp.gpx"
@@ -47658,6 +48898,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1870",
                 "1247",
                 "887"
             ],
@@ -47719,7 +48960,8 @@
                 18
             ],
             "watchlisted_by": [
-                "285"
+                "285",
+                "1780"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/reckingenvsbielgoms.gpx"
@@ -47782,6 +49024,7 @@
                 "777",
                 "889",
                 "909",
+                "1801",
                 "806",
                 "1615",
                 "1000",
@@ -47966,7 +49209,8 @@
             ],
             "watchlisted_by": [
                 "492",
-                "920"
+                "920",
+                "1835"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/biviokanonensattelalpflixrona.gpx"
@@ -48033,9 +49277,12 @@
             ],
             "watchlisted_by": [
                 "624",
+                "851",
                 "510",
                 "1601",
+                "1795",
                 "902",
+                "1899",
                 "721",
                 "357"
             ],
@@ -48098,7 +49345,8 @@
             "watchlisted_by": [
                 "814",
                 "433",
-                "1364"
+                "1364",
+                "1735"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/niederschlagspeerniederschlag.gpx"
@@ -48293,7 +49541,8 @@
             ],
             "watchlisted_by": [
                 "1268",
-                "189"
+                "189",
+                "1889"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/gantrischhuttemorgetepassweissenburg.gpx"
@@ -48360,6 +49609,7 @@
                 "1188",
                 "485",
                 "485",
+                "1745",
                 "1650"
             ],
             "average_rating": 0,
@@ -48418,6 +49668,7 @@
                 18
             ],
             "watchlisted_by": [
+                "1786",
                 "1371"
             ],
             "average_rating": 0,
@@ -48483,11 +49734,15 @@
                 "777",
                 "1000",
                 "1364",
+                "1173",
                 "1005",
                 "485",
                 "984",
+                "1780",
                 "1669",
-                "1600"
+                "721",
+                "1600",
+                "1744"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/ebenalpascherseealpseewasserauen.gpx"
@@ -48674,7 +49929,11 @@
                 18
             ],
             "watchlisted_by": [
-                "920"
+                "1780",
+                "721",
+                "1754",
+                "920",
+                "1835"
             ],
             "average_rating": 0,
             "gpx_file": "https:\/\/wegwandern.ch\/gpx\/mettmenleglerhuttemettmen.gpx"

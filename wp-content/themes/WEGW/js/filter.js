@@ -1080,7 +1080,7 @@ function sortJsonData(sort, filteredData){
                       '<input type="checkbox" name="" id="closure_hikes_layer" value="">'+
                       '<span class="redmark"></span>'+
                     '</label>'+
-                    '<label class="check_wrapper">Schneehöhe Exolabs'+
+                    '<label class="check_wrapper">Schneehöhe ExoLabs'+
                       '<input type="checkbox" name="" id="snow_depth_layer" value="">'+
                       '<span class="redmark"></span>'+
                       '<div class="info_icon" onclick="infoIconClicked(event,&quot;weg-map-popup'+jsonplaces[i].location_id+'&quot;)"></div>'+
