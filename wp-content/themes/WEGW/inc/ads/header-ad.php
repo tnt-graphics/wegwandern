@@ -21,6 +21,17 @@
 	  </div>
   </div>
   
+  <script type="text/javascript">
+	window.addEventListener('message', function(event) {
+	  if (event.data.type === 'connector' && event.data.name === 'codevelop') {
+		var script = document.createElement('script');
+		script.async = true;
+		script.src = 'https://bcdn.codevelop.network/static/adformats/global/publisherHelper.js';
+		document.head.appendChild(script);
+	  }
+	}, false);
+  </script>
+  
   <script>
 	 // Define a function to execute on load and resize
 function loadAndResizeFunction() {
