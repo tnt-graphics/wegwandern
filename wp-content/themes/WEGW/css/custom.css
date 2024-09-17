@@ -272,7 +272,7 @@ a{
     padding-top: 1px;
 }
 
-.ad-section.header div div div {
+.ad-section.header iframe {
     display: block !important;
 }
 
