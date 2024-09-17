@@ -274,6 +274,7 @@ a{
 
 .ad-section.header iframe {
     display: block !important;
+    margin: auto !important;
 }
 
 .container{
