@@ -272,8 +272,8 @@ a{
     padding-top: 1px;
 }
 
-.ad-section.header div {
-    display: block;
+.ad-section.header div div div {
+    display: block !important;
 }
 
 .container{
