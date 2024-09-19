@@ -82,11 +82,6 @@ var FusionPageBuilder = FusionPageBuilder || {};
                 var container = this.$el;
                 var element_type = this.model.attributes.element_type;
                 var params = this.model.attributes.params;
-                if (element_type === 'wpmf_avada_pdf_embed' && params.url !== '' && params.embed === 'on') {
-                    if (container.find('.wpmf-pdfemb-viewer').length) {
-                        container.find('.wpmf-pdfemb-viewer').pdfEmbedder();
-                    }
-                }
             }
         });
 

@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			}
 		?></div>
 		<a href="#" id="frm_add_watch_lookup_link_<?php echo esc_attr( $field['id'] ); ?>" class="frm-small-add frm_add_watch_lookup_row frm_add_watch_lookup_link">
-			<span class="frm_icon_font frm_add_tag"></span>
+			<span class="frm_add_tag"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon' ); ?></span>
 			<?php esc_html_e( 'Watch a Lookup Field', 'formidable-pro' ); ?>
 		</a>
 	</div>

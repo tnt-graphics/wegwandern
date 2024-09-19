@@ -159,25 +159,29 @@ class FrmAcfFrmToAcfHelper {
 		$key = $args['frm_entry']->post_id . $args['acf_field']['name'];
 
 		if ( ! isset( self::$acf_repeaters[ $key ] ) ) {
-			$value         = array_map( 'intval', $value );
-			$child_entries = self::get_child_entries( $args['frm_entry']->id );
+			if ( ! is_array( $value ) ) {
+				self::$acf_repeaters[ $key ] = $value;
+			} else {
+				$value         = array_map( 'intval', $value );
+				$child_entries = self::get_child_entries( $args['frm_entry']->id );
 
-			if ( ! $child_entries ) {
-				return $value;
-			}
-
-			$repeater_data = array();
-			foreach ( $child_entries as $child_entry ) {
-				if ( ! in_array( intval( $child_entry->id ), $value, true ) ) {
-					continue;
+				if ( ! $child_entries ) {
+					return $value;
 				}
 
-				$child_entry     = FrmEntry::get_meta( $child_entry );
-				$repeater_data[] = self::get_repeater_item_from_entry( $child_entry, $args['mapping']['child_mapping'] );
-			}
+				$repeater_data = array();
+				foreach ( $child_entries as $child_entry ) {
+					if ( ! in_array( intval( $child_entry->id ), $value, true ) ) {
+						continue;
+					}
 
-			if ( $repeater_data ) {
-				self::$acf_repeaters[ $key ] = $repeater_data;
+					$child_entry     = FrmEntry::get_meta( $child_entry );
+					$repeater_data[] = self::get_repeater_item_from_entry( $child_entry, $args['mapping']['child_mapping'] );
+				}
+
+				if ( $repeater_data ) {
+					self::$acf_repeaters[ $key ] = $repeater_data;
+				}
 			}
 		}
 

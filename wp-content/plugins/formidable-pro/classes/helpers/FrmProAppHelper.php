@@ -125,7 +125,7 @@ class FrmProAppHelper {
 		);
 
 		preg_match( '/viewBox\s*=\s*["\'](.*?)["\']/i', $svg, $matches );
-		if ( $matches[1] ) {
+		if ( ! empty( $matches[1] ) ) {
 			$svg_element['atts']['viewBox'] = $matches[1];
 		}
 
@@ -280,13 +280,30 @@ class FrmProAppHelper {
 	}
 
 	/**
+	 * @since 6.14
+	 *
+	 * @return WP_Post|null
+	 */
+	private static function get_current_post_object() {
+		global $post;
+		if ( $post ) {
+			return $post;
+		}
+		$post_id = FrmProFormState::get_from_request( 'global_post', '' );
+		if ( ! $post_id ) {
+			return null;
+		}
+		return get_post( $post_id );
+	}
+
+	/**
 	 * Get a value from the currently viewed post
 	 *
 	 * @since 2.0
 	 * @return string
 	 */
 	public static function get_current_post_value( $value ) {
-		global $post;
+		$post = self::get_current_post_object();
 		if ( ! $post ) {
 			return;
 		}
@@ -446,7 +463,6 @@ class FrmProAppHelper {
 	public static function get_custom_post_types() {
 		$custom_posts = get_post_types( array(), 'object' );
 		foreach ( array( 'revision', 'attachment', 'nav_menu_item' ) as $unset ) {
-			// @phpstan-ignore-next-line
 			unset( $custom_posts[ $unset ] );
 		}
 
@@ -640,7 +656,10 @@ class FrmProAppHelper {
 		if ( $args['where_val'] === 'NOW' ) {
 			$args['where_val'] = self::get_date( $date_format );
 		} elseif ( ! self::option_is_like( $args['where_is'] ) ) {
-			$args['where_val'] = gmdate( $date_format, strtotime( $args['where_val'] ) );
+			$date_timestamp = strtotime( $args['where_val'] );
+			if ( $date_timestamp ) {
+				$args['where_val'] = gmdate( $date_format, strtotime( $args['where_val'] ) );
+			}
 		}
 	}
 
@@ -842,7 +861,7 @@ class FrmProAppHelper {
 		// Filter for a subfield (first or last name).
 		return 'TRIM( \'""\' FROM
 					CONCAT(
-						\'"\', 
+						\'"\',
 						SUBSTRING_INDEX(
 							SUBSTRING_INDEX(
 								REPLACE(
@@ -1166,20 +1185,6 @@ class FrmProAppHelper {
 		return FrmProFileField::upload_dir( $uploads );
 	}
 
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function get_time_format_for_field( $field ) {
-		_deprecated_function( __FUNCTION__, '3.02.01', 'FrmProFieldTime->get_time_format_for_field' );
-		$time_format = FrmField::get_option( $field, 'clock' );
-		return self::get_time_format_for_setting( $time_format );
-	}
-
-	public static function get_time_format_for_setting( $time_format ) {
-		_deprecated_function( __FUNCTION__, '3.02.01', 'FrmProFieldTime->get_time_format_for_setting' );
-		return $time_format == 12 ? 'g:i A' : 'H:i';
-	}
-
 	public static function get_rand( $length ) {
 		$all_g = 'ABCDEFGHIJKLMNOPQRSTWXZ';
 		$pass  = '';
@@ -1209,62 +1214,6 @@ class FrmProAppHelper {
 	}
 
 	/**
-	 * @deprecated 4.09
-	 */
-	public static function load_genesis() {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::load_genesis' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function gen_pagination_class( $class ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::gen_pagination_class', $class );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function gen_prev_label() {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::gen_prev_label' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function gen_next_label() {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::gen_next_label' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function gen_prev_class( $class ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::gen_prev_class', $class );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function gen_next_class( $class ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::gen_next_class', $class );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function gen_dots_class( $class ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::gen_dots_class', $class );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function reset_keys( $arr ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppHelper::reset_keys', $arr );
-	}
-
-	/**
 	 * Get the server OS
 	 *
 	 * @since 6.4.2
@@ -1281,5 +1230,38 @@ class FrmProAppHelper {
 		}
 
 		return '';
+	}
+
+	/**
+	 * An alternative for basename() function which doesn't work well for non-unicode characters.
+	 *
+	 * @since 6.10
+	 *
+	 * @param string $path File path.
+	 * @return string
+	 */
+	public static function base_name( $path ) {
+		$parts = preg_split( '([\\\/])', rtrim( $path, '\\/' ) );
+		return end( $parts );
+	}
+
+	/**
+	 * Shows tooltip icon.
+	 *
+	 * @since 6.12
+	 *
+	 * @param string $tooltip_text Tooltip text.
+	 * @param array  $atts         Tooltip wrapper HTML attributes.
+	 *
+	 * @return void
+	 */
+	public static function tooltip_icon( $tooltip_text, $atts = array() ) {
+		if ( method_exists( 'FrmAppHelper', 'tooltip_icon' ) ) {
+			FrmAppHelper::tooltip_icon( $tooltip_text, $atts );
+		} else {
+			?>
+			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php echo esc_attr( $tooltip_text ); ?>"></span>
+			<?php
+		}
 	}
 }

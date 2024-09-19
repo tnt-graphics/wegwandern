@@ -27,13 +27,18 @@ if ($img_shadow !== '') {
 if ($border_style !== 'none') {
     $style .= '#' . $selector . ' .wpmf-gallery-item img {border: ' . $border_color . ' '. $border_width .'px '. $border_style .'}';
 }
-
+$galleryStyle = '';
+if ($align === 'alignleft' || $align === 'alignright' || $align === 'aligncenter') {
+    $galleryStyle = 'style="width: 100%; max-width: 620px!important;"';
+} elseif ($align === 'none') {
+    $align = '';
+}
 wp_add_inline_style('wpmf-gallery-style', $style);
 $output = '';
 if (!empty($is_divi)) {
     $output .= '<style>' . $style . '</style>';
 }
-$output .= '<div class="wpmf-gallerys wpmf-gallerys-life '. $align .'">';
+$output .= '<div class="wpmf-gallerys wpmf-gallerys-life '. $align .'" '.$galleryStyle.'>';
 $output .= '<div id="' . $selector . '"
  data-gutter-width="' . $gutterwidth . '"
   data-wpmfcolumns="' . $columns . '" class="' . $class . '">';

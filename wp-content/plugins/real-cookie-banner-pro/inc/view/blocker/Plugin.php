@@ -30,6 +30,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\Reattac
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\ScriptInlineJsonBlocker;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction\Confirm;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction\DelegateClick;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction\EvalJs;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction\ForceVisual;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction\JQueryHijackEach;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction\KeepAttributes;
@@ -84,6 +85,10 @@ class Plugin extends AbstractPlugin
             'a[data-pswp-video-url:matchesUrl(withHost=true),delegateClick()]',
             // [Plugin Comp] Elementor Lightbox
             'a[href][data-elementor-open-lightbox:confirm(),keepAttributes(value=href)]',
+            // [Plugin Comp] Thrive Visual Editor
+            'iframe[data-reporting-enabled="1":keepAttributes(value=data-reporting-enabled),jQueryHijackEach()]',
+            // [Plugin Comp] Authentic theme using jarallax
+            'div[data-video][class*="parallax-video":keepAttributes(value=class),jQueryHijackEach()]',
         ]);
         /**
          * `<div>` elements are expensive in Regexp cause there a lot of them, let's assume only a
@@ -248,6 +253,7 @@ class Plugin extends AbstractPlugin
         $cb->addPlugin(Style::class);
         $cb->addPlugin(DelegateClick::class);
         $cb->addPlugin(TransformAttribute::class);
+        $cb->addPlugin(EvalJs::class);
         $cb->addPlugin(Confirm::class);
         /**
          * Plugin.

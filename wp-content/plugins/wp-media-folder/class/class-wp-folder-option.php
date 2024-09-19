@@ -1693,6 +1693,22 @@ class WpmfMediaFolderOption
         if (!get_option('wpmf_gallery_settings', false)) {
             add_option('wpmf_gallery_settings', $gallery_settings, '', 'yes');
         }
+
+        if (!get_option('wpmf_minimize_folder_tree_post_type', false)) {
+            add_option('wpmf_minimize_folder_tree_post_type', 1, '', 'yes');
+        }
+
+        $post_types = $this->getAllPostTypes();
+        foreach ($post_types as $post_type) {
+            $option_name = 'wpmf_option_folder_'.$post_type->name;
+            if (!get_option($option_name, false)) {
+                if ($option_name === 'wpmf_option_folder_post') {
+                    add_option($option_name, 1, '', 'yes');
+                } else {
+                    add_option($option_name, 0, '', 'yes');
+                }
+            }
+        }
     }
 
     /**
@@ -2396,7 +2412,7 @@ class WpmfMediaFolderOption
             'test_form' => false,
             'test_type' => false,
         );
-
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
         $upload = wp_handle_upload($_FILES['import'], $overrides);
         if (isset($upload['error'])) {
             return array('status' => false);
@@ -2474,7 +2490,8 @@ class WpmfMediaFolderOption
             'root_media_count',
             'watermark_exclude_public_gallery',
             'watermark_exclude_photograph_gallery',
-            'connect_nextcloud'
+            'connect_nextcloud',
+            'wpmf_minimize_folder_tree_post_type'
         );
         if (isset($_POST['btn_wpmf_save'])) {
             if (empty($_POST['wpmf_nonce'])
@@ -2742,6 +2759,19 @@ class WpmfMediaFolderOption
                     update_option($option, $_POST[$option]);
                 }
             }
+
+            $post_types = $this->getAllPostTypes();
+            $wpmf_active_folders_post_types = array();
+            foreach ($post_types as $post_type) {
+                $option = 'wpmf_option_folder_'.$post_type->name;
+                if (isset($_POST[$option])) {
+                    wpmfSetOption($option, $_POST[$option]);
+                    if ((int) $_POST[$option] === 1) {
+                        $wpmf_active_folders_post_types[] = $post_type->name;
+                    }
+                }
+            }
+            wpmfSetOption('wpmf_active_folders_post_types', $wpmf_active_folders_post_types);
 
             if (isset($_POST['wpmf_active_media']) && (int) $_POST['wpmf_active_media'] === 1) {
                 $wpmf_checkbox_tree = get_option('wpmf_checkbox_tree');
@@ -4403,5 +4433,30 @@ class WpmfMediaFolderOption
                 )
             );
         }
+    }
+
+    /**
+     * Get all post types
+     *
+     * @return array
+     */
+    public function getAllPostTypes()
+    {
+        $post_types = get_post_types(array( 'show_in_menu' => true ), 'objects');
+        // List of post types to exclude
+        $page_builder_post_types = array(
+            'elementor_library',
+            'e-landing-page',
+            'wpb',
+            'attachment'
+        );
+
+        foreach ($page_builder_post_types as $page_builder_post_type) {
+            if (isset($post_types[$page_builder_post_type])) {
+                unset($post_types[$page_builder_post_type]);
+            }
+        }
+
+        return $post_types;
     }
 }

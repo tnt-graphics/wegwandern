@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm6 frm_form_field">
 		<label>
 			<?php esc_html_e( 'Post Type', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'To setup a new custom post type, install and setup a plugin like \'Custom Post Type UI\', then return to this page to select your new custom post type.', 'formidable-pro' ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'To setup a new custom post type, install and setup a plugin like \'Custom Post Type UI\', then return to this page to select your new custom post type.', 'formidable-pro' ) ); ?>
 		</label>
 		<select class="frm_post_type" name="<?php echo esc_attr( $this->get_field_name('post_type') ); ?>">
 			<?php
@@ -140,6 +140,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$post_field = array( 'select', 'radio', 'hidden' );
 			require __DIR__ . '/_post_field_options.php';
 			?>
+		</select>
+	</p>
+
+	<p class="frm6 frm_form_field">
+		<label for="<?php echo esc_attr( $this->get_field_id( 'comment_status' ) ); ?>"><?php esc_html_e( 'Discussion' ); ?></label>
+		<select name="<?php echo esc_attr( $this->get_field_name( 'comment_status' ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( 'comment_status' ) ); ?>">
+			<option value=""><?php esc_html_e( 'Use default', 'formidable-pro' ); ?></option>
+			<option value="open" <?php selected( 'open', $form_action->post_content['comment_status'] ); ?>><?php esc_html_e( 'Allow comments', 'formidable-pro' ); ?></option>
+			<option value="closed" <?php selected( 'closed', $form_action->post_content['comment_status'] ); ?>><?php esc_html_e( 'Disable comments', 'formidable-pro' ); ?></option>
 		</select>
 	</p>
 	<?php

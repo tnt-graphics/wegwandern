@@ -10,7 +10,7 @@ class FrmMlcmpAppController {
 	}
 
 	/**
-	 * Print a notice if Formidable is too old to be compatible with the MailChimp add-on
+	 * Print a notice if Formidable is too old to be compatible with the Mailchimp add-on
 	 */
 	public static function min_version_notice() {
 		if ( FrmMlcmpAppHelper::is_formidable_compatible() ) {
@@ -19,8 +19,8 @@ class FrmMlcmpAppController {
 
 		$wp_list_table = _get_list_table( 'WP_Plugins_List_Table' );
 		echo '<tr class="plugin-update-tr active"><th colspan="' . $wp_list_table->get_column_count() . '" class="check-column plugin-update colspanchange"><div class="update-message">' .
-		     __( 'You are running an outdated version of Formidable. This plugin may not work correctly if you do not update Formidable.', 'frmmlcmp' ) .
-		     '</div></td></tr>';
+			 __( 'You are running an outdated version of Formidable. This plugin may not work correctly if you do not update Formidable.', 'frmmlcmp' ) .
+			 '</div></td></tr>';
 	}
 
 	/**
@@ -51,7 +51,7 @@ class FrmMlcmpAppController {
 	}
 
 	/**
-	 * Display admin notices if Formidable is too old or MailChimp settings need to be migrated
+	 * Display admin notices if Formidable is too old or Mailchimp settings need to be migrated
 	 *
 	 * @since 2.0
 	 */
@@ -64,7 +64,7 @@ class FrmMlcmpAppController {
 
 		// Show message if Formidable is not compatible
 		if ( ! FrmMlcmpAppHelper::is_formidable_compatible() ) {
-			include( FrmMlcmpAppHelper::plugin_path() . '/views/notices/update_formidable.php' );
+			include FrmMlcmpAppHelper::plugin_path() . '/views/notices/update_formidable.php';
 
 			return;
 		}
@@ -88,7 +88,7 @@ class FrmMlcmpAppController {
 				return;
 			}
 
-			include( FrmMlcmpAppHelper::plugin_path() . '/views/notices/update_database.php' );
+			include FrmMlcmpAppHelper::plugin_path() . '/views/notices/update_database.php';
 		}
 	}
 
@@ -186,7 +186,7 @@ class FrmMlcmpAppController {
 	}
 
 	/**
-	 * Package selected and non-selected groups to send to MailChimp
+	 * Package selected and non-selected groups to send to Mailchimp
 	 *
 	 * @since 2.0
 	 *
@@ -217,7 +217,7 @@ class FrmMlcmpAppController {
 	}
 
 	/**
-	 * Package selected and non-selected marketing preferences to send to MailChimp
+	 * Package selected and non-selected marketing preferences to send to Mailchimp
 	 *
 	 * @since 2.05
 	 *
@@ -248,7 +248,7 @@ class FrmMlcmpAppController {
 	}
 
 	/**
-	 * Get the field values to send to MailChimp
+	 * Get the field values to send to Mailchimp
 	 *
 	 * @since 2.0
 	 *
@@ -276,7 +276,7 @@ class FrmMlcmpAppController {
 	}
 
 	/**
-	 * Get a single field value to send to MailChimp
+	 * Get a single field value to send to Mailchimp
 	 *
 	 * @since 2.0
 	 *
@@ -292,27 +292,27 @@ class FrmMlcmpAppController {
 		$field       = FrmField::getOne( $field_id );
 
 		if ( is_numeric( $field_value ) ) {
-			if ( $field->type == 'user_id' ) {
+			if ( $field->type === 'user_id' ) {
 				$user_data = get_userdata( $field_value );
-				if ( $field_tag == 'EMAIL' ) {
+				if ( $field_tag === 'EMAIL' ) {
 					$field_value = $user_data->user_email;
-				} else if ( $field_tag == 'FNAME' ) {
+				} elseif ( $field_tag === 'FNAME' ) {
 					$field_value = $user_data->first_name;
-				} else if ( $field_tag == 'LNAME' ) {
+				} elseif ( $field_tag === 'LNAME' ) {
 					$field_value = $user_data->last_name;
 				} else {
 					$field_value = $user_data->user_login;
 				}
-			} else if ( is_callable( 'FrmEntriesHelper::display_value' ) ) {
-				$field_value = FrmEntriesHelper::display_value( $field_value, $field, array( 'type'     => $field->type,
-				                                                                             'truncate' => false,
-				                                                                             'entry_id' => $entry->id
-				) );
-			} else if ( is_callable( 'FrmProEntryMetaHelper::display_value' ) ) {
-				$field_value = FrmProEntryMetaHelper::display_value( $field_value, $field, array( 'type'     => $field->type,
-				                                                                                  'truncate' => false,
-				                                                                                  'entry_id' => $entry->id
-				) );
+			} elseif ( is_callable( 'FrmEntriesHelper::display_value' ) ) {
+				$field_value = FrmEntriesHelper::display_value(
+					$field_value,
+					$field,
+					array(
+						'type'     => $field->type,
+						'truncate' => false,
+						'entry_id' => $entry->id,
+					)
+				);
 			}
 		} elseif ( is_array( $field_value ) && 'FNAME' === $field_tag && 'name' === $field->type ) {
 			$field_value = isset( $field_value['first'] ) ? $field_value['first'] : '';
@@ -320,11 +320,9 @@ class FrmMlcmpAppController {
 			$field_value = isset( $field_value['last'] ) ? $field_value['last'] : '';
 		} else {
 
-			if ( is_string( $field_value ) && preg_match( '/^\d{2}\/\d{2}\/\d{4}$/', trim( $field_value ) ) ) {
-				if ( is_callable( 'FrmProAppHelper::convert_date' ) ) {
-					global $frmpro_settings;
-					$field_value = FrmProAppHelper::convert_date( $field_value, $frmpro_settings->date_format, 'Y-m-d' );
-				}
+			if ( is_string( $field_value ) && preg_match( '/^\d{2}\/\d{2}\/\d{4}$/', trim( $field_value ) ) && is_callable( 'FrmProAppHelper::convert_date' ) ) {
+				global $frmpro_settings;
+				$field_value = FrmProAppHelper::convert_date( $field_value, $frmpro_settings->date_format, 'Y-m-d' );
 			}
 
 			$list_field = false;
@@ -403,10 +401,6 @@ class FrmMlcmpAppController {
 		}
 
 		$subscribe = self::decode_call( '/lists/' . $sending_data['id'] . '/members/' . $sending_data['subscriber_id'], $sending_data );
-
-		if ( isset( $subscribe['error'] ) ) {
-			self::log_errors( $subscribe );
-		}
 	}
 
 	/**
@@ -451,10 +445,6 @@ class FrmMlcmpAppController {
 		$data['tags'] = apply_filters( 'frm_mlcmp_tags', $packaged_tags, array( 'data' => $sending_data ) );
 
 		$add_tags = self::decode_call( '/lists/' . $data['id'] . '/members/' . $data['subscriber_id'] . '/tags', $data );
-
-		if ( isset( $add_tags['error'] ) ) {
-			self::log_errors( $add_tags );
-		}
 	}
 
 	/**
@@ -502,24 +492,6 @@ class FrmMlcmpAppController {
 		);
 	}
 
-	/**
-	 * Log errors in PHP error log
-	 * More accessible logging should be added in the future
-	 *
-	 * @since 2.02
-	 *
-	 * @param array $response
-	 */
-	private static function log_errors( $response ) {
-		error_log( 'MailChimp subscribe error: ' . $response['error'] );
-
-		if ( isset( $response['errors'] ) ) {
-			foreach ( $response['errors'] as $error ) {
-				error_log( $error['field'] . ': ' . $error['message'] );
-			}
-		}
-	}
-
 	public static function get_groups( $list_id ) {
 		$args = array( 'method' => 'GET', 'count' => 30 );
 		$groups = self::decode_call( '/lists/' . $list_id . '/interest-categories', $args );
@@ -540,12 +512,12 @@ class FrmMlcmpAppController {
 	}
 
 	public static function get_list_fields( $list_id ) {
-		$args = array( 'method' => 'GET', 'count' => 30 );
+		$args = array( 'method' => 'GET', 'count' => 100 );
 		return self::decode_call( '/lists/' . $list_id . '/merge-fields', $args );
 	}
 
 	/**
-	 * MailChimp doesn't have a good API for this. There must be a contact in the list
+	 * Mailchimp doesn't have a good API for this. There must be a contact in the list
 	 * in order to get the list of GDPR options.
 	 *
 	 * @since 2.05
@@ -612,11 +584,11 @@ class FrmMlcmpAppController {
 		do_action( 'frm_mlcmp_api_request_completed', $res, $args );
 
 		if ( is_wp_error( $res ) ) {
-			$message = __( 'You had an error communicating with the MailChimp API.', 'frmmlcmp' ) . $res->get_error_message();
+			$message = __( 'You had an error communicating with the Mailchimp API.', 'frmmlcmp' ) . $res->get_error_message();
 
 			return json_encode( array( 'error' => $message, 'status' => 'error' ) );
 		} elseif ( $body == 'error' || is_wp_error( $body ) ) {
-			$message = __( 'You had an error communicating with the MailChimp API.', 'frmmlcmp' );
+			$message = __( 'You had an error communicating with the Mailchimp API.', 'frmmlcmp' );
 
 			return json_encode( array( 'error' => $message, 'status' => 'error' ) );
 		} else {
@@ -672,7 +644,7 @@ class FrmMlcmpAppController {
 	public static function get_datacenter( $apikey ) {
 		$dc = explode( '-', $apikey );
 
-		return isset( $dc[ 1 ] ) ? $dc[ 1 ] : '';
+		return isset( $dc[1] ) ? $dc[1] : '';
 	}
 
 	private static function log_results( $atts ) {
@@ -713,7 +685,7 @@ class FrmMlcmpAppController {
 		if ( is_wp_error( $response ) ) {
 			$processed['message'] = $response->get_error_message();
 		} elseif ( 'error' === $body || is_wp_error( $body ) ) {
-			$processed['message'] = __( 'You had an HTTP connection error', 'formidable-api' );
+			$processed['message'] = __( 'You had an HTTP connection error', 'frmmlcmp' );
 		} elseif ( isset( $response['response'] ) && isset( $response['response']['code'] ) ) {
 			$processed['code']    = $response['response']['code'];
 			$processed['message'] = $response['body'];
@@ -752,7 +724,5 @@ class FrmMlcmpAppController {
 		_deprecated_function( __FUNCTION__, '2.03', 'FrmMlcmpAppController::get_groups' );
 
 		return self::get_groups( $list_id );
-
 	}
-
 }

@@ -41,68 +41,19 @@ class WpmfFolderAccess
         $wpmf_capability = apply_filters('wpmf_user_can', current_user_can('upload_files'), 'create_user_folder');
         if (($role !== 'administrator' && $wpmf_capability) || $role === 'employer') {
             $wpmf_create_folder = get_option('wpmf_create_folder');
+            $parent = $this->getUserParentFolder();
+            $cloud_type = get_term_meta($parent, 'wpmf_drive_type', true);
+            $check_term = false;
             if ($wpmf_create_folder === 'user') {
                 $slug       = sanitize_title($current_user->data->user_login) . '-wpmf';
                 $check_term = get_term_by('slug', $slug, WPMF_TAXO);
-                if (empty($check_term)) {
-                    $parent = $this->getUserParentFolder();
-                    $this->doCreateUserFolder($current_user->data->user_login, $slug, $parent, $current_user);
-                }
-
-                $google_connect = WpmfHelper::isConnected('google_drive');
-                $dropbox_connect = WpmfHelper::isConnected('dropbox');
-                $onedrive_connect = WpmfHelper::isConnected('onedrive');
-                $onedrive_business_connect = WpmfHelper::isConnected('onedrive_business');
-                if ($google_connect) {
-                    $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-google_drive', WPMF_TAXO);
-                    if (empty($is_exist)) {
-                        $parent = WpmfHelper::getCloudRootFolderID('google_drive');
-                        if ($parent) {
-                            $this->doCreateUserFolder($current_user->data->user_login, $current_user->data->user_login . '-wpmf-google_drive', $parent, $current_user);
-                        }
-                    }
-                }
-
-                if ($dropbox_connect) {
-                    $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-dropbox', WPMF_TAXO);
-                    if (empty($is_exist)) {
-                        $parent = WpmfHelper::getCloudRootFolderID('dropbox');
-                        if ($parent) {
-                            $this->doCreateUserFolder($current_user->data->user_login, $current_user->data->user_login . '-wpmf-dropbox', $parent, $current_user);
-                        }
-                    }
-                }
-
-                if ($onedrive_connect) {
-                    $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-onedrive', WPMF_TAXO);
-                    if (empty($is_exist)) {
-                        $parent = WpmfHelper::getCloudRootFolderID('onedrive');
-                        if ($parent) {
-                            $this->doCreateUserFolder($current_user->data->user_login, $current_user->data->user_login . '-wpmf-onedrive', $parent, $current_user);
-                        }
-                    }
-                }
-
-                if ($onedrive_business_connect) {
-                    $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-onedrive_business', WPMF_TAXO);
-                    if (empty($is_exist)) {
-                        $parent = WpmfHelper::getCloudRootFolderID('onedrive_business');
-                        if ($parent) {
-                            $this->doCreateUserFolder($current_user->data->user_login, $current_user->data->user_login . '-wpmf-onedrive_business', $parent, $current_user);
-                        }
-                    }
-                }
             } elseif ($wpmf_create_folder === 'role') {
                 $slug       = sanitize_title($role) . '-wpmf-role';
                 $check_term = get_term_by('slug', $slug, WPMF_TAXO);
-                if (empty($check_term)) {
-                    $inserted = wp_insert_term($role, WPMF_TAXO, array('parent' => 0, 'slug' => $slug));
-                    if (!is_wp_error($inserted)) {
-                        $role = WpmfHelper::getRoles($current_user->data->ID);
-                        add_term_meta((int)$inserted['term_id'], 'wpmf_folder_role_permissions', array($role, 'add_media', 'move_media', 'view_folder', 'add_folder', 'update_folder', 'remove_folder', 'view_media', 'remove_media', 'update_media'));
-                        do_action('wpmf_create_folder', $inserted['term_id'], $role, 0, array('trigger' => 'media_library_action'));
-                    }
-                }
+            }
+
+            if (empty($check_term) && !$cloud_type) {
+                $this->doCreateUserFolder($current_user->data->user_login, $slug, $parent, $current_user);
             }
 
             $google_connect = WpmfHelper::isConnected('google_drive');
@@ -115,7 +66,7 @@ class WpmfFolderAccess
                     $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-google_drive', WPMF_TAXO);
                     $name = $current_user->data->user_login;
                     $slug = $current_user->data->user_login . '-wpmf-google_drive';
-                    $type = '';
+                    $type = 'user';
                 } else {
                     $is_exist = get_term_by('slug', $role . '-wpmf-role-google_drive', WPMF_TAXO);
                     $name = $role;
@@ -137,7 +88,7 @@ class WpmfFolderAccess
                     $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-dropbox', WPMF_TAXO);
                     $name = $current_user->data->user_login;
                     $slug = $current_user->data->user_login . '-wpmf-dropbox';
-                    $type = '';
+                    $type = 'user';
                 } else {
                     $is_exist = get_term_by('slug', $role . '-wpmf-role-dropbox', WPMF_TAXO);
                     $name = $role;
@@ -159,7 +110,7 @@ class WpmfFolderAccess
                     $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-onedrive', WPMF_TAXO);
                     $name = $current_user->data->user_login;
                     $slug = $current_user->data->user_login . '-wpmf-onedrive';
-                    $type = '';
+                    $type = 'user';
                 } else {
                     $is_exist = get_term_by('slug', $role . '-wpmf-role-onedrive', WPMF_TAXO);
                     $name = $role;
@@ -181,7 +132,7 @@ class WpmfFolderAccess
                     $is_exist = get_term_by('slug', $current_user->data->user_login . '-wpmf-onedrive_business', WPMF_TAXO);
                     $name = $current_user->data->user_login;
                     $slug = $current_user->data->user_login . '-wpmf-onedrive_business';
-                    $type = '';
+                    $type = 'user';
                 } else {
                     $is_exist = get_term_by('slug', $role . '-wpmf-role-onedrive_business', WPMF_TAXO);
                     $name = $role;
@@ -228,7 +179,10 @@ class WpmfFolderAccess
                 add_term_meta((int)$inserted['term_id'], 'inherit_folder', 0);
             }
 
-            // do_action('wpmf_create_folder', $inserted['term_id'], $name, $parent, array('trigger' => 'media_library_action'));
+            $cloud_type = get_term_meta($parent, 'wpmf_drive_type', true);
+            if (!empty($cloud_type)) {
+                do_action('wpmf_create_folder', $inserted['term_id'], $name, $parent, array('trigger' => 'media_library_action'));
+            }
         }
     }
 

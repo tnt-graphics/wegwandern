@@ -40,3 +40,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</label>
 	<?php } ?>
 </p>
+<p id="frm_hide_dashboard_videos_wrapper" class="<?php echo '' === $frmpro_settings->menu_icon || FrmAddonsController::is_license_expired() ? 'frm_hidden' : ''; ?> ">
+	<label for="frm_hide_dashboard_videos">
+		<input type="checkbox" value="1" <?php checked( $frmpro_settings->hide_dashboard_videos, 1 ); ?> id="frm_hide_dashboard_videos" name="frm_hide_dashboard_videos" style="margin-top:0;">
+		<?php esc_html_e( 'Do not show Formidable videos on dashboard', 'formidable-pro' ); ?>
+	</label>
+</p>

@@ -601,3 +601,81 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
         </div>
     </div>
 </div>
+
+<!---------------------------------------  Folder settings ----------------------------------->
+<?php
+    $post_types = get_post_types(array( 'show_in_menu' => true ), 'objects');
+    // List of post types to exclude
+    $exclude_post_types = array(
+        'elementor_library',
+        'e-landing-page',
+        'wpb',
+        'attachment',
+        'shop_order',
+        'shop_coupon'
+    );
+
+    foreach ($exclude_post_types as $exclude_post_type) {
+        if (isset($post_types[$exclude_post_type])) {
+            unset($post_types[$exclude_post_type]);
+        }
+    }
+
+    $countPostTypes = 0;
+    ?>
+<div id="folder_settings" class="tab-content">
+    <div class="content-box">
+        <div class="ju-settings-option">
+            <div class="wpmf_row_full">
+                <input type="hidden" name="wpmf_minimize_folder_tree_post_type" value="0">
+                <label data-wpmftippy="<?php esc_html_e('Open folders sidebar minimized by default on posts and pages', 'wpmf'); ?>" class="ju-setting-label text" for="wpmf_minimize_folder_tree_post_type"><?php echo esc_html__('Open sidebar minimized', 'wpmf') ?></label>
+                <div class="ju-switch-button">
+                    <label class="switch">
+                        <input type="checkbox" name="wpmf_minimize_folder_tree_post_type" id="wpmf_minimize_folder_tree_post_type" value="1"
+                            <?php
+                            $minimize_folder_tree_option = wpmfGetOption('wpmf_minimize_folder_tree_post_type');
+                            if (isset($minimize_folder_tree_option) && (int) $minimize_folder_tree_option === 1) {
+                                echo 'checked';
+                            }
+                            ?>
+                        >
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <?php foreach ($post_types as $value) : ?>
+            <?php
+            $countPostTypes++;
+            $classSetting = 'ju-settings-option';
+            if ($countPostTypes % 2 === 1) {
+                $classSetting = 'ju-settings-option wpmf_right m-r-0';
+            }
+            $tooltip_string = esc_html__('Activate a folder management for WordPress', 'wpmf').' '.strtolower($value->label).' '.esc_html__('(ie. classify', 'wpmf').' '.strtolower($value->label).' '.esc_html__('in folders, like virtual categories)', 'wpmf');
+            ?>
+
+        <div class="<?php echo esc_attr($classSetting); ?>">
+            <div class="wpmf_row_full">
+                <input type="hidden" name="wpmf_option_folder_<?php echo esc_attr($value->name); ?>" value="0">
+                <label data-wpmftippy="<?php echo esc_attr($tooltip_string); ?>" class="ju-setting-label text" for="wpmf_option_folder_<?php echo esc_attr($value->name); ?>"><?php echo esc_html__('Activate folders for', 'wpmf') . ' ' . esc_attr($value->label) ?></label>
+                <div class="ju-switch-button">
+                    <label class="switch">
+                        <input type="checkbox" name="wpmf_option_folder_<?php echo esc_attr($value->name); ?>" id="wpmf_option_folder_<?php echo esc_attr($value->name); ?>" value="1"
+                            <?php
+                            $option_name = 'wpmf_option_folder_'.$value->name;
+                            $option_folder = wpmfGetOption($option_name);
+                            if (isset($option_folder) && (int) $option_folder === 1) {
+                                echo 'checked';
+                            }
+                            ?>
+                        >
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <?php endforeach; ?>
+    </div>
+</div>

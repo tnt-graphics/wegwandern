@@ -56,18 +56,6 @@ class FrmProImages {
 		return is_string( $value ) && strpos( $value, 'frm_image_option_container' ) !== false;
 	}
 
-	/**
-	 * @param string $type
-	 *
-	 * @psalm-param 'circle'|'square' $type
-	 *
-	 * @return string
-	 */
-	private static function get_checkmark_markup( $type = 'square' ) {
-		$class = 'frmfont frm_checkmark_' . $type . '_icon';
-		return '<div class="frm_selected_checkmark">' . FrmAppHelper::icon_by_class( $class, array( 'echo' => false ) ) . '</div>';
-	}
-
 	public static function get_image_icon_markup() {
 		return '<div class="frm_image_placeholder_icon">' . FrmAppHelper::icon_by_class( 'frmfont frm_placeholder_image_icon', array( 'echo' => false ) ) . '</div>';
 	}
@@ -259,7 +247,6 @@ class FrmProImages {
 		$field_type  = FrmField::get_option( $field, 'type' );
 
 		$label  = '<div class="frm_image_option_container' . esc_attr( $label_class ) . '">';
-		$label .= self::get_checkmark_markup( $field_type === 'checkbox' ? 'square' : 'circle' );
 		if ( empty( $image_url ) ) {
 			$label .= '<div class="frm_empty_url">' . self::get_image_icon_markup() . '</div>';
 		} else {

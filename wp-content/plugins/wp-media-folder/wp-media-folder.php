@@ -4,7 +4,7 @@
   Plugin URI: http://www.joomunited.com
   Description: WP media Folder is a WordPress plugin that enhance the WordPress media manager by adding a folder manager inside.
   Author: Joomunited
-  Version: 5.8.4
+  Version: 5.9.5
   Update URI: https://www.joomunited.com/juupdater_files/wp-media-folder.json
   Author URI: http://www.joomunited.com
   Text Domain: wpmf
@@ -79,7 +79,7 @@ if (!defined('WPMF_TAXO')) {
 define('_WPMF_GALLERY_PREFIX', '_wpmf_gallery_');
 define('WPMF_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPMF_DOMAIN', 'wpmf');
-define('WPMF_VERSION', '5.8.4');
+define('WPMF_VERSION', '5.9.5');
 define('WPMF_HIDE_USER_MEDIA_FOLDER_ROOT', true);
 
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
@@ -445,7 +445,7 @@ function wpmfUnInstall()
                WHERE   posts.post_type = %s', array('attachment')));
 
         $j = ceil((int) $total / $limit);
-        for ($i = 1; $i <= $j; $i ++) {
+        for ($i = $j; $i > 0; $i --) {
             $offset      = ($i - 1) * $limit;
             $args = array(
                 'post_type' => 'attachment',
@@ -938,7 +938,11 @@ function wpmfGetOption($option_name)
             'border_color' => '#f4f6ff',
             'icon_image' => 'download_style_0',
             'icon_color' => '#f4f6ff'
-        ), $media_download)
+        ), $media_download),
+        'wpmf_minimize_folder_tree_post_type' => 1,
+        'wpmf_option_folder_post' => 0,
+        'wpmf_folder_tree_status' => array(),
+        'wpmf_active_folders_post_types' => array()
     );
     $settings         = get_option('wpmf_settings');
     if (isset($settings) && isset($settings[$option_name])) {
@@ -951,6 +955,10 @@ function wpmfGetOption($option_name)
         } else {
             return $settings[$option_name];
         }
+    }
+
+    if (!isset($default_settings[$option_name])) {
+        return false;
     }
 
     return $default_settings[$option_name];
@@ -1190,6 +1198,20 @@ function wpmfVcBeforeInit()
         array(),
         WPMF_VERSION
     );
+    wp_enqueue_style(
+        'wpmf-bakery-display-gallery-style',
+        WPMF_PLUGIN_URL . '/assets/css/display-gallery/style-display-gallery.css',
+        array(),
+        WPMF_VERSION
+    );
+    if (is_plugin_active(WP_PLUGIN_DIR . '/wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
+        wp_enqueue_style(
+            'wpmf-bakery-download-all-style',
+            WP_PLUGIN_URL . '/wp-media-folder-gallery-addon/assets/css/download_gallery.css',
+            array(),
+            WPMF_VERSION
+        );
+    }
 
     require_once WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/bakery-widgets/PdfEmbed.php';
     $enable_singlefile = get_option('wpmf_option_singlefile');
@@ -1331,6 +1353,9 @@ if (isset($load_gif) && (int) $load_gif === 0) {
     require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-load-gif.php');
     new WpmfLoadGif();
 }
+
+require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-folder-post-type.php');
+new WpmfMediaFolderPostType();
 
 /**
  * Get cloud folder ID

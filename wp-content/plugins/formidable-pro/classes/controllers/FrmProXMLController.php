@@ -210,18 +210,20 @@ class FrmProXMLController {
 		return $field_value;
 	}
 
+	private static function validate_csv_file_before_upload( $name ) {
+		return isset( $_FILES, $_FILES[ $name ] ) &&
+			! empty( $_FILES[ $name ]['tmp_name'] ) &&
+			! empty( $_FILES[ $name ]['name'] ) &&
+			! empty( $_FILES[ $name ]['size'] ) &&
+			(int) $_FILES[ $name ]['size'] >= 1 &&
+			is_uploaded_file( $_FILES[ $name ]['tmp_name'] );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
 	// map fields from csv
 	public static function map_csv_fields() {
 		$name = 'frm_import_file';
 
-		if ( ! isset( $_FILES ) || ! isset( $_FILES[ $name ] ) || empty( $_FILES[ $name ]['name'] ) || (int) $_FILES[ $name ]['size'] < 1 ) {
-			return;
-		}
-
-		$file = $_FILES[ $name ]['tmp_name'];
-
-		// check if file was uploaded
-		if ( ! is_uploaded_file( $file ) ) {
+		if ( ! self::validate_csv_file_before_upload( $name ) ) {
 			return;
 		}
 
@@ -353,16 +355,6 @@ class FrmProXMLController {
 		update_option( 'frm_import_options', $opts, 'no' );
 
 		wp_die();
-	}
-
-	/**
-	 * The templates are now off-site
-	 *
-	 * @deprecated 3.06
-	 */
-	public static function import_default_templates( $files ) {
-		_deprecated_function( __METHOD__, '3.06' );
-		return $files;
 	}
 
 	/**

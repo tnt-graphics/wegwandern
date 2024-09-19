@@ -145,23 +145,19 @@
 	box-sizing: border-box;
 }
 
+.frm_form_field:not(.frm_compact) .frm_dropzone {
+	max-width: 520px;
+}
+
 .frm_dropzone.frm_single_upload,
 .frm_dropzone.dz-clickable {
-	min-height: 60px;
-	margin-top:5px;
-	line-height:1.42857143;
+	min-height: 36px;
+	margin-top: 5px;
+	line-height: 1.42857143;
 }
 
 .frm_dropzone.dz-clickable * {
 	cursor: default;
-}
-
-.frm_dropzone.frm_single_upload {
-	max-width: 200px;
-}
-
-.frm_dropzone.frm_single_upload.dz-started {
-	max-width: 300px;
 }
 
 .frm_form_field.frm_full .frm_dropzone.dz-clickable.frm_single_upload,
@@ -177,13 +173,14 @@
 }
 
 .frm_dropzone .dz-message{
-	border: 2px dashed #dfdfdf;
+	border: 1px dashed #98A2B3;
 	background:#ffffff;
-	padding: 20px;
-	border-radius:5px;
+	padding: 24px;
+	border-radius: 8px;
+	border-radius: var(--border-radius);
 	cursor: pointer;
 	display:none;
-	font-size:20px;
+	font-size: 14px;
 	text-align: center;
 	margin: 0;
 }
@@ -212,18 +209,37 @@
 	font-size:40px;
 }
 .frm_dropzone .frm_small_text {
-	font-size:14px;
+	font-size: 12px;
+	color: #98A2B3;
+	color: var(--form-desc-color);
+	margin-top: 4px;
+}
+.frm_dropzone .frm_small_text p {
+	margin: 0;
 }
 .frm_dropzone.dz-drag-hover {
 	border-style: solid;
 }
+
 .frm_dropzone .dz-preview {
-	padding: 15px 0;
-	border-bottom: 1px solid #dfdfdf;
+	display: flex;
+	gap: 8px;
+	border-radius: 8px;
+	border-radius: var(--border-radius);
+	padding: 12px;
+	margin-bottom: 8px;
+}
+
+.frm_form_field:not(.frm_compact) .frm_dropzone .dz-preview {
+	border: 1px solid #EAECF0;
+}
+
+.frm_form_field:not(.frm_compact) .frm_dropzone.frm_multi_upload .dz-message + .dz-preview {
+	margin-top: 16px;
 }
 
 .frm_dropzone .dz-preview:last-child {
-	border-bottom: none;
+	margin-bottom: 0;
 }
 
 .frm_dropzone .dz-preview:hover {
@@ -235,7 +251,6 @@
 }
 .frm_dropzone .dz-preview.dz-image-preview .dz-details {
 	-webkit-transition: opacity 0.2s linear;
-	-moz-transition: opacity 0.2s linear;
 	-ms-transition: opacity 0.2s linear;
 	-o-transition: opacity 0.2s linear;
 	transition: opacity 0.2s linear;
@@ -252,7 +267,7 @@
 
 .frm_dropzone .dz-preview .dz-details {
 	font-size: 14px;
-	margin: 5px 0 10px;
+	font-weight: 500;
 }
 
 .frm_dropzone .dz-preview .dz-details .dz-size,
@@ -262,8 +277,11 @@
 	white-space: nowrap;
 }
 
+.frm_dropzone .dz-preview .dz-details .dz-size,
 .frm_dropzone .dz-preview .dz-details .dz-size strong {
-	font-weight: normal;
+	color: #98A2B3;
+	color: var(--form-desc-color);
+	font-weight: 400;
 }
 
 .frm_dropzone .dz-preview .dz-details .dz-filename {
@@ -276,23 +294,18 @@
 }
 
 .frm_dropzone .dz-preview .dz-column {
-	float: right;
-	width: 68%;
+	flex-grow: 1;
 }
 
 .frm_dropzone .dz-preview .dz-image {
+	max-width: 30%;
 	overflow: hidden;
-	width: 30%;
-	height: 60px;
-	display: block;
-	float: left;
-	margin-right: 2%;
 }
 
 .frm_dropzone .dz-preview .dz-image img {
-	display: block;
-	margin:0 auto;
-	max-height: 60px;
+	max-height: 32px;
+	border-radius: 8px;
+	border-radius: var(--border-radius);
 }
 .frm_dropzone .dz-preview.dz-success .dz-success-mark {
 	-ms-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
@@ -301,7 +314,6 @@
 
 .frm_dropzone .dz-preview.dz-processing .dz-progress {
 	-webkit-transition: all 0.2s linear;
-	-moz-transition: all 0.2s linear;
 	-ms-transition: all 0.2s linear;
 	-o-transition: all 0.2s linear;
 	transition: all 0.2s linear;
@@ -310,11 +322,13 @@
 .frm_dropzone .dz-preview .dz-progress {
 	pointer-events: none;
 	position: relative;
-	height: 10px;
+	height: 6px;
 	width: 100%;
-	background: rgba(221, 221, 221, 1);
+	background: #EAECF0;
+	background: var(--progress-bg-color);
 	-webkit-transform: scale(1);
 	border-radius: 8px;
+	border-radius: var(--border-radius);
 	overflow: hidden;
 }
 
@@ -331,7 +345,6 @@
 	bottom: 0;
 	width: 0;
 	-webkit-transition: width 300ms ease-in-out;
-	-moz-transition: width 300ms ease-in-out;
 	-ms-transition: width 300ms ease-in-out;
 	-o-transition: width 300ms ease-in-out;
 	transition: width 300ms ease-in-out;
@@ -346,7 +359,6 @@
 	display: none;
 	opacity: 0;
 	-webkit-transition: opacity 0.3s ease;
-	-moz-transition: opacity 0.3s ease;
 	-ms-transition: opacity 0.3s ease;
 	-o-transition: opacity 0.3s ease;
 	transition: opacity 0.3s ease;
@@ -364,6 +376,10 @@
 }
 
 .frm_compact .frm_dropzone.dz-clickable{
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 8px;
 	padding:0;
 	border:none;
 	background-color:transparent;
@@ -384,6 +400,7 @@
 	border: none !important;
 	padding: 0 !important;
 	font: inherit !important;
+	font-weight: 500 !important;
 	cursor: pointer !important;
 	outline: inherit !important;
 	height: auto !important;
@@ -396,6 +413,7 @@
 	border:1px solid #dfdfdf;
 	background:#fff;
 	display: inline-block;
+	min-width: fit-content;
 	border-radius: 4px;
 	padding: 6px 11px;
 	box-sizing: border-box;

@@ -314,19 +314,6 @@ class FrmAddonsController {
 
 	/**
 	 * @since 4.08
-	 *
-	 * @return bool|int false or the number of days until expiration.
-	 */
-	public static function is_license_expiring() {
-		if ( is_callable( 'FrmProAddonsController::is_license_expiring' ) ) {
-			return FrmProAddonsController::is_license_expiring();
-		}
-
-		return false;
-	}
-
-	/**
-	 * @since 4.08
 	 * @since 6.7 This is public.
 	 *
 	 * @return array|false
@@ -1552,110 +1539,6 @@ class FrmAddonsController {
 	}
 
 	/**
-	 * @since 4.06.02
-	 *
-	 * @deprecated 4.09.01
-	 *
-	 * @return void
-	 */
-	public static function ajax_multiple_addons() {
-		FrmDeprecated::ajax_multiple_addons();
-	}
-
-	/**
-	 * @since 3.04.03
-	 * @deprecated 3.06
-	 * @codeCoverageIgnore
-	 * @return array
-	 */
-	public static function error_for_license( $license ) {
-		return FrmDeprecated::error_for_license( $license );
-	}
-
-	/**
-	 * @since 3.04.03
-	 * @deprecated 3.06
-	 * @codeCoverageIgnore
-	 */
-	public static function get_pro_updater() {
-		return FrmDeprecated::get_pro_updater();
-	}
-
-	/**
-	 * @since 3.04.03
-	 * @deprecated 3.06
-	 * @codeCoverageIgnore
-	 *
-	 * @return array
-	 */
-	public static function get_addon_info( $license = '' ) {
-		return FrmDeprecated::get_addon_info( $license );
-	}
-
-	/**
-	 * @since 3.04.03
-	 * @deprecated 3.06
-	 * @codeCoverageIgnore
-	 *
-	 * @return string
-	 */
-	public static function get_cache_key( $license ) {
-		return FrmDeprecated::get_cache_key( $license );
-	}
-
-	/**
-	 * @since 3.04.03
-	 *
-	 * @deprecated 3.06
-	 *
-	 * @codeCoverageIgnore
-	 *
-	 * @return void
-	 */
-	public static function reset_cached_addons( $license = '' ) {
-		FrmDeprecated::reset_cached_addons( $license );
-	}
-
-	/**
-	 * @since 2.03.08
-	 * @deprecated 3.04.03
-	 * @codeCoverageIgnore
-	 *
-	 * @param bool   $return
-	 * @param string $package
-	 *
-	 * @return bool
-	 */
-	public static function add_shorten_edd_filename_filter( $return, $package ) {
-		return FrmDeprecated::add_shorten_edd_filename_filter( $return, $package );
-	}
-
-	/**
-	 * @since 2.03.08
-	 * @deprecated 3.04.03
-	 * @codeCoverageIgnore
-	 *
-	 * @param string $filename
-	 * @param string $ext
-	 *
-	 * @return string
-	 */
-	public static function shorten_edd_filename( $filename, $ext ) {
-		return FrmDeprecated::shorten_edd_filename( $filename, $ext );
-	}
-
-	/**
-	 * @deprecated 3.04.03
-	 *
-	 * @codeCoverageIgnore
-	 *
-	 * @return void
-	 */
-	public static function get_licenses() {
-		FrmDeprecated::get_licenses();
-	}
-
-	/**
 	 * @since 4.02.05
 	 * @deprecated 6.8.3
 	 *
@@ -1665,5 +1548,21 @@ class FrmAddonsController {
 	 */
 	public static function connect_pro() {
 		_deprecated_function( __METHOD__, '6.8.3' );
+	}
+
+	/**
+	 * @since 4.08
+	 * @deprecated 6.11.1
+	 *
+	 * @return bool|int false or the number of days until expiration.
+	 */
+	public static function is_license_expiring() {
+		_deprecated_function( __METHOD__, '6.11.1', 'FrmProAddonsController::is_license_expiring' );
+
+		if ( is_callable( 'FrmProAddonsController::is_license_expiring' ) ) {
+			return FrmProAddonsController::is_license_expiring();
+		}
+
+		return false;
 	}
 }

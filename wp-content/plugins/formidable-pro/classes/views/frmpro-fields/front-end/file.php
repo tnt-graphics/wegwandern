@@ -56,7 +56,7 @@ if ( FrmField::is_read_only( $field ) ) {
 			?>
 			/>
 		<?php foreach ( $file_settings['mockFiles'] as $file ) { ?>
-			<div class="dz-preview dz-complete dz-image-preview frm_clearfix">
+			<div class="dz-preview dz-complete dz-image-preview">
 				<div class="dz-image">
 					<?php $src = FrmProFileField::get_safe_file_icon( $file ); ?>
 					<img src="<?php echo esc_url( $src ); ?>" alt="<?php echo esc_attr( $file['name'] ); ?>" />
@@ -73,7 +73,7 @@ if ( FrmField::is_read_only( $field ) ) {
 							</span>
 						</div>
 						<a class="dz-remove frm_remove_link" href="javascript:undefined;" data-frm-remove="<?php echo esc_attr( $field_name ); ?>" title="<?php esc_attr_e( 'Remove file', 'formidable-pro' ); ?>">
-							<?php FrmProAppHelper::get_svg_icon( 'frm-cancel1-icon', 'frmsvg frm-svg-icon', array( 'echo' => true ) ); ?>
+							<?php FrmProAppHelper::get_svg_icon( 'frm-close-icon', 'frmsvg frm-svg-icon', array( 'echo' => true ) ); ?>
 						</a>
 						<?php if ( $is_multiple ) { ?>
 							<input type="hidden" name="<?php echo esc_attr( $field_name ); ?>[]" value="<?php echo esc_attr( $file['id'] ); ?>" />

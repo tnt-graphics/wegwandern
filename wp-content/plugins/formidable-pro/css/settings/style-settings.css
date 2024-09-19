@@ -5,9 +5,6 @@ This file is added to the visual styler admin page, accessed from the style tab.
 	margin-left: 0;
 }
 
-#general-style .frm_image_preview_wrapper {
-	margin: 5px 0 10px;
-}
 
 #frm_default_style_cards_wrapper .dropdown-item.frm-delete-style,
 #frm_default_style_cards_wrapper .dropdown-item.frm-set-as-default-style {
@@ -117,6 +114,10 @@ This file is added to the visual styler admin page, accessed from the style tab.
 
 .frm_repeat_buttons .frmsvg {
 	color: var(--repeat-icon-color);
+}
+
+#frm_style_preview .with_frm_style .frm-show-form {
+	overflow-x:visible;
 }
 
 @media only screen and (min-width: 1250px) {

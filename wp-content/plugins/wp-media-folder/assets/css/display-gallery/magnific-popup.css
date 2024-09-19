@@ -9,6 +9,12 @@
     position: fixed;
     background: #0b0b0b;
     opacity: 0.8; }
+    
+.wpmf_folder_permissions_popup{
+    z-index: 1042 !important;}
+
+.wpmf_folder_permissions_popup{
+    z-index: 1042 !important;}
 
 .mfp-wrap {
     top: 0;
@@ -340,13 +346,26 @@ img.mfp-img {
 @media all and (max-width: 900px) {
     .mfp-arrow {
         -webkit-transform: scale(0.75);
-        transform: scale(0.75); }
+        transform: scale(0.75);
+    }
     .mfp-arrow-left {
         -webkit-transform-origin: 0;
-        transform-origin: 0; }
+        transform-origin: 0; 
+    }
     .mfp-arrow-right {
         -webkit-transform-origin: 100%;
-        transform-origin: 100%; }
+        transform-origin: 100%;
+    }
     .mfp-container {
         padding-left: 6px;
-        padding-right: 6px; } }
+        padding-right: 6px;
+    }
+}
+
+.aligncenter.wp-block-wpmf-image-lightbox, .alignright.wp-block-wpmf-image-lightbox, .alignleft.wp-block-wpmf-image-lightbox {
+    max-width: 620px;
+}
+
+.aligncenter.wp-block-wpmf-image-lightbox {
+    margin: 0 auto;
+}

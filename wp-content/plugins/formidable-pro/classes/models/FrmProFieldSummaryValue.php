@@ -95,8 +95,10 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 			return;
 		}
 
-		$other = $_POST['item_meta']['other'];
+		$item_meta = FrmAppHelper::get_post_param( 'item_meta', array( 'other' => '' ) );
+		$other     = $item_meta['other'];
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $other );
+
 		$values = array(
 			'item_meta' => array(
 				$this->field->id => $this->posted_value,

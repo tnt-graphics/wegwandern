@@ -38,7 +38,6 @@ class Options {
 			'miscellaneousVerification' => [ 'type' => 'html' ]
 		],
 		'breadcrumbs'      => [
-			'enable'                => [ 'type' => 'boolean', 'default' => true ],
 			'separator'             => [ 'type' => 'string', 'default' => '&raquo;' ],
 			'homepageLink'          => [ 'type' => 'boolean', 'default' => true ],
 			'homepageLabel'         => [ 'type' => 'string', 'default' => 'Home' ],
@@ -242,17 +241,24 @@ TEMPLATE
 				'metaDescription' => [ 'type' => 'string', 'localized' => true, 'default' => '#tagline' ],
 				'keywords'        => [ 'type' => 'string', 'localized' => true ],
 				'schema'          => [
-					'websiteName'          => [ 'type' => 'string' ],
-					'websiteAlternateName' => [ 'type' => 'string' ],
-					'siteRepresents'       => [ 'type' => 'string', 'default' => 'organization' ],
-					'person'               => [ 'type' => 'string' ],
-					'organizationName'     => [ 'type' => 'string' ],
-					'organizationLogo'     => [ 'type' => 'string' ],
-					'personName'           => [ 'type' => 'string' ],
-					'personLogo'           => [ 'type' => 'string' ],
-					'phone'                => [ 'type' => 'string' ],
-					'contactType'          => [ 'type' => 'string' ],
-					'contactTypeManual'    => [ 'type' => 'string' ]
+					'websiteName'             => [ 'type' => 'string', 'default' => '#site_title' ],
+					'websiteAlternateName'    => [ 'type' => 'string' ],
+					'siteRepresents'          => [ 'type' => 'string', 'default' => 'organization' ],
+					'person'                  => [ 'type' => 'string' ],
+					'organizationName'        => [ 'type' => 'string', 'default' => '#site_title' ],
+					'organizationDescription' => [ 'type' => 'string', 'default' => '#tagline' ],
+					'organizationLogo'        => [ 'type' => 'string' ],
+					'personName'              => [ 'type' => 'string' ],
+					'personLogo'              => [ 'type' => 'string' ],
+					'phone'                   => [ 'type' => 'string' ],
+					'email'                   => [ 'type' => 'string' ],
+					'foundingDate'            => [ 'type' => 'string' ],
+					'numberOfEmployees'       => [
+						'isRange' => [ 'type' => 'boolean' ],
+						'from'    => [ 'type' => 'number' ],
+						'to'      => [ 'type' => 'number' ],
+						'number'  => [ 'type' => 'number' ]
+					]
 				]
 			],
 			'advanced' => [
@@ -308,7 +314,8 @@ TEMPLATE
 				'blockArgs'                    => [
 					'enable'        => [ 'type' => 'boolean', 'default' => false ],
 					'logsRetention' => [ 'type' => 'string', 'default' => '{"label":"1 week","value":"week"}' ]
-				]
+				],
+				'removeCategoryBase'           => [ 'type' => 'boolean', 'default' => false ]
 			],
 			'archives' => [
 				'author' => [
@@ -405,6 +412,9 @@ TEMPLATE
 			]
 		],
 		'deprecated'       => [
+			'breadcrumbs'      => [
+				'enable' => [ 'type' => 'boolean', 'default' => true ]
+			],
 			'searchAppearance' => [
 				'global'   => [
 					'descriptionFormat' => [ 'type' => 'string' ],
@@ -518,12 +528,9 @@ TEMPLATE
 
 		$hasInitialized = true;
 
-		$this->defaults['searchAppearance']['global']['schema']['organizationName']['default'] = aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
 		$this->defaults['deprecated']['tools']['blocker']['custom']['bots']['default']         = implode( "\n", aioseo()->badBotBlocker->getBotList() );
 		$this->defaults['deprecated']['tools']['blocker']['custom']['referer']['default']      = implode( "\n", aioseo()->badBotBlocker->getRefererList() );
 
-		$this->defaults['searchAppearance']['global']['schema']['organizationName']['default'] = aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
-		$this->defaults['searchAppearance']['global']['schema']['websiteName']['default']      = aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
 		$this->defaults['searchAppearance']['global']['schema']['organizationLogo']['default'] = aioseo()->helpers->getSiteLogoUrl() ? aioseo()->helpers->getSiteLogoUrl() : '';
 	}
 
@@ -580,6 +587,10 @@ TEMPLATE
 		$oldHtmlSitemapUrl = aioseo()->options->sitemap->html->pageUrl;
 		$logsRetention     = isset( $options['searchAppearance']['advanced']['blockArgs']['logsRetention'] ) ? $options['searchAppearance']['advanced']['blockArgs']['logsRetention'] : null;
 		$oldLogsRetention  = aioseo()->options->searchAppearance->advanced->blockArgs->logsRetention;
+
+		// Remove category base.
+		$removeCategoryBase    = isset( $options['searchAppearance']['advanced']['removeCategoryBase'] ) ? $options['searchAppearance']['advanced']['removeCategoryBase'] : null;
+		$removeCategoryBaseOld = aioseo()->options->searchAppearance->advanced->removeCategoryBase;
 
 		$options = $this->maybeRemoveUnfilteredHtmlFields( $options );
 
@@ -669,6 +680,13 @@ TEMPLATE
 
 		if ( ! empty( $sitemapOptions ) ) {
 			aioseo()->searchStatistics->sitemap->maybeSync( $oldSitemapOptions, $sitemapOptions );
+		}
+
+		if (
+			null !== $removeCategoryBase &&
+			$removeCategoryBase !== $removeCategoryBaseOld
+		) {
+			aioseo()->options->flushRewriteRules();
 		}
 
 		// This is required in order for the Pro options to be refreshed before they save data again.

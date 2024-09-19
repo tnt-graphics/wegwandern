@@ -267,7 +267,8 @@ class FrmProEntryMeta {
 		$repeat_limit   = absint( FrmField::get_option_in_object( $field, 'repeat_limit' ) );
 
 		foreach ( $subfields as $subfield ) {
-			if ( ! isset( $_POST['item_meta'][ $field->id ] ) || ! self::has_at_least_a_row_submitted( $_POST['item_meta'][ $field->id ] ) ) {
+			$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+			if ( ! isset( $item_meta[ $field->id ] ) || ! self::has_at_least_a_row_submitted( $item_meta[ $field->id ] ) ) {
 				// All rows or the whole section was removed.
 				self::validate_no_repeater_rows( $errors, $field, $subforms, $subfield );
 
@@ -281,7 +282,9 @@ class FrmProEntryMeta {
 			// user to something nasty & that will affect our validation of the subfields & error display, so reset it to be sure:
 			$_POST['item_meta'][ $field->id ]['form'] = $subforms[0];
 
-			$posted_values = $_POST['item_meta'][ $field->id ];
+			$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+
+			$posted_values = $item_meta[ $field->id ] ?? array();
 
 			$row_count = 0;
 			foreach ( $posted_values as $k => $values ) {
@@ -354,10 +357,12 @@ class FrmProEntryMeta {
 
 	private static function maybe_trim_excess_rows( $field ) {
 		$repeat_limit = absint( FrmField::get_option_in_object( $field, 'repeat_limit' ) );
-		if ( $repeat_limit && self::has_at_least_a_row_submitted( $_POST['item_meta'][ $field->id ] ) ) {
+		$item_meta    = FrmAppHelper::get_post_param( 'item_meta', array() );
+
+		if ( $repeat_limit && self::has_at_least_a_row_submitted( $item_meta[ $field->id ] ) ) {
 			$total_limit = $repeat_limit + 2; // 2 = 'form' + 'row_ids'
 			// trim off excess rows
-			$_POST['item_meta'][ $field->id ] = array_slice( $_POST['item_meta'][ $field->id ], 0, $total_limit, true );
+			$_POST['item_meta'][ $field->id ] = ! empty( $item_meta[ $field->id ] ) ? array_slice( $item_meta[ $field->id ], 0, $total_limit, true ) : array();
 		}
 	}
 
@@ -624,14 +629,13 @@ class FrmProEntryMeta {
 			return;
 		}
 
+		$args['action'] = FrmAppHelper::get_post_param( 'frm_action', '', 'sanitize_text_field' ) === 'create' ? 'create' : 'update';
+
 		if ( FrmProFormsHelper::saving_draft() ) {
 			//Check confirmation field if saving a draft
-			$args['action'] = $_POST['frm_action'] === 'create' ? 'create' : 'update';
 			self::validate_check_confirmation_field( $errors, $field, $value, $args );
 			return;
 		}
-
-		$args['action'] = $_POST['frm_action'] === 'update' ? 'update' : 'create';
 
 		self::validate_check_confirmation_field( $errors, $field, $value, $args );
 	}
@@ -639,7 +643,7 @@ class FrmProEntryMeta {
 	public static function validate_check_confirmation_field( &$errors, $field, $value, $args ) {
 		$conf_val = '';
 
-		// Temporarily swtich $field->id in order to get and set the value posted in confirmation field
+		// Temporarily switch $field->id in order to get and set the value posted in confirmation field
 		$field_id  = $field->id;
 		$field->id = 'conf_' . $field_id;
 		FrmEntriesHelper::get_posted_value( $field, $conf_val, $args );
@@ -654,7 +658,7 @@ class FrmProEntryMeta {
 			if ( isset( $args['key_pointer'] ) && ( $args['key_pointer'] || $args['key_pointer'] === 0 ) ) {
 				$entry_id = str_replace( 'i', '', $args['key_pointer'] );
 			} else {
-				$entry_id = $_POST && isset( $_POST['id'] ) ? $_POST['id'] : false;
+				$entry_id = FrmAppHelper::get_post_param( 'id', false, 'absint' );
 			}
 
 			$prev_value = FrmEntryMeta::get_entry_meta_by_field( $entry_id, $field->id );
@@ -1201,7 +1205,7 @@ class FrmProEntryMeta {
 	public static function add_repeating_value_to_entry( $field, &$entry ) {
 		// If field is in a repeating section
 		if ( $entry->form_id != $field->form_id ) {
-			// get entry ids linked through repeat field or embeded form
+			// get entry ids linked through repeat field or embedded form
 			$child_entries = FrmProEntry::get_sub_entries( $entry->id, true );
 			$val           = FrmProEntryMetaHelper::get_sub_meta_values( $child_entries, $field );
 			if ( ! empty( $val ) ) {

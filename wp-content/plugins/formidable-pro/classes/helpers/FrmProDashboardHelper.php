@@ -85,7 +85,9 @@ class FrmProDashboardHelper {
 			case 'expiring':
 				$expiring_days = FrmProAddonsController::is_license_expiring();
 				if ( false !== $expiring_days ) {
-					return 'Expiring soon (' . $expiring_days . ' days)';
+					$expiring_days = time() + ( $expiring_days * DAY_IN_SECONDS );
+					/* translators: %s: A period to expire. */
+					return sprintf( __( 'Expiring soon (%s)', 'formidable-pro' ), FrmAppHelper::human_time_diff( $expiring_days, '', 2 ) );
 				}
 				return __( 'Expiring soon', 'formidable-pro' );
 			default:
@@ -229,5 +231,20 @@ class FrmProDashboardHelper {
 		}
 
 		FrmDashboardHelper::load_placeholder_template( $template );
+	}
+
+	/**
+	 * Returns true if Formidable videos should be displayed on Dashboard.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @return bool
+	 */
+	public static function should_display_videos() {
+		if ( FrmAddonsController::is_license_expired() ) {
+			return true;
+		}
+		$frmpro_settings = new FrmProSettings();
+		return empty( $frmpro_settings->hide_dashboard_videos ) || $frmpro_settings->menu_icon === '';
 	}
 }

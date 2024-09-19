@@ -5,11 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $step_unit = FrmProTimeFieldsController::get_step_unit( $field );
 ?>
-<p class="frm8 frm_first frm_form_field frm-number-range">
+<p class="frm12 frm_first frm_form_field frm-number-range">
 	<label>
 		<?php esc_html_e( 'Time Range', 'formidable-pro' ); ?>
-
-		<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'This uses 24-hour clockbase.', 'formidable-pro' ); ?>" ></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'This uses 24-hour clockbase.', 'formidable-pro' ) ); ?>
 	</label>
 
 	<span class="frm_grid_container">
@@ -22,11 +21,33 @@ $step_unit = FrmProTimeFieldsController::get_step_unit( $field );
 	</span>
 </p>
 
-<p class="frm3 frm_last frm_form_field">
+<p class="frm12 frm_first frm_form_field">
 	<label for="frm_step_<?php echo esc_attr( $field['field_key'] ); ?>">
-		<?php esc_html_e( 'Step (min)', 'formidable' ); ?>
+		<?php esc_html_e( 'Step', 'formidable-pro' ); ?>
 	</label>
-	<input type="text" name="field_options[step_<?php echo absint( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['step'] ); ?>" id="frm_step_<?php echo esc_attr( $field['field_key'] ); ?>" min="1" max="1440" />
+
+	<span class="frm_grid_container">
+		<span class="frm5 frm_form_field">
+			<input type="text" name="field_options[step_<?php echo absint( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['step'] ); ?>" id="frm_step_<?php echo esc_attr( $field['field_key'] ); ?>" min="1" max="1440" />
+		</span>
+
+		<span class="frm5 frm_last frm_form_field">
+			<select name="field_options[step_unit_<?php echo absint( $field['id'] ); ?>]" id="step_unit_<?php echo absint( $field['id'] ); ?>">
+				<option
+					value="<?php echo esc_attr( FrmProTimeFieldsController::STEP_UNIT_MINUTE ); ?>"
+					<?php selected( $field['step_unit'], FrmProTimeFieldsController::STEP_UNIT_MINUTE ); ?>
+				><?php esc_html_e( 'Minute(s)', 'formidable-pro' ); ?></option>
+				<option
+					value="<?php echo esc_attr( FrmProTimeFieldsController::STEP_UNIT_SECOND ); ?>"
+					<?php selected( $field['step_unit'], FrmProTimeFieldsController::STEP_UNIT_SECOND ); ?>
+				><?php esc_html_e( 'Second(s)', 'formidable-pro' ); ?></option>
+				<option
+					value="<?php echo esc_attr( FrmProTimeFieldsController::STEP_UNIT_MILLISECOND ); ?>"
+					<?php selected( $field['step_unit'], FrmProTimeFieldsController::STEP_UNIT_MILLISECOND ); ?>
+				><?php esc_html_e( 'Millisecond(s)', 'formidable-pro' ); ?></option>
+			</select>
+		</span>
+	</span>
 </p>
 
 <p class="frm6 frm_form_field">

@@ -60,6 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		/>
 		<?php esc_html_e( 'Add Start over button', 'formidable-pro' ); ?>
 	</label>
+	<input type="hidden" name="old_start_over_value" value="<?php echo intval( $field['start_over'] ); ?>" />
 </p>
 
 <?php

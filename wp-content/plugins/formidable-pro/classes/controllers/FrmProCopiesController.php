@@ -99,18 +99,4 @@ class FrmProCopiesController {
 			unset( $copy );
 		}
 	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function save_copied_display( $id, $values ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsCopiesController::save_copied_display', $id, $values );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function destroy_copied_display( $id ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsCopiesController::destroy_copied_display', $id );
-	}
 }

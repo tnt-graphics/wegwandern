@@ -81,7 +81,7 @@
                                         />
                                     </PanelBody>
                                 </InspectorControls>
-                                <a>
+                                <a className={`align${align}`}>
                                     <img src={url} data-wpmflightbox="1"
                                          className={`align${align} size-${size} wp-image-${id}`}
                                          data-wpmf_size_lightbox={lightbox_size}
@@ -163,7 +163,7 @@
             edit: wpmfImageLightbox,
             save: ({attributes}) => {
                 const {id, size, url, lightbox_size, lightbox_url, align} = attributes;
-                return <a><img src={url} data-wpmflightbox="1" className={`align${align} size-${size} wp-image-${id}`}
+                return <a className={`align${align}`}><img src={url} data-wpmflightbox="1" className={`align${align} size-${size} wp-image-${id}`}
                                data-wpmf_size_lightbox={lightbox_size}
                                data-wpmf_image_lightbox={lightbox_url}/></a>;
             },

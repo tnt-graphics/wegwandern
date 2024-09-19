@@ -125,8 +125,8 @@ class WpmfPdfEmbedDivi extends ET_Builder_Module
             return $html;
         }
         $url = str_replace(array('-pdf.jpg', '-pdf.jpeg', '-pdf.png'), '.pdf', $this->props['url']);
-        $width = (!empty($this->props['width'])) ? $this->props['width'] : '';
-        $height = (!empty($this->props['height'])) ? $this->props['height'] : '';
+        $width = (!empty($this->props['width']) && $this->props['width'] !== 'auto') ? $this->props['width'] : '100%';
+        $height = (!empty($this->props['height']) && $this->props['height'] !== 'auto') ? $this->props['height'] : '800';
         return do_shortcode('[wpmfpdf url="' . esc_url($url) . '" width="'. $width .'" height="'. $height .'" embed="' . esc_attr($this->props['embed']) . '" target="' . esc_attr($this->props['target']) . '"]');
     }
 }

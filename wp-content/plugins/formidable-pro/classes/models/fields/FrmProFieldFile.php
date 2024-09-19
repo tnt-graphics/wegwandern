@@ -146,7 +146,7 @@ class FrmProFieldFile extends FrmFieldType {
 		$tooltip = sprintf(
 			/* translators: %s a conditional additional string (and could be indexed by search engines) if indexing is not turned off. */
 			__( 'Files uploaded with this field can be viewed by anyone with access to a link%s.', 'formidable-pro' ),
-			$form_is_indexed ? ' and could be indexed by search engines' : ''
+			$form_is_indexed ? __( ' and could be indexed by search engines', 'formidable-pro' ) : ''
 		);
 
 		$recommendation = $form_is_protected ? __( 'changing who can access the file', 'formidable-pro' ) : __( 'enabling file protection', 'formidable-pro' );
@@ -155,7 +155,7 @@ class FrmProFieldFile extends FrmFieldType {
 		}
 
 		/* translators: %s recommendation. Can be a few things (changing who can access the file, enabling file protection and turning off indexing) */
-		$recommendation = sprintf( __( ' If this is a concern, we recommend %s.' ), $recommendation );
+		$recommendation = sprintf( __( ' If this is a concern, we recommend %s.', 'formidable-pro' ), $recommendation );
 
 		return $tooltip . $recommendation;
 	}
@@ -215,18 +215,23 @@ class FrmProFieldFile extends FrmFieldType {
 		return $value;
 	}
 
+	/**
+	 * @param array|string $value
+	 * @param array        $atts
+	 * @return array|string
+	 */
 	protected function prepare_display_value( $value, $atts ) {
 		if ( ! is_numeric( $value ) && ! is_array( $value ) ) {
 			return $value;
 		}
 
-		$showing_image = ( isset( $atts['html'] ) && $atts['html'] ) || ( isset( $atts['show_image'] ) && $atts['show_image'] );
+		$showing_image = ! empty( $atts['html'] ) || ! empty( $atts['show_image'] );
 		$default_sep   = $showing_image ? ' ' : ', ';
 		$atts['sep']   = isset( $atts['sep'] ) ? $atts['sep'] : $default_sep;
 
 		$this->get_file_html_from_atts( $atts, $value );
 
-		$return_array = isset( $atts['return_array'] ) && $atts['return_array'];
+		$return_array = ! empty( $atts['return_array'] );
 		if ( is_array( $value ) && ! $return_array ) {
 			$value = implode( $atts['sep'], $value );
 
@@ -298,7 +303,7 @@ class FrmProFieldFile extends FrmFieldType {
 			$size = $atts['size'];
 		} elseif ( isset( $atts['show'] ) ) {
 			$size = $atts['show'];
-		} elseif ( isset( $atts['source'] ) && $atts['source'] == 'entry_formatter' ) {
+		} elseif ( isset( $atts['source'] ) && $atts['source'] === 'entry_formatter' ) {
 			$size = 'full';
 		} else {
 			$size = 'thumbnail';
@@ -316,7 +321,7 @@ class FrmProFieldFile extends FrmFieldType {
 	 */
 	private function modify_atts_for_reverse_compatibility( $atts, &$new_atts ) {
 		// For show=label
-		if ( ! $new_atts['show_filename'] && isset( $atts['show'] ) && $atts['show'] == 'label' ) {
+		if ( ! $new_atts['show_filename'] && isset( $atts['show'] ) && $atts['show'] === 'label' ) {
 			$new_atts['show_filename'] = true;
 		}
 
@@ -484,7 +489,7 @@ class FrmProFieldFile extends FrmFieldType {
 		if ( ! is_string( $filepath ) ) {
 			return false;
 		}
-		return basename( $filepath );
+		return FrmProAppHelper::base_name( $filepath );
 	}
 
 	public function front_field_input( $args, $shortcode_atts ) {
@@ -631,7 +636,7 @@ class FrmProFieldFile extends FrmFieldType {
 	}
 
 	/**
-	 * Given a set of file ids, check field default_valies for ids that actually match this field
+	 * Given a set of file ids, check field default_values for ids that actually match this field
 	 *
 	 * @param array $unsafe_file_ids
 	 * @return array

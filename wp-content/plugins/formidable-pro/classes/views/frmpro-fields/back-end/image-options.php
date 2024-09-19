@@ -11,7 +11,7 @@ if ( is_callable( array( 'FrmFieldsHelper', 'show_radio_display_format' ) ) ) {
 		<label for="image_options_<?php echo absint( $field['id'] ); ?>">
 			<input type="checkbox" name="field_options[image_options_<?php echo absint( $field['id'] ); ?>]" id="image_options_<?php echo absint( $field['id'] ); ?>" value="1" <?php isset( $field['image_options'] ) ? checked( $field['image_options'], 1 ) : 0; ?> class="frm_toggle_image_options" />
 			<?php esc_html_e( 'Use images for options', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Replace radio buttons or checkboxes with images.', 'formidable-pro' ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'Replace radio buttons or checkboxes with images.', 'formidable-pro' ) ); ?>
 		</label>
 	</p>
 	<?php

@@ -91,7 +91,7 @@ var wpmfSnackbarModule = void 0;
                     // Reset the close function as we've done an undo
                     wpmfSnackbarModule.snackbar_ids[snack_id].onClose = function () {};
                     // Finally close the snackbar
-                    wpmfSnackbarModule.snackbar_ids[snack_id].close(snack_id);
+                    wpmfSnackbarModule.close(snack_id);
                 });
 
                 Object.keys(wpmfSnackbarModule.snackbar_ids).map(function (snack_id, index) {

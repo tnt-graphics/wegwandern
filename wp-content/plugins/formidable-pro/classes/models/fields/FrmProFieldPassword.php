@@ -185,7 +185,7 @@ class FrmProFieldPassword extends FrmFieldType {
 		if ( ! $is_confirmation_field ) {
 			$field_id = $args['field_id'];
 
-			$input_html .= $this->get_password_stength_html( $field_id );
+			$input_html .= $this->get_password_strength_html( $field_id );
 		}
 
 		return $input_html;
@@ -200,7 +200,7 @@ class FrmProFieldPassword extends FrmFieldType {
 	 * @param bool   $echo
 	 * @return string
 	 */
-	public function get_password_stength_html( $field_id, $echo = false ) {
+	public function get_password_strength_html( $field_id, $echo = false ) {
 		return FrmAppHelper::clip(
 			function () use ( $field_id ) {
 				echo '<div id="frm_password_strength_' . esc_attr( $field_id ) . '" class="frm-password-strength">';

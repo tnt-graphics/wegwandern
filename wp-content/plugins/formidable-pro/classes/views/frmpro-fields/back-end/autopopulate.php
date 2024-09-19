@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php
 FrmFieldsHelper::inline_modal(
 	array(
-		'title'    => __( 'Lookup Default Value', 'formidable' ),
+		'title'    => __( 'Lookup Default Value', 'formidable-pro' ),
 		'callback' => array( 'FrmProLookupFieldsController', 'show_autopopulate_value_section_in_form_builder' ),
 		'args'     => $field,
 		'id'       => 'frm-lookup-box-' . $field['id'],

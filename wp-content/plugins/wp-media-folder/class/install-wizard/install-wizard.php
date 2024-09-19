@@ -204,8 +204,8 @@ class WpmfInstallWizard
             <meta name="viewport" content="width=device-width" />
             <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
             <title><?php esc_html_e('WP Media Folder &rsaquo; Setup Wizard', 'wpmf'); ?></title>
-            <?php do_action('admin_print_styles'); ?>
-            <?php do_action('admin_head'); ?>
+            <?php  wp_admin_css('dashicons', true); ?>
+            <?php  wp_admin_css('wpmf_wizard', true); ?>
         </head>
         <body class="wpmf-wizard-setup wp-core-ui">
         <div class="wpmf-wizard-content p-d-20">

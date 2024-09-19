@@ -38,7 +38,8 @@ class FrmListHelper {
 	 * The current screen
 	 *
 	 * @since 2.0.18
-	 * @var object
+	 *
+	 * @var \WP_Screen
 	 */
 	protected $screen;
 
@@ -997,6 +998,8 @@ class FrmListHelper {
 		if ( $this->should_display( $args, 'display-top-nav' ) ) {
 			$this->display_tablenav( 'top' );
 		}
+		$this->screen->render_screen_reader_content( 'heading_list' );
+
 		?>
 		<table class="wp-list-table <?php echo esc_attr( implode( ' ', $this->get_table_classes() ) ); ?>">
 			<?php if ( $this->has_min_items( 1 ) ) { ?>

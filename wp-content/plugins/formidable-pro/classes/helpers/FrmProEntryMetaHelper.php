@@ -455,7 +455,7 @@ class FrmProEntryMetaHelper {
 	}
 
 	/**
-	 * Fields with associated Post actions will have a post_field field option set specifiying how the field is mapped to the post data.
+	 * Fields with associated Post actions will have a post_field field option set specifying how the field is mapped to the post data.
 	 * [autoid] should work for several keys, as well as for custom post meta.
 	 *
 	 * @param object $field
@@ -616,15 +616,5 @@ class FrmProEntryMetaHelper {
 		}
 
 		return '/' . implode( '', $regex ) . '/';
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 * @deprecated 2.04
-	 */
-	public static function email_value( $value ) {
-		_deprecated_function( __FUNCTION__, '2.04', 'custom code' );
-
-		return $value;
 	}
 }

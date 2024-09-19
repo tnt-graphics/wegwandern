@@ -353,6 +353,8 @@ class Content {
 	 */
 	public function getTermLastModified( $termId ) {
 		$termRelationshipsTable = aioseo()->core->db->db->prefix . 'term_relationships';
+		$termTaxonomyTable      = aioseo()->core->db->db->prefix . 'term_taxonomy';
+
 		$lastModified = aioseo()->core->db
 			->start( aioseo()->core->db->db->posts . ' as p', true )
 			->select( 'MAX(`p`.`post_modified_gmt`) as last_modified' )
@@ -360,9 +362,10 @@ class Content {
 			->whereRaw( "
 			( `p`.`ID` IN
 				(
-					SELECT `tr`.`object_id`
+					SELECT CONVERT(`tr`.`object_id`, unsigned)
 					FROM `$termRelationshipsTable` as tr
-					WHERE `tr`.`term_taxonomy_id` = '$termId'
+					JOIN `$termTaxonomyTable` as tt ON `tr`.`term_taxonomy_id` = `tt`.`term_taxonomy_id`
+					WHERE `tt`.`term_id` = '$termId'
 				)
 			)" )
 			->run()

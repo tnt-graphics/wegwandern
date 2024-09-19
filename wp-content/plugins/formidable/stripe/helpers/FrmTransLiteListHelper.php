@@ -27,7 +27,13 @@ class FrmTransLiteListHelper extends FrmListHelper {
 				'type'  => 'request',
 			)
 		);
+
 		parent::__construct( $args );
+		$this->screen->set_screen_reader_content(
+			array(
+				'heading_list' => esc_html__( 'Payments list', 'formidable' ),
+			)
+		);
 	}
 
 	/**
@@ -462,13 +468,7 @@ class FrmTransLiteListHelper extends FrmListHelper {
 		$limit              = $item->end_count >= 9999 ? __( 'unlimited', 'formidable' ) : $item->end_count;
 		$frm_payment        = new FrmTransLitePayment();
 		$completed_payments = $frm_payment->get_all_by( $item->id, 'sub_id' );
-		$count              = 0;
-
-		foreach ( $completed_payments as $completed_payment ) {
-			if ( $completed_payment->status === 'complete' ) {
-				++$count;
-			}
-		}
+		$count              = FrmTransLiteAppHelper::count_completed_payments( $completed_payments );
 
 		// translators: %1$s: Count, %2$s: Limit.
 		return sprintf( __( '%1$s of %2$s', 'formidable' ), $count, $limit );
@@ -492,13 +492,7 @@ class FrmTransLiteListHelper extends FrmListHelper {
 	private function get_processing_tooltip() {
 		return FrmAppHelper::clip(
 			function () {
-				$params = array(
-					'class' => 'frm_help frm_icon_font frm_tooltip_icon',
-					'title' => __( 'This payment method may take between 4-5 business days to process.', 'formidable' ),
-				);
-				?>
-				<span <?php FrmAppHelper::array_to_html_params( $params, true ); ?>></span>
-				<?php
+				FrmAppHelper::tooltip_icon( __( 'This payment method may take between 4-5 business days to process.', 'formidable' ) );
 			}
 		);
 	}

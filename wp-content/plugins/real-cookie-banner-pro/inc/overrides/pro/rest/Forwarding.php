@@ -49,6 +49,7 @@ class Forwarding
             'viewPortWidth' => ['type' => 'number', 'default' => 0],
             'viewPortHeight' => ['type' => 'number', 'default' => 0],
             'tcfString' => ['type' => 'string'],
+            'referer' => ['type' => 'string'],
         ]]);
         \register_rest_route($namespace, '/forward/endpoints', ['methods' => 'GET', 'callback' => [$this, 'routeGetEndpoints'], 'permission_callback' => [$this, 'permission_callback'], 'args' => ['filter' => ['type' => 'string', 'enum' => AbstractMultisite::ALL_ENDPOINT_FILTERS, 'default' => AbstractMultisite::ENDPOINT_FILTER_ALL]]]);
         \register_rest_route($namespace, '/forward/cookie/(?P<slug>[^/]+)', ['methods' => 'GET', 'callback' => [$this, 'routeGetUniqueCookie'], 'permission_callback' => [$this, 'permission_callback']]);
@@ -76,6 +77,7 @@ class Forwarding
      * @apiParam {boolean} [blocker]
      * @apiParam {string} [tcfString]
      * @apiParam {array} [gcmConsent]
+     * @apiParam {string} [referer]
      * @apiName Forward
      * @apiGroup Consent
      * @apiPermission Pro only
@@ -92,7 +94,7 @@ class Forwarding
         $tcfString = $request->get_param('tcfString');
         $blocker = $request->get_param('blocker');
         $gcmConsent = $request->get_param('gcmConsent');
-        $referer = \wp_get_raw_referer();
+        $referer = $request->get_param('referer');
         if (IpHandler::getInstance()->isFlooding() || !\is_array($cookies)) {
             return new WP_Error('rest_rcb_forbidden');
         }
@@ -100,16 +102,14 @@ class Forwarding
             return new WP_Error('rest_rcb_forbidden', \__('Consent Forwarding is not active.', RCB_TD));
         }
         $transaction = new Transaction();
-        $transaction->forwardedUuid = $uuid;
-        $transaction->forwarded = $consentId;
-        $transaction->decision = Multisite::getInstance()->mapUniqueNamesToDecision($cookies);
-        $transaction->buttonClicked = $buttonClicked;
-        $transaction->viewPortWidth = $viewPortWidth;
-        $transaction->viewPortHeight = $viewPortHeight;
-        $transaction->referer = $referer;
-        $transaction->forwardedBlocker = $blocker;
-        $transaction->tcfString = $tcfString;
-        $transaction->gcmConsent = $gcmConsent;
+        $transaction->setForwarded($consentId, $uuid, $blocker);
+        $transaction->setDecision(Multisite::getInstance()->mapUniqueNamesToDecision($cookies));
+        $transaction->setButtonClicked($buttonClicked);
+        $transaction->setViewPort($viewPortWidth, $viewPortHeight);
+        $transaction->setReferer($referer);
+        $transaction->setBlocker($blocker);
+        $transaction->setTcfString($tcfString);
+        $transaction->setGcmConsent($gcmConsent);
         $persist = MyConsent::getInstance()->persist($transaction);
         if (\is_wp_error($persist)) {
             return $persist;

@@ -103,7 +103,11 @@ class FrmProEddHelper {
 		}
 
 		if ( $license_type ) {
-			return 'You\'re using Formidable Forms ' . esc_html( $license_type ) . '. Enjoy! 🙂';
+			return sprintf(
+				/* translators: %s: License type */
+				__( 'You\'re using Formidable Forms %s. Enjoy! 🙂.', 'formidable-pro' ),
+				$license_type
+			);
 		}
 		return '';
 	}

@@ -94,6 +94,12 @@ class FrmProAppController {
 		self::localize_global_messages();
 		self::add_password_checks_data_to_js();
 		FrmProStrpLiteController::maybe_register_stripe_scripts();
+
+		wp_localize_script(
+			'formidable',
+			'frmCheckboxI18n',
+			array( 'errorMsg' => FrmProFieldCheckbox::get_error_messages() )
+		);
 	}
 
 	/**
@@ -130,7 +136,7 @@ class FrmProAppController {
 	 */
 	private static function add_password_checks_data_to_js() {
 		$field          = new stdClass();
-		$field->name    = 'password';
+		$field->name    = 'Password';
 		$field->type    = 'password';
 		$password_field = new FrmProFieldPassword( $field, 'password' );
 
@@ -618,7 +624,6 @@ class FrmProAppController {
 
 		self::maybe_load_admin_js();
 		self::remove_upsells();
-		self::maybe_add_deprecated_message();
 	}
 
 	/**
@@ -650,7 +655,7 @@ class FrmProAppController {
 		}
 
 		if ( FrmAppHelper::is_admin_page( 'formidable-entries' ) ) {
-			self::register_and_enqueue_admin_script( 'entries', array( 'formidable_admin', 'wp-i18n' ) );
+			self::register_and_enqueue_admin_script( 'entries', array( 'formidable_admin', 'wp-i18n', 'jquery' ) );
 			$form_id = FrmAppHelper::get_param( 'form', 0, 'absint' );
 
 			wp_localize_script(
@@ -1003,64 +1008,5 @@ class FrmProAppController {
 	public static function inbox_slidein_js_vars( $keys ) {
 		$keys[] = 'image';
 		return $keys;
-	}
-
-	public static function load_genesis() {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsAppController::load_genesis' );
-	}
-
-	/**
-	 * @return void
-	 */
-	private static function maybe_add_deprecated_message() {
-		if ( ! class_exists( 'FrmInbox' ) ) {
-			return;
-		}
-
-		$settings = FrmAppHelper::get_settings();
-		if ( empty( $settings->jquery_css ) ) {
-			// Don't show a message if jquery CSS is already disabled.
-			return;
-		}
-
-		if ( FrmAppHelper::is_admin_page( 'formidable-settings' ) ) {
-			add_action(
-				'frm_update_settings',
-				function ( $params ) {
-					if ( empty( $params['frm_jquery_css'] ) ) {
-						$inbox = new FrmInbox();
-						$inbox->dismiss( 'deprecated_jquery_css' );
-					}
-				}
-			);
-			// Don't show the message on global settings.
-			return;
-		}
-
-		$url = admin_url( 'admin.php?page=formidable-settings' );
-
-		add_filter(
-			'frm_message_list',
-			/**
-			 * @param array $messages
-			 * @return array
-			 */
-			function ( $messages ) use ( $url ) {
-				$messages[] = '<p>The option to include jQuery CSS on all pages is currently enabled. In a future release, this setting will be removed and jQuery CSS will no longer be included on all pages. <a href="' . esc_url( $url ) . '">Click here to disable it in Global Settings now</a>.</p>';
-				return $messages;
-			}
-		);
-
-		$inbox = new FrmInbox();
-		$inbox->add_message(
-			array(
-				'key'     => 'deprecated_jquery_css',
-				'force'   => true,
-				'subject' => 'The option to include the jQuery CSS on all pages will soon be removed',
-				'message' => 'The option to include jQuery CSS on all pages is currently enabled. In a future release, this setting will be removed and jQuery CSS will no longer be included on all pages.',
-				'icon'    => 'frm_report_problem_icon',
-				'cta'     => '<a class="button-secondary frm-button-secondary" href="' . esc_url( $url ) . '">Disable in Global Settings</a>',
-			)
-		);
 	}
 }

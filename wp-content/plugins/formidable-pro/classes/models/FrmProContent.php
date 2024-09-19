@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProContent {
 
 	public static function replace_shortcodes( $content, $entry, $shortcodes, $display = false, $show = 'one', $odd = '', $args = array() ) {
-
 		$args['odd']  = $odd;
 		$args['show'] = $show;
 
@@ -105,9 +104,20 @@ class FrmProContent {
 
 		if ( $field->form_id == $entry->form_id ) {
 			$replace_with = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $field, $atts );
+		} elseif ( ! empty( $entry->parent_entry ) && intval( $field->form_id ) === intval( $entry->parent_entry->form_id ) ) {
+			// If current entry is a repeater entry, and we want to access the parent entry meta.
+			$replace_with = FrmProEntryMetaHelper::get_post_or_meta_value( $entry->parent_entry, $field, $atts );
 		} else {
-			// get entry ids linked through repeat field or embeded form
-			$child_entries = FrmProEntry::get_sub_entries( $entry->id, true );
+			if ( ! empty( $entry->parent_entry ) ) {
+				// If current entry is a repeater entry, and we want to access another repeater entry meta.
+				$parent_entry = $entry->parent_entry;
+			} else {
+				// If current entry is a parent entry, and we want to access child entry meta.
+				$parent_entry = $entry;
+			}
+
+			// get entry ids linked through repeat field or embedded form
+			$child_entries = FrmProEntry::get_sub_entries( $parent_entry->id, true );
 			$replace_with  = FrmProEntryMetaHelper::get_sub_meta_values( $child_entries, $field, $atts );
 			$replace_with  = FrmAppHelper::array_flatten( $replace_with );
 		}
@@ -277,7 +287,7 @@ class FrmProContent {
 	 * @since 3.01
 	 *
 	 * @param string $tag
-	 * @retunr void
+	 * @return void
 	 */
 	private static function maybe_replace_dash( &$tag ) {
 		if ( strpos( $tag, '-' ) ) {
@@ -328,7 +338,7 @@ class FrmProContent {
 	 */
 	public static function replace_calendar_date_shortcode( $content, $date ) {
 		preg_match_all( "/\[(calendar_date)\b(.*?)(?:(\/))?\]/s", $content, $matches, PREG_PATTERN_ORDER );
-		if ( empty( $matches ) ) {
+		if ( empty( $matches[0] ) ) {
 			return $content;
 		}
 
@@ -509,6 +519,14 @@ class FrmProContent {
 		$content = str_replace( $shortcodes[0][ $short_key ], $replace_with, $content );
 	}
 
+	/**
+	 * @param string $content
+	 * @param array  $atts
+	 * @param array  $shortcodes
+	 * @param int    $short_key
+	 * @param array  $args
+	 * @return void
+	 */
 	public static function do_shortcode_deletelink( &$content, $atts, $shortcodes, $short_key, $args ) {
 		global $post;
 
@@ -676,17 +694,28 @@ class FrmProContent {
 	}
 
 	/**
+	 * When a value is saved as an array, allow show=something to return a specified value from the array
+	 *
 	 * @since 2.0.23
-	 * when a value is saved as an array, allow show=something to
-	 * return a specified value from the array
+	 *
+	 * @param mixed $replace_with
+	 * @param array $atts
+	 * @return void
 	 */
 	private static function maybe_get_show_from_array( &$replace_with, $atts ) {
-		if ( is_array( $replace_with ) && isset( $atts['show'] ) ) {
-			if ( isset( $replace_with[ $atts['show'] ] ) ) {
-				$replace_with = $replace_with[ $atts['show'] ];
-			} elseif ( ! empty( $atts['blank'] ) ) {
-				$replace_with = '';
-			}
+		if ( ! is_array( $replace_with ) || ! isset( $atts['show'] ) ) {
+			return;
+		}
+
+		if ( $atts['show'] === 'country_code' && ! empty( $replace_with['country'] ) ) {
+			$replace_with = FrmProAddressesController::get_country_code( $replace_with['country'] );
+			return;
+		}
+
+		if ( isset( $replace_with[ $atts['show'] ] ) ) {
+			$replace_with = $replace_with[ $atts['show'] ];
+		} elseif ( ! empty( $atts['blank'] ) ) {
+			$replace_with = '';
 		}
 	}
 
@@ -835,6 +864,11 @@ class FrmProContent {
 			foreach ( $shortcodes[0] as $short_key => $tag ) {
 				self::replace_single_shortcode( $shortcodes, $short_key, $tag, $entry, $args['display'], $args, $repeating_content );
 			}
+
+			if ( ( $foreach_content || '0' === $foreach_content ) && isset( $atts['sep'] ) ) {
+				$foreach_content .= wp_kses_post( $atts['sep'] );
+			}
+
 			$foreach_content .= $repeating_content;
 		}
 
@@ -962,7 +996,7 @@ class FrmProContent {
 			if ( isset( $atts[ $att_name ] ) && $atts[ $att_name ] != '' && ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', trim( $atts[ $att_name ] ) ) ) {
 				if ( self::is_timestamp_tag( $tag ) ) {
 					self::get_gmt_for_filter( $att_name, $atts[ $att_name ] );
-				} elseif ( $atts[ $att_name ] === 'nOW' ) {
+				} elseif ( strtolower( $atts[ $att_name ] ) === 'now' ) {
 					$atts[ $att_name ] = FrmProAppHelper::get_date( 'Y-m-d' );
 				} else {
 					$atts[ $att_name ] = gmdate( 'Y-m-d', strtotime( $atts[ $att_name ] ) );
@@ -1326,7 +1360,7 @@ class FrmProContent {
 
 		$part_one = FrmAppHelper::truncate( $clean_text, (int) $atts['truncate'], 3, '' );
 		$pos      = strpos( $clean_text, $part_one );
-		// Only replace the first occurance of the string.
+		// Only replace the first occurrence of the string.
 		$part_two = substr_replace( $clean_text, '', $pos, strlen( $part_one ) );
 
 		if ( ! empty( $part_two ) ) {

@@ -75,7 +75,9 @@ class WpmfPdfEmbedDivi extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (this.props.embed === 'on' && !this.state.embed) {
-            $(this.wrap.current).find(".wpmf-pdfemb-viewer").pdfEmbedder();
+            if($(this.wrap.current).find(".wpmf-pdfemb-viewer").length) {
+                $(this.wrap.current).find(".wpmf-pdfemb-viewer").pdfEmbedder();
+            }
             this.setState({
                 embed: true
             });

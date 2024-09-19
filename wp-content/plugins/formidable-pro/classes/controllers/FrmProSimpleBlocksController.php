@@ -57,9 +57,9 @@ class FrmProSimpleBlocksController {
 
 		$script_vars = array(
 			'views'        => self::get_views_options(),
-			'show_counts'  => FrmProDisplaysHelper::get_show_counts(),
+			'show_counts'  => is_callable( 'FrmViewsDisplaysHelper::get_show_counts' ) ? FrmViewsDisplaysHelper::get_show_counts() : array(),
 			'view_options' => FrmProDisplaysHelper::get_frm_options_for_views( 'limit' ),
-			'name'         => FrmAppHelper::get_menu_name() . ' ' . __( 'Views', 'formidable-views' ),
+			'name'         => FrmAppHelper::get_menu_name() . ' ' . __( 'Views', 'formidable' ),
 		);
 
 		wp_register_script(
@@ -248,16 +248,5 @@ class FrmProSimpleBlocksController {
 	 */
 	private static function should_process_frm_set_get_shortcode( $post_content ) {
 		return false !== strpos( $post_content, '[frm-set-get' ) || false !== strpos( $post_content, '[frm_set_get' );
-	}
-
-	/**
-	 * Renders a View given the specified attributes.
-	 *
-	 * @deprecated 4.09
-	 * @param $attributes
-	 * @return string
-	 */
-	public static function simple_view_render( $attributes ) {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsSimpleBlocksController::simple_view_render', $attributes );
 	}
 }

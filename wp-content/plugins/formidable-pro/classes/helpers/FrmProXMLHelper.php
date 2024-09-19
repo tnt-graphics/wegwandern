@@ -66,8 +66,6 @@ class FrmProXMLHelper {
 				unset( $field, $meta );
 			}
 
-			unset( $item );
-
 			$entry['item_meta'] = $metas;
 			unset( $metas );
 
@@ -100,6 +98,8 @@ class FrmProXMLHelper {
 				self::track_imported_child_entries( $saved_entries[ $entry['id'] ], $entry['parent_item_id'], $track_child_ids );
 			}
 
+			self::import_entry_comments_from_xml( $saved_entries[ $entry['id'] ], $item );
+			unset( $item );
 			unset( $entry );
 		}
 
@@ -108,6 +108,25 @@ class FrmProXMLHelper {
 		unset( $entries );
 
 		return $imported;
+	}
+
+	/**
+	 * Imports entry comments.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param int              $entry_id
+	 * @param SimpleXMLElement $item
+	 *
+	 * @return void
+	 */
+	private static function import_entry_comments_from_xml( $entry_id, $item ) {
+		foreach ( $item->item_meta as $meta ) {
+			if ( 0 !== (int) $meta->field_id ) {
+				continue;
+			}
+			FrmEntryMeta::add_entry_meta( $entry_id, 0, '', FrmAppHelper::maybe_json_decode( (string) $meta->meta_value ) );
+		}
 	}
 
 	/**
@@ -223,12 +242,18 @@ class FrmProXMLHelper {
 		$f = fopen( $path, 'r' );
 		if ( $f ) {
 			unset( $path );
-			$row = 0;
+			$row     = 0;
+			$headers = array();
 			while ( ( $data = fgetcsv( $f, 100000, $del ) ) !== false ) {
 				++$row;
+				if ( $row === 1 ) {
+					$headers = $data;
+				}
 				if ( $start_row > $row ) {
 					continue;
 				}
+
+				$comments = self::get_comments_from_row( $row, $data, $headers );
 
 				$values = array(
 					'form_id'   => $form_id,
@@ -243,7 +268,7 @@ class FrmProXMLHelper {
 				self::maybe_add_fixed_meta_values( $fixed_meta_values, $values );
 				self::convert_db_cols( $values );
 				self::convert_timestamps( $values );
-				self::save_or_edit_entry( $values );
+				self::save_or_edit_entry( $values, $comments );
 
 				unset( $_POST, $values );
 				$_POST['form_id'] = $form_id; // $form_id is set from $_POST['form_id'], so set it back again after the unset line above.
@@ -333,7 +358,7 @@ class FrmProXMLHelper {
 	 *
 	 * @since 4.10.02
 	 *
-	 * @param string $col_id Columm ID.
+	 * @param string $col_id Column ID.
 	 * @return array|false Return array with first item is the field ID and second item is subfield name.
 	 */
 	private static function check_combo_field_export_col( $col_id ) {
@@ -710,13 +735,92 @@ class FrmProXMLHelper {
 	/**
 	 * Save the entry after checking if it should be created or updated
 	 */
-	private static function save_or_edit_entry( $values ) {
-		$editing = self::get_entry_to_edit( $values );
-		if ( $editing ) {
-			FrmEntry::update( $editing, $values );
+	private static function save_or_edit_entry( $values, $comments ) {
+		$entry_id = self::get_entry_to_edit( $values );
+		if ( $entry_id ) {
+			FrmEntry::update( $entry_id, $values );
 		} else {
-			FrmEntry::create( $values );
+			$entry_id = FrmEntry::create( $values );
 		}
+
+		self::import_entry_comments_from_csv( $entry_id, $comments );
+	}
+
+	/**
+	 * @since 6.12
+	 *
+	 * @param int   $entry_id
+	 * @param array $comments
+	 *
+	 * @return void
+	 */
+	private static function import_entry_comments_from_csv( $entry_id, $comments ) {
+		$comment_strings = self::get_comment_strings();
+		global $wpdb;
+
+		foreach ( $comments[ $comment_strings['comment'] ] as $key => $comment ) {
+			$user       = get_user_by( 'login', $comments[ $comment_strings['comment_user'] ][ $key ] );
+			$user_id    = $user ? $user->ID : '';
+			$meta_value = array(
+				'comment' => $comment,
+				'user_id' => $user_id,
+			);
+
+			$values = array(
+				'meta_value' => serialize( array_filter( $meta_value, 'FrmAppHelper::is_not_empty_value' ) ),
+				'item_id'    => $entry_id,
+				'field_id'   => 0,
+				'created_at' => get_gmt_from_date( $comments[ $comment_strings['comment_date'] ][ $key ] ),
+			);
+
+			$wpdb->insert( $wpdb->prefix . 'frm_item_metas', $values );
+		}
+	}
+
+	/**
+	 * @since 6.12
+	 *
+	 * @return array
+	 */
+	private static function get_comment_strings() {
+		return array(
+			'comment'      => __( 'Comment', 'formidable-pro' ),
+			'comment_user' => __( 'Comment User', 'formidable-pro' ),
+			'comment_date' => __( 'Comment Date', 'formidable-pro' ),
+		);
+	}
+
+	/**
+	 * Returns an array from a given row values.
+	 *
+	 * @since 6.12
+	 *
+	 * @param int   $row     Row index
+	 * @param array $data    The entry values
+	 * @param array $headers The csv column headers
+	 *
+	 * @return array
+	 */
+	private static function get_comments_from_row( $row, $data, $headers ) {
+		$comment_strings = self::get_comment_strings();
+
+		$comments = array(
+			$comment_strings['comment']      => array(),
+			$comment_strings['comment_user'] => array(),
+			$comment_strings['comment_date'] => array(),
+		);
+
+		if ( $row <= 1 ) {
+			return $comments;
+		}
+
+		foreach ( $data as $key => $col ) {
+			if ( in_array( $headers[ $key ], array( $comment_strings['comment'], $comment_strings['comment_user'], $comment_strings['comment_date'] ), true ) ) {
+				$comments[ $headers[ $key ] ][] = $col;
+			}
+		}
+
+		return $comments;
 	}
 
 	/**
@@ -1000,41 +1104,5 @@ class FrmProXMLHelper {
 				}
 			}
 		}
-	}
-
-	/**
-	 * @deprecated 3.0
-	 */
-	public static function get_file_id( $value ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldFile->get_file_id' );
-		$field_obj = FrmFieldFactory::get_field_type( 'file' );
-		return $field_obj->get_file_id( $value );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 */
-	public static function get_date( $value ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldFile->get_file_id' );
-		$field_obj = FrmFieldFactory::get_field_type( 'file' );
-		return $field_obj->get_import_value( $value );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 */
-	public static function get_multi_opts( $value, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldFile->get_import_value' );
-		$field_obj = FrmFieldFactory::get_field_object( $field );
-		return $field_obj->get_import_value( $value );
-	}
-
-	/**
-	 * @deprecated 2.03.08 This function is still being used in the API add on so it cannot be removed safely.
-	 */
-	public static function get_dfe_id( $value, $field, $ids = array() ) {
-		_deprecated_function( __FUNCTION__, '2.03.08' );
-		$field_obj = FrmFieldFactory::get_field_object( $field );
-		return $field_obj->get_import_value( $value, compact( 'ids' ) );
 	}
 }

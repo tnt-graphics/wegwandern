@@ -136,3 +136,10 @@ body.rtl .frm-entry-navigation {
 	/* Overwrite an frm_admin.css rule that sets a tags to var(--primary-color) on hover */
 	color: var(--submit-hover-color);
 }
+
+.wp-admin .frm_wrap .with_frm_style select {
+	border-color: var(--border-color);
+	border-radius: var(--border-radius);
+	box-shadow: var(--box-shadow);
+	line-height: 1.3;
+}

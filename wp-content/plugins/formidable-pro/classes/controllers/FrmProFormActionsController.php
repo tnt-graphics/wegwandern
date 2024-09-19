@@ -26,8 +26,24 @@ class FrmProFormActionsController {
 	    return $settings;
 	}
 
+	/**
+	 * Shows custom settings before form action settings.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param $form_action
+	 * @param $atts
+	 */
+	public static function before_form_action_settings( $form_action, $atts ) {
+		?>
+		<div class="frm_grid_container">
+			<?php self::show_repeater_entries_dropdown( $form_action, $atts ); ?>
+		</div>
+		<?php
+	}
+
 	public static function form_action_settings( $form_action, $atts ) {
-        global $wpdb;
+		global $wpdb;
 		extract( $atts );
 
         $show_logic = self::has_valid_conditions( $form_action->post_content['conditions'] );
@@ -394,8 +410,11 @@ class FrmProFormActionsController {
 		FrmAppHelper::permission_check( 'frm_edit_forms' );
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
-        $custom_data    = array( 'meta_name' => $_POST['meta_name'], 'field_id' => '' );
-        $action_key     = absint( $_POST['action_key'] );
+        $custom_data    = array(
+			'meta_name' => FrmAppHelper::get_post_param( 'meta_name', '', 'sanitize_text_field' ),
+			'field_id'  => '',
+		);
+        $action_key     = FrmAppHelper::get_post_param( 'action_key', 0, 'absint' );
         $action_control = FrmFormActionsController::get_form_actions( 'wppost' );
         $action_control->_set( $action_key );
 
@@ -465,19 +484,20 @@ class FrmProFormActionsController {
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
         if ( isset( $_POST['field_id'] ) ) {
-            $field_vars = array(
-                'meta_name'    => $_POST['meta_name'],
-                'field_id'     => $_POST['field_id'],
-                'show_exclude' => (int) $_POST['show_exclude'],
-                'exclude_cat'  => (int) $_POST['show_exclude'] ? '-1' : 0,
+			$show_exclude = FrmAppHelper::get_post_param( 'show_exclude', 0, 'absint' );
+            $field_vars   = array(
+                'meta_name'    => FrmAppHelper::get_post_param( 'meta_name', '', 'sanitize_text_field' ),
+                'field_id'     => FrmAppHelper::get_post_param( 'field_id', '', 'sanitize_text_field' ),
+                'show_exclude' => $show_exclude,
+                'exclude_cat'  => $show_exclude ? '-1' : 0,
             );
         } else {
             $field_vars = array( 'meta_name' => '', 'field_id' => '', 'show_exclude' => 0, 'exclude_cat' => 0 );
         }
 
-        $tax_meta       = sanitize_text_field( $_POST['tax_key'] );
-        $post_type      = sanitize_text_field( $_POST['post_type'] );
-        $action_key     = (int) $_POST['action_key'];
+        $tax_meta       = FrmAppHelper::get_post_param( 'tax_key', '', 'sanitize_text_field' );
+        $post_type      = FrmAppHelper::get_post_param( 'post_type', '', 'sanitize_text_field' );
+        $action_key     = FrmAppHelper::get_post_param( 'action_key', 0, 'absint' );
         $action_control = FrmFormActionsController::get_form_actions( 'wppost' );
         $action_control->_set( $action_key );
 
@@ -487,9 +507,11 @@ class FrmProFormActionsController {
 
         $values = array();
 
-        if ( isset( $_POST['form_id'] ) ) {
-			$values['fields'] = FrmField::getAll( array( 'fi.form_id' => (int) $_POST['form_id'], 'fi.type' => array( 'checkbox', 'radio', 'select', 'tag', 'data' ) ), 'field_order' );
-            $values['id']     = (int) $_POST['form_id'];
+		$form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
+
+        if ( $form_id ) {
+			$values['fields'] = FrmField::getAll( array( 'fi.form_id' => $form_id, 'fi.type' => array( 'checkbox', 'radio', 'select', 'tag', 'data' ) ), 'field_order' );
+            $values['id']     = $form_id;
         }
 
         $echo = false;
@@ -523,8 +545,8 @@ class FrmProFormActionsController {
         check_ajax_referer( 'frm_ajax', 'nonce' );
 
         // Get the post type, and all taxonomies for that post type
-        $post_type  = sanitize_text_field( $_POST['post_type'] );
-        $taxonomies = get_object_taxonomies( $post_type );
+        $post_type  = FrmAppHelper::get_post_param( 'post_type', '', 'sanitize_text_field' );
+        $taxonomies = $post_type ? get_object_taxonomies( $post_type ) : array();
 
         // Get the HTML for the options
         include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-form-actions/_post_taxonomy_select.php';
@@ -556,7 +578,8 @@ class FrmProFormActionsController {
 		);
 
 		foreach ( $children as $key => $cat ) {
-			$args['cat'] = $cat; ?>
+			$args['cat'] = $cat;
+			?>
 			<div class="frm_catlevel_1"><?php
 				self::display_taxonomy_checkbox_group( $args );
 				?>
@@ -744,5 +767,124 @@ class FrmProFormActionsController {
 	public static function change_on_submit_action_ops( $ops ) {
 		$ops['event'][] = 'update';
 		return $ops;
+	}
+
+	/**
+	 * Checks if the given action supports repeater action.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param string $action_id_base Action ID base.
+	 * @return bool
+	 */
+	public static function has_repeater_actions_support( $action_id_base ) {
+		$actions = array(
+			'activecampaign',
+			'api',
+			'aweber',
+			'campaignmonitor',
+			'constantcontact',
+			'convertkit',
+			'email',
+			'getresponse',
+			'googlespreadsheet',
+			'hubspot',
+			'mailchimp',
+			'mailpoet',
+			'salesforce',
+			'twilio',
+		);
+
+		/**
+		 * Filters the list of actions that support repeater action.
+		 *
+		 * @since 6.10.1
+		 *
+		 * @param array $actions Array of actions.
+		 */
+		$actions = apply_filters( 'frm_pro_repeater_action_support', $actions );
+
+		return in_array( $action_id_base, $actions, true );
+	}
+
+	private static function get_child_form_from_action( $form_action ) {
+		return isset( $form_action->post_content['child_form'] ) ? intval( $form_action->post_content['child_form'] ) : 0;
+	}
+
+	/**
+	 * Shows repeater action dropdown.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param object $form_action Form action.
+	 * @param array  $pass_args   Pass args.
+	 */
+	public static function show_repeater_entries_dropdown( $form_action, $pass_args ) {
+		if ( ! self::has_repeater_actions_support( $form_action->post_excerpt ) ) {
+			return;
+		}
+
+		$repeaters = FrmProFieldsHelper::get_repeater_fields( $pass_args['form']->id );
+		if ( ! $repeaters ) {
+			return;
+		}
+
+		$setting_id = $pass_args['action_control']->get_field_id( 'child_form' );
+		$child_form = self::get_child_form_from_action( $form_action );
+		?>
+		<p class="frm_form_field frm6 frm_first">
+			<label for="<?php echo esc_attr( $setting_id ); ?>"><?php esc_html_e( 'Run this action for', 'formidable-pro' ); ?></label>
+			<select id="<?php echo esc_attr( $setting_id ); ?>" name="<?php echo esc_attr( $pass_args['action_control']->get_field_name( 'child_form' ) ); ?>">
+				<option value=""><?php esc_html_e( 'Main entry', 'formidable-pro' ); ?></option>
+				<?php
+				foreach ( $repeaters as $repeater ) {
+					?>
+					<option value="<?php echo intval( $repeater->field_options['form_select'] ); ?>" <?php selected( intval( $repeater->field_options['form_select'] ), $child_form ); ?>><?php echo esc_html( $repeater->name ); ?></option>
+					<?php
+				}
+				?>
+			</select>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Runs custom form action trigger.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param bool   $skip        Skip default trigger.
+	 * @param object $form_action Form action object.
+	 * @param object $entry       Entry object.
+	 * @param object $form        Form object.
+	 * @param string $event       Event ('create' or 'update').
+	 * @return bool
+	 */
+	public static function custom_trigger( $skip, $form_action, $entry, $form, $event ) {
+		if ( ! self::has_repeater_actions_support( $form_action->post_excerpt ) ) {
+			return $skip;
+		}
+
+		$child_form = self::get_child_form_from_action( $form_action );
+
+		if ( ! $child_form ) {
+			return $skip;
+		}
+
+		$sub_entries = FrmProEntry::get_sub_entries( $entry->id, true );
+		foreach ( $sub_entries as $sub_entry ) {
+			if ( intval( $sub_entry->form_id ) !== $child_form ) {
+				continue;
+			}
+
+			$sub_entry->metas       += $entry->metas;
+			$sub_entry->parent_entry = $entry;
+
+			do_action( 'frm_trigger_' . $form_action->post_excerpt . '_action', $form_action, $sub_entry, $form, $event );
+			do_action( 'frm_trigger_' . $form_action->post_excerpt . '_' . $event . '_action', $form_action, $sub_entry, $form );
+		}
+
+		// Return true to skip triggering this action for main entry.
+		return true;
 	}
 }

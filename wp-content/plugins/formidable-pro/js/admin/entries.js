@@ -11,8 +11,6 @@
 
 	const __ = wp.i18n.__;
 
-	addFilter( 'frm_on_multiple_entries_delete', confirmDeleteAllEntriesModal );
-
 	function confirmDeleteAllEntriesModal( args ) {
 		const self = this;
 		const { link, initModal } = args;
@@ -141,7 +139,7 @@
 				if ( triggerActionsOnDeleteEl ) {
 					self.updateOnDeleteURL( triggerActionsOnDeleteEl.checked );
 				} else {
-					self.updateOnDeleteURL();
+					self.updateOnDeleteURL( link.getAttribute( 'data-total-entries' ) );
 				}
 				return;
 			}
@@ -216,5 +214,51 @@
 
 	function addFilter( hookName, callback ) {
 		wp.hooks.addFilter( hookName, 'formidable', callback );
+	}
+
+	addFilter( 'frm_on_multiple_entries_delete', confirmDeleteAllEntriesModal );
+
+	const resendEmailTrigger = document.getElementById( 'frm_resend_email' );
+	if ( resendEmailTrigger ) {
+		/**
+		 * Resend emails when the "Resend emails" trigger is clicked in the sidebar.
+		 *
+		 * @since 6.10
+		 *
+		 * @param {Event} event
+		 * @returns 
+		 */
+		const resendEmail = ( event ) => {
+			event.preventDefault();
+
+			const link    = resendEmailTrigger;
+			const entryId = link.dataset.eid;
+			const formId  = link.dataset.fid;
+
+			let label = link.querySelector( '.frm_link_label' );
+			if ( ! label ) {
+				label = link;
+			}
+
+			jQuery( label ).append( '<span class="frm-wait"></span>' );
+
+			jQuery.ajax({
+				type: 'POST',
+				url: frm_js.ajax_url, // eslint-disable-line camelcase
+				data: {
+					action: 'frm_entries_send_email',
+					entry_id: entryId,
+					form_id: formId,
+					nonce: frm_js.nonce // eslint-disable-line camelcase
+				},
+				success: function( msg ) {
+					label.innerHTML = '';
+					jQuery( link ).after( msg );
+				}
+			});
+			return false;
+		};
+
+		resendEmailTrigger.addEventListener( 'click', resendEmail );
 	}
 } )();

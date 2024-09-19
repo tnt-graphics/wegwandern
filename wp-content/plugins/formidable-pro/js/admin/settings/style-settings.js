@@ -568,7 +568,7 @@
 		 */
 		function onBgImageUpload() {
 			trackUnsavedChange();
-
+			wp.hooks.doAction( 'frm_pro_on_bg_image_upload', this );
 			const fileId = parseInt( this.value );
 			const show   = 0 !== fileId;
 			toggleSampleFormClass( 'frm_with_bg_image', show );

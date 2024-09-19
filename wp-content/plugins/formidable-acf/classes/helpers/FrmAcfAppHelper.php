@@ -19,7 +19,7 @@ class FrmAcfAppHelper {
 	 *
 	 * @var string
 	 */
-	public static $plug_version = '1.0.1';
+	public static $plug_version = '1.0.2';
 
 	/**
 	 * Gets plugin folder name.
@@ -45,7 +45,7 @@ class FrmAcfAppHelper {
 	 * @return string
 	 */
 	public static function plugin_path() {
-		return dirname( dirname( dirname( __FILE__ ) ) );
+		return dirname( dirname( __DIR__ ) );
 	}
 
 	/**

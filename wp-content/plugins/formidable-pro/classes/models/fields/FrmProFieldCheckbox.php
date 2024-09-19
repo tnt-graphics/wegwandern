@@ -51,6 +51,7 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 			parent::extra_field_opts(),
 			array(
 				'limit_selections' => '',
+				'min_selections'   => '',
 				'image_options'    => 0,
 				'hide_image_text'  => 0,
 				'image_size'       => '',
@@ -79,7 +80,32 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		if ( is_array( $args['value'] ) ) {
 			$this->trim_excess_values( $args );
 		}
-		return array();
+		return $this->validate_min_selections( $args );
+	}
+
+	private function validate_min_selections( $args ) {
+		$min = intval( FrmField::get_option( $this->field, 'min_selections' ) );
+		if ( $min < 1 ) {
+			return array();
+		}
+
+		$value = array_filter( (array) $args['value'] );
+		if ( ! $value ) {
+			// If no checkbox is selected, let required field validation do its job.
+			return array();
+		}
+
+		if ( count( $value ) >= $min ) {
+			return array();
+		}
+
+		$error_msg = sprintf(
+			self::get_error_messages()['min_selections'],
+			$min,
+			count( $value )
+		);
+
+		return array( 'field' . $args['id'] => $error_msg );
 	}
 
 	/**
@@ -128,9 +154,9 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 	 * @since 4.02
 	 */
 	private function maybe_unset_other_values( $args, $retained_values ) {
-		$meta = &$_POST['item_meta'];
-		if ( isset( $args['parent_field_id'] ) && $args['parent_field_id'] ) {
-			$meta = &$meta[ $args['parent_field_id'] ][ $args['key_pointer'] ];
+		$meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+		if ( ! empty( $args['parent_field_id'] ) ) {
+			$meta = $meta[ $args['parent_field_id'] ][ $args['key_pointer'] ];
 		}
 
 		if ( empty( $meta['other'] ) ) {
@@ -143,7 +169,7 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		}
 
 		if ( $this->unset_other_values( $all_other_values, $retained_values ) ) {
-			if ( isset( $args['parent_field_id'] ) && $args['parent_field_id'] ) {
+			if ( ! empty( $args['parent_field_id'] ) ) {
 				unset( $_POST['item_meta'][ $args['parent_field_id'] ][ $args['key_pointer'] ]['other'] );
 			} else {
 				unset( $_POST['item_meta']['other'] );
@@ -239,5 +265,19 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 			}
 		}
 		return $value;
+	}
+
+	/**
+	 * Gets error messages.
+	 *
+	 * @since 6.14
+	 *
+	 * @return array
+	 */
+	public static function get_error_messages() {
+		return array(
+			// Translators: %1$d: min selections, %2$d: actual selections count.
+			'min_selections' => __( 'This field requires a minimum of %1$d selected options but only %2$d were submitted.', 'formidable-pro' ),
+		);
 	}
 }

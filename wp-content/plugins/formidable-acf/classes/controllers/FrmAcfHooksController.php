@@ -83,7 +83,7 @@ class FrmAcfHooksController {
 
 		add_filter(
 			'acf/pre_render_fields',
-			function( $fields ) {
+			function ( $fields ) {
 				remove_action( 'pre_get_posts', 'FrmProFileField::filter_media_library', 99 );
 				return $fields;
 			}
@@ -91,7 +91,7 @@ class FrmAcfHooksController {
 
 		add_action(
 			'acf/render_fields',
-			function() {
+			function () {
 				add_action( 'pre_get_posts', 'FrmProFileField::filter_media_library', 99 );
 			}
 		);

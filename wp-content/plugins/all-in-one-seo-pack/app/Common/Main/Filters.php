@@ -40,6 +40,9 @@ abstract class Filters {
 	public function __construct() {
 		add_filter( 'wp_optimize_get_tables', [ $this, 'wpOptimizeAioseoTables' ] );
 
+		// This action needs to run on AJAX/cron for scheduled rewritten posts in Yoast Duplicate Post.
+		add_action( 'duplicate_post_after_rewriting', [ $this, 'updateRescheduledPostMeta' ], 10, 2 );
+
 		if ( wp_doing_ajax() || wp_doing_cron() ) {
 			return;
 		}
@@ -51,11 +54,11 @@ abstract class Filters {
 		add_filter( 'genesis_detect_seo_plugins', [ $this, 'genesisTheme' ] );
 
 		// WeGlot compatibility.
-		if ( preg_match( '#(/default-sitemap\.xsl)$#i', $_SERVER['REQUEST_URI'] ) ) {
+		if ( isset( $_SERVER['REQUEST_URI'] ) && preg_match( '#(/default-sitemap\.xsl)$#i', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) ) {
 			add_filter( 'weglot_active_translation_before_treat_page', '__return_false' );
 		}
 
-		if ( preg_match( '#(\.xml)$#i', $_SERVER['REQUEST_URI'] ) ) {
+		if ( isset( $_SERVER['REQUEST_URI'] ) && preg_match( '#(\.xml)$#i', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) ) ) {
 			add_filter( 'jetpack_boost_should_defer_js', '__return_false' );
 		}
 
@@ -90,6 +93,28 @@ abstract class Filters {
 		}
 
 		add_action( 'after_setup_theme', [ $this, 'removeHelloElementorDescriptionTag' ] );
+		add_action( 'wp', [ $this, 'removeAvadaOgTags' ] );
+		add_action( 'init', [ $this, 'declareAioseoFollowingConsentApi' ] );
+	}
+
+	/**
+	 * Declares AIOSEO and its addons as following the Consent API.
+	 *
+	 * @since 4.6.5
+	 *
+	 * @return void
+	 */
+	public function declareAioseoFollowingConsentApi() {
+		add_filter( 'wp_consent_api_registered_all-in-one-seo-pack/all_in_one_seo_pack.php', '__return_true' );
+		add_filter( 'wp_consent_api_registered_all-in-one-seo-pack-pro/all_in_one_seo_pack.php', '__return_true' );
+
+		foreach ( aioseo()->addons->getAddons() as $addon ) {
+			if ( empty( $addon->installed ) || empty( $addon->basename ) ) {
+				continue;
+			}
+
+			add_filter( 'wp_consent_api_registered_' . $addon->basename, '__return_true' );
+		}
 	}
 
 	/**
@@ -149,19 +174,16 @@ abstract class Filters {
 	 *
 	 * @since 4.1.1
 	 *
-	 * @param  integer  $newPostId     The new post ID.
-	 * @param  \WP_Post $originalPost The original post object.
+	 * @param  integer  $targetPostId The target post ID.
+	 * @param  \WP_Post $sourcePost   The source post object.
 	 * @return void
 	 */
-	public function duplicatePost( $newPostId, $originalPost = null ) {
-		$originalPostId     = is_object( $originalPost ) ? $originalPost->ID : $originalPost;
-		$originalAioseoPost = Models\Post::getPost( $originalPostId );
-		if ( ! $originalAioseoPost->exists() ) {
-			return;
-		}
+	public function duplicatePost( $targetPostId, $sourcePost = null ) {
+		$sourcePostId     = ! empty( $sourcePost->ID ) ? $sourcePost->ID : $sourcePost;
+		$sourceAioseoPost = Models\Post::getPost( $sourcePostId );
+		$targetPost       = Models\Post::getPost( $targetPostId );
 
-		$newAioseoPost = Models\Post::getPost( $newPostId );
-		$columns       = $originalAioseoPost->getColumns();
+		$columns = $sourceAioseoPost->getColumns();
 		foreach ( $columns as $column => $value ) {
 			// Skip the ID column.
 			if ( 'id' === $column ) {
@@ -169,13 +191,14 @@ abstract class Filters {
 			}
 
 			if ( 'post_id' === $column ) {
-				$newAioseoPost->$column = $newPostId;
+				$targetPost->$column = $targetPostId;
 				continue;
 			}
 
-			$newAioseoPost->$column = $originalAioseoPost->$column;
+			$targetPost->$column = $sourceAioseoPost->$column;
 		}
-		$newAioseoPost->save();
+
+		$targetPost->save();
 	}
 
 	/**
@@ -199,6 +222,24 @@ abstract class Filters {
 		}
 
 		$this->duplicatePost( (int) $metaValue, $originalPost );
+	}
+
+	/**
+	 * Updates the model when a post is republished.
+	 * Yoast Duplicate Post doesn't do this since we store our data in a custom table.
+	 *
+	 * @since 4.6.7
+	 *
+	 * @param  int  $scheduledPostId The ID of the scheduled post.
+	 * @param  int  $originalPostId  The ID of the original post.
+	 * @return void
+	 */
+	public function updateRescheduledPostMeta( $scheduledPostId, $originalPostId ) {
+		$this->duplicatePost( $originalPostId, $scheduledPostId );
+
+		// Delete the AIOSEO post record for the scheduled post.
+		$scheduledAioseoPost = Models\Post::getPost( $scheduledPostId );
+		$scheduledAioseoPost->delete();
 	}
 
 	/**
@@ -354,7 +395,8 @@ abstract class Filters {
 			'fusion_element', // Avada
 			'elementor_library',
 			'redirect_rule', // Safe Redirect Manager
-			'seedprod'
+			'seedprod',
+			'tcb_lightbox'
 		];
 
 		foreach ( $postTypes as $index => $postType ) {
@@ -483,6 +525,22 @@ abstract class Filters {
 	 */
 	public function removeHelloElementorDescriptionTag() {
 		remove_action( 'wp_head', 'hello_elementor_add_description_meta_tag' );
+	}
+
+	/**
+	 * Removes the Avada OG tags.
+	 *
+	 * @since 4.6.5
+	 *
+	 * @return void
+	 */
+	public function removeAvadaOgTags() {
+		if ( function_exists( 'Avada' ) ) {
+			$avada = Avada();
+			if ( is_object( $avada->head ?? null ) ) {
+				remove_action( 'wp_head', [ $avada->head, 'insert_og_meta' ], 5 );
+			}
+		}
 	}
 
 	/**

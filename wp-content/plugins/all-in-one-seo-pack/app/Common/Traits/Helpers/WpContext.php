@@ -262,6 +262,8 @@ trait WpContext {
 			$postContent = aioseo()->standalone->pageBuilderIntegrations[ $pageBuilder ]->processContent( $post->ID, $postContent );
 		}
 
+		$postContent = is_string( $postContent ) ? $postContent : '';
+
 		$content[ $post->ID ] = $this->theContent( $postContent );
 
 		if ( apply_filters( 'aioseo_description_include_custom_fields', true, $post ) ) {
@@ -348,7 +350,8 @@ trait WpContext {
 			return $content[ $post->ID ];
 		}
 
-		$postContent = $this->getPostContent( $post );
+		$postContent = (string) $this->getPostContent( $post );
+
 		// Strip images, captions and WP oembed wrappers (e.g. YouTube URLs) from the post content.
 		$postContent          = preg_replace( '/(<figure.*?\/figure>|<img.*?\/>|<div.*?class="wp-block-embed__wrapper".*?>.*?<\/div>)/s', '', $postContent );
 		$postContent          = str_replace( ']]>', ']]&gt;', $postContent );
@@ -431,6 +434,8 @@ trait WpContext {
 
 		$wpPost = $this->getPost( $postId );
 		if ( ! $wpPost ) {
+			$eligible[ $postId ] = false;
+
 			return false;
 		}
 
@@ -438,9 +443,9 @@ trait WpContext {
 		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
 		$showMetabox    = $dynamicOptions->searchAppearance->postTypes->has( $wpPost->post_type, false ) && $dynamicOptions->{$wpPost->post_type}->advanced->showMetaBox;
 		if (
-			$this->isSpecialPage( $wpPost->ID ) ||
 			! $showMetabox ||
-			empty( $postType->public )
+			empty( $postType->public ) ||
+			$this->isSpecialPage( $wpPost->ID )
 		) {
 			$eligible[ $postId ] = false;
 
@@ -459,15 +464,9 @@ trait WpContext {
 			}
 		}
 
-		if ( ! in_array( $wpPost->post_type, $allowPostTypes, true ) ) {
-			$eligible[ $postId ] = false;
+		$eligible[ $postId ] = in_array( $wpPost->post_type, $allowPostTypes, true );
 
-			return false;
-		}
-
-		$eligible[ $postId ] = true;
-
-		return true;
+		return $eligible[ $postId ];
 	}
 
 	/**
@@ -652,7 +651,7 @@ trait WpContext {
 		$restUrl = wp_parse_url( get_rest_url() );
 		$restUrl = $restUrl['path'] . ( ! empty( $restUrl['query'] ) ? '?' . $restUrl['query'] : '' );
 
-		$isRestApiRequest = ( 0 === strpos( $_SERVER['REQUEST_URI'], $restUrl ) );
+		$isRestApiRequest = ( 0 === strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), $restUrl ) );
 
 		return apply_filters( 'aioseo_is_rest_api_request', $isRestApiRequest );
 	}
@@ -806,7 +805,7 @@ trait WpContext {
 	 */
 	public function isWpLoginPage() {
 		// We can't sanitize the filename using sanitize_file_name() here because it will cause issues with custom login pages and certain plugins/themes where this function is not defined.
-		$self = ! empty( $_SERVER['PHP_SELF'] ) ? wp_unslash( $_SERVER['PHP_SELF'] ) : ''; // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
+		$self = ! empty( $_SERVER['PHP_SELF'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PHP_SELF'] ) ) : ''; // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( preg_match( '/wp-login\.php$|wp-register\.php$/', $self ) ) {
 			return true;
 		}
@@ -960,7 +959,7 @@ trait WpContext {
 	 */
 	public function getWebsiteName() {
 		return aioseo()->options->searchAppearance->global->schema->websiteName
-			? aioseo()->options->searchAppearance->global->schema->websiteName
+			? aioseo()->tags->replaceTags( aioseo()->options->searchAppearance->global->schema->websiteName )
 			: aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
 	}
 }

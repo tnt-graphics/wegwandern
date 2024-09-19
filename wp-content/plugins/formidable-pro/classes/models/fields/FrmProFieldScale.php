@@ -76,7 +76,7 @@ class FrmProFieldScale extends FrmFieldType {
 	public function get_container_class() {
 		// Add class to inline Scale field
 		$class = '';
-		if ( $this->field['label'] == 'inline' ) {
+		if ( $this->field['label'] === 'inline' ) {
 			$class = ' frm_scale_container';
 		}
 		return $class;

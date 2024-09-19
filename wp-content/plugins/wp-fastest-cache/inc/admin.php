@@ -16,7 +16,7 @@
 			add_filter('plugin_locale', array($this, 'my_plugin_locale_filter'), 10, 2);
 		}
 
-		function my_plugin_locale_filter($locale, $domain){
+		public function my_plugin_locale_filter($locale, $domain){
 			if($domain === 'wp-fastest-cache'){
 
 				if(!isset($this->options->wpFastestCacheLanguage)){
@@ -1496,8 +1496,10 @@
 											foreach($lang_array as $lang_array_key => $lang_array_value){
 												$option_selected = "";
 
-												if(isset($this->options->wpFastestCacheLanguage) && ($this->options->wpFastestCacheLanguage == $lang_array_key)){
-													$option_selected = 'selected="selected"';
+												if(isset($this->options->wpFastestCacheLanguage)){
+													if($this->options->wpFastestCacheLanguage == $lang_array_key){
+														$option_selected = 'selected="selected"';
+													}
 												}else{
 													if($lang_array_key == "en_US" || $lang_array_key == "en_EN"){
 														$option_selected = 'selected="selected"';

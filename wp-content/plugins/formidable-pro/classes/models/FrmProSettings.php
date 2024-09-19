@@ -17,6 +17,7 @@ class FrmProSettings extends FrmSettings {
 	public $menu_icon;
 	public $inbox;
 	public $repeater_row_delete_confirmation;
+	public $hide_dashboard_videos;
 
 	/**
 	 * @return array
@@ -38,6 +39,7 @@ class FrmProSettings extends FrmSettings {
 				'feedback' => 1,
 			),
 			'repeater_row_delete_confirmation' => __( 'Are you sure you want to delete this row?', 'formidable-pro' ),
+			'hide_dashboard_videos'            => 0,
 		);
 	}
 
@@ -49,7 +51,7 @@ class FrmProSettings extends FrmSettings {
 	 * @since 4.06.01
 	 */
 	public function fill_with_defaults( $params = array() ) {
-		$params['additional_filter_keys'] = array( 'edit_msg', 'update_value', 'already_submitted', 'repeater_row_delete_confirmation' );
+		$params['additional_filter_keys'] = array( 'edit_msg', 'update_value', 'already_submitted', 'repeater_row_delete_confirmation', 'hide_dashboard_videos' );
 		parent::fill_with_defaults( $params );
 		$this->fill_inbox_defaults();
 	}
@@ -78,6 +80,21 @@ class FrmProSettings extends FrmSettings {
 		$this->get_cal_date();
 
 		$this->fill_with_defaults( $params );
+		$this->update_checkbox_settings( $params );
+	}
+
+	/**
+	 * @since 6.10.1
+	 *
+	 * @param array $params
+	 *
+	 * @return void
+	 */
+	private function update_checkbox_settings( $params ) {
+		$checkboxes = array( 'hide_dashboard_videos' );
+		foreach ( $checkboxes as $set ) {
+			$this->$set = isset( $params[ 'frm_' . $set ] ) ? absint( $params[ 'frm_' . $set ] ) : 0;
+		}
 	}
 
 	/**

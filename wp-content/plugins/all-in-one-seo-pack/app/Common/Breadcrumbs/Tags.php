@@ -46,13 +46,21 @@ class Tags {
 			$tagId   = aioseo()->tags->denotationChar . $tag['id'];
 			$pattern = "/$tagId(?![a-zA-Z0-9_])/im";
 			if ( preg_match( $pattern, $string ) ) {
-				$string = preg_replace( $pattern, $this->getTagValue( $tag, $item ), $string );
+				$tagValue = str_replace( '$', '\$', $this->getTagValue( $tag, $item ) );
+				$string   = preg_replace( $pattern, $tagValue, $string );
 			}
 		}
 
 		if ( $stripPunctuation ) {
 			$string = aioseo()->helpers->stripPunctuation( $string );
 		}
+
+		// Remove any remaining tags from the title attribute.
+		$string = preg_replace_callback( '/title="([^"]*)"/i', function ( $matches ) {
+			$sanitizedTitle = wp_strip_all_tags( html_entity_decode( $matches[1] ) );
+
+			return 'title="' . esc_attr( $sanitizedTitle ) . '"';
+		}, html_entity_decode( $string ) );
 
 		return preg_replace(
 			'/>thisisjustarandomplaceholder<(?![a-zA-Z0-9_])/im',

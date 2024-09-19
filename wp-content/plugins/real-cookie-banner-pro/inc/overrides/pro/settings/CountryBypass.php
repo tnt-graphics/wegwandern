@@ -63,11 +63,10 @@ trait CountryBypass
     {
         if ($result === \false) {
             $transaction = new Transaction();
-            $transaction->ipAddress = Utils::getIpAddress();
-            $transaction->userAgent = $_SERVER['HTTP_USER_AGENT'];
-            $transaction->referer = \wp_get_raw_referer();
-            $transaction->viewPortWidth = $request->get_param('viewPortWidth');
-            $transaction->viewPortHeight = $request->get_param('viewPortHeight');
+            $transaction->setIpAddress(Utils::getIpAddress());
+            $transaction->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+            $transaction->setReferer($request->get_param('referer'));
+            $transaction->setViewPort($request->get_param('viewPortWidth'), $request->get_param('viewPortHeight'));
             $bypass = $this->probablyCreateTransaction(MyConsent::getInstance()->getCurrentUser(), $transaction);
             if ($bypass) {
                 $persist = MyConsent::getInstance()->persist($transaction);

@@ -7,6 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProLookupFieldsController {
 
 	/**
+	 * @since 6.10.1
+	 *
+	 * @var array
+	 */
+	private static $lookup_field_options = array();
+
+	/**
 	 * Get the data types for Lookup fields
 	 *
 	 * @return array $data_types
@@ -225,9 +232,29 @@ class FrmProLookupFieldsController {
 			$inc_repeating = 'include';
 		}
 
-		$lookup_fields = FrmField::get_all_types_in_form( $parent_form_id, 'lookup', '', $inc_repeating );
+		$lookup_fields = self::get_lookup_fields_for_form( $parent_form_id, $inc_repeating );
 
 		return $lookup_fields;
+	}
+
+	/**
+	 * Get field options for a target form and $inc_repeating option.
+	 * These fields are stored in memory for re-use as an optimization.
+	 * On a form with a lot of over 1000 fields, this optimization saves several seconds
+	 * when loading the form builder page.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param int    $parent_form_id
+	 * @param string $inc_repeating
+	 * @return array
+	 */
+	private static function get_lookup_fields_for_form( $parent_form_id, $inc_repeating ) {
+		$key = $parent_form_id . $inc_repeating;
+		if ( ! isset( self::$lookup_field_options[ $key ] ) ) {
+			self::$lookup_field_options[ $key ] = FrmField::get_all_types_in_form( $parent_form_id, 'lookup', '', $inc_repeating );
+		}
+		return self::$lookup_field_options[ $key ];
 	}
 
 	/**
@@ -572,8 +599,7 @@ class FrmProLookupFieldsController {
 				if ( $lookup_field['fieldType'] === 'lookup' ) {
 					// Update all dependent Lookup fields
 					$lookup_field_ids[] = $l_id;
-				} elseif ( 'new' === self::get_form_action() ) {
-					// Only update non-lookup fields if this is the initial form load
+				} elseif ( 'new' === self::get_form_action( $frm_vars ) ) {
 					$lookup_field_ids[] = $l_id;
 				}
 			}
@@ -585,12 +611,21 @@ class FrmProLookupFieldsController {
 	 * Get the current action from the URL (new, create, edit, update)
 	 *
 	 * @since 2.02
+	 *
+	 * @param array $frm_vars
+	 *
 	 * @return string $form_action
 	 */
-	private static function get_form_action() {
+	private static function get_form_action( $frm_vars ) {
 		$action_var = isset( $_REQUEST['frm_action'] ) ? 'frm_action' : 'action';
-
-		return FrmAppHelper::get_param( $action_var, 'new', 'get', 'sanitize_title' );
+		$action     = FrmAppHelper::get_param( $action_var, '', 'get', 'sanitize_title' );
+		if ( ! empty( $action ) ) {
+			return $action;
+		}
+		if ( empty( $frm_vars['editing_entry'] ) ) {
+			return 'new';
+		}
+		return 'edit';
 	}
 
 	/**
@@ -652,16 +687,16 @@ class FrmProLookupFieldsController {
 	 *
 	 * @since 2.01.0
 	 *
-	 * @param array $parent_args
+	 * @param array  $parent_args
 	 * @param object $child_field
-	 * @return array $final_values
+	 * @return array
 	 */
 	public static function get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field ) {
-		$entry_ids = self::get_entry_ids_from_parent_vals( $parent_args['parent_field_ids'], $parent_args['parent_vals'], $child_field );
-
+		$entry_ids   = self::get_entry_ids_from_parent_vals( $parent_args['parent_field_ids'], $parent_args['parent_vals'], $child_field );
 		$meta_values = self::get_meta_values_filtered_by_entry_ids( $entry_ids, $child_field );
+		$order       = isset( $child_field->field_options['lookup_option_order'] ) ? $child_field->field_options['lookup_option_order'] : 'ascending';
 
-		self::order_values( $child_field->field_options['lookup_option_order'], $meta_values );
+		self::order_values( $order, $meta_values );
 
 		return $meta_values;
 	}
@@ -766,14 +801,19 @@ class FrmProLookupFieldsController {
 	 * Get the entry IDs in common for all parent Lookup fields/values
 	 *
 	 * @since 2.01.0
-	 * @param array $parent_field_ids
-	 * @param array $selected_values
-	 * @param object $child_field
-	 * @return array $entry_ids
+	 * @param array        $parent_field_ids
+	 * @param array|string $selected_values
+	 * @param object       $child_field
+	 * @return array       $entry_ids
 	 */
 	private static function get_entry_ids_from_parent_vals( $parent_field_ids, $selected_values, $child_field ) {
 		$entry_ids = array();
 		$args      = array();
+
+		if ( ! is_array( $selected_values ) ) {
+			// Exit early if $selected_values is a string. We expect it to be an array.
+			return $entry_ids;
+		}
 
 		// TODO: Maybe add current user filter here, or maybe add it in final call
 		if ( self::need_to_filter_values_for_current_user( $child_field->id, $child_field->field_options ) ) {
@@ -782,9 +822,16 @@ class FrmProLookupFieldsController {
 
 		foreach ( $parent_field_ids as $i => $p_field_id ) {
 			$parent_field = FrmField::getOne( $p_field_id );
-			$linked_field = FrmField::getOne( $parent_field->field_options['get_values_field'] );
+			if ( ! $parent_field ) {
+				continue;
+			}
 
-			$parent_val = $selected_values[ $i ];
+			if ( ! array_key_exists( $i, $selected_values ) ) {
+				continue;
+			}
+
+			$parent_val   = $selected_values[ $i ];
+			$linked_field = FrmField::getOne( $parent_field->field_options['get_values_field'] );
 
 			$args['comparison_type'] = apply_filters( 'frm_set_comparison_type_for_lookup', 'equals', $parent_field, $child_field );
 			$args['and_or']          = apply_filters( 'frm_set_and_or_for_lookup', 'and', $parent_field, $child_field );
@@ -1062,71 +1109,5 @@ class FrmProLookupFieldsController {
 			// If autocomplete is selected, add a blank data-placeholder so chosen's default isn't used
 			$add_html .= ' data-placeholder=" "';
 		}
-	}
-
-	/**
-	 * Show the field options specific to lookup fields for the form builder page
-	 *
-	 * @since 2.01.0
-	 * @param array $field
-	 */
-	public static function show_lookup_field_options_in_form_builder( $field ) {
-		_deprecated_function( __METHOD__, '4.0', 'FrmProFieldLookup->show_after_default' );
-	}
-
-	/**
-	 * Show the 'Get options from' settings above a lookup field's Field Options
-	 *
-	 * @since 2.01.0
-	 * @deprecated 4.0
-	 *
-	 * @param array $field
-	 */
-	public static function show_get_options_from_above_field_options( $field ) {
-		_deprecated_function( __METHOD__, '4.0', 'FrmProFieldLookup->show_get_options' );
-		$field_obj = FrmFieldFactory::get_field_type( 'lookup', $field );
-		$field_obj->show_get_options( $field );
-	}
-
-	/**
-	 * Add the autocomplete classes to a dropdown field (if the autocomplete option is selected)
-	 *
-	 * @since 2.01.0
-	 * @deprecated 4.0
-	 *
-	 * @param array $field
-	 * @param string $class
-	 */
-	public static function maybe_add_autocomplete_class( $field, &$class ) {
-		_deprecated_function( __METHOD__, '4.0', 'FrmProFieldsController::add_field_class' );
-		$class = FrmProFieldsController::add_field_class( $class, $field );
-	}
-
-	/**
-	 * Get the data types for Lookup fields, formatted for Insert Field tab
-	 *
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 *
-	 * @return array $lookup_display_options
-	 */
-	public static function get_lookup_options_for_insert_fields_tab() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProLookupFieldsController::get_lookup_field_data_types' );
-		return self::get_lookup_field_data_types();
-	}
-
-	/**
-	 * Add field options specific to Lookup Fields
-	 * Used on front and back end. Either $values or $field could be false :/
-	 *
-	 * @since 2.01.0
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 * @param array $values
-	 * @param object $field
-	 * @param array $opts
-	 */
-	public static function add_field_options_specific_to_lookup_field( $values, $field, &$opts ) {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFieldLookup->get_default_field_options' );
 	}
 }

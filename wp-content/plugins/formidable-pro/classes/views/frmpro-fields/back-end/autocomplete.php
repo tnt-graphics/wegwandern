@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p class="frm6 frm_form_field">
 	<label id="for_field_options_autocomplete_<?php echo absint( $field['id'] ); ?>" for="field_options_autocomplete_<?php echo absint( $field['id'] ); ?>">
 		<?php esc_html_e( 'Autocomplete', 'formidable-pro' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon frm_tooltip_expand" data-placement="right" title="<?php esc_attr_e( 'The autocomplete attribute asks the browser to attempt autocompletion, based on user history.', 'formidable-pro' ); ?>"></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'The autocomplete attribute asks the browser to attempt autocompletion, based on user history.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
 	</label>
 
 	<?php
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	?>
 
     <select name="field_options[autocomplete_<?php echo absint( $field['id'] ); ?>]" id="field_options_autocomplete_<?php echo absint( $field['id'] ); ?>">
-		<option value="" <?php selected( $field['autocomplete'], '' ); ?>><?php esc_html_e( 'Please select', 'formidable-pro' ); ?></option>
+		<option value="" <?php selected( $field['autocomplete'], '' ); ?>><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
         <?php
 		$field_obj = FrmFieldFactory::get_field_type( $field['type'] );
 
@@ -32,11 +32,13 @@ if ( ! defined( 'ABSPATH' ) ) {
          */
         $autocomplete_options = apply_filters( 'frm_autocomplete_options', $autocomplete_options, $field );
         foreach ( $autocomplete_options as $value => $label ) {
-        ?>
-        	<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $field['autocomplete'], $value ); ?>>
-                <?php echo esc_html( $label ); ?>
-            </option>
-        <?php
+            FrmProHtmlHelper::echo_dropdown_option(
+                $label,
+                (string) $field['autocomplete'] === (string) $value,
+                array(
+                    'value' => $value,
+                )
+            );
         }
         ?>
 	</select>

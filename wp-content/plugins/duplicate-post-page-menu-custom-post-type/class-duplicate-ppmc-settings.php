@@ -80,15 +80,15 @@ if ( ! class_exists( 'Duplicate_PPMC_Settings' ) ) {
 					$post_types = self::dppmc_all_post();
 					
 						foreach ( $post_types as $post_type ) {
-						$post_name = 'dppmc_'. $post_type->name;
-
+							$this_post_name  = sanitize_text_field( $post_type->name );
+							$post_name = 'dppmc_'. $this_post_name;
 					?>
-					<label for="<?php echo $post_name; ?>"><input type="checkbox" name="<?php echo $post_name; ?>" id="<?php echo $post_name; ?>" value="0" <?php checked( '0', get_option($post_name, '0' ) ); ?>" /><?php _e( $post_type->label, 'duplicate-ppmc' ); ?></label><br/>
+					<label for="<?php echo esc_attr($post_name); ?>"><input type="checkbox" name="<?php echo esc_attr($post_name); ?>" id="<?php echo esc_attr($post_name); ?>" value="0" <?php checked( '0', get_option($post_name, '0' ) ); ?>" /><?php _e( $post_type->label, 'duplicate-ppmc' ); ?></label><br/>
 					
 					<?php
 						}
 					?>
-						<label for="dppmc_menu"><input type="checkbox" name="dppmc_menu" id="dppmc_menu" value="0" <?php checked( '0', get_option( 'dppmc_menu', '0' ) ); ?>" /><?php _e( 'Menu', 'duplicate-ppmc' ); ?></label><br/>
+						<label for="dppmc_menu"><input type="checkbox" name="dppmc_menu" id="dppmc_menu" value="0" <?php checked( '0', get_option( 'dppmc_menu', '0' ) ); ?>" disabled="disabled" /><?php _e( 'Menu', 'duplicate-ppmc' ); ?> functionality is unavailable.</label><br/>
 					</fieldset>
 				</td>
 			</tr>

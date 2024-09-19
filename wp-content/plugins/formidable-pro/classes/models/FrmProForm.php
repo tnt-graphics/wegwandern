@@ -49,7 +49,8 @@ class FrmProForm {
 			$options['copy'] = isset( $values['options']['copy'] ) ? $values['options']['copy'] : 0;
 		}
 
-		if ( $update ) {
+		// In the latest Lite version, start over isn't saved in form options anymore.
+		if ( $update && ! FrmProSubmitHelper::is_available() ) {
 			self::maybe_add_start_over_shortcode( $options );
 		}
 
@@ -64,7 +65,12 @@ class FrmProForm {
 	 * @param array $options Form options.
 	 */
 	private static function maybe_add_start_over_shortcode( &$options ) {
-		if ( empty( $options['start_over'] ) || false !== strpos( $options['submit_html'], '[if start_over]' ) ) {
+		// If using an old Lite version, we need to check the start_over value in the form options.
+		if ( ! FrmProSubmitHelper::is_available() && empty( $options['start_over'] ) ) {
+			return;
+		}
+
+		if ( false !== strpos( $options['submit_html'], '[if start_over]' ) ) {
 			return;
 		}
 
@@ -409,6 +415,11 @@ class FrmProForm {
 		global $wpdb;
 		$form = FrmForm::getOne( $id );
 
+		if ( ! empty( $options['should_add_start_over_shortcode'] ) ) {
+			self::maybe_add_start_over_shortcode( $form->options );
+			unset( $options['should_add_start_over_shortcode'] );
+		}
+
 		$options += $form->options;
 
 		// Use custom query instead of FrmForm::update() to prevent duplicate code runs.
@@ -439,23 +450,36 @@ class FrmProForm {
 		// Save page transition.
 		if ( is_array( $posted_options ) ) {
 			foreach ( $posted_options as $key => $value ) {
-				preg_match_all( '/transition_(\d+)/i', $key, $matches, PREG_SET_ORDER );
-				if ( ! $matches ) {
+				if ( self::is_posted_field_option( 'transition', $key, $fields_submitted ) ) {
+					$options['transition'] = $value;
 					continue;
 				}
 
-				if ( ! in_array( $matches[0][1], $fields_submitted, true ) ) {
-					continue;
+				if ( self::is_posted_field_option( 'start_over', $key, $fields_submitted ) && $value && ! FrmAppHelper::get_post_param( 'old_start_over_value' ) ) {
+					$options['should_add_start_over_shortcode'] = true;
 				}
-
-				$options['transition'] = $value;
-				break;
 			}
 		}
 
 		FrmProRootlineController::save_rootline_to_form_options( $options );
 
 		return $options;
+	}
+
+	/**
+	 * Checks if the posted data is a field option.
+	 *
+	 * @since 6.11.2
+	 *
+	 * @param string $option_key Key of the option you want to check.
+	 * @param string $posted_key Key of the posted data.
+	 * @param array  $fields_submitted IDs of submitted fields.
+	 *
+	 * @return bool
+	 */
+	private static function is_posted_field_option( $option_key, $posted_key, $fields_submitted ) {
+		preg_match_all( '/' . $option_key . '_(\d+)/i', $posted_key, $matches, PREG_SET_ORDER );
+		return $matches && in_array( $matches[0][1], $fields_submitted, true );
 	}
 
 	/**

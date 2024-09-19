@@ -752,8 +752,11 @@
 				}
 			}
 
-			// for iThemes Security: not to cache 403 pages
-			if(defined('DONOTCACHEPAGE') && $this->isPluginActive('better-wp-security/better-wp-security.php')){
+			// Prevent caching of 403 Forbidden error pages.
+			// This is particularly important for compatibility with the following security plugins:
+			// 1. iThemes Security
+			// 2. Defender Security
+			if(defined('DONOTCACHEPAGE')){
 				if(function_exists("http_response_code") && http_response_code() == 403){
 					return $buffer."<!-- DONOTCACHEPAGE is defined as TRUE -->";
 				}

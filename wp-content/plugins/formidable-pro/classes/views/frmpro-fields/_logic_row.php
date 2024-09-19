@@ -7,9 +7,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 <select name="field_options[hide_field_<?php echo esc_attr( $field['id'] ); ?>][]" class="frm_logic_field_opts" data-type="<?php echo esc_attr( $field['type'] ); ?>">
 	<option value=""><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
     <?php
-    $sel = false;
+    $sel         = false;
+	$prefiltered = FrmProConditionalLogicOptionData::data_is_available( $field['form_id'] );
 	foreach ( $form_fields as $ff ) {
-		if ( ! FrmProConditionalLogicController::is_field_present_in_logic_options( $field, $ff ) ) {
+		if ( ! FrmProConditionalLogicController::is_field_present_in_logic_options( $field, $ff, $prefiltered ) ) {
             continue;
         }
 
@@ -24,8 +25,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'value' => $ff->id,
 			)
 		);
-    ?>
-    <?php } ?>
+    }
+	?>
 </select>
 <?php
 if ( $hide_field && ! $sel ) {

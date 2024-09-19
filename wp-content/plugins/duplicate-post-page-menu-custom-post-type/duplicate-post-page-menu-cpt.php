@@ -8,7 +8,7 @@
 
 *	Author: Inqsys Technology
 
-*	Version: 2.3.1
+*	Version: 2.4.1
 
 *	Text Domain: duplicate-ppmc
 
@@ -21,7 +21,7 @@
 /* Check for wordpress installation */
 
 define( 'PPMC_URL', plugin_dir_url( __FILE__ ) );
-define( 'PPMC_V', '2.3.1' );
+define( 'PPMC_V', '2.4.1' );
 
 if ( ! function_exists( 'add_action' ) ) {
 
@@ -64,8 +64,6 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 			} );
 
 			add_action('wp_ajax_duplicate_ppmc', array( $this, 'duplicate_ppmc_post_as_draft' ));
-
-			add_action('wp_ajax_duplicate_ppmc_menu_maker', array( $this, 'duplicate_ppmc_menu_maker' ));
 			
 			/* Add duplicate controler for post/page */
 
@@ -86,12 +84,6 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 			add_action( 'plugins_loaded', array( $this, 'dppmc_load_plugin_textdomain' ) );
 
 		}	/* End of __construct() */
-
-		function aajax(){
-			echo 'Ajax function';
-			echo $_REQUEST['post'] . ' id post coppied for ' . $_REQUEST['copies'] . ' times';
-			die();
-		}
  
 		function ppmc_plugin_row_meta( $links ) {    
 
@@ -272,112 +264,6 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 
 		}/* End of duplicate_ppmc_settings_link */
 
-
-
-		/*	Make sure values are not null */
-
-		function duplicate_ppmc_menu_maker() {
-			$response = array();
-			/* Check for vaild input */
-
-			if ( ! isset( $_REQUEST['name'] ) ) {
-
-				echo '<strong> Something went wrong </strong>';
-				die();
-
-			}
-
-
-
-			/* Make sure values are vaild to process */
-
-			$name = sanitize_text_field( $_REQUEST['name'].'-duplicate' );
-
-			if ( true === is_nav_menu($name) ) {
-
-				$response["error"] = 'Menu <strong>'. $name .'</strong> already exist<br/>Please delete or rename the previous menu.' ;
-				echo json_encode( $response );
-				die();
-			}
-
-
-
-			$source = wp_get_nav_menu_object( $_REQUEST['name'] );
-
-			$source_items = wp_get_nav_menu_items( $_REQUEST['name'] );
-
-			$new_id = wp_create_nav_menu( $name );
-
-			/* Ready to process the menu for duplication */
-
-			$rel = array();
-
-			$i = 1;
-
-			foreach ( $source_items as $menu_item ) {
-				
-				$args = array(
-
-					'menu-item-db-id'       	=> $menu_item->db_id,
-
-					'menu-item-object-id'   	=> $menu_item->object_id,
-
-					'menu-item-object'      	=> $menu_item->object,
-
-					'menu-item-position'    	=> $i,
-
-					'menu-item-type'        	=> $menu_item->type,
-
-					'menu-item-title'       	=> $menu_item->title,
-
-					'menu-item-url'         	=> $menu_item->url,
-
-					'menu-item-description' 	=> $menu_item->description,
-
-					'menu-item-attr-title'  	=> $menu_item->attr_title,
-
-					'menu-item-target'      	=> $menu_item->target,
-
-					'menu-item-classes'     	=> implode( ' ', $menu_item->classes ),
-
-					'menu-item-xfn'         	=> $menu_item->xfn,
-
-					'menu-item-status'      	=> $menu_item->post_status
-
-				); // End of for-each()
-
-
-
-				$parent_id = wp_update_nav_menu_item( $new_id, 0, $args );
-
-				$rel[$menu_item->db_id] = $parent_id;
-
-				/* Just reassuring, child shouldn't be left home-alone */
-
-				if ( $menu_item->menu_item_parent ) {
-
-					$args['menu-item-parent-id'] = $rel[$menu_item->menu_item_parent];
-
-					$parent_id = wp_update_nav_menu_item( $new_id, $parent_id, $args );
-
-				}
-
-
-
-				$i++;
-			} /* End of foreach() */
-
-
-
-				/* Refresh(redirect to) the current page */
-				
-				$response["menu_id"] = $new_id  ;
-				echo json_encode( $response );
-				die();
-		} /* End of duplicate_ppmc_menu_maker() */
-
-
-
 		/*	Duplicate the selected post and put the new post in draft */
 
 		function duplicate_ppmc_post_as_draft() {
@@ -388,11 +274,42 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 
 			if ( ! ( isset( $_REQUEST['post']) || isset( $_REQUEST['post'])  || ( isset( $_REQUEST['action'] ) && 'duplicate_ppmc_post_as_draft' == $_REQUEST['action'] ) ) ) {
 
-				echo '<strong>No post to duplicate has been supplied!</strong>';
+				echo json_encode( array(
+					'code'=>0,
+					'fcolor'=>'black',
+					'message'=>'No post to duplicate has been supplied!',
+				));
 				die();
 
 			}	/* End of if */
 
+			$user_id = get_current_user_id();
+			$wp_nonce = isset( $_REQUEST['key'] ) ? wp_slash( $_REQUEST['key'] ) : null ;
+			if( !isset( $wp_nonce ) || wp_verify_nonce( $wp_nonce, 'duplicate_ppmc_' . $user_id ) === false ){
+				echo json_encode( array(
+					'code'=>0,
+					'fcolor'=>'red',
+					'message'=>'Unauthorized access or insufficient permission to perform this action!',
+				));
+				die();
+			}
+			
+			/* Get the original post id */
+			$post_id = ( isset( $_REQUEST['post'] ) ? absint( $_REQUEST['post'] ) : absint( $_REQUEST['post'] ) );
+
+			/* Get all the original post data */
+			$post = get_post( $post_id );
+
+			$isDuplicationEnable = get_option( 'dppmc_'.$post->post_type );
+			/* Check if user is capable of editing and cloning is enable on post */
+			if ( !current_user_can('edit_post', $post->ID ) ) {
+				echo json_encode( array(
+					'code'=>0,
+					'fcolor'=>'red',
+					'message'=>'Unauthorized access or insufficient permission to perform this action!',
+				));
+				die();
+			}
 
 
 			/* Create a single entry if multiple is not required or a non positive number is passed */
@@ -404,18 +321,6 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 			/* Loop through number of duplication request */
 
 			for ( $J = 1; $J <= $copy_required; $J++ ){
-
-
-
-					/* Get the original post id */
-
-					$post_id = ( isset( $_REQUEST['post'] ) ? absint( $_REQUEST['post'] ) : absint( $_REQUEST['post'] ) );
-
-					/* Get all the original post data */
-
-					$post = get_post( $post_id );
-
-
 
 					/* Get current user and make it new post user (duplicate post) */
 
@@ -517,8 +422,11 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 					} else {
 
 						/* This error must not occur in most cases. But incase it occur. This is how we handle it */
-
-						echo '<strong>Post creation failed, could not find original post: ' . $post_id .'</strong>';
+						echo json_encode( array(
+							'code'=>0,
+							'fcolor'=>'red',
+							'message'=>'Post creation failed, could not find original post: ' . $post_id,
+						));
 						die();
 					}
 
@@ -528,8 +436,11 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 
 				/* Reload the current page to load all new created draf post/page */
 
-				wp_redirect( $_SERVER['HTTP_REFERER'] );
-
+				echo json_encode( array(
+					'code'=>200,
+					'fcolor'=>'black',
+					'message'=>'Finish duplicating the post/page',
+				));
 				exit();
 
 		}	/* End of duplicate_ppmc_post_as_draft() */
@@ -539,10 +450,11 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 		function duplicate_ppmc_inpost_button($post){
 			
 			$isDuplicationEnable = get_option( 'dppmc_'.$post->post_type );
-			
+			$user_id = get_current_user_id();
+			$nonce = wp_create_nonce( 'duplicate_ppmc_' . $user_id );
 			if ( current_user_can('edit_post', $post->ID ) && '0' === $isDuplicationEnable ) {
 				$html  = '<div style="padding-left:10px;padding-bottom:10px;">';
-				$html .= "<a id='Btdppmc' ppmc_post_id=".$post->ID." class='duplicate_ppmc_item_no".$post->ID."'>Duplicate This </a> " .
+				$html .= "<a id='Btdppmc' ppmc_post_id=".$post->ID." class='duplicate_ppmc_item_no".$post->ID."' ppmc_key=" . $nonce . ">Duplicate This </a> " .
 					 " <input style='width:60px !important;' type='number' value='1' min='1' max='5' id='duplicate_ppmc_item_no".$post->ID."' name='duplicate_ppmc_item_no'>";
 				$html .= '</div>';
 				
@@ -570,8 +482,10 @@ if ( ! class_exists( 'Duplicate_PPMC_Init' ) ) {
 					* Asingle line is devided into two for making it more readable
 
 					*/
+					$user_id = get_current_user_id();
+					$nonce = wp_create_nonce( 'duplicate_ppmc_' . $user_id );
 
-					$actions['dppmc_btn_count'] = "<a id='Btdppmc' ppmc_post_id=".$post->ID." class='duplicate_ppmc_item_no".$post->ID."' >".__('Duplicate', 'duplicate-ppmc')."</a> " .
+					$actions['dppmc_btn_count'] = "<a id='Btdppmc' ppmc_post_id=".$post->ID." ppmc_key=" . $nonce . " class='duplicate_ppmc_item_no".$post->ID."' >".__('Duplicate', 'duplicate-ppmc')."</a> " .
 
 					 "<input style='width:60px !important;' type='number' value='1' min='1' max='5' id='duplicate_ppmc_item_no".$post->ID."' name='duplicate_ppmc_item_no'>";
 

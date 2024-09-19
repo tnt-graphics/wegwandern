@@ -24,7 +24,7 @@ if ( isset( $settings['progress_border_color'] ) && $settings['progress_border_c
 
 /* Prefix */
 
-<?php if ( ! isset( $settings['remove_box_shadow'] ) || ! $settings['remove_box_shadow'] ) { ?>
+<?php if ( empty( $settings['remove_box_shadow'] ) ) { ?>
 .<?php echo esc_html( $settings['style_class'] ); ?> .frm_inline_box {
 	box-shadow:0 1px 1px rgba(0, 0, 0, 0.075) inset;
 }
@@ -76,9 +76,11 @@ if ( isset( $settings['progress_border_color'] ) && $settings['progress_border_c
 
 .<?php echo esc_html( $settings['style_class'] ); ?> .chosen-container-single .chosen-single{
 	padding-top:0 <?php esc_html( $important ); ?>;
-	<?php if ( $settings['field_height'] != 'auto' && $settings['field_height'] != '' ) { ?>
+	<?php if ( $settings['field_height'] !== 'auto' && $settings['field_height'] != '' ) { ?>
 	height:<?php echo esc_html( $settings['field_height'] . $important ); ?>;
 	line-height:<?php echo esc_html( $settings['field_height'] . $important ); ?>;
+	padding-top: 0<?php echo esc_html( $important ); ?>;
+	padding-bottom: 0<?php echo esc_html( $important ); ?>;
 	<?php } ?>
 }
 
@@ -180,27 +182,12 @@ if ( isset( $settings['progress_border_color'] ) && $settings['progress_border_c
 <?php } // End if ( isset( $settings['progress_color'] ) ) { ?>
 
 /* Start Range slider */
-
-.<?php echo esc_html( $settings['style_class'] ); ?> .form-field input[type=range],
-.<?php echo esc_html( $settings['style_class'] ); ?> .form-field input[type=range]:focus {
-	padding:0 <?php echo esc_html( $important ); ?>;
-	background:transparent !important;
-}
-
 .<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-webkit-slider-thumb {
 	<?php
 	$thumb_color = $settings['slider_color'];
-	echo $thumb  = 'border: 1px solid ' . esc_html( $thumb_color ) . $important . ';
+	echo $thumb  = 'border: 2px solid ' . esc_html( $thumb_color ) . $important . ';
 	color:' . esc_html( $settings['progress_active_color'] . $important ) . ';';
 	?>
-}
-
-.<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-ms-fill-lower {
-	background-color: <?php echo esc_html( $thumb_color . $important ); ?>;
-}
-
-.<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-moz-range-progress {
-	background-color: <?php echo esc_html( $thumb_color . $important ); ?>;
 }
 
 .<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-moz-range-thumb {
@@ -288,56 +275,62 @@ if ( isset( $settings['progress_border_color'] ) && $settings['progress_border_c
 <?php } ?>
 
 /* Datepicker */
-<?php if ( empty( $defaults['theme_css'] ) || 'ui-lightness' === $defaults['theme_css'] ) { ?>
+<?php if ( empty( $defaults['theme_css'] ) || 'ui-lightness' === $defaults['theme_css'] ) : ?>
 .<?php echo esc_html( $settings['style_class'] ); ?> .ui-datepicker-title > select {
-	color: <?php echo esc_html( $settings['text_color'] ) . esc_html( $important ); ?>;
-	background-color:<?php echo esc_html( $settings['bg_color'] . $important ); ?>;
+	color: <?php echo esc_html( $settings['text_color'] ); ?>;
+	color: var(--text-color)<?php echo esc_html( $important ); ?>;
+	background-color: var(--bg-color)<?php echo esc_html( $important ); ?>;
 }
 .<?php echo esc_html( $settings['style_class'] ); ?> .ui-datepicker-month,
 .<?php echo esc_html( $settings['style_class'] ); ?> .ui-datepicker-year {
-	color: <?php echo esc_html( $settings['text_color'] ); ?>;
+	color: var(--text-color)<?php echo esc_html( $important ); ?>;
 }
 .<?php echo esc_html( $settings['style_class'] ); ?> span.ui-datepicker-month,
 .<?php echo esc_html( $settings['style_class'] ); ?> span.ui-datepicker-year {
-	color: <?php echo esc_html( $settings['date_head_color'] ); ?>;
+	color: var(--date-head-color)<?php echo esc_html( $important ); ?>;
 }
 .<?php echo esc_html( $settings['style_class'] ); ?> .ui-widget-header,
 .<?php echo esc_html( $settings['style_class'] ); ?> .ui-datepicker-header {
-	<?php if ( '' !== $settings['date_head_bg_color'] ) { ?>
-	background: <?php echo esc_html( $settings['date_head_bg_color'] ); ?> !important;
-	<?php } ?>
-	color: <?php echo esc_html( $settings['date_head_color'] ); ?> !important;
+	color: var(--date-head-color) !important;
+	background-color: var(--date-head-bg-color) !important;
 }
-	<?php if ( '' !== $settings['date_band_color'] ) : ?>
+.<?php echo esc_html( $settings['style_class'] ); ?> .ui-datepicker td, /* Sample form selector */
+.<?php echo esc_html( $settings['style_class'] ); ?>.ui-datepicker td {
+	border: 0;
+	border-radius: var(--border-radius);
+	overflow: hidden;
+}
 .<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-today {
-	background: rgba(<?php echo esc_html( FrmStylesHelper::hex2rgb( $settings['date_band_color'] ) ); ?>,0.15) !important;
+	background-color: var(--date-band-color) !important;
 }
-	<?php endif; ?>
+.<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-today > a {
+	color: var(--date-head-color)<?php echo esc_html( $important ); ?>;
+}
 .<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-current-day,
-.<?php echo esc_html( $settings['style_class'] ); ?> td .ui-state-hover,
-.<?php echo esc_html( $settings['style_class'] ); ?> thead {
-	<?php if ( '' !== $settings['date_band_color'] ) : ?>
-	background: <?php echo esc_html( $settings['date_band_color'] ); ?> !important;
-	<?php endif; ?>
-	color: <?php echo esc_html( $settings['date_head_color'] ); ?> !important;
+.<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-current-day .ui-state-hover {
+	background-color: var(--border-color-active) !important;
 }
-.<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-current-day .ui-state-default {
-	color: <?php echo esc_html( $settings['date_head_color'] ); ?> !important;
+.<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-current-day .ui-state-default:not(.ui-state-hover) {
+	color: #fff;
 }
-<?php } // end if empty( $defaults['theme_css'] ) || 'ui-lightness' === $defaults['theme_css'] ?>
+.<?php echo esc_html( $settings['style_class'] ); ?> td:not(.ui-datepicker-current-day) .ui-state-hover {
+	color: var(--text-color)<?php echo esc_html( $important ); ?>;
+	background: #F2F4F7 !important;
+}
+<?php endif; // end if empty( $defaults['theme_css'] ) || 'ui-lightness' === $defaults['theme_css'] ?>
 /* End Datepicker */
 
 /* Submit Buttons */
 <?php if ( empty( $settings['submit_style'] ) ) : ?>
-.<?php echo esc_html( $settings['style_class'] ); ?> .frm_button_submit[disabled],
-.<?php echo esc_html( $settings['style_class'] ); ?> .frm_prev_page[disabled],
-.<?php echo esc_html( $settings['style_class'] ); ?> .frm_save_draft[disabled] {
-	opacity: 0.5;
-}
 .<?php echo esc_html( $settings['style_class'] ); ?> input[type=submit][disabled],
 .<?php echo esc_html( $settings['style_class'] ); ?> .frm_submit input[type=button][disabled],
 .<?php echo esc_html( $settings['style_class'] ); ?> .frm_submit button[disabled] {
+	opacity: 0.5;
 	cursor: not-allowed;
+}
+.<?php echo esc_html( $settings['style_class'] ); ?> .frm_loading_prev button.frm_prev_page,
+.<?php echo esc_html( $settings['style_class'] ); ?> .frm_loading_form button.frm_button_submit {
+	opacity: 1;
 }
 <?php endif; ?>
 /* End Submit Buttons */

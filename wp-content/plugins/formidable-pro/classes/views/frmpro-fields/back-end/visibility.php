@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p class="frm6 frm_form_field">
 	<label id="for_field_options_admin_only_<?php echo absint( $field['id'] ); ?>" for="field_options_admin_only_<?php echo absint( $field['id'] ); ?>">
 		<?php esc_html_e( 'Visibility', 'formidable-pro' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon frm_tooltip_expand" data-placement="right" title="<?php esc_attr_e( 'Determines who can see this field.', 'formidable-pro' ); ?>"></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'Determines who can see this field.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
 	</label>
 
 	<?php

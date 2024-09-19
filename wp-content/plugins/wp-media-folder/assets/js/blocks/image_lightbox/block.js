@@ -217,7 +217,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
             return React.createElement(
                 "a",
-                null,
+                {className: "align" + align},
                 React.createElement("img", { src: url, "data-wpmflightbox": "1", className: "align" + align + " size-" + size + " wp-image-" + id,
                     "data-wpmf_size_lightbox": lightbox_size,
                     "data-wpmf_image_lightbox": lightbox_url })

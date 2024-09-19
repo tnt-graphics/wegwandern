@@ -659,6 +659,9 @@ class FrmForm {
 		$query_results = $wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->prefix . 'frm_forms WHERE id=%d OR parent_form_id=%d', $id, $id ) );
 		if ( $query_results ) {
 			// Delete all form actions linked to this form
+			/**
+			 * @var FrmFormAction
+			 */
 			$action_control = FrmFormActionsController::get_form_actions( 'email' );
 			$action_control->destroy( $id, 'all' );
 
@@ -860,7 +863,7 @@ class FrmForm {
 			}
 		}
 
-		if ( $limit == ' LIMIT 1' || $limit == 1 ) {
+		if ( $limit === ' LIMIT 1' || $limit == 1 ) {
 			// return the first form object if we are only getting one form
 			$results = reset( $results );
 		}
@@ -881,7 +884,7 @@ class FrmForm {
 	public static function get_published_forms( $query = array(), $limit = 999, $inc_children = 'exclude' ) {
 		$query['is_template'] = 0;
 		$query['status']      = array( null, '', 'published' );
-		if ( $inc_children == 'exclude' ) {
+		if ( $inc_children === 'exclude' ) {
 			$query['parent_form_id'] = array( null, 0 );
 		}
 

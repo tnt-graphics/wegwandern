@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <h3>
-	<?php esc_html_e( 'Save Drafts', 'formidable' ); ?>
+	<?php esc_html_e( 'Save Drafts', 'formidable-pro' ); ?>
 </h3>
 <p class="frm4 frm_form_field">
 	<label for="save_draft" class="frm-inline-select">

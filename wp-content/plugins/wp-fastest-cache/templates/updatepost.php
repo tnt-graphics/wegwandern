@@ -53,7 +53,7 @@
 					<label for="wpFastestCacheUpdatePost_type_post"><?php _e("Clear Cache of Post / Page", "wp-fastest-cache"); ?></label><br>
 					<label style="margin-left:24px;" for="wpFastestCacheUpdatePost_type_post"><?php _e("Clear Cache of Post Categories", "wp-fastest-cache"); ?></label><br>
 					<label style="margin-left:24px;" for="wpFastestCacheUpdatePost_type_post"><?php _e("Clear Cache of Post Tags", "wp-fastest-cache"); ?></label><br>
-					<label style="margin-left:24px;" for="wpFastestCacheUpdatePost_type_post"><?php _e("Clear Cache of Homepage", "wp-fastest-cache"); ?></label>
+					<label style="margin-left:24px;" for="wpFastestCacheUpdatePost_type_post"><?php _e("Clear Cache of Home page", "wp-fastest-cache"); ?></label>
 				</div>
 
 			</div>

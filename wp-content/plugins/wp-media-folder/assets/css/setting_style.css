@@ -276,7 +276,7 @@
     border: #ccc 1px solid;
 }
 
-.import-objects-bucket-spinner, .copy-objects-bucket-spinner {
+.import-objects-bucket-spinner, .copy-objects-bucket-spinner, .remove-offloaded-files-spinner {
     vertical-align: middle;
     margin: 0;
     display: none;

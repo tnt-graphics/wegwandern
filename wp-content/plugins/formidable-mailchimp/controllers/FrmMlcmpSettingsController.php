@@ -3,7 +3,7 @@
 class FrmMlcmpSettingsController {
 
 	/**
-	 * Add MailChimp tab in global settings
+	 * Add Mailchimp tab in global settings
 	 *
 	 * @param array $sections
 	 *
@@ -37,8 +37,7 @@ class FrmMlcmpSettingsController {
 
 		$action_control = FrmFormActionsController::get_form_actions( 'mailchimp' );
 		$action_control->_set( $_POST['action_key'] );
-		include( FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/_match_fields.php' );
-
+		include FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/_match_fields.php';
 
 		die();
 	}
@@ -77,7 +76,7 @@ class FrmMlcmpSettingsController {
 
 		$action_control = FrmFormActionsController::get_form_actions( 'mailchimp' );
 		$action_control->_set( $_POST['action_key'] );
-		require( FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/_group_values.php' );
+		require FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/_group_values.php';
 
 		wp_die();
 	}
@@ -96,7 +95,7 @@ class FrmMlcmpSettingsController {
 
 		$action_control = FrmFormActionsController::get_form_actions( 'mailchimp' );
 		$action_control->_set( $_POST['action_key'] );
-		require( FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/_gdpr_values.php' );
+		require FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/_gdpr_values.php';
 
 		wp_die();
 	}
@@ -119,7 +118,7 @@ class FrmMlcmpSettingsController {
 	public static function register_actions( $actions ) {
 		$actions['mailchimp'] = 'FrmMlcmpAction';
 
-		include_once( FrmMlcmpAppHelper::plugin_path() . '/models/FrmMlcmpAction.php' );
+		include_once FrmMlcmpAppHelper::plugin_path() . '/models/FrmMlcmpAction.php';
 
 		return $actions;
 	}
@@ -127,7 +126,7 @@ class FrmMlcmpSettingsController {
 	public static function display_form() {
 		$frm_mlcmp_settings = new FrmMlcmpSettings();
 
-		require_once( FrmMlcmpAppHelper::plugin_path() . '/views/settings/form.php' );
+		require_once FrmMlcmpAppHelper::plugin_path() . '/views/settings/form.php';
 	}
 
 	public static function process_form() {
@@ -135,7 +134,7 @@ class FrmMlcmpSettingsController {
 
 		$frm_mlcmp_settings->update( $_POST );
 
-		require_once( FrmMlcmpAppHelper::plugin_path() . '/views/settings/form.php' );
+		require_once FrmMlcmpAppHelper::plugin_path() . '/views/settings/form.php';
 	}
 
 	public static function route() {

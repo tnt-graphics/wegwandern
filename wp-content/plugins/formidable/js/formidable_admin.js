@@ -1,5 +1,5 @@
 /* exported frm_add_logic_row, frm_remove_tag, frm_show_div, frmCheckAll, frmCheckAllLevel */
-/* eslint-disable jsdoc/require-param, prefer-const, no-redeclare, @wordpress/no-unused-vars-before-return, jsdoc/check-types, jsdoc/check-tag-names, @wordpress/i18n-translator-comments, @wordpress/valid-sprintf, jsdoc/require-returns-description, jsdoc/require-param-type, no-unused-expressions */
+/* eslint-disable jsdoc/require-param, prefer-const, no-redeclare, @wordpress/no-unused-vars-before-return, jsdoc/check-types, jsdoc/check-tag-names, @wordpress/i18n-translator-comments, @wordpress/valid-sprintf, jsdoc/require-returns-description, jsdoc/require-param-type, no-unused-expressions, compat/compat */
 
 window.FrmFormsConnect = window.FrmFormsConnect || ( function( document, window, $ ) {
 
@@ -35,7 +35,7 @@ window.FrmFormsConnect = window.FrmFormsConnect || ( function( document, window,
 			$( document.getElementById( 'frm_deauthorize_link' ) ).on( 'click', app.deauthorize );
 			$( '.frm_authorize_link' ).on( 'click', app.authorize );
 			// Handles FF dashboard Authorize & Reauthorize events.
-			// Atach click event to parent as #frm_deauthorize_link & #frm_reconnect_link dynamically recreated by bootstrap.setupBootstrapDropdowns in dom.js
+			// Attach click event to parent as #frm_deauthorize_link & #frm_reconnect_link dynamically recreated by bootstrap.setupBootstrapDropdowns in dom.js
 			$( '.frm-dashboard-license-options' ).on( 'click', '#frm_deauthorize_link', app.deauthorize );
 			$( '.frm-dashboard-license-options' ).on( 'click', '#frm_reconnect_link', app.reauthorize );
 
@@ -382,17 +382,13 @@ function frmAdminBuildJS() {
 
 	function toggleItem( e ) {
 		/*jshint validthis:true */
-		const toggle = this.getAttribute( 'data-frmtoggle' ),
-			text = this.getAttribute( 'data-toggletext' ),
-			items = jQuery( toggle );
+		const toggle = this.getAttribute( 'data-frmtoggle' );
+		const text   = this.getAttribute( 'data-toggletext' );
+		const $items = jQuery( toggle );
 
 		e.preventDefault();
 
-		if ( items.is( ':visible' ) ) {
-			items.show();
-		} else {
-			items.hide();
-		}
+		$items.toggle();
 
 		if ( text !== null && text !== '' ) {
 			this.setAttribute( 'data-toggletext', this.innerHTML );
@@ -517,7 +513,7 @@ function frmAdminBuildJS() {
 		wrapClass.on( 'mouseenter.frm', '.frm_bstooltip, .frm_help', function() {
 			jQuery( this ).off( 'mouseenter.frm' );
 
-			jQuery( '.frm_bstooltip, .frm_help' ).tooltip( );
+			jQuery( '.frm_bstooltip, .frm_help' ).tooltip();
 			jQuery( this ).tooltip( 'show' );
 		});
 
@@ -1831,15 +1827,16 @@ function frmAdminBuildJS() {
 		const newHiddenField    = classes.contains( 'frm_thidden' );
 		const newSectionField   = classes.contains( 'frm_tdivider' );
 		const newEmbedField     = classes.contains( 'frm_tform' );
+		const newUserIdField    = classes.contains( 'frm_tuser_id' );
 
 		const newFieldWillBeAddedToAGroup = ! ( 'frm-show-fields' === droppable.id || droppable.classList.contains( 'start_divider' ) );
 		if ( newFieldWillBeAddedToAGroup ) {
-			if ( groupIncludesBreakOrHidden( droppable ) ) {
+			if ( groupIncludesBreakOrHiddenOrUserId( droppable ) ) {
 				// Never allow any field beside a page break or a hidden field.
 				return false;
 			}
 
-			return ! newHiddenField && ! newPageBreakField;
+			return ! newHiddenField && ! newPageBreakField && ! newUserIdField;
 		}
 
 		const fieldTypeIsAlwaysAllowed = ! newPageBreakField && ! newHiddenField && ! newSectionField && ! newEmbedField;
@@ -1872,8 +1869,10 @@ function frmAdminBuildJS() {
 		}
 
 		const isHiddenField = draggable.classList.contains( 'edit_field_type_hidden' );
-		if ( isHiddenField ) {
-			// Hidden fields should not be added to field groups since they're not shown and don't make sense with the grid distribution.
+		const isUserIdField = draggable.classList.contains( 'edit_field_type_user_id' );
+		if ( isHiddenField || isUserIdField ) {
+			// Hidden fields and user id fields should not be added to field groups since they're not shown
+			// and don't make sense with the grid distribution.
 			return false;
 		}
 
@@ -1909,7 +1908,7 @@ function frmAdminBuildJS() {
 	}
 
 	function allowMoveFieldToGroup( draggable, group ) {
-		if ( groupIncludesBreakOrHidden( group ) ) {
+		if ( groupIncludesBreakOrHiddenOrUserId( group ) ) {
 			// Never allow any field beside a page break or a hidden field.
 			return false;
 		}
@@ -1931,8 +1930,8 @@ function frmAdminBuildJS() {
 		return true;
 	}
 
-	function groupIncludesBreakOrHidden( group ) {
-		return null !== group.querySelector( '.edit_field_type_break, .edit_field_type_hidden' );
+	function groupIncludesBreakOrHiddenOrUserId( group ) {
+		return null !== group.querySelector( '.edit_field_type_break, .edit_field_type_hidden, .edit_field_type_user_id' );
 	}
 
 	function groupCanFitAnotherField( fieldsInRow, $field ) {
@@ -3025,7 +3024,7 @@ function frmAdminBuildJS() {
 		const field = document.getElementById( id );
 		if ( field !== null ) {
 			return field.value;
-		} 
+		}
 		return '';
 	}
 
@@ -3062,7 +3061,6 @@ function frmAdminBuildJS() {
 			}
 		} else {
 			changes.innerHTML = purifyHtml( newValue );
-
 			if ( 'TEXTAREA' === changes.nodeName && changes.classList.contains( 'wp-editor-area' ) ) {
 				// Trigger change events on wysiwyg textareas so we can also sync default values in the visual tab.
 				jQuery( changes ).trigger( 'change' );
@@ -3587,6 +3585,7 @@ function frmAdminBuildJS() {
 			fieldId = this.getAttribute( 'data-fid' );
 
 		jQuery( parentLi ).fadeOut( 'slow', function() {
+			wp.hooks.doAction( 'frm_before_delete_field_option', this );
 			jQuery( parentLi ).remove();
 
 			const hasOther = jQuery( parentUl ).find( '.frm_other_option' );
@@ -3873,8 +3872,7 @@ function frmAdminBuildJS() {
 	}
 
 	function separator() {
-		const hr = document.createElement( 'hr' );
-		return hr;
+		return document.createElement( 'hr' );
 	}
 
 	function getCustomLayoutOption() {
@@ -4386,7 +4384,7 @@ function frmAdminBuildJS() {
 					syncAfterMultiSelect( numberOfSelectedGroups );
 					return; // exit early to avoid adding back frm-selected-field-group
 				}
- 
+
 				++numberOfSelectedGroups;
 			} else if ( shiftKeyIsDown && ! groupIsActive ) {
 				++numberOfSelectedGroups; // include the one we're selecting right now.
@@ -4611,13 +4609,13 @@ function frmAdminBuildJS() {
 		popup = document.getElementById( 'frm_field_multiselect_popup' );
 
 		if ( null !== popup ) {
-			popup.classList.toggle( 'frm-unmergable', ! selectedFieldsAreMergable() );
+			popup.classList.toggle( 'frm-unmergable', ! selectedFieldsAreMergeable() );
 			return popup;
 		}
 
 		popup = div();
 		popup.id = 'frm_field_multiselect_popup';
-		if ( ! selectedFieldsAreMergable() ) {
+		if ( ! selectedFieldsAreMergeable() ) {
 			popup.classList.add( 'frm-unmergable' );
 		}
 
@@ -4649,7 +4647,7 @@ function frmAdminBuildJS() {
 		return popup;
 	}
 
-	function selectedFieldsAreMergable() {
+	function selectedFieldsAreMergeable() {
 		let selectedFieldGroups, totalFieldCount, length, index, fieldGroup;
 		selectedFieldGroups = document.querySelectorAll( '.frm-selected-field-group' );
 		length = selectedFieldGroups.length;
@@ -4848,6 +4846,7 @@ function frmAdminBuildJS() {
 					// prevent "More Options" tooltips from staying around after their target field is deleted.
 					deleteTooltips();
 				});
+				wp.hooks.doAction( 'frm_after_delete_field', $thisField[0] );
 			}
 		});
 	}
@@ -4968,10 +4967,69 @@ function frmAdminBuildJS() {
 		}
 	}
 
+	/**
+	 * Returns an object that has the old and new values and labels, when a field choice is changed.
+	 *
+	 * @param {HTMLElement} input
+	 * @returns {Object}
+	 */
+	function getChoiceOldAndNewValues( input ) {
+		const { oldValue, oldLabel } = getChoiceOldValueAndLabel( input );
+		const { newValue, newLabel } = getChoiceNewValueAndLabel( input );
+
+		return { oldValue, oldLabel, newValue, newLabel };
+	}
+
+	/**
+	 * Returns an object that has the new value and label, when a field choice is changed.
+	 *
+	 * @param {HTMLElement} choiceElement
+	 * @returns {Object}
+	 */
+	function getChoiceNewValueAndLabel( choiceElement ) {
+		const singleOptionContainer = choiceElement.closest( '.frm_single_option' );
+
+		let newValue, newLabel;
+
+		if ( choiceElement.parentElement.classList.contains( 'frm_single_option' ) ) { // label changed
+			newValue = singleOptionContainer.querySelector( '.frm_option_key input[type="text"]' ).value;
+			newLabel = choiceElement.value;
+			return { newValue, newLabel };
+		}
+
+		// saved value changed
+		newLabel = singleOptionContainer.querySelector( 'input[type="text"]' ).value;
+		newValue = choiceElement.value;
+		return { newValue, newLabel };
+	}
+
+	/**
+	 * Returns an object that has the old value and label, when a field choice is changed.
+	 *
+	 * @param {HTMLElement} choiceElement
+	 * @returns {Object}
+	 */
+	function getChoiceOldValueAndLabel( choiceElement ) {
+		const usingSeparateValues   = choiceElement.closest( '.frm-single-settings' ).querySelector( '.frm_toggle_sep_values' ).checked;
+		const singleOptionContainer = choiceElement.closest( '.frm_single_option' );
+
+		let oldValue, oldLabel;
+
+		if ( usingSeparateValues  ) {
+			if ( choiceElement.parentElement.classList.contains( 'frm_single_option' ) ) { // label changed
+				oldValue = singleOptionContainer.querySelector( '.frm_option_key input[type="text"]' ).getAttribute( 'data-value-on-focus' );
+				oldLabel = choiceElement.getAttribute( 'data-value-on-focus' );
+				return { oldValue, oldLabel };
+			}
+		}
+		oldValue = choiceElement.getAttribute( 'data-value-on-focus' );
+		oldLabel = singleOptionContainer.querySelector( 'input[type="text"]' ).getAttribute( 'data-value-on-focus' );
+
+		return { oldValue, oldLabel };
+	}
+
 	function onOptionTextBlur() {
 		let originalValue,
-			oldValue = this.getAttribute( 'data-value-on-focus' ),
-			newValue = this.value,
 			fieldId,
 			fieldIndex,
 			logicId,
@@ -4986,11 +5044,15 @@ function frmAdminBuildJS() {
 			optionMatches,
 			option;
 
-		if ( oldValue === newValue ) {
+		const { oldValue, oldLabel, newValue, newLabel } = getChoiceOldAndNewValues( this );
+
+		if ( oldValue === newValue && oldLabel === newLabel ) {
 			return;
 		}
 
-		fieldId = jQuery( this ).closest( '.frm-single-settings' ).attr( 'data-fid' );
+		const singleSettingsContainer = this.closest( '.frm-single-settings' );
+
+		fieldId       = singleSettingsContainer.getAttribute( 'data-fid' );
 		originalValue = this.getAttribute( 'data-value-on-load' );
 
 		// check if the newValue is already mapped to another option
@@ -5034,8 +5096,14 @@ function frmAdminBuildJS() {
 				optionMatches = valueSelect.querySelectorAll( 'option[value="' + newValue + '"]' );
 
 				if ( ! optionMatches.length ) {
-					option = document.createElement( 'option' );
-					valueSelect.appendChild( option );
+					if ( ! singleSettingsContainer.querySelector( '.frm_toggle_sep_values' ).checked ) {
+						option = searchSelectByText( valueSelect, oldValue ); // Find conditional logic option with oldValue
+					}
+
+					if ( ! option ) {
+						option = document.createElement( 'option' );
+						valueSelect.appendChild( option );
+					}
 				}
 			}
 
@@ -5044,7 +5112,7 @@ function frmAdminBuildJS() {
 			}
 
 			option.setAttribute( 'value', newValue );
-			option.textContent = newValue;
+			option.textContent = newLabel;
 
 			if ( fieldIds.indexOf( logicId ) === -1 ) {
 				fieldIds.push( logicId );
@@ -5056,6 +5124,26 @@ function frmAdminBuildJS() {
 			setting = document.getElementById( 'frm-single-settings-' + settingId );
 			moveFieldSettings( setting );
 		}
+	}
+
+	/**
+	 * Returns an option element that matches a string with its text content.
+	 *
+	 * @param {HTMLElement} selectElement
+	 * @param {string}      searchText
+	 * @returns {HTMLElement|null}
+	 */
+	function searchSelectByText( selectElement, searchText ) {
+		const options = selectElement.options;
+
+		for ( let i = 0; i < options.length; i++ ) {
+			const option = options[i];
+			if ( searchText === option.textContent ) {
+				return option;
+			}
+		}
+
+		return null;
 	}
 
 	function updateGetValueFieldSelection() {
@@ -5605,6 +5693,25 @@ function frmAdminBuildJS() {
 		adjustConditionalLogicOptionOrders( fieldId );
 	}
 
+	/**
+	 * Returns an object that has a value and label for new conditional logic option, for a given option value.
+	 *
+	 * @param {Number} fieldId
+	 * @param {string} expectedOption
+	 * @returns {Object}
+	 */
+	function getNewConditionalLogicOption( fieldId, expectedOption ) {
+		const optionsContainer = document.getElementById( 'frm_field_' + fieldId + '_opts' );
+
+		const expectedOptionInput = optionsContainer.querySelector( 'input[value="' + expectedOption + '"]' );
+
+		if ( expectedOptionInput ) {
+			return getChoiceNewValueAndLabel( expectedOptionInput );
+		}
+
+		return { newValue: expectedOption, newLabel: expectedOption };
+	}
+
 	function adjustConditionalLogicOptionOrders( fieldId, type ) {
 		let row, opts, logicId, valueSelect, optionLength, optionIndex, expectedOption, optionMatch, fieldOptions,
 			rows = builderPage.querySelectorAll( '.frm_logic_row' ),
@@ -5626,15 +5733,25 @@ function frmAdminBuildJS() {
 
 			for ( optionIndex = optionLength - 1; optionIndex >= 0; optionIndex-- ) {
 				expectedOption = fieldOptions[ optionIndex ];
-				optionMatch = valueSelect.querySelector( 'option[value="' + expectedOption + '"]' );
-
-				if ( optionMatch === null ) {
-					optionMatch = document.createElement( 'option' );
-					optionMatch.setAttribute( 'value', expectedOption );
-					optionMatch.textContent = expectedOption;
+				let expectedOptionValue = document.getElementById( 'frm_field_' + fieldId + '_opts' ).querySelector( '.frm_option_key input[type="text"]' )?.value;
+				if ( ! expectedOptionValue ) {
+					expectedOptionValue = expectedOption;
 				}
 
-				valueSelect.prepend( optionMatch );
+				optionMatch = valueSelect.querySelector( 'option[value="' + expectedOptionValue + '"]' );
+
+				const { newValue, newLabel } = getNewConditionalLogicOption( fieldId, expectedOption );
+
+				const fieldChoices     = document.querySelectorAll( '#frm_field_' + fieldId + '_opts input[data-value-on-focus]' );
+				const expectedChoiceEl = Array.from( fieldChoices ).find( element => element.value === expectedOption );
+				if ( expectedChoiceEl ) {
+					const oldValue = expectedChoiceEl.dataset.valueOnFocus;
+					const hasMatch = oldValue && valueSelect.querySelector( 'option[value="' + oldValue + '"]' );
+					if ( hasMatch ) {
+						continue;
+					}
+				}
+				prependValueSelectWithOptionMatch( valueSelect, optionMatch, newValue, newLabel );
 			}
 
 			optionMatch = valueSelect.querySelector( 'option[value=""]' );
@@ -5642,6 +5759,15 @@ function frmAdminBuildJS() {
 				valueSelect.prepend( optionMatch );
 			}
 		}
+	}
+
+	function prependValueSelectWithOptionMatch( valueSelect, optionMatch, newValue, newLabel ) {
+		if ( optionMatch === null && ! valueSelect.querySelector( 'option[value="' + newValue + '"]' )) {
+			optionMatch = frmDom.tag( 'option', { text: newLabel });
+			optionMatch.value = newValue;
+		}
+
+		valueSelect.prepend( optionMatch );
 	}
 
 	function getFieldOptions( fieldId ) {
@@ -5892,7 +6018,6 @@ function frmAdminBuildJS() {
 			{
 				className: 'frm_image_option_container' + imageLabelClass,
 				children: [
-					tag( 'div', { className: 'frm_selected_checkmark', child: svg({ href: '#frm_checkmark_' + shape + '_icon' }) }),
 					labelImage,
 					tag( 'span', { className: 'frm_text_label_for_image', child: imageLabel })
 				]
@@ -6070,25 +6195,68 @@ function frmAdminBuildJS() {
 	}
 
 	function updateFieldOrder() {
-		let fields, fieldId, field, currentOrder, newOrder;
+		let self = this;
+
+		this.initOnceInAllInstances = function() {
+			if ( 'undefined' !== typeof updateFieldOrder.prototype.orderFieldsObject ) {
+				return;
+			}
+
+			// It will store the order input fields ( input[name="field_options[field_order_{fieldId}]"] ).
+			// It will help to reduce the DOM searches based on fieldId.
+			// The same object data is used across all "updateFieldOrder" instances.
+			updateFieldOrder.prototype.orderFieldsObject = {};
+
+			// Get the Form group that will handle the fields settings.
+			// Perform a single DOM search and use it across all "updateFieldOrder" instances.
+			updateFieldOrder.prototype.fieldSettingsForm = document.getElementById( 'frm-end-form-marker' ).closest( 'form' );
+		};
+
+		this.getFieldOrderInputById = function( fieldId, parent ) {
+			let field;
+			const orderFieldsObject = updateFieldOrder.prototype.orderFieldsObject;
+			const fieldSettingsForm = updateFieldOrder.prototype.fieldSettingsForm;
+
+			if ( 'undefined' === typeof orderFieldsObject[ fieldId ]) {
+				field = fieldSettingsForm.querySelector( 'input[name="field_options[field_order_' + fieldId + ']"]' );
+				if ( null === field ) {
+					field = parent.querySelector( 'input[name="field_options[field_order_' + fieldId + ']"]' );
+				}
+				orderFieldsObject[ fieldId ] = field;
+				return field;
+			}
+
+			return orderFieldsObject[ fieldId ];
+		};
+
+		this.initOnceInAllInstances();
 		renumberPageBreaks();
-		jQuery( '#frm-show-fields' ).each( function( i ) {
-			fields = jQuery( 'li.frm_field_box', this );
+
+		return ( function() {
+			let fieldId, field, currentOrder, newOrder,
+				moveFieldsClass = new moveFieldSettings(),
+				fields = jQuery( 'li.frm_field_box', jQuery( '#frm-show-fields' ) );
+
 			for ( i = 0; i < fields.length; i++ ) {
 				fieldId = fields[ i ].getAttribute( 'data-fid' );
-				field = jQuery( 'input[name="field_options[field_order_' + fieldId + ']"]' );
-				currentOrder = field.val();
+				field = self.getFieldOrderInputById( fieldId, fields[ i ]);
+
+				// get current field order, make sure we don't get the "field" reference as the "field" value will get updated later.
+				currentOrder = null !== field ? Object.assign({}, field.value )[0] : null;
 				newOrder = i + 1;
 
-				if ( currentOrder != newOrder ) {
-					field.val( newOrder );
-					singleField = document.getElementById( 'frm-single-settings-' + fieldId );
+				if ( currentOrder != newOrder && null !== currentOrder ) {
+					field.value = newOrder;
+					singleField = fields[ i ].querySelector( '#frm-single-settings-' + fieldId );
 
-					moveFieldSettings( singleField );
+					// add field that needs to be moved to "updateFieldOrder.prototype.fieldSettingsForm"
+					moveFieldsClass.append( singleField );
 					fieldUpdated();
 				}
 			}
-		});
+			// move all appended fields
+			moveFieldsClass.moveFields();
+		}() );
 	}
 
 	function toggleSectionHolder() {
@@ -6412,7 +6580,7 @@ function frmAdminBuildJS() {
 	 */
 	function showNameYourFormModal() {
 		// Exit early if the 'new_template' URL parameter is not set to 'true'
-		if ( 'true' !== urlParams.get( 'new_template' ) ) {
+		if ( ! shouldShowNameYourFormNameModal() ) {
 			return false;
 		}
 
@@ -6426,6 +6594,19 @@ function frmAdminBuildJS() {
 		modalWidget.dialog( 'open' );
 
 		return true;
+	}
+
+	/**
+	 * Returns true if 'Name Your Form' modal should be displayed.
+	 *
+	 * @returns {Boolean}
+	 */
+	function shouldShowNameYourFormNameModal() {
+		const formNameInput = document.getElementById( 'frm_form_name' );
+		if ( formNameInput && formNameInput.value.trim() !== '' ) {
+			return false;
+		}
+		return 'true' === urlParams.get( 'new_template' );
 	}
 
 	/**
@@ -6477,7 +6658,7 @@ function frmAdminBuildJS() {
 			}
 
 			// Trigger the 'Save' button click using jQuery
-			jQuery( '#frm-publishing' ).find( '.frm_button_submit' ).click();
+			jQuery( '#frm-publishing' ).find( '.frm_button_submit' ).trigger( 'click' );
 		});
 	};
 
@@ -6670,7 +6851,7 @@ function frmAdminBuildJS() {
 		h2.style.borderBottom = 'none';
 
 		/* translators: %s: Form Setting section name (ie Form Permissions, Form Scheduling). */
-		h2.textContent = __( '%s are not installed' ).replace( '%s', title );
+		h2.textContent = __( '%s are not installed', 'formidable' ).replace( '%s', title );
 
 		container.classList.add( 'frmcenter' );
 
@@ -7207,16 +7388,51 @@ function frmAdminBuildJS() {
 	 * Keep the end marker at the end of the form.
 	 */
 	function moveFieldSettings( singleField ) {
+		let self = this;
+
 		if ( singleField === null ) {
 			// The field may have not been loaded yet via ajax.
 			return;
 		}
 
-		const classes = singleField.parentElement.classList;
-		if ( classes.contains( 'frm_field_box' ) || classes.contains( 'divider_section_only' ) ) {
-			const endMarker = document.getElementById( 'frm-end-form-marker' );
-			builderForm.insertBefore( singleField, endMarker );
+		this.fragment = document.createDocumentFragment();
+
+		this.initOnceInAllInstances = function() {
+			if ( 'undefined' !== typeof moveFieldSettings.prototype.endMarker ) {
+				return;
+			}
+			// perform a single search in the DOM and use it across all moveFieldSettings instances
+			moveFieldSettings.prototype.endMarker = document.getElementById( 'frm-end-form-marker' );
+		};
+
+		this.append = function( field ) {
+			const classname = null !== field ? field.parentElement.classList : '';
+			if ( null === field || ( ! classname.contains( 'frm_field_box' ) && ! classname.contains( 'divider_section_only' ) ) ) {
+				return;
+			}
+			self.fragment.appendChild( field );
+		};
+
+		this.moveFields = function() {
+			builderForm.insertBefore( self.fragment, moveFieldSettings.prototype.endMarker );
+		};
+
+		this.initOnceInAllInstances();
+
+		// Move the field if function is called as function with a singleField passed as arg.
+		// In this particular case only 1 field is needed to be moved so the field will get instantly moved.
+		// "singleField" may be undefined when it's called as a constructor instead of a function. Use the constructor to add multiple fields which are passed through "append" and move these all at once via "moveFields".
+		if ( 'undefined' !== typeof singleField ) {
+			this.append( singleField );
+			this.moveFields();
+			return;
 		}
+
+		return {
+			append: this.append,
+			moveFields: this.moveFields
+		};
+
 	}
 
 	function showEmailRow() {
@@ -7635,14 +7851,6 @@ function frmAdminBuildJS() {
 		return ! isNaN( parseFloat( value ) ) && isFinite( value );
 	}
 
-	function getMetaValue( id, metaName ) {
-		let newMeta = metaName;
-		if ( jQuery( document.getElementById( id + metaName ) ).length > 0 ) {
-			newMeta = getMetaValue( id, metaName + 1 );
-		}
-		return newMeta;
-	}
-
 	function changePosttaxRow() {
 		/*jshint validthis:true */
 		if ( ! jQuery( this ).closest( '.frm_posttax_row' ).find( '.frm_posttax_opt_list' ).length ) {
@@ -8013,11 +8221,71 @@ function frmAdminBuildJS() {
 			variable = maybeFormatInsertedContent( contentBox, variable, obj.selectionStart, e );
 
 			obj.value = obj.value.substr( 0, obj.selectionStart ) + variable + obj.value.substr( obj.selectionEnd, obj.value.length );
+
 			const s = e + variable.length;
+
+			maybeRemoveLayoutClasses( obj, variable );
+
 			obj.focus();
 			obj.setSelectionRange( s, s );
 		}
 		triggerChange( contentBox );
+	}
+
+	/**
+	 * When a layout class is added, remove any previous layout classes to avoid conflicts.
+	 * We only expect one layout class to exist for a given field.
+	 * For example, if a field has frm_half and we set it to frm_third, frm_half will be removed.
+	 *
+	 * @since 6.11
+	 *
+	 * @param {HTMLElement} obj
+	 * @param {string}      variable
+	 * @return {void}
+	 */
+	function maybeRemoveLayoutClasses( obj, variable ) {
+		if ( ! obj.classList.contains( 'frm_classes' ) || ! isALayoutClass( variable ) ) {
+			return;
+		}
+
+		const removeClasses = obj.value.split( ' ' ).filter( isALayoutClass );
+		if ( removeClasses.length ) {
+			obj.value = maybeRemoveClasses( obj.value, removeClasses, variable.trim() );
+		}
+	}
+
+	/**
+	 * Check if a given class is a layout class.
+	 *
+	 * @since 6.11
+	 *
+	 * @param {string} className
+	 * @return {boolean}
+	 */
+	function isALayoutClass( className ) {
+		let layoutClasses = [ 'frm_half', 'frm_third', 'frm_two_thirds', 'frm_fourth', 'frm_three_fourths', 'frm_fifth', 'frm_sixth', 'frm2', 'frm3', 'frm4', 'frm6', 'frm8', 'frm9', 'frm10', 'frm12' ];
+		return layoutClasses.includes( className.trim() );
+	}
+
+	/**
+	 * @since 6.11
+	 *
+	 * @param {string} beforeValue
+	 * @param {Array}  removeClasses
+	 * @param {string} variable
+	 * @return {string}
+	 */
+	function maybeRemoveClasses( beforeValue, removeClasses, variable ) {
+		const currentClasses = beforeValue.split( ' ' ).filter(
+			currentClass => {
+				currentClass = currentClass.trim();
+				return currentClass.length && ! removeClasses.includes( currentClass );
+			}
+		);
+		if ( ! currentClasses.includes( variable ) ) {
+			currentClasses.push( variable );
+		}
+		return currentClasses.join( ' ' );
 	}
 
 	function maybeFormatInsertedContent( input, textToInsert, selectionStart, selectionEnd ) {
@@ -8485,27 +8753,35 @@ function frmAdminBuildJS() {
 		const pluginSlug = this.getAttribute( 'data-plugin' );
 		const action = buttonName.replace( 'edd_' + pluginSlug + '_license_', '' );
 		let license = document.getElementById( 'edd_' + pluginSlug + '_license_key' ).value;
+		button.get(0).disabled = true;
 		jQuery.ajax({
 			type: 'POST', url: ajaxurl, dataType: 'json',
 			data: {action: 'frm_addon_' + action, license: license, plugin: pluginSlug, nonce: frmGlobal.nonce},
 			success: function( msg ) {
+				button.get(0).disabled = false;
 				const thisRow = button.closest( '.edd_frm_license_row' );
 				if ( action === 'deactivate' ) {
 					license = '';
 					document.getElementById( 'edd_' + pluginSlug + '_license_key' ).value = '';
 				}
 				thisRow.find( '.edd_frm_license' ).html( license );
-				if ( msg.success === true ) {
-					thisRow.find( '.frm_icon_font' ).removeClass( 'frm_hidden' );
-					thisRow.find( 'div.alignleft' ).toggleClass( 'frm_hidden', 1000 );
-				}
+				const eddWrapper = button.get(0).closest( '.frm_form_field' );
+				const actionIsSuccess = msg.success === true;
+				eddWrapper.querySelector( `.frm_icon_font.frm_action_success` ).classList.toggle( 'frm_hidden', ! actionIsSuccess || action === 'deactivate' );
+				eddWrapper.querySelector( `.frm_icon_font.frm_action_error` ).classList.toggle( 'frm_hidden', actionIsSuccess);
 
 				const messageBox = thisRow.find( '.frm_license_msg' );
 				messageBox.html( msg.message );
 				if ( msg.message !== '' ) {
 					setTimeout( function() {
 						messageBox.html( '' );
-					}, 15000 );
+						thisRow.find( '.frm_icon_font' ).addClass( 'frm_hidden' );
+						if ( actionIsSuccess ) {
+							const actionIsActivate = action === 'activate';
+							thisRow.get(0).querySelector( '.edd_frm_unauthorized' ).classList.toggle( 'frm_hidden', actionIsActivate );
+							thisRow.get(0).querySelector( '.edd_frm_authorized' ).classList.toggle( 'frm_hidden', ! actionIsActivate );
+						}
+					}, 2000 );
 				}
 			}
 		});
@@ -8661,7 +8937,7 @@ function frmAdminBuildJS() {
 		const exportFormatSelect = document.querySelector( 'select[name="format"]' );
 		if ( exportFormatSelect ) {
 			return exportFormatSelect.value;
-		} 
+		}
 		return '';
 	}
 
@@ -9428,7 +9704,7 @@ function frmAdminBuildJS() {
 		const field = document.getElementById( 'frm_field_id_' + fieldId );
 		if ( field === null ) {
 			return false;
-		} 
+		}
 		return 'product' === field.getAttribute( 'data-type' );
 	}
 
@@ -9686,14 +9962,14 @@ function frmAdminBuildJS() {
 		);
 
 		const emptyInbox     = document.getElementById( 'frm_empty_inbox' );
-		const leaveEmailIput = document.getElementById( 'frm_leave_email' );
+		const leaveEmailInput = document.getElementById( 'frm_leave_email' );
 
-		if ( emptyInbox && leaveEmailIput ) {
+		if ( emptyInbox && leaveEmailInput ) {
 			const leaveEmailModal = document.getElementById( 'frm-leave-email-modal' );
 			leaveEmailModal.classList.remove( 'frm_hidden' );
 			leaveEmailModal.querySelector( '.frm_modal_footer' ).classList.add( 'frm_hidden' );
 
-			leaveEmailIput.addEventListener(
+			leaveEmailInput.addEventListener(
 				'keyup',
 				event => {
 					if ( 'Enter' === event.key ) {
@@ -10698,6 +10974,7 @@ function frmAdminBuildJS() {
 				},
 				success: function( html ) {
 					document.getElementById( 'frm_field_' + fieldId + '_opts' ).innerHTML = html;
+					wp.hooks.doAction( 'frm_after_bulk_edit_opts', fieldId );
 					resetDisplayedOpts( fieldId );
 
 					if ( typeof modal !== 'undefined' ) {

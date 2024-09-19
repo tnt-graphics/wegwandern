@@ -380,7 +380,7 @@ class WpmfDisplayGallery
                 'posts_per_page' => $limit,
                 'post_status' => 'any',
                 'post_type' => 'attachment',
-                'post_mime_type' => array('image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/bmp', 'image/tiff', 'image/x-icon', 'image/webp', 'application/pdf'),
+                'post_mime_type' => array('image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/bmp', 'image/tiff', 'image/x-icon', 'image/webp', 'image/avif', 'application/pdf'),
                 'order' => $wpmf_order,
                 'orderby' => $wpmf_orderby,
                 'wpmf_gallery' => 1
@@ -410,7 +410,7 @@ class WpmfDisplayGallery
             $args = array(
                 'post_status' => 'inherit',
                 'post_type' => 'attachment',
-                'post_mime_type' => array('image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/bmp', 'image/tiff', 'image/x-icon', 'image/webp', 'application/pdf'),
+                'post_mime_type' => array('image/jpeg', 'image/jpg', 'image/gif', 'image/png', 'image/bmp', 'image/tiff', 'image/x-icon', 'image/webp',  'image/avif', 'application/pdf'),
                 'order' => $wpmf_order,
                 'orderby' => $wpmf_orderby,
                 'wpmf_gallery' => 1

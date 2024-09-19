@@ -10,17 +10,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProFieldFactory {
 
 	/**
-	 * Create an instance of an FrmProFieldValueSelector object
+	 * Create an instance of an FrmProFieldValueSelector object.
+	 * This function filters using the frm_create_field_value_selector hook.
 	 *
 	 * @since 2.03.05
 	 *
-	 * @param null $null
-	 * @param int $field_id
-	 * @param array $selector_args
+	 * @param FrmProFieldValueSelector|null $selector This parameter is passed from Lite as null.
+	 * @param int                           $field_id
+	 * @param array                         $selector_args
 	 *
-	 * @return FrmFieldValueSelector|mixed|void
+	 * @return FrmProFieldValueSelector
 	 */
-	public static function create_field_value_selector( $null, $field_id, $selector_args ) {
+	public static function create_field_value_selector( $selector, $field_id, $selector_args ) {
 		$type = FrmField::get_type( $field_id );
 
 		switch ( $type ) {

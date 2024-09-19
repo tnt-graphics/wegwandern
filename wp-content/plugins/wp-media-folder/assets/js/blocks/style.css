@@ -14,7 +14,14 @@
     margin-bottom: 25px;
     width: 100%;
 }
+.alignleft .wpmf-gallery-block, .alignright .wpmf-gallery-block, .aligncenter .wpmf-gallery-block {
+    width: 620px!important;
+}
 
+.aligncenter .wpmf-gallery-block {
+    margin-right: auto!important;
+    margin-left: auto!important;
+}
 .wpmf-gallery-block-item.is-transient img {
     opacity: 0.3;
 }
@@ -272,6 +279,14 @@
 .wpmf-pdf-button {
     margin: 0 4px;
     height: 31px;
+}
+
+.aligncenter .wpmf-image-lightbox-block, .alignright .wpmf-image-lightbox-block, .alignleft .wpmf-image-lightbox-block {
+    max-width: 620px;
+}
+
+.aligncenter .wpmf-image-lightbox-block {
+    margin: 0 auto;
 }
 
 .wpmf-image-lightbox-block {

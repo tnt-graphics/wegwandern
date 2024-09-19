@@ -22,10 +22,10 @@ class FrmProEntriesController {
 		if ( $_POST && ! empty( $_POST['frm_comment'] ) ) {
 			$meta_key   = '';
 			$meta_value = array(
-				'comment' => $_POST['frm_comment'],
+				'comment' => FrmAppHelper::get_post_param( 'frm_comment', '', 'sanitize_textarea_field' ),
 				'user_id' => $user_ID,
 			);
-			FrmEntryMeta::add_entry_meta( $_POST['item_id'], 0, $meta_key, $meta_value );
+			FrmEntryMeta::add_entry_meta( FrmAppHelper::get_post_param( 'item_id', 0, 'absint' ), 0, $meta_key, $meta_value );
 			//send email notifications
 		}
 
@@ -125,7 +125,8 @@ class FrmProEntriesController {
 		$errors  = FrmEntryValidate::validate( wp_unslash( $_POST ) );
 
 		if ( empty( $errors ) ) {
-			if ( isset( $_POST['form_id'] ) && ( isset( $_POST[ 'frm_page_order_' . $_POST['form_id'] ] ) || FrmProFormsHelper::going_to_prev( $_POST['form_id'] ) ) && ! FrmProFormsHelper::saving_draft() ) {
+			$form_id = FrmAppHelper::get_post_param( 'form_id', '', 'absint' );
+			if ( ! empty( $form_id ) && ( isset( $_POST[ 'frm_page_order_' . $form_id ] ) || FrmProFormsHelper::going_to_prev( $form_id ) ) && ! FrmProFormsHelper::saving_draft() ) {
 				self::get_edit_vars( $id );
 				return;
 			}
@@ -223,7 +224,7 @@ class FrmProEntriesController {
 	}
 
 	/**
-	 * Translates message code from url into message ouput to user.
+	 * Translates message code from url into message output to user.
 	 *
 	 * @param string $message_code
 	 *
@@ -272,8 +273,9 @@ class FrmProEntriesController {
 			if ( self::should_trigger_on_delete_entry_actions( $form_id ) ) {
 				// This action takes a while, so only trigger it if there are posts to delete.
 				foreach ( $entry_ids as $entry_id ) {
-					do_action( 'frm_before_destroy_entry', $entry_id );
-					unset( $entry_id );
+					$entry = FrmEntry::getOne( $entry_id, true );
+					do_action( 'frm_before_destroy_entry', $entry_id, $entry );
+					unset( $entry_id, $entry );
 				}
 			}
 
@@ -336,16 +338,14 @@ class FrmProEntriesController {
 	}
 
 	public static function bulk_actions( $action = 'list-form' ) {
-		$params     = FrmForm::get_admin_params();
-		$errors     = array();
-		$bulkaction = '-1';
+		$params = FrmForm::get_admin_params();
+		$errors = array();
 
 		if ( $action == 'list-form' ) {
-			if ( $_REQUEST['bulkaction'] != '-1' ) {
-				$bulkaction = sanitize_text_field( $_REQUEST['bulkaction'] );
-			} elseif ( $_POST['bulkaction2'] != '-1' ) {
-				$bulkaction = sanitize_text_field( $_REQUEST['bulkaction2'] );
-			}
+			$request_bulkaction  = FrmAppHelper::get_param( 'bulkaction', '-1', 'request', 'sanitize_text_field' );
+			$request_bulkaction2 = FrmAppHelper::get_param( 'bulkaction2', '-1', 'request', 'sanitize_text_field' );
+
+			$bulkaction = $request_bulkaction !== '-1' ? $request_bulkaction : $request_bulkaction2;
 		} else {
 			$bulkaction = str_replace( 'bulk_', '', $action );
 		}
@@ -1686,6 +1686,17 @@ class FrmProEntriesController {
 
 		$entry = FrmEntry::getOne( $id, true );
 		if ( ! $entry ) {
+			if ( is_callable( 'FrmAppController::show_error_modal' ) ) {
+				FrmAppController::show_error_modal(
+					array(
+						'title'      => __( 'You can\'t edit the entry', 'formidable-pro' ),
+						'body'       => __( 'You are trying to edit an entry that does not exist', 'formidable-pro' ),
+						'cancel_url' => admin_url( 'admin.php?page=formidable' ),
+					)
+				);
+				return;
+			}
+
 			wp_die( esc_html__( 'You are trying to access an entry that does not exist.', 'formidable-pro' ) );
 			return;
 		}
@@ -1878,7 +1889,7 @@ class FrmProEntriesController {
 	}
 
 	/**
-	 * Set a value after all other field-specific formating has been set.
+	 * Set a value after all other field-specific formatting has been set.
 	 *
 	 * @since 4.06.01
 	 */
@@ -3040,11 +3051,15 @@ class FrmProEntriesController {
 		return $link;
 	}
 
+	/**
+	 * @param array $atts
+	 * @return string
+	 */
 	public static function entry_delete_link( $atts ) {
 		global $post, $frm_vars;
 		$atts = shortcode_atts(
 			array(
-				'id'      => ( isset( $frm_vars['editing_entry'] ) ? $frm_vars['editing_entry'] : false ),
+				'id'      => isset( $frm_vars['editing_entry'] ) ? $frm_vars['editing_entry'] : false,
 				'label'   => __( 'Delete' ),
 				'confirm' => __( 'Are you sure you want to delete that entry?', 'formidable-pro' ),
 				'class'   => '',
@@ -3391,7 +3406,7 @@ class FrmProEntriesController {
 
 		if ( ! $echo ) {
 			// redirect instead of loading a blank page
-			wp_redirect( esc_url_raw( get_permalink( $_REQUEST['redirect'] ) ) );
+			wp_redirect( esc_url_raw( get_permalink( FrmAppHelper::get_param( 'redirect', '', 'request', 'sanitize_text_field' ) ) ) );
 			die();
 		}
 
@@ -3739,9 +3754,11 @@ class FrmProEntriesController {
 			return $error;
 		}
 
+		$repeater_iteration = false;
+
 		if ( false !== strpos( $field_id, '-' ) ) {
 			// repeated fields look like field_id-repeater_id-iteration, so pull the first value for the field id.
-			list( $use_field_id ) = explode( '-', $field_id );
+			list( $use_field_id, $repeater_iteration ) = explode( '-', $field_id );
 		} else {
 			$use_field_id = $field_id;
 		}
@@ -3760,8 +3777,15 @@ class FrmProEntriesController {
 		$error_body = FrmFieldsController::pull_custom_error_body_from_custom_html( $form, $use_field, $errors );
 
 		if ( false !== $error_body ) {
+			// Error key should be field key.
+			// If this is a repeater, we include the iteration on the end like field1-2.
+			$error_key = $use_field['field_key'];
+			if ( false !== $repeater_iteration ) {
+				$error_key .= '-' . $repeater_iteration;
+			}
+
 			$error = str_replace( '[error]', $error, $error_body );
-			$error = str_replace( '[key]', $field_id, $error );
+			$error = str_replace( '[key]', $error_key, $error );
 		}
 
 		return $error;
@@ -4158,94 +4182,5 @@ class FrmProEntriesController {
 			'datetime' => true,
 		);
 		return $allowed_html;
-	}
-
-	/**
-	 * @since 3.0
-	 * @deprecated 4.0
-	 */
-	public static function add_edit_link( $entry = array() ) {
-		_deprecated_function( __METHOD__, '4.0' );
-		FrmProEntriesHelper::edit_button( $entry );
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function add_sidebar_links( $entry ) {
-		_deprecated_function( __METHOD__, '4.0' );
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function admin_js() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFormsController::admin_js' );
-		FrmProFormsController::admin_js();
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function add_js() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFormsController::add_js' );
-		FrmProFormsController::add_js();
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function print_ajax_scripts( $keep = '' ) {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFormsController::print_ajax_scripts' );
-		FrmProFormsController::print_ajax_scripts();
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function after_footer_loaded() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFormsController::after_footer_loaded' );
-		FrmProFormsController::after_footer_loaded();
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function enqueue_footer_js() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFormsController::enqueue_footer_js' );
-		FrmProFormsController::enqueue_footer_js();
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function footer_js() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProFormsController::footer_js' );
-		FrmProFormsController::footer_js();
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function register_scripts() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProAppController::register_scripts' );
-		FrmProAppController::register_scripts();
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function register_widgets() {
-		return FrmProDisplaysController::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::register_widgets' );
-	}
-
-	/**
-	 * @deprecated 6.0
-	 */
-	public static function data_sort( $options ) {
-		_deprecated_function( __FUNCTION__, '6.0', 'FrmProFieldsController::order_values' );
-		natcasesort( $options );
-
-		return $options;
 	}
 }

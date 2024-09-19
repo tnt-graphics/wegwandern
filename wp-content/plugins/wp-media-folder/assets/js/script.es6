@@ -2447,13 +2447,13 @@ let wpmfFoldersModule, wpmfAddCloudQueue, cloud_sync_loader_icon;
                                             }
                                         });
 
-                                        if ($('.wpmf_role_permissions').val() != 0) {
+                                        if ($('.wpmf_role_permissions :selected').val() != 0) {
                                             $('.wpmf_add_role').addClass('show');
                                         } else {
                                             $('.wpmf_add_role').removeClass('show');
                                         }
 
-                                        if ($('.wpmf_user_permissions').val() != 0) {
+                                        if ($('.wpmf_user_permissions  :selected').val() != 0) {
                                             $('.wpmf_add_user').addClass('show');
                                         } else {
                                             $('.wpmf_add_user').removeClass('show');
@@ -2477,18 +2477,24 @@ let wpmfFoldersModule, wpmfAddCloudQueue, cloud_sync_loader_icon;
                 });
 
                 $('.wpmf_add_role').on('click', function () {
-                    if ($('.wpmf_role_permissions').val() == 0) {
+                    if ($('.wpmf_role_permissions').length > 0 && $('.wpmf_role_permissions:last :selected').val() == 0) {
                         return;
                     }
                     $('.roles_list_html').append(role_permission_html);
+                    if ($().wpmfSelect2) {
+                        $('.wpmf_role_permissions:last').wpmfSelect2();
+                    }
                     wpmfFoldersModule.removeRolePermissions();
                 });
 
                 $('.wpmf_add_user').on('click', function () {
-                    if ($('.wpmf_user_permissions').val() == 0) {
+                    if ($('.wpmf_user_permissions').length > 0 && $('.wpmf_user_permissions:last :selected').val() == 0) {
                         return;
                     }
                     $('.users_list_html').append(user_permission_html);
+                    if ($().wpmfSelect2) {
+                        $('.wpmf_user_permissions:last').wpmfSelect2();
+                    }
                     wpmfFoldersModule.removeRolePermissions();
                 });
 
@@ -2502,7 +2508,7 @@ let wpmfFoldersModule, wpmfAddCloudQueue, cloud_sync_loader_icon;
                     let button = $(this);
                     let all_role_permissions = [], all_user_permissions = [];
                     $('.folder_role_permission_items').each(function (i, item) {
-                        let role = $(item).find('.wpmf_role_permissions').val();
+                        let role = $(item).find('.wpmf_role_permissions :selected').val();
                         let permissions = [];
                         permissions.push(role);
                         $(item).find('.permission_item_checkbox').each(function (i, permission) {
@@ -2514,7 +2520,7 @@ let wpmfFoldersModule, wpmfAddCloudQueue, cloud_sync_loader_icon;
                     });
 
                     $('.folder_user_permission_items').each(function (i, item) {
-                        let user = $(item).find('.wpmf_user_permissions').val();
+                        let user = $(item).find('.wpmf_user_permissions  :selected').val();
                         let permissions = [];
                         permissions.push(user);
                         $(item).find('.permission_item_checkbox').each(function (i, permission) {
@@ -4382,9 +4388,10 @@ let wpmfFoldersModule, wpmfAddCloudQueue, cloud_sync_loader_icon;
                         allowHTML: true,
                         onShow(instance) {
                             var tippy_html = '';
-                            tippy_html += '<p class="video-tippy-help" style="color: yellow; font-size:14px">Support: youtube, vimeo, facebook watch, wistia, twitch, dailymotion, self-hosted</p>';
+                            tippy_html += '<p class="video-tippy-help" style="color: yellow; font-size:14px">Support: youtube, vimeo, kaltura, facebook watch, wistia, twitch, dailymotion, self-hosted</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.youtube.com/watch?v=5ncy4gn6S0k</p>';
                             tippy_html += '<p class="video-tippy-help">https://vimeo.com/496843494</p>';
+                            tippy_html += '<p class="video-tippy-help">https://videos.kaltura.com/media/Kaltura+Overview/1_11mvteme</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.facebook.com/svmteam/videos/972235670261003</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.twitch.tv/videos/999290199</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.dailymotion.com/video/x80wibi</p>';

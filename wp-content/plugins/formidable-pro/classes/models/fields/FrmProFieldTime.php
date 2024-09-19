@@ -438,13 +438,14 @@ class FrmProFieldTime extends FrmFieldType {
 			$first_date_field = FrmProFormsHelper::has_field( 'date', $this->get_field_column( 'form_id' ) );
 
 			if ( $first_date_field ) {
+				$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
 
 				$values = array(
 					'time_field' => 'field_' . $this->field->field_key,
 					'date_field' => 'field_' . $first_date_field->field_key,
 					'time_key'   => $this->field->id,
 					'date_key'   => $first_date_field->id,
-					'date'       => sanitize_text_field( $_POST['item_meta'][ $first_date_field->id ] ), //TODO: repeat name
+					'date'       => isset( $item_meta[ $first_date_field->id ] ) ? sanitize_text_field( $item_meta[ $first_date_field->id ] ) : '', //TODO: repeat name
 					'time'       => $value,
 					'entry_id'   => $entry_id,
 				);

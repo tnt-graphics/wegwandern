@@ -177,7 +177,14 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
                     '9_21' => '9:21'
                 ),
                 'default' => '1_1',
-                'default_on_front' => '1_1'
+                'default_on_front' => '1_1',
+                'show_if_not'         => array(
+                    'theme' => array(
+                        'masonry',
+                        'flowslide',
+                        'custom_grid'
+                    )
+                )
             ),
             'gallery_navigation' => array(
                 'label' => esc_html__('Gallery Navigation', 'wpmf'),
@@ -213,6 +220,17 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
                 'default' => 'off',
                 'default_on_front' => 'off'
             ),
+            'download_all' => array(
+                'label' => esc_html__('Download All Images', 'wpmf'),
+                'type' => 'yes_no_button',
+                'option_category' => 'configuration',
+                'options' => array(
+                    'on' => esc_html__('On', 'wpmf'),
+                    'off' => esc_html__('Off', 'wpmf'),
+                ),
+                'default' => 'off',
+                'default_on_front' => 'off'
+            ),
             'columns' => array(
                 'label' => esc_html__('Columns', 'wpmf'),
                 'type' => 'range',
@@ -225,6 +243,12 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
                     'min' => 1,
                     'max' => 8,
                     'step' => 1
+                ),
+                'show_if_not'         => array(
+                    'theme' => array(
+                        'flowslide',
+                        'custom_grid'
+                    )
                 )
             ),
             'number_lines' => array(
@@ -566,6 +590,7 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
         $sub_galleries_listing = (!empty($this->props['sub_galleries_listing']) && $this->props['sub_galleries_listing'] === 'on') ? 1 : 0;
         $gallery_image_tags = (!empty($this->props['gallery_image_tags']) && $this->props['gallery_image_tags'] === 'on') ? 1 : 0;
         $disable_overlay = (!empty($this->props['disable_overlay']) && $this->props['disable_overlay'] === 'on') ? 1 : 0;
+        $download_all = (!empty($this->props['download_all']) && $this->props['download_all'] === 'on') ? 1 : 0;
         if (!empty($this->props['enable_shadow']) && $this->props['enable_shadow'] === 'on') {
             $img_shadow = $this->props['shadow_horizontal'] . ' ' . $this->props['shadow_vertical'] . ' ' . $this->props['shadow_blur'] . ' ' . $this->props['shadow_spread'] . ' ' . $this->props['shadow_color'];
         } else {
@@ -589,7 +614,7 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
         } else {
             $gallery_id = $gallery_id_string;
         }
-        return do_shortcode('[wpmfgallery gallery_id="'. (int)$gallery_id .'" display_tree="' . esc_attr($gallery_navigation) . '" sub_galleries_listing="' . esc_attr($sub_galleries_listing) . '" display_tag="' . esc_attr($gallery_image_tags) . '" disable_overlay="' . esc_attr($disable_overlay) . '" display="' . esc_attr($this->props['theme']) . '" layout="' . esc_attr($this->props['layout']) . '" row_height="' . esc_attr($this->props['row_height']) . '" aspect_ratio="' . esc_attr($this->props['aspect_ratio']) . '" columns="' . esc_attr($this->props['columns']) . '" size="' . esc_attr($this->props['size']) . '" targetsize="' . esc_attr($this->props['targetsize']) . '" link="' . esc_attr($this->props['action']) . '" wpmf_orderby="' . esc_attr($this->props['orderby']) . '" wpmf_order="' . esc_attr($this->props['order']) . '" gutterwidth="' . esc_attr($this->props['gutterwidth']) . '" border_width="' . esc_attr($this->props['border_width']) . '" border_style="' . esc_attr($this->props['border_style']) . '" border_color="' . esc_attr($this->props['border_color']) . '" img_shadow="' . esc_attr($img_shadow) . '" img_border_radius="' . esc_attr($this->props['border_radius']) . '" number_lines="' . esc_attr($this->props['number_lines']) . '" hover_color="'. $this->props['hover_color'] .'" hover_opacity="'. $this->props['hover_opacity'] .'" hover_title_position="'. $this->props['hover_title_position'] .'" hover_title_size="'. $this->props['hover_title_size'] .'" hover_title_color="'. $this->props['hover_title_color'] .'" hover_desc_position="'. $this->props['hover_desc_position'] .'" hover_desc_size="'. $this->props['hover_desc_size'] .'" hover_desc_color="'. $this->props['hover_desc_color'] .'"]');
+        return do_shortcode('[wpmfgallery gallery_id="'. (int)$gallery_id .'" display_tree="' . esc_attr($gallery_navigation) . '" sub_galleries_listing="' . esc_attr($sub_galleries_listing) . '" display_tag="' . esc_attr($gallery_image_tags) . '" download_all="' . esc_attr($download_all) . '" disable_overlay="' . esc_attr($disable_overlay) . '" display="' . esc_attr($this->props['theme']) . '" layout="' . esc_attr($this->props['layout']) . '" row_height="' . esc_attr($this->props['row_height']) . '" aspect_ratio="' . esc_attr($this->props['aspect_ratio']) . '" columns="' . esc_attr($this->props['columns']) . '" size="' . esc_attr($this->props['size']) . '" targetsize="' . esc_attr($this->props['targetsize']) . '" link="' . esc_attr($this->props['action']) . '" wpmf_orderby="' . esc_attr($this->props['orderby']) . '" wpmf_order="' . esc_attr($this->props['order']) . '" gutterwidth="' . esc_attr($this->props['gutterwidth']) . '" border_width="' . esc_attr($this->props['border_width']) . '" border_style="' . esc_attr($this->props['border_style']) . '" border_color="' . esc_attr($this->props['border_color']) . '" img_shadow="' . esc_attr($img_shadow) . '" img_border_radius="' . esc_attr($this->props['border_radius']) . '" number_lines="' . esc_attr($this->props['number_lines']) . '" hover_color="'. $this->props['hover_color'] .'" hover_opacity="'. $this->props['hover_opacity'] .'" hover_title_position="'. $this->props['hover_title_position'] .'" hover_title_size="'. $this->props['hover_title_size'] .'" hover_title_color="'. $this->props['hover_title_color'] .'" hover_desc_position="'. $this->props['hover_desc_position'] .'" hover_desc_size="'. $this->props['hover_desc_size'] .'" hover_desc_color="'. $this->props['hover_desc_color'] .'"]');
     }
 }
 

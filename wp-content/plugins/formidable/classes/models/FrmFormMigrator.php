@@ -232,7 +232,7 @@ abstract class FrmFormMigrator {
 				$this->current_section = array();
 			}
 
-			// This may occassionally skip one level/order e.g. after adding a
+			// This may occasionally skip one level/order e.g. after adding a
 			// list field, as field_order would already be prepared to be used.
 			++$field_order;
 
@@ -326,7 +326,7 @@ abstract class FrmFormMigrator {
 	 */
 	protected function convert_field_type( $type, $field = array(), $use = '' ) {
 		if ( empty( $field ) ) {
-			// For reverse compatability.
+			// For reverse compatibility.
 			return $type;
 		}
 
@@ -422,6 +422,9 @@ abstract class FrmFormMigrator {
 	 * @param int   $form_id
 	 */
 	protected function save_action( $action, $form, $form_id ) {
+		/**
+		 * @var FrmFormAction
+		 */
 		$action_control = FrmFormActionsController::get_form_actions( $action['type'] );
 		unset( $action['type'] );
 		$new_action = $action_control->prepare_new( $form_id );

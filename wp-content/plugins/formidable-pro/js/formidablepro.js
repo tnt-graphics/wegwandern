@@ -4,6 +4,7 @@ function frmProFormJS() {
 	/* globals __FRMLOOKUP, __FRMCALC, __FRMRULES, __FRMCURR */
 	/* globals __frmChosen, __frmHideOrShowFields, __frmDepDynamicFields */
 	/* globals __frmDepLookupFields, __frmMasks, __FRMTABLES */
+	/* globals frmCheckboxI18n */
 
 	'use strict';
 	var currentlyAddingRow = false;
@@ -549,7 +550,7 @@ function frmProFormJS() {
 	}
 
 	function filePreviewHTML( field ) {
-		return '<div class="dz-preview dz-file-preview frm_clearfix">\n' +
+		return '<div class="dz-preview dz-file-preview">\n' +
 		'<div class="dz-image"><img data-dz-thumbnail /></div>\n' +
 		'<div class="dz-column">\n' +
 		'<div class="dz-details">\n' +
@@ -557,7 +558,7 @@ function frmProFormJS() {
 		' ' + // add white space between file name and file size.
 		'<div class="dz-size"><span data-dz-size></span></div>\n' +
 		'<a class="dz-remove frm_remove_link" href="javascript:undefined;" data-dz-remove title="' + field.remove + '">' +
-		'<svg width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M10 0a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm3.6-13L10 8.6 6.4 5 5 6.4 8.6 10 5 13.6 6.4 15l3.6-3.6 3.6 3.6 1.4-1.4-3.6-3.6L15 6.4z"/></svg>' +
+		'<svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m11.5 4.5-7 7M4.5 4.5l7 7" stroke="#667085" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
 		'</a>' +
 		'</div>\n' +
 		'<div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>\n' +
@@ -2648,7 +2649,7 @@ function frmProFormJS() {
 	}
 
 	/**
-	 * Get all the occurences of a specific Text field
+	 * Get all the occurrences of a specific Text field
 	 *
 	 * @since 2.01.0
 	 * @param {Object} childFieldArgs
@@ -2876,7 +2877,7 @@ function frmProFormJS() {
 	 *
 	 * @since 2.02.11
 	 * @param {object} childSelect
-	 * @pparam {boolean} isReadOnly
+	 * @param {boolean} isReadOnly
 	 */
 	function enableLookup( childSelect, isReadOnly ) {
 		if ( isReadOnly === false ) {
@@ -2973,7 +2974,7 @@ function frmProFormJS() {
 		optsLength = newOptions.length;
 		optionData = [];
 
-		if ( '' === childSelect.options[0].value ) {
+		if ( childSelect.options.length > 0 && '' === childSelect.options[0].value ) {
 			optionData.push({
 				text: childSelect.options[0].textContent,
 				value: childSelect.options[0].value,
@@ -4903,6 +4904,7 @@ function frmProFormJS() {
 		// calculations in a repeater need to be done again after page is changed to fix issue #3414
 		triggerChangeOnCalcTriggers();
 		maybeAddIntlTelInput( document.querySelectorAll( '.frm-intl-tel-input' ) );
+		initRangeInput( document.querySelectorAll( '.with_frm_style input[type=range]' ) );
 	}
 
 	function triggerChangeOnCalcTriggers() {
@@ -5395,6 +5397,7 @@ function frmProFormJS() {
 				);
 
 				maybeAddIntlTelInput( item.find( '.frm-intl-tel-input' ).get() );
+				initRangeInput( item.find( '.with_frm_style input[type=range]' ).get() );
 				loadDropzones( repeatArgs.repeatRow );
 				loadSliders();
 
@@ -6402,14 +6405,25 @@ function frmProFormJS() {
 		});
 	}
 
+	/**
+	 * Check to make sure sure the quantity field value is within the min and max values.
+	 *
+	 * @param {HTMLElement} input
+	 * @return {number}
+	 */
 	function checkQuantityFieldMinMax( input ) {
-		var val = parseFloat( input.value ? input.value.trim() : 0 ),
-			max = input.hasAttribute( 'max' ) ? parseFloat( input.getAttribute( 'max' ) ) : 0,
-			min = input.hasAttribute( 'min' ) ? parseFloat( input.getAttribute( 'min' ) ) : 0;
+		if ( '' === input.value ) {
+			// Leave the value if it is empty.
+			return 0;
+		}
 
+		const val = parseFloat( input.value ? input.value.trim() : 0 );
 		if ( isNaN( val ) ) {
 			return 0;
 		}
+
+		let max = input.hasAttribute( 'max' ) ? parseFloat( input.getAttribute( 'max' ) ) : 0;
+		let min = input.hasAttribute( 'min' ) ? parseFloat( input.getAttribute( 'min' ) ) : 0;
 
 		max = isNaN( max ) ? 0 : max;
 		min = isNaN( min ) ? 0 : ( min < 0 ? 0 : min );
@@ -6843,7 +6857,14 @@ function frmProFormJS() {
 
 				callback();
 				element.addEventListener( 'input', callback );
-				window.addEventListener( 'resize', callback );
+
+				const isAndroid = 'userAgent' in navigator && navigator.userAgent.toLowerCase().indexOf( 'android' ) > -1;
+				// Avoid this resize callback on Android devices because it causes shaking issues.
+				// See issue #5349 for more information.
+				if ( ! isAndroid ) {
+					window.addEventListener( 'resize', callback );
+				}
+
 				document.addEventListener( 'frmShowField', callback );
 				element.setAttribute( 'frm-autogrow', 1 );
 			}
@@ -7352,57 +7373,63 @@ function frmProFormJS() {
 	}
 
 	/**
-	 * Maybe add polyfills.
-	 *
-	 * @since 5.4
+	 * Validates form values when submitting form.
 	 */
-	function maybeAddPolyfills() {
-		if ( ! Element.prototype.matches ) {
-			// IE9 supports matches but as msMatchesSelector instead.
-			Element.prototype.matches = Element.prototype.msMatchesSelector;
+	function validateForm() {
+		document.addEventListener( 'frm_get_ajax_form_errors', function( event ) {
+			if ( ! event.frmData.formEl ) {
+				return;
+			}
+
+			validateCheckboxMinSelections( event.frmData.formEl, event.frmData.errors );
+		});
+	}
+
+	/**
+	 * @since 6.14
+	 *
+	 * @param {HTMLElement|Object} formEl Form object. This might be a jQuery object.
+	 * @param {Array} errors
+	 * @return {void}
+	 */
+	function validateCheckboxMinSelections( formEl, errors ) {
+		var checkboxes,
+			checkedField = {},
+			errorMsg = frmCheckboxI18n.errorMsg.min_selections;
+
+		if ( 'function' === typeof formEl.get ) {
+			// Get the HTMLElement from a jQuery object.
+			formEl = formEl.get( 0 );
 		}
 
-		if ( ! Element.prototype.closest ) {
-			Element.prototype.closest = function( s ) {
-				var el = this;
+		checkboxes = formEl.querySelectorAll( 'input[type="checkbox"][data-frmmin]:checked' );
+		checkboxes.forEach( function( checkbox ) {
+			var min, fieldEl, checkedCheckboxes, key;
 
-				do {
-					if ( el.matches( s ) ) {
-						return el;
-					}
-					el = el.parentElement || el.parentNode;
-				} while ( el !== null && el.nodeType === 1 );
+			min = parseInt( checkbox.dataset.frmmin, 10 );
+			if ( ! min ) {
+				return;
+			}
+			fieldEl = checkbox.closest( '.frm_form_field' );
+			key     = fieldEl.id.replace( 'frm_field_', '' ).replace( '_container', '' );
 
-				return null;
-			};
-		}
+			if ( checkedField[ key ]) {
+				// This field is processed before.
+				return;
+			}
 
-		// Element.remove().
-		( function( arr ) {
-			arr.forEach( function( item ) {
-				if ( item.hasOwnProperty( 'remove' ) ) {
-					return;
-				}
-				Object.defineProperty( item, 'remove', {
-					configurable: true,
-					enumerable: true,
-					writable: true,
-					value: function remove() {
-						this.parentNode.removeChild( this );
-					}
-				});
-			});
-		}([ Element.prototype, CharacterData.prototype, DocumentType.prototype ]) );
+			checkedCheckboxes = fieldEl.querySelectorAll( 'input[type="checkbox"]:checked' );
+			if ( ! checkedCheckboxes.length ) {
+				// If no checkbox is checked, let required field validation do its job.
+				return;
+			}
 
-		// NodeList.forEach().
-		if ( window.NodeList && ! NodeList.prototype.forEach ) {
-			NodeList.prototype.forEach = function( callback, thisArg ) {
-				thisArg = thisArg || window;
-				for ( var i = 0; i < this.length; i++ ) {
-					callback.call( thisArg, this[ i ], i, this );
-				}
-			};
-		}
+			if ( checkedCheckboxes.length < min ) {
+				errors[ key ] = errorMsg.replace( '%1$d', min ).replace( '%2$d', checkedCheckboxes.length );
+			}
+
+			checkedField[ key ] = true;
+		});
 	}
 
 	function validateFieldValue() {
@@ -7581,10 +7608,50 @@ function frmProFormJS() {
 		});
 	}
 
+	/**
+	 * We have set 'overflow-x = clip;' initially to fix horizontal animation issue but it should be reverted
+	 * after that to avoid another style break.
+	 *
+	 * See issue #4895.
+	 */
+	function maybeUpdateFormsOverflowX() {
+		document.querySelectorAll('.frm-show-form').forEach(
+			function ( slideinForm ) {
+				slideinForm.style['overflow-x'] = 'visible';
+			}
+		);
+	}
+
+	/**
+	 * Updates the background gradient of a range input field based on its current value.
+	 *
+	 * @since 6.12
+	 */
+	function initRangeInput( rangeInputs ) {
+		rangeInputs.forEach( function( rangeInput ) {
+			updateRangeInputBackground( rangeInput );
+			rangeInput.addEventListener( 'input', function() {
+				updateRangeInputBackground( rangeInput );
+			});
+			rangeInput.addEventListener( 'onchange', function() {
+				updateRangeInputBackground( rangeInput );
+			});
+		});
+
+		function updateRangeInputBackground( rangeInput ) {
+			// Calculate the percentage of the current slider value
+			const sliderValuePercent = ( rangeInput.value - rangeInput.min ) / ( rangeInput.max - rangeInput.min ) * 100;
+			// Update the background gradient of the slider
+			rangeInput.style.background = `linear-gradient(to right, var(--slider-color) 0%, var(--slider-color) ${sliderValuePercent}%, var(--slider-bar-color) ${sliderValuePercent}% 100%)`;
+		}
+	}
+
 	return {
 		init: function() {
-			maybeAddPolyfills();
+			maybeUpdateFormsOverflowX();
+
 			maybeAddIntlTelInput( document.querySelectorAll( '.frm-intl-tel-input' ) );
+			initRangeInput( document.querySelectorAll( '.with_frm_style input[type=range]' ) );
 
 			addEventListener( 'pageshow', maybeTriggerCalc );
 
@@ -7679,6 +7746,7 @@ function frmProFormJS() {
 			showMoreStepsButtonEvents();
 
 			validateFieldValue();
+			validateForm();
 
 			handleShowPasswordBtn();
 		},

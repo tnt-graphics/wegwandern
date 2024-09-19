@@ -146,6 +146,7 @@ class FrmProPostAction extends FrmFormAction {
             'post_custom_fields' => array(),
             'post_password'      => '',
 			'post_parent'        => '',
+			'comment_status'     => '',
 			'menu_order'         => '',
 			'event'              => array( 'create', 'update' ),
         );

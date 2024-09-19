@@ -11,7 +11,7 @@ class FrmProDb {
 	/**
 	 * @since 3.0.02
 	 */
-	public static $plug_version = '6.9.2';
+	public static $plug_version = '6.14.1';
 
 	/**
 	 * @since 2.3
@@ -298,7 +298,7 @@ class FrmProDb {
 	}
 
 	/**
-	 * Delete uneeded default templates
+	 * Delete unneeded default templates.
 	 *
 	 * @since 3.06
 	 */
@@ -576,7 +576,7 @@ class FrmProDb {
 
 	/**
 	 * Add the _frm_file meta to images without a post
-	 * This will prevent old files from showing in the media libarary
+	 * This will prevent old files from showing in the media library
 	 */
 	public static function migrate_to_36() {
 		global $wpdb;

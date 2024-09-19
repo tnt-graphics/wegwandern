@@ -124,6 +124,11 @@
 		}
 
 		public static function cloudflare_disable_minify($email = false, $key = false, $zoneid = false){
+			// Deprecated
+			// https://developers.cloudflare.com/speed/optimization/content/auto-minify/
+
+			return array("success" => true);
+
 			if($key && $zoneid){
 				$header = array("method" => "PATCH",
 								'timeout' => 10,

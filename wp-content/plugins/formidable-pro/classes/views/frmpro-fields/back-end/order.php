@@ -12,7 +12,7 @@ if ( isset( $field['option_order'] ) ) {
 <p class="frm6 frm_form_field">
 	<label>
 		<?php esc_html_e( 'Option order', 'formidable-pro' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon" data-placement="right" title="<?php esc_attr_e( 'Set the order for the values in your field.', 'formidable-pro' ); ?>"></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'Set the order for the values in your field.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
 	</label>
 	<select name="field_options[<?php echo esc_attr( $field_option_order ) . '_' . esc_attr( $field['id'] ); ?>]">
 		<option value="ascending" <?php selected( $field[ $field_option_order ], 'ascending' ); ?>>

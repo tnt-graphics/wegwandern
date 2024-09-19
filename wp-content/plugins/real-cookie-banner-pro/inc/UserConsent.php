@@ -2,6 +2,7 @@
 
 namespace DevOwl\RealCookieBanner;
 
+use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\consent\PersistedTransaction;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\imagePreview\ImagePreview;
 use DevOwl\RealCookieBanner\base\UtilsProvider;
 use DevOwl\RealCookieBanner\lite\view\blocker\WordPressImagePreviewCache;
@@ -24,7 +25,7 @@ class UserConsent
 {
     use UtilsProvider;
     const TABLE_NAME = 'consent';
-    const CLICKABLE_BUTTONS = ['none', 'main_all', 'main_essential', 'main_close_icon', 'main_custom', 'ind_all', 'ind_essential', 'ind_close_icon', 'ind_custom', LinkShortcode::BUTTON_CLICKED_IDENTIFIER, Blocker::BUTTON_CLICKED_IDENTIFIER];
+    const CLICKABLE_BUTTONS = ['none', 'main_all', 'main_essential', 'main_close_icon', 'main_custom', 'ind_all', 'ind_essential', 'ind_close_icon', 'ind_custom', 'implicit_all', 'implicit_essential', LinkShortcode::BUTTON_CLICKED_IDENTIFIER, Blocker::BUTTON_CLICKED_IDENTIFIER];
     const BY_CRITERIA_RESULT_TYPE_JSON_DECODE = 'jsonDecode';
     const BY_CRITERIA_RESULT_TYPE_COUNT = 'count';
     const BY_CRITERIA_RESULT_TYPE_SQL_QUERY = 'sqlQuery';
@@ -202,6 +203,40 @@ class UserConsent
         }
         $this->castReadRows($results, $returnType === self::BY_CRITERIA_RESULT_TYPE_JSON_DECODE);
         return $results;
+    }
+    /**
+     * Convert a row object read by `byCriteria` to a `PersistedTransaction`.
+     *
+     * @param object $row
+     */
+    public function toPersistedTransactionInstance($row)
+    {
+        $transaction = new PersistedTransaction();
+        $transaction->setId($row->id);
+        $transaction->setUuid($row->uuid);
+        $transaction->setRevision($row->revision);
+        $transaction->setRevisionIndependent($row->revision_independent);
+        $transaction->setCreated($row->created);
+        $transaction->setDecision($row->decision);
+        $transaction->setIpAddress($row->ipv4 ?? $row->ipv6);
+        $transaction->setMarkAsDoNotTrack($row->dnt);
+        $transaction->setButtonClicked($row->button_clicked);
+        $transaction->setViewPort($row->viewport_width, $row->viewport_height);
+        $transaction->setReferer($row->viewed_page);
+        $transaction->setBlocker($row->blocker);
+        $transaction->setBlockerThumbnail($row->blocker_thumbnail);
+        $transaction->setForwarded($row->forwarded, $row->forwarded_uuid, $row->forwarded_blocker);
+        $transaction->setTcfString($row->tcf_string);
+        $transaction->setGcmConsent($row->gcm_consent);
+        $transaction->setCustomBypass($row->custom_bypass);
+        $transaction->setCreatedClientTime($row->created_client_time);
+        $transaction->setRecorderJsonString($row->recorder);
+        $transaction->setUiView($row->ui_view);
+        $transaction->setUserCountry($row->user_country);
+        // We do not persist this fields to database
+        //$transaction->userAgent = ;
+        //$transaction->forwardedUuid = ;
+        return $transaction;
     }
     /**
      * Cast read rows from database to correct types.

@@ -9,7 +9,7 @@ class FrmMlcmpAppHelper {
 	}
 
 	public static function plugin_path() {
-		return dirname( dirname( __FILE__ ) );
+		return dirname( __DIR__ );
 	}
 
 	/**
@@ -24,7 +24,7 @@ class FrmMlcmpAppHelper {
 	}
 
 	/**
-	 * Check if the current version of Formidable is compatible with MailChimp add-on
+	 * Check if the current version of Formidable is compatible with Mailchimp add-on
 	 *
 	 * @since 2.0
 	 * @return mixed
@@ -43,9 +43,13 @@ class FrmMlcmpAppHelper {
 	public static function enqueue_admin_js() {
 		if ( self::is_form_settings_page() ) {
 			wp_register_script( 'frmmlcmp_admin', self::plugin_url() . '/js/back_end.js' );
-			wp_localize_script( 'frmmlcmp_admin', 'frmMlcmpGlobal', array(
-				'nonce'        => wp_create_nonce( 'frm_ajax' ),
-			) );
+			wp_localize_script(
+				'frmmlcmp_admin',
+				'frmMlcmpGlobal',
+				array(
+					'nonce'        => wp_create_nonce( 'frm_ajax' ),
+				)
+			);
 			wp_enqueue_script( 'frmmlcmp_admin' );
 		}
 	}
@@ -73,7 +77,7 @@ class FrmMlcmpAppHelper {
 	public static function get_default_options() {
 		return array(
 			'mailchimp'  => 0,
-			'mlcmp_list' => array()
+			'mlcmp_list' => array(),
 		);
 	}
 
@@ -82,24 +86,26 @@ class FrmMlcmpAppHelper {
 			return;
 		}
 
-		FrmProFormsController::include_logic_row( array(
-			'meta_name' => $meta_name,
-			'condition' => array(
-				'hide_field'      => ( isset( $values['hide_field'] ) && isset( $values['hide_field'][ $meta_name ] ) ) ? $values['hide_field'][ $meta_name ] : '',
-				'hide_field_cond' => ( isset( $values['hide_field_cond'] ) && isset( $values['hide_field_cond'][ $meta_name ] ) ) ? $values['hide_field_cond'][ $meta_name ] : '',
-				'hide_opt'        => ( isset( $values['hide_opt'] ) && isset( $values['hide_opt'][ $meta_name ] ) ) ? $values['hide_opt'][ $meta_name ] : '',
-			),
-			'type'      => 'mlcmp',
-			'showlast'  => '.frm_mlcmp_fields_' . $list_id . ' .frm_add_logic_link',
-			'key'       => 'mlcmp_' . $list_id,
-			'form_id'   => $form_id,
-			'id'        => 'frm_mlcmp_logic_' . $list_id . '_' . $meta_name,
-			'names'     => array(
-				'hide_field'      => 'options[mlcmp_list][' . $list_id . '][hide_field][]',
-				'hide_field_cond' => 'options[mlcmp_list][' . $list_id . '][hide_field_cond][]',
-				'hide_opt'        => 'options[mlcmp_list][' . $list_id . '][hide_opt][]',
-			),
-		) );
+		FrmProFormsController::include_logic_row(
+			array(
+				'meta_name' => $meta_name,
+				'condition' => array(
+					'hide_field'      => ( isset( $values['hide_field'] ) && isset( $values['hide_field'][ $meta_name ] ) ) ? $values['hide_field'][ $meta_name ] : '',
+					'hide_field_cond' => ( isset( $values['hide_field_cond'] ) && isset( $values['hide_field_cond'][ $meta_name ] ) ) ? $values['hide_field_cond'][ $meta_name ] : '',
+					'hide_opt'        => ( isset( $values['hide_opt'] ) && isset( $values['hide_opt'][ $meta_name ] ) ) ? $values['hide_opt'][ $meta_name ] : '',
+				),
+				'type'      => 'mlcmp',
+				'showlast'  => '.frm_mlcmp_fields_' . $list_id . ' .frm_add_logic_link',
+				'key'       => 'mlcmp_' . $list_id,
+				'form_id'   => $form_id,
+				'id'        => 'frm_mlcmp_logic_' . $list_id . '_' . $meta_name,
+				'names'     => array(
+					'hide_field'      => 'options[mlcmp_list][' . $list_id . '][hide_field][]',
+					'hide_field_cond' => 'options[mlcmp_list][' . $list_id . '][hide_field_cond][]',
+					'hide_opt'        => 'options[mlcmp_list][' . $list_id . '][hide_opt][]',
+				),
+			)
+		);
 	}
 
 	public static function get_entry_or_post_value( $entry, $field_id ) {

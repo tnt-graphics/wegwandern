@@ -14,7 +14,7 @@ class FrmMlcmpAction extends FrmFormAction {
 			'color'    => 'var(--dark-grey)',
 		);
 
-		$this->FrmFormAction( 'mailchimp', __( 'Add to MailChimp', 'frmmlcmp' ), $action_ops );
+		$this->FrmFormAction( 'mailchimp', __( 'Add to Mailchimp', 'frmmlcmp' ), $action_ops );
 	}
 
 	function form( $form_action, $args = array() ) {
@@ -30,12 +30,16 @@ class FrmMlcmpAction extends FrmFormAction {
 
 			FrmMlcmpAppHelper::add_tags_field( $list_fields );
 
-			$form_fields = FrmField::getAll( 'fi.form_id=' . (int) $args['form']->id . " and fi.type not in ('break', 'divider', 'end_divider', 'html', 'captcha', 'form')", 'field_order' );
+			if ( method_exists( $this, 'get_form_fields' ) ) {
+				$form_fields = $this->get_form_fields( $args['form']->id );
+			} else {
+				$form_fields = FrmField::getAll( 'fi.form_id=' . (int) $args['form']->id . " and fi.type not in ('break', 'divider', 'end_divider', 'html', 'captcha', 'form')", 'field_order' );
+			}
 		}
 		$action_control = $this;
 
 		extract( $args );
-		include( FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/mailchimp_options.php' );
+		include FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/mailchimp_options.php';
 	}
 
 	function get_defaults() {
@@ -62,7 +66,8 @@ class FrmMlcmpAction extends FrmFormAction {
 	 *
 	 * @since 2.0
 	 *
-	 * @param $form
+	 * @param stdClass $form
+	 * @return void
 	 */
 	public function migrate_settings_to_action( $form ) {
 		$original_options = $form->options;

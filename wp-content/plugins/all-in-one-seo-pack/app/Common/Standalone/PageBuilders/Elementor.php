@@ -207,7 +207,7 @@ class Elementor extends Base {
 	 */
 	public function limitModifiedDate( $postId ) {
 		// This method is supposed to be used in the `wp_ajax_elementor_ajax` action.
-		if ( empty( $_REQUEST['_nonce'] ) || ! wp_verify_nonce( $_REQUEST['_nonce'], 'elementor_ajax' ) ) {
+		if ( empty( $_REQUEST['_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_nonce'] ) ), 'elementor_ajax' ) ) {
 			return false;
 		}
 
@@ -217,5 +217,26 @@ class Elementor extends Base {
 		}
 
 		return ! empty( $_REQUEST['aioseo_limit_modified_date'] );
+	}
+
+	/**
+	 * Get the post ID.
+	 *
+	 * @since 4.6.9
+	 *
+	 * @return int|null The post ID or null.
+	 */
+	public function getPostId() {
+		// phpcs:disable HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
+		if ( aioseo()->helpers->isAjaxCronRestRequest() ) {
+			foreach ( [ 'editor_post_id', 'initial_document_id' ] as $key ) {
+				if ( ! empty( $_REQUEST[ $key ] ) ) {
+					return intval( wp_unslash( $_REQUEST[ $key ] ) );
+				}
+			}
+		}
+		// phpcs:enable
+
+		return parent::getPostId();
 	}
 }

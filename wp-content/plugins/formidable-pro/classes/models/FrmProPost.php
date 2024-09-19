@@ -108,7 +108,7 @@ class FrmProPost {
 
 		self::save_taxonomies( $new_post, $post_ID );
 		self::link_post_attachments( $post_ID, $editing );
-		self::save_post_meta( $new_post, $post_ID );
+		self::save_post_meta( $new_post, $post_ID, $post );
 		self::save_post_id_to_entry( $post_ID, $entry, $editing );
 		// Make sure save_post_id_to_entry stays above save_dynamic_content because
 		// save_dynamic_content needs updated entry object from save_post_id_to_entry
@@ -172,6 +172,10 @@ class FrmProPost {
 		if ( is_numeric( $action->post_content['post_content'] ) ) {
 			// When post content is created from a field value, do not allow shortcodes from user input.
 			FrmFieldsHelper::sanitize_embedded_shortcodes( compact( 'entry' ), $new_post['post_content'] );
+		}
+
+		if ( $action->post_content['comment_status'] ) {
+			$new_post['comment_status'] = $action->post_content['comment_status'];
 		}
 
 		$new_post = apply_filters( 'frm_new_post', $new_post, compact( 'form', 'action', 'entry' ) );
@@ -273,7 +277,7 @@ class FrmProPost {
 			'menu_order',
 		);
 
-		if ( $function == 'insert_post' ) {
+		if ( $function === 'insert_post' ) {
 			$post_fields    = array_merge( $post_fields, array( 'post_author', 'post_type', 'post_category' ) );
 			$extra_fields   = array_keys( $new_post );
 			$exclude_fields = array( 'post_custom', 'taxonomies', 'post_category' );
@@ -559,12 +563,22 @@ class FrmProPost {
 	}
 
 	/**
-	 * @param array $new_post
-	 * @param int   $post_ID
+	 * Saves post meta.
+	 *
+	 * @since 6.10 Added the third param.
+	 *
+	 * @param array $new_post         Post data passed to FrmProPost::insert_post().
+	 * @param int   $post_ID          Created post ID.
+	 * @param array $insert_post_data Processed post data passed to wp_insert_post().
 	 * @return void
 	 */
-	private static function save_post_meta( $new_post, $post_ID ) {
+	private static function save_post_meta( $new_post, $post_ID, $insert_post_data = array() ) {
 		foreach ( $new_post['post_custom'] as $post_data => $value ) {
+			if ( isset( $insert_post_data['meta_input'][ $post_data ] ) ) {
+				// This meta is created in the wp_insert_post() function, so we don't need to create it here.
+				continue;
+			}
+
 			if ( $value == '' ) {
 				delete_post_meta( $post_ID, $post_data );
 			} else {

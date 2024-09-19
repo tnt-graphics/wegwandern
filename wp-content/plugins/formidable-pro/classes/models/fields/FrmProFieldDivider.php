@@ -273,7 +273,7 @@ DEFAULT_HTML;
 		}
 
 		foreach ( $atts as $att => $value ) {
-			// matches the atrribute if exists in the heading and remove it from html atts array.
+			// Matches the attribute if exists in the heading and remove it from html atts array.
 			if ( preg_match( "/{$att}=\"[^\"]*\"/", $headings[1][0] ) === 1 ) {
 				unset( $atts[ $att ] );
 			}

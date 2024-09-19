@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 4.0.0
  */
 class Updates {
+
 	/**
 	 * Class constructor.
 	 *
@@ -171,7 +172,6 @@ class Updates {
 		}
 
 		if ( version_compare( $lastActiveVersion, '4.2.4', '<' ) ) {
-			$this->migrateContactTypes();
 			$this->addNotificationsAddonColumn();
 		}
 
@@ -212,6 +212,10 @@ class Updates {
 
 		if ( version_compare( $lastActiveVersion, '4.5.9', '<' ) ) {
 			$this->deprecateNoPaginationForCanonicalUrlsSetting();
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.6.5', '<' ) ) {
+			$this->deprecateBreadcrumbsEnabledSetting();
 		}
 
 		do_action( 'aioseo_run_updates', $lastActiveVersion );
@@ -944,42 +948,6 @@ class Updates {
 	}
 
 	/**
-	 * Migrates some older values in the Knowledge Panel contact type setting that were removed.
-	 *
-	 * @since 4.2.4
-	 *
-	 * @return void
-	 */
-	public function migrateContactTypes() {
-		$oldValue          = aioseo()->options->searchAppearance->global->schema->contactType;
-		$oldValueLowerCase = strtolower( (string) $oldValue );
-
-		// Return if there is no value set or manual input is being used.
-		if ( ! $oldValue || 'manual' === $oldValueLowerCase ) {
-			return;
-		}
-
-		switch ( $oldValueLowerCase ) {
-			case 'billing support':
-			case 'customer support':
-			case 'reservations':
-			case 'sales':
-			case 'technical support':
-				// If we still support the value, do nothing.
-				return;
-			default:
-				// Otherwise, migrate the existing value to the manual input field.
-				if ( 'bagage tracking' === $oldValueLowerCase ) {
-					// Let's also fix this old typo.
-					$oldValue = 'Baggage Tracking';
-				}
-
-				aioseo()->options->searchAppearance->global->schema->contactType       = 'manual';
-				aioseo()->options->searchAppearance->global->schema->contactTypeManual = $oldValue;
-		}
-	}
-
-	/**
 	 * Add an addon column to the notifications table.
 	 *
 	 * @since 4.2.4
@@ -1261,7 +1229,12 @@ class Updates {
 							'preparation' => ! empty( $schemaTypeOptions->recipe->preparationTime ) ? $schemaTypeOptions->recipe->preparationTime : '',
 							'cooking'     => ! empty( $schemaTypeOptions->recipe->cookingTime ) ? $schemaTypeOptions->recipe->cookingTime : ''
 						],
-						'instructions' => []
+						'instructions' => [],
+						'rating'       => [
+							'minimum' => 1,
+							'maximum' => 5
+						],
+						'reviews'      => []
 					]
 				];
 
@@ -1277,6 +1250,23 @@ class Updates {
 							'name'  => '',
 							'text'  => $instructionData->content,
 							'image' => ''
+						];
+					}
+				}
+
+				$reviews = ! empty( $schemaTypeOptions->recipe->reviews ) ? $schemaTypeOptions->recipe->reviews : [];
+				if ( ! empty( $reviews ) ) {
+					foreach ( $reviews as $reviewData ) {
+						$reviewData = json_decode( $reviewData );
+						if ( empty( $reviewData ) ) {
+							continue;
+						}
+
+						$graph['properties']['reviews'][] = [
+							'rating'   => $reviewData->rating,
+							'headline' => $reviewData->headline,
+							'content'  => $reviewData->content,
+							'author'   => $reviewData->author
 						];
 					}
 				}
@@ -1618,7 +1608,7 @@ class Updates {
 					`key` text,
 					`value` text,
 					`key_value_hash` varchar(40),
-					`regex` varchar(255),
+					`regex` varchar(150),
 					`hits` int(20) NOT NULL DEFAULT 0,
 					`created` datetime NOT NULL,
 					`updated` datetime NOT NULL,
@@ -1684,5 +1674,27 @@ class Updates {
 		}
 
 		aioseo()->options->deprecated->searchAppearance->advanced->noPaginationForCanonical = true;
+	}
+
+	/**
+	 * Deprecates the "Breadcrumbs enabled" setting.
+	 *
+	 * @since 4.6.5
+	 *
+	 * @return void
+	 */
+	public function deprecateBreadcrumbsEnabledSetting() {
+		$options = $this->getRawOptions();
+		if ( ! isset( $options['breadcrumbs']['enable'] ) || 1 === intval( $options['breadcrumbs']['enable'] ) ) {
+			return;
+		}
+
+		$deprecatedOptions = aioseo()->internalOptions->deprecatedOptions;
+		if ( ! in_array( 'breadcrumbsEnable', $deprecatedOptions, true ) ) {
+			$deprecatedOptions[]                         = 'breadcrumbsEnable';
+			aioseo()->internalOptions->deprecatedOptions = $deprecatedOptions;
+		}
+
+		aioseo()->options->deprecated->breadcrumbs->enable = false;
 	}
 }

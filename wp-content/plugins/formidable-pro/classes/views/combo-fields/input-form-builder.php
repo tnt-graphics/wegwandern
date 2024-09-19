@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="frm_multi_fields_container frm_grid_container">
 	<?php foreach ( $sub_fields as $key => $sub_field ) { ?>
 		<div id="frm_field_<?php echo esc_attr( $field['id'] . '-' . $key ); ?>_container" class="frm_form_field form-field <?php echo esc_attr( $sub_field['classes'] ); ?>">
-			<?php if ( $sub_field['type'] == 'select' ) { ?>
+			<?php if ( $sub_field['type'] === 'select' ) { ?>
 				<select name="<?php echo esc_attr( $field_name ); ?>[<?php echo esc_attr( $key ); ?>]" id="<?php echo esc_attr( $html_id . '_' . $key ); ?>" >
 					<option value="">
 						<?php echo esc_html( FrmProComboFieldsController::get_dropdown_label( compact( 'field', 'key', 'sub_field' ) ) ); ?>

@@ -40,13 +40,11 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 	 * @return array
 	 */
 	public static function get_sub_fields( $field ) {
-		$frm_settings = FrmAppHelper::get_settings();
-		$html5_type   = $frm_settings->use_html ? 'tel' : 'text';
-		$placeholder  = (array) ( isset( $field['placeholder'] ) ? $field['placeholder'] : array() );
+		$placeholder = (array) ( isset( $field['placeholder'] ) ? $field['placeholder'] : array() );
 
 		$fields = array(
 			'cc'    => array(
-				'type'    => $html5_type,
+				'type'    => 'tel',
 				'classes' => 'frm_full frm_cc_number',
 				'label'   => 1,
 				'atts'    => array(
@@ -73,7 +71,7 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 				'placeholder' => isset( $placeholder['year'] ) ? $placeholder['year'] : __( 'Year', 'formidable-pro' ),
 			),
 			'cvc'   => array(
-				'type'    => $html5_type,
+				'type'    => 'tel',
 				'classes' => 'frm_third frm_cc_cvc',
 				'label'   => 1,
 				'atts'    => array(
@@ -128,23 +126,6 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 			'cvc' => __( 'CVC', 'formidable-pro' ),
 		);
 		return $options;
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function form_builder_options( $field, $display, $values ) {
-		_deprecated_function( __FUNCTION__, '4.0', 'FrmProFieldAddress->show_primary_options' );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function show_in_form_builder( $field, $name = '', $null = null ) {
-		_deprecated_function( __METHOD__, '3.0', 'FrmFieldType::show_on_form_builder' );
-		$field_type = FrmFieldFactory::get_field_type( 'address', $field );
-		return $field_type->show_on_form_builder( $name );
 	}
 
 	/**

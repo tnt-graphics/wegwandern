@@ -1,7 +1,7 @@
 function frmMlcmpBackEnd(){
 
     /**
-     * Hide and show the subscribe options in MailChimp action
+     * Hide and show the subscribe options in Mailchimp action
      *
      * @since 2.03
      */
@@ -15,7 +15,7 @@ function frmMlcmpBackEnd(){
     }
 
     /**
-     * Hide and show the subscribe options in MailChimp action
+     * Hide and show the subscribe options in Mailchimp action
      *
      * @since 2.03
      */

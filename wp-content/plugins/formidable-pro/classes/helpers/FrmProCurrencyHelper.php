@@ -46,7 +46,7 @@ class FrmProCurrencyHelper {
 	}
 
 	/**
-	 * Avoid blank decimal separators causing calculated values to be multipled by 100.
+	 * Avoid blank decimal separators causing calculated values to be multiplied by 100.
 	 *
 	 * @since 5.0.16
 	 *

@@ -6,17 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class FrmProComboFieldsController {
 
-	public static function show_in_form_builder( $field, $name = '', $sub_fields = array() ) {
-		$frm_settings           = FrmAppHelper::get_settings();
-		$frm_settings->use_html = false;
-
-		// Generate field name and HTML id
-		$field_name = 'item_meta[' . $field['id'] . ']';
-		$html_id    = 'field_' . $field['field_key'];
-
-		include FrmProAppHelper::plugin_path() . '/classes/views/combo-fields/input-form-builder.php';
-	}
-
 	public static function get_sub_fields( $field ) {
 		return array();
 	}
@@ -52,7 +41,7 @@ class FrmProComboFieldsController {
 		}
 
 		$placeholder = isset( $default_value[ $sub_field ] ) ? $default_value[ $sub_field ] : '';
-		echo ' placeholder="' . esc_attr( $placeholder ) . '" ';
+		echo ' placeholder="' . esc_attr( $placeholder ) . '" data-placeholder="' . esc_attr( $placeholder ) . '"';
 	}
 
 	public static function get_dropdown_label( $atts ) {
@@ -119,18 +108,14 @@ class FrmProComboFieldsController {
 	}
 
 	/**
-	 * @deprecated 4.0
+	 * @deprecated 6.11
+	 *
+	 * @param array  $field
+	 * @param string $name
+	 * @param array  $sub_fields
+	 * @return void
 	 */
-	public static function include_inplace_sub_label( $atts ) {
-		_deprecated_function( __METHOD__, '4.0', __CLASS__ . '::show_sub_label' );
-		self::show_sub_label( $atts );
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function add_default_options( $options ) {
-		_deprecated_function( __METHOD__, '3.0', 'FrmProField{type} Modals' );
-		return $options;
+	public static function show_in_form_builder( $field, $name = '', $sub_fields = array() ) {
+		_deprecated_function( __METHOD__, '6.11', 'FrmFieldType::show_on_form_builder' );
 	}
 }

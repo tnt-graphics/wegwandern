@@ -300,9 +300,6 @@
     window.InlineShortcodeView_vc_pdf_embed = window.InlineShortcodeView.extend( {
         render: function () {
             window.InlineShortcodeView_vc_pdf_embed.__super__.render.call( this );
-            if (jQuery(this.el).find('.wpmf-pdfemb-viewer').length) {
-                jQuery(this.el).find('.wpmf-pdfemb-viewer').pdfEmbedder();
-            }
             return this;
         }
     });

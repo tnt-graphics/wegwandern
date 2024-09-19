@@ -33,7 +33,9 @@
                     (result) => {
                         if (result.status) {
                             $container.html(result.html);
-                            $container.find('.wpmf-pdfemb-viewer').pdfEmbedder();
+                            if($container.find('.wpmf-pdfemb-viewer').length) {
+                                $container.find('.wpmf-pdfemb-viewer').pdfEmbedder();
+                            }
                         }
                     },
                     // errors

@@ -118,7 +118,7 @@ class FrmProAddonsController extends FrmAddonsController {
 		$attributes = array(
 			'href'   => esc_url( $href ),
 			'rel'    => esc_attr( $rel ),
-			'class'  => 'frm-addon-button' . esc_attr( $class ),
+			'class'  => 'frm-addon-button ' . esc_attr( $class ),
 			'target' => esc_attr( $target ),
 		);
 		?>
@@ -197,7 +197,7 @@ class FrmProAddonsController extends FrmAddonsController {
 	/**
 	 * @since 4.08
 	 *
-	 * @return false|int False or the number of days until expiration.
+	 * @return false|float False or the number of days until expiration.
 	 */
 	public static function is_license_expiring() {
 		$version_info = self::get_primary_license_info();
@@ -566,40 +566,6 @@ class FrmProAddonsController extends FrmAddonsController {
 	}
 
 	/**
-	 * @since 4.09.01
-	 * @deprecated 6.0
-	 *
-	 * @return void
-	 */
-	public static function show_expired_message() {
-		_deprecated_function( __METHOD__, '6.0' );
-	}
-
-	/**
-	 * @since 4.08
-	 * @deprecated 6.0
-	 *
-	 * @return void
-	 */
-	public static function expiring_message() {
-		_deprecated_function( __METHOD__, '6.0', 'FrmProAddonsController::admin_banner' );
-		self::admin_banner();
-	}
-
-	/**
-	 * @since 4.07
-	 * @deprecated 6.0
-	 *
-	 * @return void
-	 */
-	public static function renewal_message() {
-		// This function gets called from lite for the frm_page_footer action.
-		// This function does nothing rather than call admin_banner to avoid classes like "frm-banner-alert" and "frm-upgrade-bar"
-		// from appearing in the footer.
-		// _deprecated_function isn't called as this function gets called from old versions of lite.
-	}
-
-	/**
 	 * @since 5.5.1
 	 *
 	 * @return void
@@ -782,5 +748,15 @@ class FrmProAddonsController extends FrmAddonsController {
 		}
 
 		self::show_warning_overlay_expired_license();
+	}
+
+	/**
+	 * @since 4.07
+	 * @deprecated 6.12
+	 *
+	 * @return void
+	 */
+	public static function renewal_message() {
+		_deprecated_function( __METHOD__, '6.12' );
 	}
 }

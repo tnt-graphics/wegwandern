@@ -121,7 +121,7 @@ class RpmInitiator extends AbstractInitiator
             }
             return $item;
         }, $revisionIndependent['revision']['blocker']))->add('rcb_scanner_externalUrls', \array_values(\array_map(function ($item) {
-            return ['host' => $item['host'], 'tags' => $item['tags']];
+            return ['host' => $item['host'], 'tags' => $item['tags'], 'count' => $item['foundOnSitesCount']];
         }, \DevOwl\RealCookieBanner\Core::getInstance()->getScanner()->getQuery()->getScannedExternalUrls())));
         // Stats
         $telemetry->add('rcb_consent_count', \DevOwl\RealCookieBanner\UserConsent::getInstance()->byCriteria([], \DevOwl\RealCookieBanner\UserConsent::BY_CRITERIA_RESULT_TYPE_COUNT));

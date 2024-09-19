@@ -9,10 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FrmProFieldUserIDValueSelector extends FrmProFieldValueSelector {
 
-	public function __construct( $field_id, $args ) {
-		parent::__construct( $field_id, $args );
-	}
-
 	/**
 	 * Display the field value selector
 	 *

@@ -38,7 +38,7 @@ foreach ( $group_opts['interests'] as $g ) {
 		} else {
 			// For reverse compatibility
 			$field_id = $field_name;
-			include( FrmAppHelper::plugin_path() . '/pro/classes/views/frmpro-fields/field-values.php' );
+			include  FrmAppHelper::plugin_path() . '/pro/classes/views/frmpro-fields/field-values.php';
 		}
 		?>
 		</span>

@@ -31,7 +31,7 @@ $html_id    = 'frm_prev_label_' . absint( $field['id'] );
 <p>
 	<label for="<?php echo esc_attr( $html_id ); ?>">
 		<?php esc_html_e( 'Page Turn Transitions', 'formidable-pro' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon frm_tooltip_expand" title="<?php esc_attr_e( 'This setting applies to all page break fields in this form.', 'formidable-pro' ); ?>"></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'This setting applies to all page break fields in this form.', 'formidable-pro' ) ); ?>
 	</label>
 
 	<select

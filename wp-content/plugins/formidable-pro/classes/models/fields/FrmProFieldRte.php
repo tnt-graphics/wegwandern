@@ -174,7 +174,7 @@ class FrmProFieldRte extends FrmFieldType {
 	}
 
 	/**
-	 * Load deafult editor scripts when ajax form includes an RTE field.
+	 * Load default editor scripts when ajax form includes an RTE field.
 	 *
 	 * @since 4.06.02
 	 */

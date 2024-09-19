@@ -399,7 +399,7 @@ class GeneralSettings {
 				! in_array( $name, array_keys( $settings ), true ) &&
 				preg_match( '#aiosp_(.*)_title_format#', $name, $slug )
 			) {
-				if ( empty( $slug ) && empty( $slug[1] ) ) {
+				if ( empty( $slug[1] ) ) {
 					continue;
 				}
 
@@ -694,11 +694,6 @@ class GeneralSettings {
 			} else {
 				aioseo()->options->searchAppearance->global->schema->person = intval( $this->oldOptions['aiosp_schema_person_user'] );
 			}
-		}
-
-		if ( ! empty( $this->oldOptions['aiosp_schema_contact_type'] ) ) {
-			aioseo()->options->searchAppearance->global->schema->contactType       = 'manual';
-			aioseo()->options->searchAppearance->global->schema->contactTypeManual = aioseo()->helpers->sanitizeOption( $this->oldOptions['aiosp_schema_contact_type'] );
 		}
 	}
 

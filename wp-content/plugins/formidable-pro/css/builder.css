@@ -4,7 +4,7 @@
 .frm-fields p.frm_auto_grow_option > label {
 	display: inline;
 }
-/* Force "Rows" to be frm2 instead of the default frm6 to make space for the Auto Grow settign in Pro. */
+/* Force "Rows" to be frm2 instead of the default frm6 to make space for the Auto Grow setting in Pro. */
 .frm-single-settings.frm-type-textarea > .frm_grid_container > p:nth-of-type(4) {
 	grid-column: span 2/span 2;
 }
@@ -64,7 +64,6 @@
 .frm-backend-rootline li {
 	justify-content: flex-end;
 	display: flex;
-	-ms-flex: 1;
 	flex: 1;
 	align-items: center;
 	flex-direction: column;
@@ -173,4 +172,44 @@
 .frm-type-address .frm_show_upgrade {
 	cursor: pointer;
 	opacity: .5;
+}
+
+.frm-single-settings.frm-type-address .frm_form_field:has([name^="field_options[admin_only_"]) {
+	/* Make sure the Visibility setting appears on a new line for Address fields so it does not appear beside Country Description */
+	grid-column-start: 1;
+}
+
+.frm_add_watch_lookup_row .frm_add_tag {
+	position: relative;
+	bottom: 2px;
+}
+
+#new_fields .frm_add_watch_lookup_row .frm_add_tag .frmsvg {
+	height: 12px;
+	width: 12px;
+	color: var(--primary-500);
+}
+
+.frm_add_watch_lookup_row .frm_add_tag:before {
+	content: "";
+}
+
+.with_frm_style.frm_form_builder input[type=range]::-webkit-slider-runnable-track {
+	-webkit-appearance: none;
+	background-color: transparent !important;
+}
+.with_frm_style.frm_form_builder input[type=range]::-moz-range-track {
+	background-color: transparent !important;
+}
+
+.with_frm_style.frm_form_builder input[type=range]::-moz-range-progress {
+	background-color: transparent !important;
+}
+
+.frm_form_builder input[type="text"] + .frm_show_password_btn svg:last-child {
+	display: none;
+}
+
+.frm_form_builder input[type="text"] + .frm_show_password_btn svg:first-child {
+	display: block;
 }

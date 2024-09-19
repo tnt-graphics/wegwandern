@@ -15,6 +15,11 @@ class FrmProFieldLookup extends FrmFieldType {
 	 */
 	protected $type = 'lookup';
 
+	/**
+	 * @var array|null
+	 */
+	private static $all_published_forms;
+
 	public function show_on_form_builder( $name = '' ) {
 		$field = FrmFieldsHelper::setup_edit_vars( $this->field );
 		FrmProLookupFieldsController::show_lookup_field_input_on_form_builder( $field );
@@ -126,7 +131,7 @@ class FrmProFieldLookup extends FrmFieldType {
 		$lookup_args = array();
 
 		// Get all forms for the -select form- option
-		$lookup_args['form_list'] = FrmForm::get_published_forms();
+		$lookup_args['form_list'] = self::get_published_forms();
 
 		if ( isset( $field['get_values_form'] ) && is_numeric( $field['get_values_form'] ) ) {
 			$lookup_args['form_fields'] = $this->get_fields_for_get_values_field_dropdown( $field['get_values_form'], $field['type'] );
@@ -139,7 +144,22 @@ class FrmProFieldLookup extends FrmFieldType {
 	}
 
 	/**
-	 * Get the fields fot the get_values_field dropdown
+	 * Store the result of FrmForm::get_published_forms in memory and re-use it.
+	 * This is an optimization that helps make the form builder load more quickly.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @return array
+	 */
+	private static function get_published_forms() {
+		if ( ! isset( self::$all_published_forms ) ) {
+			self::$all_published_forms = FrmForm::get_published_forms();
+		}
+		return self::$all_published_forms;
+	}
+
+	/**
+	 * Get the fields for the get_values_field dropdown
 	 *
 	 * @since 4.0
 	 *

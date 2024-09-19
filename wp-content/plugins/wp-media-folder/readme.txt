@@ -1,9 +1,9 @@
 === WP Media Folder ===
 Tags: media, folder
 Requires at least: 4.7.0
-Tested up to: 6.5.2
+Tested up to: 6.6
 Requires PHP: 5.6
-Stable tag: 5.8.4
+Stable tag: 5.9.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,44 @@ I can not tell more just watch our demo and please try it to make your own idea.
 Stop searching for an image through thousand of media, just navigate like you do on your desktop file manager.
 
 = Changelog = 
+
+= 5.9.5 =
+ * Fix : Upload image error at the 'Add new media' page
+
+= 5.9.4 =
+ * Add : Remote video: support for Kaltura videos
+ * Add : Folder selection when no folder tree
+ * Add : Set the default icon folder color on the color picker
+
+= 5.9.3 =
+ * Fix : The Screen Options dropdown menu on the admin screen is not working
+
+= 5.9.2 =
+ * Fix : Error when saving post with some post type
+
+= 5.9.1 =
+ * Fix : Error with some custom post type.
+
+= 5.9.0 =
+ * Add : Possibility to organize posts with folders (activated by default)
+ * Add : Possibility to organize pages with folders (not enabled by default)
+ * Add : Possibility to organize custom post with folders (not enabled by default)
+
+= 5.8.9 =
+ * Fix : Drop and drag issue on Chrome browser (v127)
+
+= 5.8.8 =
+ * Fix : WPMF gallery widget issue in Divi theme
+
+= 5.8.7 =
+ * Fix : Error in the block editor
+
+= 5.8.6 =
+ * Fix : Update library for pdf.js
+ * Fix : WPMF gallery widget in Elementor
+
+= 5.8.5 =
+ * Add : Support AVIF images
 
 = 5.8.4 =
  * Add : Support align full option for the WP Media Folder gallery Gutenberg block

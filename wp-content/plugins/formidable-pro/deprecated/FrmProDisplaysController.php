@@ -40,7 +40,7 @@ class FrmProDisplaysController {
 	}
 
 	/**
-	 * @deprecated 4.09
+	 * @deprecated 4.09 This is still silently deprecated. It isn't safe to remove and should be properly deprecated.
 	 */
 	public static function get_shortcode( $atts ) {
 		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_shortcode', $atts );
@@ -65,134 +65,8 @@ class FrmProDisplaysController {
 	/**
 	 * @deprecated 4.09
 	 */
-	public static function highlight_menu() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::highlight_menu' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function switch_form_box() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::switch_form_box' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function filter_forms( $query ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::filter_forms', $query );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function add_form_nav( $views ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::add_form_nav', $views );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function add_form_nav_edit( $post ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::add_form_nav_edit', $post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function publish_button() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::publish_button' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function add_new_button( $form_id = 0 ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::add_new_button', $form_id );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function post_row_actions( $actions, $post ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::post_row_actions', $actions, $post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
 	public static function create_from_template( $path ) {
 		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::create_from_template', $path );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function manage_columns( $columns ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::manage_columns', $columns );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function sortable_columns( $columns ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::sortable_columns', $columns );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function hidden_columns( $result ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::hidden_columns', $result );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function manage_custom_columns( $column_name, $id ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::manage_custom_columns', $column_name, $id );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function submitbox_actions() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::submitbox_actions' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function default_content( $content, $post ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::default_content', $content, $post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function default_title( $title, $post ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::default_title', $title, $post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function default_excerpt( $excerpt, $post ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::default_excerpt', $excerpt, $post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function add_meta_boxes( $post_type ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::add_meta_boxes', $post_type );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function save_post( $post_id ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::save_post', $post_id );
 	}
 
 	/**
@@ -203,26 +77,14 @@ class FrmProDisplaysController {
 	}
 
 	/**
-	 * @deprecated 4.09
-	 */
-	public static function get_content( $content ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_content', $content );
-	}
-
-	/**
-	 * @deprecated 4.09
+	 * @deprecated 6.11.1
 	 */
 	public static function get_display_data( $view, $content = '', $entry_id = false, $extra_atts = array() ) {
 		if ( ! $entry_id && ! empty( $extra_atts['return_entry_ids'] ) && is_callable( 'FrmViewsDisplaysController::get_view_entry_ids' ) ) {
+			_deprecated_function( __METHOD__, '6.11.1', 'FrmViewsDisplaysController::get_view_entry_ids' );
 			return FrmViewsDisplaysController::get_view_entry_ids( $view, $content );
 		}
+		// since 4.09.
 		return self::deprecated_function( __METHOD__ );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function get_post_content() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_post_content' );
 	}
 }

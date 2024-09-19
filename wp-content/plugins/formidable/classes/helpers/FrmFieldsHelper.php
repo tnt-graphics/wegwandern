@@ -103,6 +103,11 @@ class FrmFieldsHelper {
 	 * Prepare field while creating a new entry
 	 *
 	 * @since 3.0
+	 *
+	 * @param array    $field_array
+	 * @param stdClass $field
+	 * @param array    $args
+	 * @return void
 	 */
 	private static function prepare_front_field( &$field_array, $field, $args ) {
 		self::fill_default_field_opts( $field, $field_array );
@@ -114,8 +119,19 @@ class FrmFieldsHelper {
 		self::prepare_field_options_for_display( $field_array, $field, $args );
 
 		if ( $args['action'] === 'edit' ) {
+			/**
+			 * @param array      $field_array
+			 * @param stdClass   $field
+			 * @param int|string $entry_id
+			 * @param array      $args
+			 */
 			$field_array = apply_filters( 'frm_setup_edit_fields_vars', $field_array, $field, $args['entry_id'], $args );
 		} else {
+			/**
+			 * @param array      $field_array
+			 * @param stdClass   $field
+			 * @param array      $args
+			 */
 			$field_array = apply_filters( 'frm_setup_new_fields_vars', $field_array, $field, $args );
 		}
 	}
@@ -481,9 +497,9 @@ class FrmFieldsHelper {
 		}
 
 		$position = FrmStylesController::get_style_val( 'position', $form );
-		if ( $position == 'none' ) {
+		if ( $position === 'none' ) {
 			$position = 'top';
-		} elseif ( $position == 'no_label' ) {
+		} elseif ( $position === 'no_label' ) {
 			$position = 'none';
 		} elseif ( $position === 'inside' && ! self::is_placeholder_field_type( $field['type'] ) ) {
 			$position = 'top';
@@ -676,8 +692,8 @@ class FrmFieldsHelper {
 	}
 
 	public static function value_meets_condition( $observed_value, $cond, $hide_opt ) {
-		$hide_opt       = self::get_value_for_comparision( $hide_opt );
-		$observed_value = self::get_value_for_comparision( $observed_value );
+		$hide_opt       = self::get_value_for_comparison( $hide_opt );
+		$observed_value = self::get_value_for_comparison( $observed_value );
 
 		if ( is_array( $observed_value ) ) {
 			return self::array_value_condition( $observed_value, $cond, $hide_opt );
@@ -723,7 +739,7 @@ class FrmFieldsHelper {
 	 *
 	 * @since 2.05
 	 */
-	private static function get_value_for_comparision( $value ) {
+	private static function get_value_for_comparison( $value ) {
 		// Remove white space from hide_opt
 		if ( ! is_array( $value ) ) {
 			$value = trim( $value );
@@ -1203,9 +1219,18 @@ class FrmFieldsHelper {
 		return apply_filters( 'frm_single_input_fields', $fields );
 	}
 
+	/**
+	 * @param string[] $inputs
+	 * @param array    $fields
+	 * @param array    $field_types
+	 * @return void
+	 */
 	private static function field_types_for_input( $inputs, $fields, &$field_types ) {
 		foreach ( $inputs as $input ) {
-			$field_types[ $input ] = $fields[ $input ];
+			// This may not be set if a field type was removed using the frm_available_fields or frm_pro_available_fields filters.
+			if ( array_key_exists( $input, $fields ) ) {
+				$field_types[ $input ] = $fields[ $input ];
+			}
 			unset( $input );
 		}
 	}
@@ -1502,6 +1527,11 @@ class FrmFieldsHelper {
 		if ( is_array( $val ) ) {
 			foreach ( $val as $k => $v ) {
 				if ( is_string( $v ) ) {
+					if ( 'custom_html' === $k ) {
+						$val[ $k ] = self::switch_ids_except_strings( $replace, $replace_with, array( '[if description]', '[description]', '[/if description]' ), $v );
+						unset( $k, $v );
+						continue;
+					}
 					$val[ $k ] = str_replace( $replace, $replace_with, $v );
 					unset( $k, $v );
 				}
@@ -1511,6 +1541,31 @@ class FrmFieldsHelper {
 		}
 
 		return $val;
+	}
+
+	/**
+	 * Removes exception strings from replacement arrays and replaces the rest in the provided value string.
+	 *
+	 * @since 6.14
+	 *
+	 * @param array  $replace      Values to be replaced.
+	 * @param array  $replace_with Replacement values.
+	 * @param array  $exceptions   Array of strings to skip.
+	 * @param string $value        Value to be updated.
+	 *
+	 * @return string
+	 */
+	private static function switch_ids_except_strings( $replace, $replace_with, $exceptions, $value ) {
+		foreach ( $exceptions as $exception ) {
+			$index = array_search( $exception, $replace, true );
+			if ( false === $index ) {
+				continue;
+			}
+			unset( $replace[ $index ] );
+			unset( $replace_with[ $index ] );
+		}
+		$value = str_replace( $replace, $replace_with, $value );
+		return $value;
 	}
 
 	/**
@@ -2227,7 +2282,8 @@ class FrmFieldsHelper {
 
 	/**
 	 * Maybe adjust a field value based on type.
-	 * Some types require unserializing an array (@see self::field_type_requires_unserialize).
+	 * Some types require unserializing an array.
+	 * These types are defined by a array_allowed property on their field model class.
 	 *
 	 * @since 6.2
 	 *
@@ -2288,97 +2344,5 @@ class FrmFieldsHelper {
 	public static function get_all_draft_field_ids( $form_id ) {
 		$draft_field_rows = self::get_draft_field_results( $form_id );
 		return wp_list_pluck( $draft_field_rows, 'id' );
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function show_icon_link_js( $atts ) {
-		_deprecated_function( __METHOD__, '4.0' );
-		$atts['icon'] .= $atts['is_selected'] ? ' ' : ' frm_inactive_icon ';
-		if ( isset( $atts['has_default'] ) && ! $atts['has_default'] ) {
-			$atts['icon'] .= 'frm_hidden ';
-		}
-		echo '<a href="javascript:void(0)" class="frm_bstooltip ' . esc_attr( $atts['icon'] ) . 'frm_default_val_icons frm_action_icon frm_icon_font" title="' . esc_attr( $atts['message'] ) . '"></a>';
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function show_default_blank_js( $is_selected, $has_default_value = true ) {
-		_deprecated_function( __METHOD__, '4.0' );
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function clear_on_focus_html( $field, $display, $id = '' ) {
-		_deprecated_function( __METHOD__, '4.0' );
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function show_onfocus_js( $is_selected, $has_default_value = true ) {
-		_deprecated_function( __METHOD__, '4.0' );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function display_recaptcha() {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldCaptcha::field_input' );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function remove_inline_conditions( $no_vars, $code, $replace_with, &$html ) {
-		FrmDeprecated::remove_inline_conditions( $no_vars, $code, $replace_with, $html );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_shortcode_tag( $shortcodes, $short_key, $args ) {
-		return FrmDeprecated::get_shortcode_tag( $shortcodes, $short_key, $args );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 *
-	 * @param string       $html
-	 * @param array        $field
-	 * @param array        $errors
-	 * @param false|object $form
-	 * @param array        $args
-	 *
-	 * @return string
-	 */
-	public static function replace_shortcodes( $html, $field, $errors = array(), $form = false, $args = array() ) {
-		return FrmDeprecated::replace_shortcodes( $html, $field, $errors, $form, $args );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_default_field_opts( $type, $field = null, $limit = false ) {
-		return FrmDeprecated::get_default_field_opts( $type, $field, $limit );
-	}
-
-	/**
-	 * @deprecated 2.02.07 This is still referenced in the Highrise add on as of v1.06.
-	 * @codeCoverageIgnore
-	 *
-	 * @param array $args
-	 * @return string
-	 */
-	public static function dropdown_categories( $args ) {
-		return FrmDeprecated::dropdown_categories( $args );
 	}
 }

@@ -218,16 +218,16 @@ class FrmProFieldDate extends FrmFieldType {
 
 		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) ) {
 			$frmpro_settings = FrmProAppHelper::get_settings();
-			$formated_date   = FrmProAppHelper::convert_date( $value, $frmpro_settings->date_format, 'Y-m-d' );
+			$formatted_date  = FrmProAppHelper::convert_date( $value, $frmpro_settings->date_format, 'Y-m-d' );
 
 			//check format before converting
-			if ( $value != gmdate( $frmpro_settings->date_format, strtotime( $formated_date ) ) ) {
+			if ( $value != gmdate( $frmpro_settings->date_format, strtotime( $formatted_date ) ) ) {
 				$allow_it = apply_filters(
 					'frm_allow_date_mismatch',
 					false,
 					array(
 						'date'           => $value,
-						'formatted_date' => $formated_date,
+						'formatted_date' => $formatted_date,
 					)
 				);
 				if ( ! $allow_it ) {
@@ -235,8 +235,8 @@ class FrmProFieldDate extends FrmFieldType {
 				}
 			}
 
-			$value = $formated_date;
-			unset( $formated_date );
+			$value = $formatted_date;
+			unset( $formatted_date );
 		}
 
 		$date = explode( '-', $value );

@@ -51,7 +51,7 @@ class FrmProEntryShortcodeFormatter extends FrmEntryShortcodeFormatter {
 		if ( $field->type === 'divider' ) {
 			$row = $this->generate_section_content( $field );
 
-		} elseif ( $field->type == 'form' ) {
+		} elseif ( $field->type === 'form' ) {
 			$row = $this->generate_embedded_form_content( $field );
 
 		} elseif ( $field->type === 'data' && $field->field_options['data_type'] === 'data' ) {
@@ -82,7 +82,7 @@ class FrmProEntryShortcodeFormatter extends FrmEntryShortcodeFormatter {
 		if ( $field->type === 'divider' ) {
 			$this->add_section_array( $field );
 
-		} elseif ( $field->type == 'form' ) {
+		} elseif ( $field->type === 'form' ) {
 			$this->add_embedded_form_array( $field );
 
 		} elseif ( $field->type === 'data' && $field->field_options['data_type'] === 'data' ) {

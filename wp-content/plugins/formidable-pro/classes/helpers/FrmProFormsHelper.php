@@ -281,7 +281,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		return array_reduce(
 			FrmField::get_all_types_in_form( $form_id, 'divider' ),
 			function ( $total, $divider ) {
-				if ( FrmField::is_repeating_field( $divider ) && ! empty( $divider->field_options['form_select'] ) ) {
+				if ( is_array( $total ) && FrmField::is_repeating_field( $divider ) && ! empty( $divider->field_options['form_select'] ) ) {
 					$total[] = $divider->field_options['form_select'];
 				}
 

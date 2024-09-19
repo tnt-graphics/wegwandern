@@ -463,9 +463,10 @@ class FrmFormAction {
 			 *
 			 * @since 2.0
 			 *
-			 * @param array $instance The current widget instance's settings.
-			 * @param array $new_instance Array of new widget settings.
-			 * @param array $old_instance Array of old widget settings.
+			 * @param array         $instance The current widget instance's settings.
+			 * @param array         $new_instance Array of new widget settings.
+			 * @param array         $old_instance Array of old widget settings.
+			 * @param FrmFormAction $form_action FrmFormAction instance.
 			 */
 			$instance = apply_filters( 'frm_action_update_callback', $instance, $new_instance, $old_instance, $this );
 
@@ -507,6 +508,10 @@ class FrmFormAction {
 		);
 	}
 
+	/**
+	 * @param array $settings
+	 * @return int|WP_Error
+	 */
 	public function save_settings( $settings ) {
 		self::clear_cache();
 
@@ -534,7 +539,7 @@ class FrmFormAction {
 			return array();
 		}
 
-		if ( 'all' != $type ) {
+		if ( 'all' !== $type ) {
 			return $action_controls->get_all( $form_id, $atts );
 		}
 
@@ -603,6 +608,10 @@ class FrmFormAction {
 		if ( ! $type ) {
 			return false;
 		}
+
+		/**
+		 * @var FrmFormAction
+		 */
 		$action_control = FrmFormActionsController::get_form_actions( $type );
 
 		return $action_control->get_single_action( $action_id );
@@ -878,8 +887,6 @@ class FrmFormAction {
 	 *
 	 * @since 2.01.02
 	 *
-	 * @deprecated 4.06.02
-	 *
 	 * @param array|string $logic_value
 	 *
 	 * @return void
@@ -905,7 +912,6 @@ class FrmFormAction {
 	 * Get the value from a specific field and entry
 	 *
 	 * @since 2.01.02
-	 * @deprecated 4.06.02
 	 *
 	 * @param object $entry
 	 * @param int    $field_id
@@ -975,5 +981,24 @@ class FrmFormAction {
 	 */
 	protected function get_upgrade_text() {
 		return __( 'Conditional form actions', 'formidable' );
+	}
+
+	/**
+	 * Gets form fields for form action settings.
+	 *
+	 * @since 6.10
+	 *
+	 * @param int $form_id Form ID.
+	 * @return object[]
+	 */
+	protected function get_form_fields( $form_id ) {
+		// Get form fields, include embedded and repeater child fields.
+		$form_fields = FrmField::get_all_for_form( $form_id, '', 'include' );
+		return array_filter(
+			$form_fields,
+			function ( $form_field ) {
+				return ! FrmField::is_no_save_field( $form_field->type );
+			}
+		);
 	}
 }

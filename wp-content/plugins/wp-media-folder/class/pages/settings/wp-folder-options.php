@@ -9,7 +9,7 @@ $tabs_data = array(
         'sub_tabs' => array(
             'additional_features' => __('Main settings', 'wpmf'),
             'media_filtering'     => __('Media filtering', 'wpmf'),
-//            'advanced'            => __('Advanced', 'wpmf')
+            'folder_settings'      => __('Folder settings', 'wpmf')
         )
     ),
     array(

@@ -290,7 +290,7 @@ class FrmEntryFormatter {
 	 * @since 3.0
 	 */
 	protected function skip_fields() {
-		return array( 'captcha', 'html' );
+		return array( 'captcha', 'html', FrmSubmitHelper::FIELD_TYPE );
 	}
 
 	/**
@@ -371,7 +371,7 @@ class FrmEntryFormatter {
 	 * @return int|string
 	 */
 	protected function get_key_or_id( $field_value ) {
-		return $this->array_key == 'key' ? $field_value->get_field_key() : $field_value->get_field_id();
+		return $this->array_key === 'key' ? $field_value->get_field_key() : $field_value->get_field_id();
 	}
 
 	/**

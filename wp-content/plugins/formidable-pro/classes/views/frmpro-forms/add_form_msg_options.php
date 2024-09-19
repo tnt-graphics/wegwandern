@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+_deprecated_file( basename( __FILE__ ), '6.10.1' );
 ?>
 <tr class="edit_action_message_box edit_action_box <?php echo $values['edit_action'] === 'message' && $values['editable'] == 1 ? '' : 'frm_hidden'; ?>">
     <td class="frm_has_shortcodes frm_has_textarea">

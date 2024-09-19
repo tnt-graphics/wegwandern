@@ -64,9 +64,12 @@ class FrmProDisplaysHelper {
 	}
 
 	/**
-	 * Get the ids of any child forms (repeat or embedded)
+	 * Get the ids of any child forms (repeat or embedded).
 	 *
 	 * @since 3.0
+	 *
+	 * @param int|string $form_id
+	 * @return array
 	 */
 	private static function linked_form_ids( $form_id ) {
 		$linked_field_query = array(
@@ -91,6 +94,8 @@ class FrmProDisplaysHelper {
 	 * Make sure the backtrack limit is as least at the default
 	 *
 	 * @since 3.0
+	 *
+	 * @return void
 	 */
 	private static function maybe_increase_regex_limit() {
 		$backtrack_limit = ini_get( 'pcre.backtrack_limit' );
@@ -100,10 +105,11 @@ class FrmProDisplaysHelper {
 	}
 
 	/**
-	 * Put conditionals and foreach first
-	 * Remove duplicate conditional and foreach tags
+	 * Put conditionals and foreach first.
+	 * Remove duplicate conditional and foreach tags.
 	 *
 	 * @since 2.01.03
+	 *
 	 * @param array $shortcodes
 	 * @return array $shortcodes
 	 */
@@ -129,13 +135,23 @@ class FrmProDisplaysHelper {
 		return $shortcodes;
 	}
 
+	/**
+	 * @deprecated 6.11.1
+	 */
 	public static function prepare_duplicate_view( &$post ) {
+		_deprecated_function( __METHOD__, '6.11.1', 'FrmViewsDisplaysHelper::prepare_duplicate_view' );
 		if ( is_callable( 'FrmViewsDisplaysHelper::prepare_duplicate_view' ) ) {
 			FrmViewsDisplaysHelper::prepare_duplicate_view( $post );
 		}
 	}
 
+	/**
+	 * @deprecated 6.11.1
+	 *
+	 * @return array
+	 */
 	public static function get_show_counts() {
+		_deprecated_function( __METHOD__, '6.11.1', 'FrmViewsDisplaysHelper::get_show_counts' );
 		if ( is_callable( 'FrmViewsDisplaysHelper::get_show_counts' ) ) {
 			return FrmViewsDisplaysHelper::get_show_counts();
 		}
@@ -151,74 +167,5 @@ class FrmProDisplaysHelper {
 			return FrmViewsDisplaysHelper::get_frm_options_for_views( $include_key );
 		}
 		return array();
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function where_is_options() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::where_is_options' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function get_meta_values( $key = '', $post_type = 'frm_display' ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::get_meta_values', $key, $post_type );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function get_default_opts() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::get_default_opts' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function get_current_view( $post ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::get_current_view', $post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function setup_new_vars() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::setup_new_vars' );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function setup_edit_vars( $post, $check_post = true ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::setup_edit_vars', $post, $check_post );
-	}
-
-	/**
-	 * @deprecated 4.09
-	 */
-	public static function is_edit_view_page() {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysHelper::is_edit_view_page' );
-	}
-
-	/**
-	 * Call FrmProDisplaysController::deprecated_function if possible
-	 * During the migration process FrmProDisplaysController.php might still be out of date
-	 *
-	 * @param string $method
-	 * @param string $replacement
-	 * @param array  $params
-	 */
-	private static function deprecated_function( $method, $replacement = '', ...$params ) {
-		if ( is_callable( 'FrmProDisplaysController::deprecated_function' ) ) {
-			return FrmProDisplaysController::deprecated_function( $method, $replacement, ...$params );
-		}
-
-		_deprecated_function( esc_html( $method ), '4.09', esc_html( $replacement ) );
-
-		if ( $replacement && is_callable( $replacement ) ) {
-			return $replacement( ...$params );
-		}
 	}
 }

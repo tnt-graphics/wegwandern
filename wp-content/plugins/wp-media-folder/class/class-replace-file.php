@@ -94,7 +94,7 @@ it must be in the same format, ie. jpg > jpg… Thanks!', 'wpmf')
                     );
                 }
 
-                unlink($filepath);
+                wp_delete_file($filepath);
                 if (in_array($infopath['extension'], $allowedImageTypes)) {
                     if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
                         foreach ($metadata['sizes'] as $size => $sizeinfo) {

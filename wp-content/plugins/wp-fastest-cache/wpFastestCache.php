@@ -3,7 +3,7 @@
 Plugin Name: WP Fastest Cache
 Plugin URI: http://wordpress.org/plugins/wp-fastest-cache/
 Description: The simplest and fastest WP Cache system
-Version: 1.2.7
+Version: 1.3.0
 Author: Emre Vona
 Author URI: https://www.wpfastestcache.com/
 Text Domain: wp-fastest-cache
@@ -227,35 +227,7 @@ GNU General Public License for more details.
 					// /?action=wpfastestcache&type=clearcache&token=123
 					// /?action=wpfastestcache&type=clearcacheandminified&token=123
 
-					if(isset($_GET["token"]) && $_GET["token"]){
-						if(defined("WPFC_CLEAR_CACHE_URL_TOKEN") && WPFC_CLEAR_CACHE_URL_TOKEN){
-							if(WPFC_CLEAR_CACHE_URL_TOKEN == $_GET["token"]){
-								if($this->isPluginActive("wp-fastest-cache-premium/wpFastestCachePremium.php")){
-									include_once $this->get_premium_path("mobile-cache.php");
-								}
-
-								if($_GET["type"] == "clearcache"){
-									$this->deleteCache();
-								}
-
-								if($_GET["type"] == "clearcacheandminified"){
-									$this->deleteCache(true);
-								}
-
-								if($_GET["type"] == "clearcacheallsites"){
-									$this->wpfc_clear_cache_of_allsites_callback();
-								}
-
-								die("Done");
-							}else{
-								die("Wrong token");
-							}
-						}else{
-							die("WPFC_CLEAR_CACHE_URL_TOKEN must be defined");
-						}
-					}else{
-						die("Security token must be set.");
-					}
+					add_action('wp_loaded', array($this, "handle_custom_delete_cache_request"));
 				}
 			}else{
 				$this->setCustomInterval();
@@ -353,6 +325,44 @@ GNU General Public License for more details.
 						$this->cache();
 					}
 				}
+			}
+		}
+
+		public function handle_custom_delete_cache_request(){
+			if(isset($_GET["token"]) && $_GET["token"]){
+				if(defined("WPFC_CLEAR_CACHE_URL_TOKEN") && WPFC_CLEAR_CACHE_URL_TOKEN){
+					if(WPFC_CLEAR_CACHE_URL_TOKEN == $_GET["token"]){
+						if($this->isPluginActive("wp-fastest-cache-premium/wpFastestCachePremium.php")){
+							include_once $this->get_premium_path("mobile-cache.php");
+						}
+
+						if($_GET["type"] == "clearcache"){
+
+							if(isset($_GET["post_id"])){
+								$this->singleDeleteCache(false, $_GET["post_id"]);
+							}else{
+								$this->deleteCache();
+							}
+							
+						}
+
+						if($_GET["type"] == "clearcacheandminified"){
+							$this->deleteCache(true);
+						}
+
+						if($_GET["type"] == "clearcacheallsites"){
+							$this->wpfc_clear_cache_of_allsites_callback();
+						}
+
+						die("Done");
+					}else{
+						die("Wrong token");
+					}
+				}else{
+					die("WPFC_CLEAR_CACHE_URL_TOKEN must be defined");
+				}
+			}else{
+				die("Security token must be set.");
 			}
 		}
 
@@ -476,9 +486,11 @@ GNU General Public License for more details.
 			if($this->isPluginActive('polylang/polylang.php') || $this->isPluginActive('polylang-pro/polylang.php')){
 				$url =  parse_url($content_url);
 
-				if($url["host"] != $_SERVER['HTTP_HOST']){
-					$protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-					$content_url = $protocol.$_SERVER['HTTP_HOST'].$url['path'];
+				if(isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST']){
+					if($url["host"] != $_SERVER['HTTP_HOST']){
+						$protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+						$content_url = $protocol.$_SERVER['HTTP_HOST'].$url['path'];
+					}
 				}
 			}
 

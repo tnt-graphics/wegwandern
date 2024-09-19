@@ -47,6 +47,9 @@ class FrmProFormsController {
 		wp_enqueue_style( $theme_css, FrmProStylesController::jquery_css_url( $theme_css ), array(), FrmAppHelper::plugin_version() );
 	}
 
+	/**
+	 * @return void
+	 */
 	public static function enqueue_footer_js() {
 		global $frm_vars, $frm_input_masks;
 
@@ -64,12 +67,9 @@ class FrmProFormsController {
 			FrmAppHelper::localize_script( 'front' );
 		}
 
-		if ( isset( $frm_vars['tinymce_loaded'] ) && $frm_vars['tinymce_loaded'] ) {
+		if ( ! empty( $frm_vars['tinymce_loaded'] ) ) {
 			_WP_Editors::enqueue_scripts();
 		}
-
-		// trigger jQuery UI to be loaded on every page
-		self::add_js();
 
 		if ( ! empty( $frm_vars['datepicker_loaded'] ) ) {
 			if ( is_array( $frm_vars['datepicker_loaded'] ) ) {
@@ -138,20 +138,6 @@ class FrmProFormsController {
 		 * @param array $forms_loaded
 		 */
 		do_action( 'frm_footer_scripts', $frm_vars['forms_loaded'] );
-	}
-
-	public static function add_js() {
-		if ( FrmAppHelper::is_admin() ) {
-			return;
-		}
-
-		$frm_settings = FrmAppHelper::get_settings();
-
-		if ( $frm_settings->jquery_css ) {
-			global $frm_vars;
-			_deprecated_function( 'Loading jQuery CSS in the Formidable Global Settings', '4.0', 'wp_enqueue_style("jquery-ui-datepicker")' );
-			$frm_vars['datepicker_loaded'][] = true;
-		}
 	}
 
 	/**
@@ -245,16 +231,21 @@ class FrmProFormsController {
 	}
 
 	/**
-	 * Used for hiding the form on page load
+	 * Used for hiding the form on page load.
 	 *
 	 * @since 2.3
+	 *
+	 * @return void
 	 */
 	public static function head() {
-		echo '<script type="text/javascript">document.documentElement.className += " js";</script>' . "\r\n";
+		echo '<script>document.documentElement.className += " js";</script>' . "\r\n";
 	}
 
 	/**
 	 * @since 4.0
+	 *
+	 * @param array $sections
+	 * @return array
 	 */
 	public static function form_settings_sections( $sections ) {
 		$sections['permissions'] = array(
@@ -290,7 +281,7 @@ class FrmProFormsController {
 	}
 
 	/**
-	 * Conditionally ouputs option for Logged-out editing education in roles dropdowns in Form Permission settings.
+	 * Conditionally outputs option for Logged-out editing education in roles dropdowns in Form Permission settings.
 	 *
 	 * @since 6.9.1
 	 *
@@ -426,6 +417,10 @@ class FrmProFormsController {
 		return $label;
 	}
 
+	/**
+	 * @param array $values
+	 * @return void
+	 */
 	public static function add_form_button_options( $values ) {
 		global $frm_vars;
 		$page_field        = FrmProFormsHelper::has_field( 'break', $values['id'], true );
@@ -436,6 +431,9 @@ class FrmProFormsController {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param array $values
+	 * @return void
 	 */
 	public static function add_form_style_tab_options( $values ) {
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/add_form_style_options.php';
@@ -443,6 +441,9 @@ class FrmProFormsController {
 
 	/**
 	 * @since 3.04
+	 *
+	 * @param array $values
+	 * @return void
 	 */
 	public static function add_form_status_options( $values ) {
 		FrmProStylesController::enqueue_jquery_css();
@@ -462,6 +463,9 @@ class FrmProFormsController {
 		return false;
 	}
 
+	/**
+	 * @return void
+	 */
 	public static function instructions() {
 		$tags = array(
 			'date'                   => __( 'Current Date', 'formidable-pro' ),
@@ -516,14 +520,6 @@ class FrmProFormsController {
 			return $field_type;
 		}
 		return '<a href="#" class="frm_add_field">' . $field_type . '</a>';
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function drag_field_class() {
-		_deprecated_function( __METHOD__, '3.0' );
-		return ' class="field_type_list"';
 	}
 
 	/**
@@ -662,6 +658,7 @@ class FrmProFormsController {
 	 * @since 4.05
 	 *
 	 * @param stdClass $form
+	 * @return void
 	 */
 	private static function add_transitions( $form ) {
 		$transition = isset( $form->options['transition'] ) ? $form->options['transition'] : '';
@@ -676,6 +673,10 @@ class FrmProFormsController {
 		}
 	}
 
+	/**
+	 * @param string $class
+	 * @return string
+	 */
 	public static function form_fields_class( $class ) {
 		global $frm_page_num;
 		if ( $frm_page_num ) {
@@ -685,6 +686,10 @@ class FrmProFormsController {
 		return $class;
 	}
 
+	/**
+	 * @param stdClass $form
+	 * @return void
+	 */
 	public static function form_hidden_fields( $form ) {
 		if ( self::is_draft_visible_to_user( $form ) && isset( $form->options['save_draft'] ) && $form->options['save_draft'] == 1 ) {
 			echo '<input type="hidden" name="frm_saving_draft" class="frm_saving_draft" value="" />';
@@ -826,6 +831,10 @@ class FrmProFormsController {
 		return array_merge( $options, $cond_opts );
 	}
 
+	/**
+	 * @param array $options
+	 * @return array
+	 */
 	public static function advanced_options( $options ) {
 		$adv_opts = array(
 			'x clickable=1'                               => __( 'Clickable Links', 'formidable-pro' ),
@@ -937,7 +946,7 @@ class FrmProFormsController {
 			return $button;
 		}
 
-		return preg_replace( '/frm_button_submit/', 'frm_hidden frm_button_submit', $button, 1 );
+		return preg_replace( '/frm_button_submit/', 'frm_button_submit frm_hidden', $button, 1 );
 	}
 
 	/**
@@ -1056,6 +1065,10 @@ class FrmProFormsController {
 		return $opts;
 	}
 
+	/**
+	 * @param array $opts
+	 * @return void
+	 */
 	private static function popup_opts_formidable( array &$opts ) {
 		//'fields' => '', 'entry_id' => 'last' or #, 'exclude_fields' => '', GET => value
 		$opts['readonly'] = array( 'val' => 'disabled', 'label' => __( 'Make read-only fields editable', 'formidable-pro' ) );
@@ -1067,6 +1080,10 @@ class FrmProFormsController {
 		}
 	}
 
+	/**
+	 * @param array $opts
+	 * @return void
+	 */
 	private static function popup_opts_frm_search( array &$opts ) {
 		$opts = array(
 			'style'   => array( 'val' => 1, 'label' => __( 'Use Formidable styling', 'formidable-pro' ) ), // or custom class?
@@ -1249,7 +1266,7 @@ class FrmProFormsController {
 			$entry_shortcodes['detaillink']                      = __( 'Detail Link', 'formidable-pro' );
 			$entry_shortcodes['editlink label="Edit" page_id=x'] = __( 'Edit Entry Link', 'formidable-pro' );
 			$entry_shortcodes['entry_count']                     = __( 'Entry Count', 'formidable-pro' );
-			$entry_shortcodes['entry_position']                  = __( 'Entry Postion', 'formidable-pro' );
+			$entry_shortcodes['entry_position']                  = __( 'Entry Position', 'formidable-pro' );
 			$entry_shortcodes['evenodd']                         = __( 'Even/Odd', 'formidable-pro' );
 			$entry_shortcodes['is_draft']                        = __( 'Draft status', 'formidable-pro' );
 			$entry_shortcodes['event_date format="Y-m-d"']       = __( 'Calendar Date', 'formidable-pro' );
@@ -1433,26 +1450,6 @@ class FrmProFormsController {
 	public static function frm_submit_button_html( $button ) {
 		FrmProFieldsHelper::replace_non_standard_formidable_shortcodes( array(), $button );
 		return $button;
-	}
-
-	/**
-	 * Adds options for new form values.
-	 *
-	 * @since 5.4
-	 * @since 5.5.5 This method is removed from `frm_new_form_values` hook.
-	 *
-	 * @deprecated 5.5.5
-	 *
-	 * @param array $values Form values.
-	 * @return array
-	 */
-	public static function add_new_form_values( $values ) {
-		_deprecated_function( __METHOD__, '5.5.5' );
-		if ( ! isset( $values['options'] ) ) {
-			$values['options'] = array();
-		}
-
-		return $values;
 	}
 
 	/**
@@ -1661,35 +1658,9 @@ class FrmProFormsController {
 	}
 
 	/**
-	 * @deprecated 4.0
+	 * @deprecated 6.12
 	 */
-	public static function instruction_tabs() {
-		_deprecated_function( __METHOD__, '4.0' );
-	}
-
-	/**
-	 * Stars need the formidablepro.js
-	 *
-	 * @since 3.0
-	 * @deprecated 4.04.02
-	 */
-	public static function load_builder_scripts() {
-		_deprecated_function( __METHOD__, '4.04.02' );
-		$pro_js = FrmProAppController::get_pro_js_files();
-		$js_key = 'formidablepro';
-		$js     = $pro_js[ $js_key ];
-		wp_enqueue_script( $js_key, FrmProAppHelper::plugin_url() . $js['file'], $js['requires'], $js['version'], true );
-	}
-
-	/**
-	 * @deprecated 6.0
-	 */
-	public static function add_form_msg_options( $values ) {
-		_deprecated_function( __METHOD__, '6.0' );
-		global $frm_vars;
-
-		$post_types = FrmProAppHelper::get_custom_post_types();
-
-		require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/add_form_msg_options.php';
+	public static function add_js() {
+		_deprecated_function( __METHOD__, '6.12' );
 	}
 }

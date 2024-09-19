@@ -80,12 +80,12 @@ class FrmProStrpLiteController {
 	}
 
 	/**
-	 * Load required registation add on hooks for Stripe Lite.
+	 * Load required registration add on hooks for Stripe Lite.
 	 *
 	 * @return void
 	 */
 	public static function add_registration_hooks() {
-		// Registation add on support.
+		// Registration add on support.
 		if ( ! class_exists( 'FrmRegHooksController', false ) ) {
 			return;
 		}

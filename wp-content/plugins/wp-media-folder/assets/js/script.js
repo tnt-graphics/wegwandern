@@ -289,46 +289,67 @@ var wpmfFoldersModule = void 0,
                     // call drag folderempty attachment
                     wpmfFoldersModule.initializeDragAndDropAttachments();
                     wpmfFoldersModule.openContextMenuFolder();
+                    // Select the node that will be observed for mutations
                     // call open context menu when empty attachment
-                    $current_frame.find('.attachments-browser ul.attachments').on("DOMNodeInserted", function () {
-                        // Wait All DOMInserted events to be thrown before calling the initialization functions
-                        window.clearTimeout(timeout);
-                        timeout = window.setTimeout(function () {
-                            // Hovering image intialization
-                            wpmfFoldersModule.initHoverImage();
-                            wpmfFoldersModule.initAttachmentLabelS3();
+                    const targetNode =  $current_frame.find('.attachments-browser ul.attachments')[0];
+                    // Options for the observer (which mutations to observe)
+                    const config = { attributes: true, childList: true, subtree: true };
 
-                            // open / close context menu box
-                            wpmfFoldersModule.openContextMenuFile();
-                            wpmfFoldersModule.openContextMenuFolder();
-                            wpmfFoldersModule.getFrame().find('.attachments-browser ul.attachments .attachment .thumbnail').each(function (e) {
-                                var $this = $(this);
-                                if ($this.closest('.attachment-preview').hasClass('type-image') && !$this.closest('.attachment.loading').length) {
-                                    var _id = $this.closest('.attachment').data('id');
-                                    var cloud_media = wp.media.attachment(_id).get('cloud_media');
-                                    var url = wp.media.attachment(_id).get('url');
+                    // Callback function to execute when mutations are observed
+                    const callback = (mutationList, observer) => {
+                    for (const mutation of mutationList) {
+                        if (mutation.type === "childList") {
+                            // Wait All DOMInserted events to be thrown before calling the initialization functions
+                            window.clearTimeout(timeout);
+                            timeout = window.setTimeout(function () {
+                                // Hovering image intialization
+                                wpmfFoldersModule.initHoverImage();
+                                wpmfFoldersModule.initAttachmentLabelS3();
 
-                                    if (typeof url !== "undefined") {
-                                        if (url.indexOf('action=wpmf') !== -1 || url.indexOf('api.onedrive.com') !== -1 || url.indexOf('drive.google.com') !== -1 || url.indexOf('dropbox.com') !== -1) {
-                                            $this.css('background', 'transparent url(' + wpmf.vars.img_url + 'spinner.gif) center no-repeat');
-                                            $this.find('img').on('load', function () {
-                                                $this.css('background', 'transparent');
-                                            });
+                                // open / close context menu box
+                                wpmfFoldersModule.openContextMenuFile();
+                                wpmfFoldersModule.openContextMenuFolder();
+                                wpmfFoldersModule.getFrame().find('.attachments-browser ul.attachments .attachment .thumbnail').each(function (e) {
+                                    var $this = $(this);
+                                    if ($this.closest('.attachment-preview').hasClass('type-image') && !$this.closest('.attachment.loading').length) {
+                                        var _id = $this.closest('.attachment').data('id');
+                                        var cloud_media = wp.media.attachment(_id).get('cloud_media');
+                                        var url = wp.media.attachment(_id).get('url');
+
+                                        if (typeof url !== "undefined") {
+                                            if (url.indexOf('action=wpmf') !== -1 || url.indexOf('api.onedrive.com') !== -1 || url.indexOf('drive.google.com') !== -1 || url.indexOf('dropbox.com') !== -1) {
+                                                $this.css('background', 'transparent url(' + wpmf.vars.img_url + 'spinner.gif) center no-repeat');
+                                                $this.find('img').on('load', function () {
+                                                    $this.css('background', 'transparent');
+                                                });
+                                            }
+                                        }
+
+                                        if (parseInt(cloud_media) === 1) {
+                                            $this.closest('li').addClass('wpmf_cloud_media').removeClass('wpmf_local_media');
+                                        } else {
+                                            $this.closest('li').removeClass('wpmf_cloud_media').addClass('wpmf_local_media');
                                         }
                                     }
+                                });
 
-                                    if (parseInt(cloud_media) === 1) {
-                                        $this.closest('li').addClass('wpmf_cloud_media').removeClass('wpmf_local_media');
-                                    } else {
-                                        $this.closest('li').removeClass('wpmf_cloud_media').addClass('wpmf_local_media');
-                                    }
-                                }
-                            });
+                                // Attach drag and drop event to the attachments
+                                wpmfFoldersModule.initializeDragAndDropAttachments();
+                            }, 300);
+                        }
+                    }
+                    };
 
-                            // Attach drag and drop event to the attachments
-                            wpmfFoldersModule.initializeDragAndDropAttachments();
-                        }, 300);
-                    });
+                    if (targetNode){
+                        // Create an observer instance linked to the callback function
+                        const observer = new MutationObserver(callback);
+                            
+                        // Start observing the target node for configured mutations
+                        observer.observe(targetNode, config);
+
+                        // Later, you can stop observing
+                        // observer.disconnect();
+                    }
 
                     // Add the creation gallery from folder button
 
@@ -1655,13 +1676,13 @@ var wpmfFoldersModule = void 0,
             var folder_color = '<div class="custom_color_wrap">';
             if (typeof colorlists[wpmf.vars.colors[wpmfFoldersModule.editFolderId]] === 'undefined') {
                 if (typeof wpmf.vars.colors[wpmfFoldersModule.editFolderId] === 'undefined') {
-                    custom_color = '#8f8f8f';
+                    custom_color = '#b2b2b2';
                 } else {
                     custom_color = wpmf.vars.colors[wpmfFoldersModule.editFolderId];
                     value = wpmf.vars.colors[wpmfFoldersModule.editFolderId];
                 }
             } else {
-                custom_color = '#8f8f8f';
+                custom_color = '#b2b2b2';
             }
             folder_color += '\n                        <input name="wpmf_color_folder" type="text"\n                         placeholder="' + wpmf.l18n.placegolder_color + '"\n                                       value="' + value + '"\n                                       class="inputbox input-block-level wp-color-folder wp-color-picker">';
             folder_color += '<div data-color="' + custom_color + '" class="color custom_color" style="background: ' + custom_color + '"><i class="material-icons color_uncheck">check</i></div>';
@@ -2191,13 +2212,13 @@ var wpmfFoldersModule = void 0,
                                             }
                                         });
 
-                                        if ($('.wpmf_role_permissions').val() != 0) {
+                                        if ($('.wpmf_role_permissions :selected').val() != 0) {
                                             $('.wpmf_add_role').addClass('show');
                                         } else {
                                             $('.wpmf_add_role').removeClass('show');
                                         }
 
-                                        if ($('.wpmf_user_permissions').val() != 0) {
+                                        if ($('.wpmf_user_permissions  :selected').val() != 0) {
                                             $('.wpmf_add_user').addClass('show');
                                         } else {
                                             $('.wpmf_add_user').removeClass('show');
@@ -2221,18 +2242,24 @@ var wpmfFoldersModule = void 0,
                 });
 
                 $('.wpmf_add_role').on('click', function () {
-                    if ($('.wpmf_role_permissions').val() == 0) {
+                    if ($('.wpmf_role_permissions').length > 0 && $('.wpmf_role_permissions:last :selected').val() == 0) {
                         return;
                     }
                     $('.roles_list_html').append(role_permission_html);
+                    if ($().wpmfSelect2) {
+                        $('.wpmf_role_permissions:last').wpmfSelect2();
+                    }
                     wpmfFoldersModule.removeRolePermissions();
                 });
 
                 $('.wpmf_add_user').on('click', function () {
-                    if ($('.wpmf_user_permissions').val() == 0) {
+                    if ($('.wpmf_user_permissions').length > 0 && $('.wpmf_user_permissions:last :selected').val() == 0) {
                         return;
                     }
                     $('.users_list_html').append(user_permission_html);
+                    if ($().wpmfSelect2) {
+                        $('.wpmf_user_permissions:last').wpmfSelect2();
+                    }
                     wpmfFoldersModule.removeRolePermissions();
                 });
 
@@ -2247,7 +2274,7 @@ var wpmfFoldersModule = void 0,
                     var all_role_permissions = [],
                         all_user_permissions = [];
                     $('.folder_role_permission_items').each(function (i, item) {
-                        var role = $(item).find('.wpmf_role_permissions').val();
+                        var role = $(item).find('.wpmf_role_permissions :selected').val();
                         var permissions = [];
                         permissions.push(role);
                         $(item).find('.permission_item_checkbox').each(function (i, permission) {
@@ -2259,7 +2286,7 @@ var wpmfFoldersModule = void 0,
                     });
 
                     $('.folder_user_permission_items').each(function (i, item) {
-                        var user = $(item).find('.wpmf_user_permissions').val();
+                        var user = $(item).find('.wpmf_user_permissions  :selected').val();
                         var permissions = [];
                         permissions.push(user);
                         $(item).find('.permission_item_checkbox').each(function (i, permission) {
@@ -4029,6 +4056,7 @@ var wpmfFoldersModule = void 0,
                     html += '<div class="video-thumbnail-btn-wrap"><button class="add-video-thumbnail-btn">' + wpmf.l18n.add_image + '</button></div>';
                     html += '<p class="add_video_msg"></p>';
                     html += '</div>';
+                    var folder_id = wpmfFoldersModule.last_selected_folder;
                     showDialog({
                         id: 'wpmf-add-video-dialog',
                         title: wpmf.l18n.add_video,
@@ -4055,7 +4083,7 @@ var wpmfFoldersModule = void 0,
                                     }
                                 }
 
-                                wpmfFoldersModule.addVideoToGallery(video_url, thumbnail_id);
+                                wpmfFoldersModule.addVideoToGallery(video_url, thumbnail_id, folder_id);
                             }
                         }
                     });
@@ -4070,9 +4098,10 @@ var wpmfFoldersModule = void 0,
                         allowHTML: true,
                         onShow: function onShow(instance) {
                             var tippy_html = '';
-                            tippy_html += '<p class="video-tippy-help" style="color: yellow; font-size:14px">Support: youtube, vimeo, facebook watch, wistia, twitch, dailymotion, self-hosted</p>';
+                            tippy_html += '<p class="video-tippy-help" style="color: yellow; font-size:14px">Support: youtube, vimeo, kaltura, facebook watch, wistia, twitch, dailymotion, self-hosted</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.youtube.com/watch?v=5ncy4gn6S0k</p>';
                             tippy_html += '<p class="video-tippy-help">https://vimeo.com/496843494</p>';
+                            tippy_html += '<p class="video-tippy-help">https://videos.kaltura.com/media/Kaltura+Overview/1_11mvteme</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.facebook.com/svmteam/videos/972235670261003</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.twitch.tv/videos/999290199</p>';
                             tippy_html += '<p class="video-tippy-help">https://www.dailymotion.com/video/x80wibi</p>';
@@ -4153,6 +4182,7 @@ var wpmfFoldersModule = void 0,
         addVideoToGallery: function addVideoToGallery() {
             var video_url = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
             var thumbnail_id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+            var folder_id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
 
             if (video_url === '') {
                 return;
@@ -4166,14 +4196,14 @@ var wpmfFoldersModule = void 0,
                     task: "create_remote_video",
                     video_url: video_url,
                     thumbnail_id: thumbnail_id,
-                    folder_id: wpmfFoldersModule.last_selected_folder,
+                    folder_id: folder_id,
                     wpmf_nonce: wpmf.vars.wpmf_nonce
                 },
                 beforeSend: function beforeSend() {},
                 success: function success(res) {
                     if (res.status) {
                         wpmfFoldersModule.reloadAttachments(true);
-                        wpmfFoldersModule.trigger('addRemoteVideo', wpmfFoldersModule.last_selected_folder);
+                        wpmfFoldersModule.trigger('addRemoteVideo', folder_id);
                     }
                 }
             });

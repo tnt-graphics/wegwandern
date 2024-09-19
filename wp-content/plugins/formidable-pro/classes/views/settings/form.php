@@ -17,7 +17,7 @@ if ( ! is_callable( 'FrmSettingsController::message_settings' ) ) {
 <p class="frm_grid_container">
 	<label for="frm_date_format" class="frm4 frm_form_field">
 		<?php esc_html_e( 'Date Format', 'formidable-pro' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Change the format of the date used in the date field.', 'formidable-pro' ); ?>"></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'Change the format of the date used in the date field.', 'formidable-pro' ) ); ?>
 	</label>
 	<?php $formats = array_keys( FrmProAppHelper::display_to_datepicker_format() ); ?>
 	<select id="frm_date_format" name="frm_date_format" class="frm8 frm_form_field">

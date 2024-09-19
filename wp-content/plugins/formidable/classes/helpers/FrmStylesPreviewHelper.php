@@ -225,27 +225,10 @@ class FrmStylesPreviewHelper {
 	/**
 	 * @since 6.0
 	 *
-	 * @return false|string
+	 * @return string
 	 */
 	private function get_disabled_features_note() {
-		$disabled_features = array();
-
-		if ( $this->form_includes_captcha ) {
-			$disabled_features[] = __( 'Captcha fields are hidden.', 'formidable' );
-		}
-
-		if ( is_callable( 'FrmProStylesController::get_disabled_javascript_features' ) ) {
-			$disabled_pro_features = FrmProStylesController::get_disabled_javascript_features();
-			if ( is_string( $disabled_pro_features ) ) {
-				$disabled_features[] = $disabled_pro_features;
-			}
-		}
-
-		if ( $disabled_features ) {
-			return __( 'Not all JavaScript is loaded in this preview.', 'formidable' ) . ' ' . implode( ' ', $disabled_features );
-		}
-
-		return false;
+		return __( 'Not all JavaScript is loaded in this preview. Some features will appear differently on the front end.', 'formidable' );
 	}
 
 	/**
@@ -338,6 +321,52 @@ class FrmStylesPreviewHelper {
 
 		// Remove the edit dependency from wp-admin so it still loads, just without edit.css.
 		self::remove_wp_admin_dependency( $styles, 'edit' );
+	}
+
+	/**
+	 * Provides few fixes for style preview.
+	 * Fix the "Width" from Fields Settings to get reflected on each style preview ajax update.
+	 * Fix the Radio & Checkbox "Single Row" or "Multiple Row" to get reflected in style preview ajax update.
+	 *
+	 * @since 6.14
+	 *
+	 * @param array $settings The style options.
+	 * @param bool  $is_preview
+	 *
+	 * @return void
+	 */
+	public static function get_additional_preview_style( $settings, $is_preview = false ) {
+		if ( ! $is_preview ) {
+			return;
+		}
+		$radio_display_type = 'inline' === $settings['radio_align'] ? 'inline-block' : 'block';
+		$check_display_type = 'inline' === $settings['check_align'] ? 'inline-block' : 'block';
+
+		$style = '#frm_style_preview .with_frm_style input[type=text],
+				#frm_style_preview .with_frm_style input[type=password],
+				#frm_style_preview .with_frm_style input[type=email],
+				#frm_style_preview .with_frm_style input[type=number],
+				#frm_style_preview .with_frm_style input[type=url],
+				#frm_style_preview .with_frm_style input[type=tel],
+				#frm_style_preview .with_frm_style input[type=phone],
+				#frm_style_preview .with_frm_style input[type=search],
+				#frm_style_preview .with_frm_style textarea,
+				#frm_style_preview .frm_form_fields_style,
+				#frm_style_preview .with_frm_style .frm_scroll_box .frm_opt_container,
+				#frm_style_preview .frm_form_fields_active_style,
+				#frm_style_preview .frm_form_fields_error_style,
+				#frm_style_preview .with_frm_style .frm-card-element.StripeElement,
+				#frm_style_preview .with_frm_style .frm_slimselect.ss-main {
+					width: var(--field-width);
+				}
+				#frm_style_preview .with_frm_style .frm_radio {
+					display:' . $radio_display_type . ';
+				}
+				#frm_style_preview .with_frm_style .frm_checkbox {
+					display:' . $check_display_type . ';
+				}';
+
+		echo esc_html( $style );
 	}
 
 	/**

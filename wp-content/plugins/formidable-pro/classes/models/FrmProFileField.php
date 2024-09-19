@@ -1188,7 +1188,7 @@ class FrmProFileField {
 
 	/**
 	 * The wp_image_maybe_exif_rotate logic in WordPress has conflicts with the resize functionality in Dropzone.
-	 * When uploading with dropzone, with resizae is on, disable the exif rotation. The file is saved again after it is inserted.
+	 * When uploading with dropzone, with resize on, disable the exif rotation. The file is saved again after it is inserted.
 	 *
 	 * @since 5.1
 	 *

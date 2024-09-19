@@ -215,7 +215,7 @@ class FrmAcfPostActionHelper {
 		}
 
 		foreach ( $fields as $index => $field ) {
-			if ( 'end_divider' === $field->type || 'divider' === $field->type && ! FrmField::is_repeating_field( $field ) ) {
+			if ( 'end_divider' === $field->type || ( 'divider' === $field->type && ! FrmField::is_repeating_field( $field ) ) ) {
 				unset( $fields[ $index ] );
 				continue;
 			}

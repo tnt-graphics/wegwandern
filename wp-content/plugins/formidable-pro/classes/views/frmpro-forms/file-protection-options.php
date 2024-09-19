@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<label for="noindex_files" class="<?php echo esc_attr( $values['protect_files'] ? '' : 'frm_noallow' ); ?>">
 			<input type="checkbox" name="options[noindex_files]" id="noindex_files" value="1" <?php checked( $values['protect_files'] ? $values['noindex_files'] : 0, 1 ); ?> <?php disabled( $values['protect_files'], 0 ); ?> />
 			<?php esc_html_e( 'Prevent search engines from indexing uploads', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" data-container="body" title="<?php esc_attr_e( 'This feature requires that file protection is turned on.', 'formidable-pro' ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'This feature requires that file protection is turned on.', 'formidable-pro' ), array( 'data-container' => 'body' ) ); ?>
 		</label>
 	</p>
 <?php else : ?>

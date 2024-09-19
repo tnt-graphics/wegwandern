@@ -20,13 +20,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</label>
 	<?php if ( $sub_field['type'] === 'select' ) { ?>
 		<select name="<?php echo esc_attr( $field_name ); ?>[<?php echo esc_attr( $key ); ?>]" id="<?php echo esc_attr( $html_id . '_' . $key ); ?>" <?php FrmProComboFieldsController::add_atts_to_input( compact( 'field', 'sub_field', 'key' ) ); ?>>
-			<option value="">
+			<option value="" <?php echo esc_attr( empty( $field['placeholder'][ $key ] ) ? '' : 'class="frm-select-placeholder"' ); ?>>
 				<?php echo esc_html( FrmProComboFieldsController::get_dropdown_label( compact( 'field', 'key', 'sub_field' ) ) ); ?>
 			</option>
 			<?php
 			foreach ( $sub_field['options'] as $option ) {
 				$selected = (string) $field['value'][ $key ] === (string) $option;
 				$params   = array( 'value' => $option );
+
+				if ( 'address' === $field['type'] && 'country' === $key ) {
+					$code = FrmProAddressesController::get_country_code( $option );
+					if ( $code ) {
+						$params['data-code'] = $code;
+					}
+				}
+
 				FrmProHtmlHelper::echo_dropdown_option( $option, $selected, $params );
 			}
 			?>

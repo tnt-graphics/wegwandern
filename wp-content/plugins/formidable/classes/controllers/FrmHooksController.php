@@ -36,7 +36,7 @@ class FrmHooksController {
 		}
 		unset( $trigger_hooks );
 
-		// Instansiate Controllers.
+		// Instantiate Controllers.
 		foreach ( $controllers as $c ) {
 			foreach ( $hooks as $hook ) {
 				if ( is_callable( array( $c, $hook ) ) ) {
@@ -301,7 +301,7 @@ class FrmHooksController {
 		add_filter( 'frm_field_label_seen', 'FrmFieldsController::check_label' );
 
 		// Forms Controller.
-		add_filter( 'frm_form_classes', 'FrmFormsController::form_classes' );
+		add_action( 'frm_form_classes', 'FrmFormsController::form_classes' );
 		add_filter( 'frm_submit_button_class', 'FrmFormsController::update_button_classes' );
 		add_filter( 'frm_back_button_class', 'FrmFormsController::update_button_classes' );
 
@@ -326,15 +326,5 @@ class FrmHooksController {
 
 		// Drop tables when mu site is deleted.
 		add_filter( 'wpmu_drop_tables', 'FrmAppController::drop_tables' );
-	}
-
-	/**
-	 * @deprecated 5.0.06 use FrmElementorController::register_elementor_hooks directly.
-	 *
-	 * @return void
-	 */
-	public static function register_elementor_hooks() {
-		_deprecated_function( __FUNCTION__, '5.0.06', 'FrmElementorController::register_elementor_hooks' );
-		FrmElementorController::register_elementor_hooks();
 	}
 }

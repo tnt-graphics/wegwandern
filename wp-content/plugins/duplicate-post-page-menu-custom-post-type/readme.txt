@@ -2,9 +2,9 @@
 Contributors: Inqsys, sindhwal
 Tags: duplicate page, copy menu, clone, duplicate custom-post, copy
 Donate link: http://www.inqsys.com/donate/
-Requires at least: 3.5
-Tested up to: 6.1
-Stable tag: 2.3.1
+Requires at least:4.5
+Tested up to: 6.5
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,9 +12,6 @@ The best plugin to duplicate post, page, menu and custom post type multiple time
 
 == Description ==
 This plugin is very useful in creating multiple duplicate entries of a single post, page, menu and  custom posts like products, tickets, coupons, events etc. Now you don’t need to create multiple mock post on your website to check the website layout. Create one post and a single click will create a multiple entries for the same post. 
-<p>
-We make professional websites, <a href="https://inqsys.com/contact-us" target="_new">get in touch</a> to get a free quote.
-</p>
 <p>
 If you find this useful, <a href='https://www.inqsys.com/donate/' target='_new'>please consider donating</a> and this would help us in the development of the plugin and improve support.
 </p>
@@ -81,6 +78,16 @@ If you find this useful, <a href='https://www.inqsys.com/donate/' target='_new'>
 </ol>
 
 == Changelog ==
+<ul><li>2.4.1</li><ul>
+<li>Fixing: XSS issues and tested for WP 6.5.</li>
+</ul></ul>
+<ul><li>2.4.0</li><ul>
+<li>Fixed: Security issues found in the previous version.</li>
+</ul></ul>
+<ul><li>2.3.0</li><ul>
+<li>Fix:Minor Bug fixes.</li>
+<li>Improved:Minor code improvements.</li>
+</ul></ul>
 <ul><li>2.2.0</li><ul>
 <li>Optimization: PHP optimized for WP 6.0.</li>
 </ul></ul>

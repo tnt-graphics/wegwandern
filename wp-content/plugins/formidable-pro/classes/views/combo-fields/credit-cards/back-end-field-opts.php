@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <p>
 	<label for="save_cc_<?php echo esc_attr( $field['id'] ); ?>">
 		<?php esc_html_e( 'Credit Card Security', 'formidable-pro' ); ?>
-		<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'By default, only the last four digits of a credit card number will be saved. We recommend that you save as little credit card information on your site as possible.', 'formidable-pro' ); ?>"></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'By default, only the last four digits of a credit card number will be saved. We recommend that you save as little credit card information on your site as possible.', 'formidable-pro' ) ); ?>
 	</label>
 	<select name="field_options[save_cc_<?php echo esc_attr( $field['id'] ); ?>]" id="save_cc_<?php echo esc_attr( $field['id'] ); ?>">
 		<option value="4" <?php selected( $field['save_cc'], '4' ); ?>>

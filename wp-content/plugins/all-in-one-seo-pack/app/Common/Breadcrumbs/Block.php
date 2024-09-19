@@ -60,22 +60,25 @@ class Block {
 	 * @return string                  The output from the output buffering.
 	 */
 	public function render( $blockAttributes ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
-		// phpcs:disable HM.Security.ValidatedSanitizedInput.InputNotSanitized, HM.Security.NonceVerification.Recommended
-		$postId = ! empty( $_GET['post_id'] ) ? (int) wp_unslash( $_GET['post_id'] ) : false;
+		// phpcs:disable HM.Security.ValidatedSanitizedInput.InputNotSanitized, HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
+		$postId = ! empty( $_GET['post_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['post_id'] ) ) : false;
 		// phpcs:enable
 
 		if ( ! empty( $blockAttributes['primaryTerm'] ) ) {
 			$this->primaryTerm = json_decode( $blockAttributes['primaryTerm'], true );
 		}
 
-		if ( aioseo()->blocks->isGBEditor() && ! empty( $postId ) ) {
+		if ( aioseo()->blocks->isRenderingBlockInEditor() && ! empty( $postId ) ) {
 			add_filter( 'aioseo_post_primary_term', [ $this, 'changePrimaryTerm' ], 10, 2 );
 			add_filter( 'get_object_terms', [ $this, 'temporarilyAddTerm' ], 10, 3 );
 			$breadcrumbs = aioseo()->breadcrumbs->frontend->sideDisplay( false, 'post' === get_post_type( $postId ) ? 'post' : 'single', get_post( $postId ) );
 			remove_filter( 'aioseo_post_primary_term', [ $this, 'changePrimaryTerm' ], 10 );
 			remove_filter( 'get_object_terms', [ $this, 'temporarilyAddTerm' ], 10 );
 
-			if ( ! aioseo()->options->breadcrumbs->enable ) {
+			if (
+				in_array( 'breadcrumbsEnable', aioseo()->internalOptions->deprecatedOptions, true ) &&
+				! aioseo()->options->deprecated->breadcrumbs->enable
+			) {
 				return '<p>' .
 						sprintf(
 							// Translators: 1 - The plugin short name ("AIOSEO"), 2 - Opening HTML link tag, 3 - Closing HTML link tag.

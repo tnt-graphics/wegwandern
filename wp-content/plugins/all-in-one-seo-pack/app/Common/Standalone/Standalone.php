@@ -96,18 +96,21 @@ class Standalone {
 
 		aioseo()->pro ? new ProStandalone\DetailsColumn() : new DetailsColumn();
 
-		new UserProfileTab();
-		new PublishPanel();
+		new AdminBarNoindexWarning();
 		new LimitModifiedDate();
 		new Notifications();
+		new PublishPanel();
+		new UserProfileTab();
 		new WpCode();
 
 		$this->pageBuilderIntegrations = [
-			'elementor' => new PageBuilders\Elementor(),
-			'divi'      => new PageBuilders\Divi(),
-			'seedprod'  => new PageBuilders\SeedProd(),
-			'wpbakery'  => new PageBuilders\WPBakery(),
-			'avada'     => new PageBuilders\Avada()
+			'elementor'  => new PageBuilders\Elementor(),
+			'divi'       => new PageBuilders\Divi(),
+			'seedprod'   => new PageBuilders\SeedProd(),
+			'wpbakery'   => new PageBuilders\WPBakery(),
+			'avada'      => new PageBuilders\Avada(),
+			'siteorigin' => new PageBuilders\SiteOrigin(),
+			'thrive'     => new PageBuilders\ThriveArchitect()
 		];
 
 		$this->standaloneBlocks = [

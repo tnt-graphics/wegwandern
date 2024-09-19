@@ -15,7 +15,7 @@ $acf_enabled = ! empty( $args['form_action']->post_content['acf'] );
 $mapping     = ! empty( $args['form_action']->post_content['post_custom_fields'] ) ? (array) $args['form_action']->post_content['post_custom_fields'] : array();
 $mapping     = array_filter(
 	$mapping,
-	function( $item ) {
+	function ( $item ) {
 		return ! empty( $item['is_acf'] );
 	}
 );
@@ -46,7 +46,7 @@ $js_data          = FrmAcfPostActionHelper::get_form_action_js_data( $args );
 	);
 	?>
 	<label id="frm_acf_label" for="frm_acf">
-		<?php esc_html_e( 'Map form fields to Advanced Custom Fields', 'frm-acf' ); ?>
+		<?php esc_html_e( 'Map form fields to Advanced Custom Fields', 'formidable-acf' ); ?>
 	</label>
 </div>
 
@@ -73,13 +73,13 @@ if ( ! $acf_enabled ) {
 
 	<div id="frm_acf_mapping" class="frm_hidden">
 		<div class="frm_grid_container">
-			<label class="frm5 frm_first"><?php esc_html_e( 'Formidable Fields', 'frm-acf' ); ?></label>
-			<label class="frm5"><?php esc_html_e( 'Advanced Custom Fields', 'frm-acf' ); ?></label>
+			<label class="frm5 frm_first"><?php esc_html_e( 'Formidable Fields', 'formidable-acf' ); ?></label>
+			<label class="frm5"><?php esc_html_e( 'Advanced Custom Fields', 'formidable-acf' ); ?></label>
 		</div>
 
 		<p id="frm_acf_add_row_wrapper">
 			<a href="javascript:void(0)" class="frm_acf_add_row button frm-button-secondary">
-				+ <?php esc_html_e( 'Add' ); ?>
+				+ <?php esc_html_e( 'Add', 'formidable-acf' ); ?>
 			</a>
 		</p>
 	</div>

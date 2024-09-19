@@ -11,16 +11,80 @@
 
 	function addEventListeners() {
 		document.addEventListener( 'change', handleChangeEvent );
-
-		document.addEventListener( 'frm_added_field', PageBreakField.onAddedField );
+		document.addEventListener( 'frm_added_field', onFieldAdded );
 	}
 
 	hooks.addFilter( 'frm_conditional_logic_field_options', hookNamespace, updateFieldOptions );
 
-	hooks.addFilter( 'frm_fields_with_shortcode_popup', 'formidable-pro', function( fieldsWithShortcodesBox ) {
+	hooks.addFilter( 'frm_fields_with_shortcode_popup', hookNamespace, function( fieldsWithShortcodesBox ) {
 		fieldsWithShortcodesBox.push( 'rte' );
 		return fieldsWithShortcodesBox;
 	});
+
+	hooks.addAction( 'frm_after_delete_field', 'formidable-pro', function( fieldLi ) {
+		const fieldID = getFieldIDFromHTMLID( fieldLi.id );
+		document.querySelector( `a[data-code="${fieldID}"]` )?.closest( '.frm-customize-list' )?.remove();
+	});
+
+	hooks.addAction( 'frm_before_delete_field_option', hookNamespace, deleteConditionalLogicOptions );
+
+	const onFieldAdded = event => {
+		PageBreakField.onAddedField( event );
+		maybeAddFieldToFieldShortcodes( event );
+	};
+
+	const maybeAddFieldToFieldShortcodes = params => {
+		if ( [ 'data', 'divider', 'end_divider', 'captcha', 'break', 'html', 'form', 'summary' ].includes( params.frmType ) ) {
+			return;
+		}
+		const insertCodeID  = createFieldsShortcodeRowLink( 'id', params );
+		const insertCodeKey = createFieldsShortcodeRowLink( 'key', params );
+		const shortcodeLink = frmDom.tag( 'li', {
+			className: 'frm-customize-list dropdown-item show_frm_not_email_to',
+			children: [
+				insertCodeID,
+				insertCodeKey,
+			],
+		});
+		document.querySelector( '#frm-insert-fields-box .frm_code_list' )?.insertAdjacentElement( 'beforeend', shortcodeLink );
+	};
+
+	/**
+	 * Returns the field id from html id.
+	 *
+	 * @param {string} htmlID
+	 * @returns {string}
+	 */
+	const getFieldIDFromHTMLID = htmlID => htmlID.replace( 'frm_field_id_', '' );
+
+	/**
+	 * Creates <li> elements for the new field to be inserted in the shortcodes popup.
+	 *
+	 * @param {string} type 
+	 * @param {Object} params 
+	 * @returns {HTMLElement}
+	 */
+	const createFieldsShortcodeRowLink = ( type, params ) => {
+		const fieldID   = getFieldIDFromHTMLID( params.frmField.id );
+		const fieldKey  = document.getElementById( `field_options_field_key_${fieldID}` )?.value;
+		const isIDLink  = type === 'id';
+		const shortcode = isIDLink ? fieldID : fieldKey;
+		const link = frmDom.a({
+			className: ( isIDLink ? 'frmids ' : 'frmkeys ' ) + 'frm_insert_code',
+			children: [
+				document.querySelector( `.frm_t${params.frmType} .frmsvg` ).cloneNode( true ),
+				document.getElementById( `frm_name_${fieldID}` ).value,
+				frmDom.span( `[${shortcode}]` ),
+			]
+		});
+		const idsTabIsActiveInShortcodesModal = document.querySelector( '#frm-insert-fields-box .subsubsub .frmids' )?.classList.contains( 'current' );
+		if ( isIDLink && ! idsTabIsActiveInShortcodesModal || ! isIDLink && idsTabIsActiveInShortcodesModal ) {
+			link.classList.add( 'frm_hidden' );
+		}
+
+		link.setAttribute( 'data-code', isIDLink ? fieldID : fieldKey );
+		return link;
+	};
 
 	function updateFieldOptions( fieldOptions, hookArgs ) {
 		if ( 'scale' === hookArgs.type ) {
@@ -52,8 +116,30 @@
 		}, 0 );
 	}
 
+	function updateShortcodeTriggerLabel( shortcodeTrigger, value ) {
+		const textshortcodeTriggerLabel = shortcodeTrigger.querySelector( 'svg.frmsvg' )?.nextSibling;
+		if ( ! textshortcodeTriggerLabel || textshortcodeTriggerLabel.nodeType !== Node.TEXT_NODE ) {
+			return;
+		}
+		textshortcodeTriggerLabel.textContent = value;
+	}
+
+	function maybeUpdateFieldsShortcodeModal( labelInput ) {
+		const fieldId = labelInput.id.replace( 'frm_name_', '' );
+		const fieldShortcodeTrigger = document.querySelector( 'a[data-code="' + fieldId + '"]');
+		if ( ! fieldShortcodeTrigger ) {
+			return;
+		}
+		updateShortcodeTriggerLabel( fieldShortcodeTrigger, labelInput.value );
+		updateShortcodeTriggerLabel( fieldShortcodeTrigger.nextElementSibling, labelInput.value );
+	}
+
 	function handleChangeEvent( e ) {
 		const target = e.target;
+
+		if ( target.id.startsWith( 'frm_name_' ) ) {
+			maybeUpdateFieldsShortcodeModal( target );
+		}
 
 		if ( isRootlineSettingInput( target ) ) {
 			Rootline.updateRootline();
@@ -116,20 +202,20 @@
 		const element = e.target;
 		const name = element.name;
 
-		if ( nameMatchesCurrenyOption( name ) ) {
+		if ( nameMatchesCurrencyOption( name ) ) {
 			const calcBox = element.closest( '[id^="frm-calc-box-"]' );
 			if ( calcBox ) {
 				syncCalcBoxSettingVisibility( calcBox );
 			} else {
 				const settings = element.closest( '.frm-single-settings' );
 				if ( null !== settings && settings.classList.contains( 'frm-type-range' ) ) {
-					syncSliderFormatSettingVisiblity( settings );
+					syncSliderFormatSettingVisibility( settings );
 				}
 			}
 		}
 	}
 
-	function nameMatchesCurrenyOption( name ) {
+	function nameMatchesCurrencyOption( name ) {
 		return -1 !== name.indexOf( 'field_options[calc_type_' ) ||
 			-1 !== name.indexOf( 'field_options[is_currency_' ) ||
 			-1 !== name.indexOf( 'field_options[custom_currency_' );
@@ -146,7 +232,7 @@
 		syncCustomFormatSettings( calcBox, isMathType );
 	}
 
-	function syncSliderFormatSettingVisiblity( settingsContainer ) {
+	function syncSliderFormatSettingVisibility( settingsContainer ) {
 		syncCustomFormatSettings( settingsContainer, true );
 
 		const fieldId = settingsContainer.getAttribute( 'data-fid' );
@@ -170,12 +256,12 @@
 		const isCustomCurrency = isCustomCurrencyCheckbox.checked;
 		const customCurrencyCheckboxWrapper = isCustomCurrencyCheckbox.closest( '.frm_form_field' );
 		const isCurrency = formatAsCurrencyOption.checked;
-		const customCurrenyOptionsWrapper = container.querySelector( '.frm_custom_currency_options_wrapper' );
-		const wasCustomCurrency = ! customCurrenyOptionsWrapper.classList.contains( 'frm_hidden' );
+		const customCurrencyOptionsWrapper = container.querySelector( '.frm_custom_currency_options_wrapper' );
+		const wasCustomCurrency = ! customCurrencyOptionsWrapper.classList.contains( 'frm_hidden' );
 
 		toggle( formatAsCurrencyWrapper, showSettings );
 		toggle( customCurrencyCheckboxWrapper, showSettings && isCurrency );
-		toggle( customCurrenyOptionsWrapper, showSettings && isCurrency && isCustomCurrency );
+		toggle( customCurrencyOptionsWrapper, showSettings && isCurrency && isCustomCurrency );
 
 		if ( ! wasCustomCurrency && isCustomCurrency ) {
 			setCustomCurrencyDefaultsToMatchDefaultCurrency( container );
@@ -245,7 +331,7 @@
 		}
 	}
 
-	hooks.addAction( 'frm_update_slider_field_preview', 'formidable-pro', updateSliderFieldPreview, 10 );
+	hooks.addAction( 'frm_update_slider_field_preview', hookNamespace, updateSliderFieldPreview, 10 );
 
 	function updateSliderFieldPreview({ field, att, newValue }) {
 		if ( 'value' === att ) {
@@ -1026,6 +1112,30 @@
 		container.appendChild( fragment );
 	}
 
+	/**
+	 * Deletes all conditional logic dropdown option elements that correspond to the deleted field option.
+	 *
+	 * @since 6.12
+	 * @param {HTMLElement} option
+	 * @return {void}
+	 */
+	function deleteConditionalLogicOptions( option ) {
+		const deletedOption = option.closest( '.frm_single_option' ).querySelector( '.frm_option_key input[type="text"]' );
+		if ( ! deletedOption ) {
+			return;
+		}
+		const deletedOptionValue = deletedOption.value;
+		const rows               = document.querySelectorAll( '.frm_logic_row' );
+
+		rows.forEach( row => {
+			const fieldId = row.id.split( '_' )[ 2 ]; // row.id Example: frm_logic_1234_0 where 1234 is the field id and 0 the conditional logic row.
+			const relatedConditionalLogicOption = row.querySelector( 'select[name="field_options[hide_opt_' + fieldId + '][]"] option[value="' + deletedOptionValue + '"]' );
+			if ( relatedConditionalLogicOption ) {
+				relatedConditionalLogicOption.remove();
+			}
+		});
+	}
+	 
 	addEventListeners();
 	initRichTextFields();
 	Rootline.init();

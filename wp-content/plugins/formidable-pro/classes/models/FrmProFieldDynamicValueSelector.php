@@ -9,12 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FrmProFieldDynamicValueSelector extends FrmProFieldValueSelector {
 
-	/**
-	 * @var FrmProFieldDynamicSettings
-	 * @since 2.03.05
-	 */
-	protected $field_settings;
-
 	public function __construct( $field_id, $args ) {
 		parent::__construct( $field_id, $args );
 

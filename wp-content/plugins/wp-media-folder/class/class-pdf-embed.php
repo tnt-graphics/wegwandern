@@ -72,8 +72,8 @@ class WpmfPdfEmbed
                 $url .= '&id=' . $_REQUEST['id'] . '&dl=0';
             }
         }
-        $width = (!empty($_REQUEST['width'])) ? $_REQUEST['width'] : '';
-        $height = (!empty($_REQUEST['height'])) ? $_REQUEST['height'] : '';
+        $width = (!empty($_REQUEST['width']) && $_REQUEST['width'] !== 'auto') ? $_REQUEST['width'] : '100%';
+        $height = (!empty($_REQUEST['height']) && $_REQUEST['height'] !== 'auto') ? $_REQUEST['height'] : '800';
         $html = do_shortcode('[wpmfpdf is_divi="1" url="'. $url .'" width="'. $width .'" height="'. $height .'" embed="'. $_REQUEST['embed'] .'" target="'. $_REQUEST['target'] .'"]');
         wp_send_json(array('status' => true, 'html' => $html));
     }
@@ -160,24 +160,35 @@ class WpmfPdfEmbed
             }
 
             $cloud_type = get_post_meta((int)$attrs['id'], 'wpmf_drive_type', true);
-            if ($cloud_type === 'dropbox') {
-                $drive_id = get_post_meta((int)$attrs['id'], 'wpmf_drive_id', true);
-                $url = admin_url('admin-ajax.php') . '?action=wpmf-dbxdownload-file&id=' . urlencode($drive_id) . '&link=true&dl=0';
+            $drive_id = get_post_meta((int)$attrs['id'], 'wpmf_drive_id', true);
+            $baseUrl = admin_url('admin-ajax.php');
+            switch ($cloud_type) {
+                case 'dropbox':
+                    $action = '?action=wpmf-dbxdownload-file&id=' . urlencode($drive_id) . '&link=true&dl=0';
+                    break;
+                case 'onedrive':
+                    $action = '?action=wpmf_onedrive_download&id=' . urlencode($drive_id) . '&link=true&dl=0';
+                    break;
+                case 'onedrive_business':
+                    $action = '?action=wpmf_onedrive_business_download&id=' . urlencode($drive_id) . '&link=true&dl=0';
+                    break;
+                case 'google_drive':
+                    $action = '?action=wpmf-download-file&id=' . urlencode($drive_id) . '&link=true&dl=0';
+                    break;
+                case 'nextcloud':
+                    $action = '?action=wpmf_nextcloud_get_content&url=' . urlencode($url) . '/download';
+                    break;
+                default:
+                    $action = '';
+                    $offload_infos = get_post_meta($attrs['id'], 'wpmf_awsS3_info', true);
+                    if (!empty($offload_infos)) {
+                        $action = '?action=wpmf_offload_get_content&url=' . urlencode($url);
+                    }
+                    break;
             }
 
-            if ($cloud_type === 'onedrive') {
-                $drive_id = get_post_meta((int)$attrs['id'], 'wpmf_drive_id', true);
-                $url = admin_url('admin-ajax.php') . '?action=wpmf_onedrive_download&id=' . urlencode($drive_id) . '&link=true&dl=0';
-            }
-
-            if ($cloud_type === 'onedrive_business') {
-                $drive_id = get_post_meta((int)$attrs['id'], 'wpmf_drive_id', true);
-                $url = admin_url('admin-ajax.php') . '?action=wpmf_onedrive_business_download&id=' . urlencode($drive_id) . '&link=true&dl=0';
-            }
-
-            if ($cloud_type === 'google_drive') {
-                $drive_id = get_post_meta((int)$attrs['id'], 'wpmf_drive_id', true);
-                $url = admin_url('admin-ajax.php') . '?action=wpmf-download-file&id=' . urlencode($drive_id) . '&link=true&dl=0';
+            if ($action) {
+                $url = $baseUrl . $action;
             }
 
             $title = $pdf->post_title;
@@ -187,10 +198,32 @@ class WpmfPdfEmbed
             if (empty($attrs['is_divi'])) {
                 $this->enqueue();
             }
-            $width = (!empty($attrs['width']) && strpos($attrs['width'], '%') === false) ? $attrs['width'] : '';
-            $height = (!empty($attrs['height']) && strpos($attrs['height'], '%') === false) ? $attrs['height'] : '';
+            $width = (!empty($attrs['width']) && strpos($attrs['width'], '%') === false) ? $attrs['width'] : '100%';
+            $height = (!empty($attrs['height']) && strpos($attrs['height'], '%') === false) ? $attrs['height'] : '800';
             $download = (!empty($attrs['download'])) ? $attrs['download'] : 'off';
-            $return = '<a class="wpmf-pdfemb-viewer" data-download="'. $download .'" data-width="'. (int)$width .'" data-height="'. ((int)$height - 31) .'" href="'.esc_url($url).'">'.esc_html($title).'</a>';
+
+            $wpmf_pdf_embed_old = apply_filters('wpmf_pdf_embed_old', false);
+            if ($wpmf_pdf_embed_old) {
+                $width = (!empty($attrs['width']) && strpos($attrs['width'], '%') === false) ? $attrs['width'] : '';
+                $return = '<a class="wpmf-pdfemb-viewer" data-download="'. $download .'" data-width="'. (int)$width .'" data-height="'. ((int)$height - 31) .'" href="'.esc_url($url).'">'.esc_html($title).'</a>';
+            } else {
+                $plugin_dir_url = plugin_dir_url(__DIR__);
+                $viewer_base_url = $plugin_dir_url . 'class/templates/pdf-embed.php';
+
+                $response = wp_remote_head($url);
+                if (is_wp_error($response)) {
+                    $url = $plugin_dir_url . 'assets/pdf-loading-error.pdf';
+                }
+                
+                $status_code = wp_remote_retrieve_response_code($response);
+                if ($status_code === 404) {
+                    $url = $plugin_dir_url . 'assets/pdf-loading-error.pdf';
+                }
+
+                $attachment_info = '?file=' . urlencode($url);
+                $final_url = $viewer_base_url . $attachment_info . '&plugins_url=' . urlencode($plugin_dir_url);
+                $return = '<div><iframe width="' . esc_attr($width) . '" height="' . esc_attr($height) . '" src="' . esc_url($final_url) . '" title="Embedded PDF" class="wpmf-pdfjs-iframe"></iframe></div>';
+            }
         } else {
             $return = '<a href="'.esc_url($url).'" '. (($attrs['target'] !== '') ? 'target="'.esc_attr($attrs['target']).'"' : '') .'>'.esc_html($title).'</a>';
         }
@@ -231,15 +264,13 @@ class WpmfPdfEmbed
      */
     public function enqueue()
     {
-        wp_enqueue_script('wpmf_embed_pdf_js');
-        wp_localize_script(
-            'wpmf_embed_pdf_js',
-            'wpmf_pdfemb_trans',
-            $this->getTranslation()
-        );
-        wp_enqueue_script('wpmf_compat_js');
-        wp_enqueue_script('wpmf_pdf_js');
-        wp_enqueue_style('pdfemb_embed_pdf_css');
+        $wpmf_pdf_embed_old = apply_filters('wpmf_pdf_embed_old', false);
+        if ($wpmf_pdf_embed_old) {
+            wp_enqueue_script('wpmf_embed_pdf_js');
+            wp_enqueue_script('wpmf_compat_js');
+            wp_enqueue_script('wpmf_pdf_js');
+            wp_enqueue_style('pdfemb_embed_pdf_css');
+        }
     }
 
     /**
@@ -251,8 +282,9 @@ class WpmfPdfEmbed
     public function getTranslation()
     {
         $array = array(
-            'worker_src' => plugins_url('assets/js/pdf-embed/pdf.worker.min.js', dirname(__FILE__)),
+            'worker_src' => plugins_url('assets/js/pdf-embed/pdf.worker.js', dirname(__FILE__)),
             'cmap_url'   => plugins_url('assets/js/pdf-embed/cmaps/', dirname(__FILE__)),
+            'pdf_sandbox'=> plugins_url('assets/js/pdf-embed/pdf.sandbox.js', dirname(__FILE__)),
             'objectL10n' =>
                 array(
                     'loading'            => __('Loading...', 'wpmf'),
@@ -272,6 +304,11 @@ class WpmfPdfEmbed
                     'poweredby'          => 1
                 )
         );
+        $wpmf_pdf_embed_old = apply_filters('wpmf_pdf_embed_old', false);
+        if ($wpmf_pdf_embed_old) {
+            $array['worker_src'] = plugins_url('assets/js/pdf-embed/pdf.worker.min.js', dirname(__FILE__));
+            unset($array['pdf_sandbox']);
+        }
         return $array;
     }
 
@@ -384,30 +421,33 @@ class WpmfPdfEmbed
      */
     public function registerScript()
     {
-        wp_register_script(
-            'wpmf_embed_pdf_js',
-            plugins_url('assets/js/pdf-embed/all-pdfemb-basic.min.js', dirname(__FILE__)),
-            array('jquery')
-        );
-        wp_localize_script(
-            'wpmf_embed_pdf_js',
-            'wpmf_pdfemb_trans',
-            $this->getTranslation()
-        );
-        wp_register_script(
-            'wpmf_compat_js',
-            plugins_url('assets/js/pdf-embed/compatibility.js', dirname(__FILE__)),
-            array('jquery')
-        );
-        wp_register_script(
-            'wpmf_pdf_js',
-            plugins_url('assets/js/pdf-embed/pdf.js', dirname(__FILE__)),
-            array()
-        );
-        wp_register_style(
-            'pdfemb_embed_pdf_css',
-            plugins_url('assets/css/pdfemb-embed-pdf.css', dirname(__FILE__))
-        );
+        $wpmf_pdf_embed_old = apply_filters('wpmf_pdf_embed_old', false);
+        if ($wpmf_pdf_embed_old) {
+            wp_register_script(
+                'wpmf_embed_pdf_js',
+                plugins_url('assets/js/pdf-embed/all-pdfemb-basic.min.js', dirname(__FILE__)),
+                array('jquery')
+            );
+            wp_localize_script(
+                'wpmf_embed_pdf_js',
+                'wpmf_pdfemb_trans',
+                $this->getTranslation()
+            );
+            wp_register_script(
+                'wpmf_compat_js',
+                plugins_url('assets/js/pdf-embed/compatibility.js', dirname(__FILE__)),
+                array('jquery')
+            );
+            wp_register_script(
+                'wpmf_pdf_js',
+                plugins_url('assets/js/pdf-embed/pdf-old.js', dirname(__FILE__)),
+                array()
+            );
+            wp_register_style(
+                'pdfemb_embed_pdf_css',
+                plugins_url('assets/css/pdfemb-embed-pdf.css', dirname(__FILE__))
+            );
+        }
     }
 
     /**

@@ -390,7 +390,7 @@ class FrmProField {
 	 * @return array $children
 	 */
 	public static function get_children( $field ) {
-		if ( FrmField::is_repeating_field( $field ) || $field['type'] == 'form' ) {
+		if ( FrmField::is_repeating_field( $field ) || $field['type'] === 'form' ) {
 			// If repeating field or embedded form
 
 			$repeat_id = isset( $field['form_select'] ) ? $field['form_select'] : $field['field_options']['form_select'];

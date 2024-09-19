@@ -43,18 +43,71 @@ if ( ! $is_default ) {
 	<input type="hidden" value="<?php echo esc_attr( $style->post_content['theme_css'] ); ?>" id="frm_theme_css" name="<?php echo esc_attr( $frm_style->get_field_name( 'theme_css' ) ); ?>" />
 	<input type="hidden" value="<?php echo esc_attr( $style->post_content['theme_name'] ); ?>" id="frm_theme_name" name="<?php echo esc_attr( $frm_style->get_field_name( 'theme_name' ) ); ?>" />
 </p>
+<?php
+// TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
+if ( class_exists( 'FrmStyleComponent' ) ) :
+	?>
+	<div class="frm5 frm_form_field">
+		<label class="frm-style-item-heading"><?php esc_html_e( 'Head Color', 'formidable-pro' ); ?></label>
+	</div>
+	<div class="frm7 frm_form_field">
+		<?php
+		new FrmColorpickerStyleComponent(
+			$frm_style->get_field_name( 'date_head_bg_color' ),
+			$style->post_content['date_head_bg_color'],
+			array(
+				'id'          => 'frm_date_head_bg_color',
+				'action_slug' => 'date_head_bg_color',
+			)
+		); 
+		?>
+	</div>
 
-<p class="frm4 frm_first frm_form_field <?php echo esc_attr( $use_themes ? 'frm_hidden' : $show ); ?>">
-	<label for="frm_date_head_bg_color"><?php esc_html_e( 'Head Color', 'formidable-pro' ); ?></label>
-	<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'date_head_bg_color' ) ); ?>" id="frm_date_head_bg_color" class="hex" value="<?php echo esc_attr( $style->post_content['date_head_bg_color'] ); ?>" size="4" <?php do_action( 'frm_style_settings_input_atts', 'date_head_bg_color' ); ?> />
-</p>
+	<div class="frm5 frm_form_field">
+		<label class="frm-style-item-heading"><?php esc_html_e( 'Font Color', 'formidable-pro' ); ?></label>
+	</div>
+	<div class="frm7 frm_form_field">
+		<?php
+		new FrmColorpickerStyleComponent(
+			$frm_style->get_field_name( 'date_head_color' ),
+			$style->post_content['date_head_color'],
+			array(
+				'id'          => 'frm_date_head_color',
+				'action_slug' => 'date_head_color',
+			)
+		); 
+		?>
+	</div>
 
-<p class="frm4 frm_form_field <?php echo esc_attr( $use_themes ? 'frm_hidden' : $show ); ?>">
-	<label for="frm_date_head_color"><?php esc_html_e( 'Text Color', 'formidable-pro' ); ?></label>
-	<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'date_head_color' ) ); ?>" id="frm_date_head_color" class="hex" value="<?php echo esc_attr( $style->post_content['date_head_color'] ); ?>" <?php do_action( 'frm_style_settings_input_atts', 'date_head_color' ); ?> />
-</p>
+	<div class="frm5 frm_form_field">
+		<label class="frm-style-item-heading"><?php esc_html_e( 'Band Color', 'formidable-pro' ); ?></label>
+	</div>
+	<div class="frm7 frm_form_field">
+		<?php
+		new FrmColorpickerStyleComponent(
+			$frm_style->get_field_name( 'date_band_color' ),
+			$style->post_content['date_band_color'],
+			array(
+				'id'          => 'frm_date_band_color',
+				'action_slug' => 'date_band_color',
+			)
+		); 
+		?>
+	</div>
+<?php else : ?>
+	<p class="frm4 frm_first frm_form_field <?php echo esc_attr( $use_themes ? 'frm_hidden' : $show ); ?>">
+		<label for="frm_date_head_bg_color"><?php esc_html_e( 'Head Color', 'formidable-pro' ); ?></label>
+		<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'date_head_bg_color' ) ); ?>" id="frm_date_head_bg_color" class="hex" value="<?php echo esc_attr( $style->post_content['date_head_bg_color'] ); ?>" size="4" <?php do_action( 'frm_style_settings_input_atts', 'date_head_bg_color' ); ?> />
+	</p>
 
-<p class="frm4 frm_form_field <?php echo esc_attr( $use_themes ? 'frm_hidden' : $show ); ?> frm_end">
-	<label for="frm_date_band_color"><?php esc_html_e( 'Band Color', 'formidable-pro' ); ?></label>
-	<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'date_band_color' ) ); ?>" id="frm_date_band_color" class="hex" value="<?php echo esc_attr( $style->post_content['date_band_color'] ); ?>" <?php do_action( 'frm_style_settings_input_atts', 'date_band_color' ); ?> />
-</p>
+	<p class="frm4 frm_form_field <?php echo esc_attr( $use_themes ? 'frm_hidden' : $show ); ?>">
+		<label for="frm_date_head_color"><?php esc_html_e( 'Text Color', 'formidable-pro' ); ?></label>
+		<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'date_head_color' ) ); ?>" id="frm_date_head_color" class="hex" value="<?php echo esc_attr( $style->post_content['date_head_color'] ); ?>" <?php do_action( 'frm_style_settings_input_atts', 'date_head_color' ); ?> />
+	</p>
+
+	<p class="frm4 frm_form_field <?php echo esc_attr( $use_themes ? 'frm_hidden' : $show ); ?> frm_end">
+		<label for="frm_date_band_color"><?php esc_html_e( 'Band Color', 'formidable-pro' ); ?></label>
+		<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'date_band_color' ) ); ?>" id="frm_date_band_color" class="hex" value="<?php echo esc_attr( $style->post_content['date_band_color'] ); ?>" <?php do_action( 'frm_style_settings_input_atts', 'date_band_color' ); ?> />
+	</p>
+
+<?php endif; ?>

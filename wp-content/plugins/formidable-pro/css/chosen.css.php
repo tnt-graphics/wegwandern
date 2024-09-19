@@ -3,18 +3,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-.with_frm_style .chosen-container{
-	font-size:<?php echo esc_html( $defaults['field_font_size'] ); ?>;
-	font-size:var(--field-font-size)<?php echo esc_html( $important ); ?>;
-	position:relative;
-	display:inline-block;
-	zoom:1;
-	vertical-align:middle;
-	width:100% !important;
-	-webkit-user-select:none;
-	-moz-user-select:none;
-	-ms-user-select:none;
-	user-select:none;
+.with_frm_style .chosen-container {
+	font-size: var(--field-font-size)<?php echo esc_html( $important ); ?>;
+	position: relative;
+	display: inline-block;
+	zoom: 1;
+	vertical-align: middle;
+	width: 100% !important;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .with_frm_style .chosen-container * {
@@ -181,9 +180,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 .with_frm_style .chosen-container .chosen-results li,
-.with_frm_style .chosen-container .chosen-results li span{
-	color:<?php echo esc_html( $defaults['text_color'] ); ?>;
-	color:var(--text-color)<?php echo esc_html( $important ); ?>;
+.with_frm_style .chosen-container .chosen-results li span {
+	color: var(--text-color)<?php echo esc_html( $important ); ?>;
 }
 
 .with_frm_style .chosen-container .chosen-results li.active-result{
@@ -198,10 +196,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 .with_frm_style .chosen-container .chosen-results li.highlighted{
-	background-color: #3875d7;
-	background-image: -webkit-gradient(linear, left top, left bottom, color-stop(20%, #3875d7), color-stop(90%, #2a62bc));
-	background-image: linear-gradient(#3875d7 20%, #2a62bc 90%);
-	color: #fff;
+	background-color: var(--border-color-active);
+	color: #fff<?php echo esc_html( $important ); ?>;
+	border-radius: calc(var(--border-radius) / 2);
 }
 
 .with_frm_style .chosen-container .chosen-results li.no-results{
@@ -330,7 +327,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 .with_frm_style .chosen-container-single.chosen-container-active .chosen-single{
-	border:1px solid #5897fb;
+	border:1px solid var(--border-color-active);
 	box-shadow:0 0 5px rgba(0, 0, 0, 0.3);
 }
 
@@ -351,7 +348,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 .with_frm_style .chosen-container-active .chosen-choices {
-	border: 1px solid #5897fb;
+	border: 1px solid var(--border-color-active);
 	box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 

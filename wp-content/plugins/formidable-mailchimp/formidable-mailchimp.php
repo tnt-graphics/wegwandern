@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: Formidable MailChimp
-Description: Add new MailChimp contacts from your Formidable forms
-Version: 2.06
+Plugin Name: Formidable Mailchimp
+Description: Add new Mailchimp contacts from your Formidable forms
+Version: 2.08
 Plugin URI: https://formidableforms.com/
 Author URI: https://formidableforms.com/
 Author: Strategy11
@@ -10,7 +10,7 @@ Text Domain: frmmlcmp
 */
 
 function frm_mlcmp_forms_autoloader( $class_name ) {
-	$path = dirname( __FILE__ );
+	$path = __DIR__;
 
 	// Only load FrmMlcmp classes here
 	if ( ! preg_match( '/^FrmMlcmp.+$/', $class_name ) ) {
@@ -26,7 +26,7 @@ function frm_mlcmp_forms_autoloader( $class_name ) {
 	}
 
 	if ( file_exists( $path ) ) {
-		include( $path );
+		include $path;
 	}
 }
 
@@ -36,4 +36,3 @@ spl_autoload_register( 'frm_mlcmp_forms_autoloader' );
 // Load hooks and languages
 add_action( 'plugins_loaded', 'FrmMlcmpHooksController::load_hooks' );
 add_action( 'plugins_loaded', 'FrmMlcmpAppController::load_lang' );
-

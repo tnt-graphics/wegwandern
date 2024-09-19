@@ -7,7 +7,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: GlotPress/4.0.0-alpha.11\n"
+"X-Generator: GlotPress/4.0.1\n"
 "Language: id\n"
 "Project-Id-Version: Plugins - WP Fastest Cache - Development (trunk)\n"
 
@@ -52,11 +52,11 @@ msgstr ""
 msgid "Preload Settings"
 msgstr ""
 
-#: inc/admin.php:1452 inc/admin.php:1458 inc/admin.php:1465
+#: inc/admin.php:1445 inc/admin.php:1452
 msgid "Some js sources will not be loaded until scrolling or moving the mouse"
 msgstr ""
 
-#: inc/admin.php:1451 inc/admin.php:1457 inc/admin.php:1464
+#: inc/admin.php:1444 inc/admin.php:1451
 msgid "Delay Js"
 msgstr ""
 
@@ -64,15 +64,16 @@ msgstr ""
 msgid "WP Fastest Cache Options"
 msgstr ""
 
-#: inc/admin.php:1955 templates/exclude.php:114
+#: inc/admin.php:1941 templates/exclude.php:114
 msgid "has Yandex Click ID Parameters"
 msgstr ""
 
 #. Author URI of the plugin
+#: wpFastestCache.php
 msgid "https://www.wpfastestcache.com/"
 msgstr ""
 
-#: inc/admin.php:1750
+#: inc/admin.php:1736
 msgid "Clearing Specific Pages"
 msgstr ""
 
@@ -108,15 +109,15 @@ msgstr "Hilangkan sumber daya JavaScript yang memblokir perenderan"
 msgid "Options have been saved"
 msgstr "Pilihan telah disimpan"
 
-#: inc/admin.php:1956 templates/exclude.php:115
+#: inc/admin.php:1942 templates/exclude.php:115
 msgid "has Woocommerce Items in Cart"
 msgstr "memiliki Item Woocommerce di Keranjang"
 
-#: inc/admin.php:1954 templates/exclude.php:113
+#: inc/admin.php:1940 templates/exclude.php:113
 msgid "has Google Analytics Parameters"
 msgstr "memiliki Parameter Google Analytics"
 
-#: inc/admin.php:1944 templates/exclude.php:100
+#: inc/admin.php:1930 templates/exclude.php:100
 msgid "Archives"
 msgstr "Arsip"
 
@@ -128,27 +129,27 @@ msgstr "Waktu server"
 msgid "delete the files"
 msgstr "hapus berkas"
 
-#: inc/admin.php:1647 inc/admin.php:1949 templates/exclude.php:106
+#: inc/admin.php:1633 inc/admin.php:1935 templates/exclude.php:106
 #: templates/timeout.php:99
 msgid "Contains"
 msgstr "Mengandung"
 
-#: inc/admin.php:1648 inc/admin.php:1950 templates/exclude.php:107
+#: inc/admin.php:1634 inc/admin.php:1936 templates/exclude.php:107
 #: templates/timeout.php:98
 msgid "Is Equal To"
 msgstr "Adalah sama dengan"
 
-#: inc/admin.php:1646 inc/admin.php:1948 templates/exclude.php:105
+#: inc/admin.php:1632 inc/admin.php:1934 templates/exclude.php:105
 #: templates/timeout.php:97
 msgid "Starts With"
 msgstr "Dimulai Dengan"
 
-#: inc/admin.php:1645 inc/admin.php:1941 templates/exclude.php:95
+#: inc/admin.php:1631 inc/admin.php:1927 templates/exclude.php:95
 #: templates/timeout.php:96
 msgid "Home Page"
 msgstr "Halaman Beranda"
 
-#: inc/admin.php:1644 templates/timeout.php:95
+#: inc/admin.php:1630 templates/timeout.php:95
 msgid "All"
 msgstr "Semua"
 
@@ -188,16 +189,16 @@ msgstr "Sukses"
 msgid "Warning"
 msgstr "Peringatan"
 
-#: inc/admin.php:1682 inc/admin.php:1754 inc/admin.php:1977 inc/admin.php:1994
-#: inc/admin.php:2013 inc/admin.php:2031 inc/admin.php:2051
+#: inc/admin.php:1668 inc/admin.php:1740 inc/admin.php:1963 inc/admin.php:1980
+#: inc/admin.php:1999 inc/admin.php:2017 inc/admin.php:2037
 msgid "Add New Rule"
 msgstr "Tambahkan Aturan Baru"
 
-#: inc/admin-toolbar.php:98 inc/admin.php:1616
+#: inc/admin-toolbar.php:98 inc/admin.php:1602
 msgid "Delete Cache and Minified CSS/JS"
 msgstr "Hapus Cache dan Memperkecil CSS/JS"
 
-#: inc/admin.php:1548 inc/admin.php:2220 inc/admin.php:2420
+#: inc/admin.php:1534 inc/admin.php:2206 inc/admin.php:2406
 msgid "Only available in Premium version"
 msgstr "Hanya tersedia dalam versi Premium"
 
@@ -205,19 +206,19 @@ msgstr "Hanya tersedia dalam versi Premium"
 msgid "Choose One"
 msgstr "Pilih satu"
 
-#: inc/admin.php:1621
+#: inc/admin.php:1607
 msgid "All cache files will be removed as well"
 msgstr "Semua berkas cache juga akan dihapus"
 
-#: inc/admin.php:1620
+#: inc/admin.php:1606
 msgid "If you modify any css file, you have to delete minified css files"
 msgstr "Jika Anda memodifikasi berkas css apa pun, Anda harus menghapus berkas css yang diperkecil"
 
-#: inc/admin.php:1608 inc/admin.php:1622 inc/admin.php:1623
+#: inc/admin.php:1594 inc/admin.php:1608 inc/admin.php:1609
 msgid "Target folder"
 msgstr "Folder target"
 
-#: inc/admin.php:1607
+#: inc/admin.php:1593
 msgid "You can delete all cache files"
 msgstr "Anda dapat menghapus semua berkas cache"
 
@@ -233,47 +234,47 @@ msgstr "Optimasi Gambar"
 msgid "Settings"
 msgstr "Pengaturan"
 
-#: inc/admin.php:2193
+#: inc/admin.php:2179
 msgid "Database Cleanup"
 msgstr "Pembersihan Basis data"
 
-#: inc/admin.php:2084
+#: inc/admin.php:2070
 msgid "CDN Settings"
 msgstr "Pengaturan CDN"
 
-#: inc/admin.php:2047
+#: inc/admin.php:2033
 msgid "Exclude JS"
 msgstr "Kecualikan JS"
 
-#: inc/admin.php:2027
+#: inc/admin.php:2013
 msgid "Exclude CSS"
 msgstr "Kecualikan CSS"
 
-#: inc/admin.php:2009
+#: inc/admin.php:1995
 msgid "Exclude Cookies"
 msgstr "Kecualikan kuki"
 
-#: inc/admin.php:1990
+#: inc/admin.php:1976
 msgid "Exclude User-Agents"
 msgstr "Kecualikan Agen-Pengguna"
 
-#: inc/admin.php:1973
+#: inc/admin.php:1959
 msgid "Exclude Pages"
 msgstr "Kecualikan Halaman"
 
-#: inc/admin.php:1807
+#: inc/admin.php:1793
 msgid "Optimize Image Tool"
 msgstr "Alat Optimasi Gambar"
 
-#: inc/admin.php:1637
+#: inc/admin.php:1623
 msgid "Timeout Rules"
 msgstr "Aturan Batas waktu"
 
-#: inc/admin-toolbar.php:86 inc/admin.php:1070 inc/admin.php:1595
+#: inc/admin-toolbar.php:86 inc/admin.php:1070 inc/admin.php:1581
 msgid "Delete Cache"
 msgstr "Hapus Cache"
 
-#: inc/admin.php:1555
+#: inc/admin.php:1541
 msgid "Cache Statistics"
 msgstr "Statistik Cache"
 
@@ -298,10 +299,10 @@ msgid "Clear Cache of Post Categories"
 msgstr "Hapus Cache dari Kategori Artikel"
 
 #: templates/newpost.php:55 templates/updatepost.php:56
-msgid "Clear Cache of Homepage"
-msgstr "Hapus Cache dari Beranda"
+msgid "Clear Cache of Home page"
+msgstr ""
 
-#: inc/admin-toolbar.php:91 inc/admin.php:1603 templates/newpost.php:51
+#: inc/admin-toolbar.php:91 inc/admin.php:1589 templates/newpost.php:51
 #: templates/updatepost.php:49
 msgid "Clear All Cache"
 msgstr "Hapus Semua Cache"
@@ -330,23 +331,23 @@ msgstr "Taksonomi khusus"
 msgid "Custom Post Types"
 msgstr "Tipe Artikel Khusus"
 
-#: inc/admin.php:1947 templates/exclude.php:101 templates/preload.php:122
+#: inc/admin.php:1933 templates/exclude.php:101 templates/preload.php:122
 msgid "Attachments"
 msgstr "Lampiran"
 
-#: inc/admin.php:1943 templates/exclude.php:97 templates/preload.php:118
+#: inc/admin.php:1929 templates/exclude.php:97 templates/preload.php:118
 msgid "Tags"
 msgstr "Tag"
 
-#: inc/admin.php:1946 templates/exclude.php:99 templates/preload.php:114
+#: inc/admin.php:1932 templates/exclude.php:99 templates/preload.php:114
 msgid "Pages"
 msgstr "Laman"
 
-#: inc/admin.php:1942 templates/exclude.php:96 templates/preload.php:110
+#: inc/admin.php:1928 templates/exclude.php:96 templates/preload.php:110
 msgid "Categories"
 msgstr "Kategori"
 
-#: inc/admin.php:1945 templates/exclude.php:98 templates/preload.php:106
+#: inc/admin.php:1931 templates/exclude.php:98 templates/preload.php:106
 msgid "Posts"
 msgstr "Artikel"
 
@@ -358,7 +359,7 @@ msgstr "Beranda"
 msgid "Reduce HTTP requests through combined js files"
 msgstr "Kurangi permintaan HTTP dengan menggabungkan berkas JS"
 
-#: inc/admin.php:1412 inc/admin.php:1433 inc/admin.php:1440
+#: inc/admin.php:1412 inc/admin.php:1434
 msgid "Load images and iframes when they enter the browsers viewport"
 msgstr "Muat gambar dan iframe saat mereka memasuki area pandang browser"
 
@@ -518,102 +519,106 @@ msgstr "Aktifkan"
 msgid "Cache System"
 msgstr "Sistem Cache"
 
-#: wpFastestCache.php:2240
+#: wpFastestCache.php:2263
 msgid "Once Every 15 Days"
 msgstr "Setiap 15 Hari Sekali"
 
-#: wpFastestCache.php:2228
+#: wpFastestCache.php:2251
 msgid "Once Every 7 Days"
 msgstr "Setiap 7 Hari Sekali"
 
-#: wpFastestCache.php:2222
+#: wpFastestCache.php:2245
 msgid "Once Every 3 Days"
 msgstr "Setiap 3 Hari Sekali"
 
-#: wpFastestCache.php:2210
+#: wpFastestCache.php:2233
 msgid "Once Every 10 Hours"
 msgstr "Setiap 10 Jam Sekali"
 
-#: wpFastestCache.php:2204
+#: wpFastestCache.php:2227
 msgid "Once Every 9 Hours"
 msgstr "Setiap 9 Jam Sekali"
 
-#: wpFastestCache.php:2198
+#: wpFastestCache.php:2221
 msgid "Once Every 8 Hours"
 msgstr "Setiap 8 Jam Sekali"
 
-#: wpFastestCache.php:2192
+#: wpFastestCache.php:2215
 msgid "Once Every 7 Hours"
 msgstr "Setiap 7 Jam Sekali"
 
-#: wpFastestCache.php:2180
+#: wpFastestCache.php:2203
 msgid "Once Every 5 Hours"
 msgstr "Setiap 5 Jam Sekali"
 
-#: wpFastestCache.php:2174
+#: wpFastestCache.php:2197
 msgid "Once Every 4 Hours"
 msgstr "Setiap 4 Jam Sekali"
 
-#: wpFastestCache.php:2168
+#: wpFastestCache.php:2191
 msgid "Once Every 3 Hours"
 msgstr "Setiap 3 Jam Sekali"
 
-#: wpFastestCache.php:2162
+#: wpFastestCache.php:2185
 msgid "Once Every 2 Hours"
 msgstr "Setiap 2 Jam Sekali"
 
-#: wpFastestCache.php:2234
+#: wpFastestCache.php:2257
 msgid "Once Every 10 Days"
 msgstr "Setiap 10 Hari Sekali"
 
 #. Author of the plugin
+#: wpFastestCache.php
 msgid "Emre Vona"
 msgstr "Emre Vona"
 
 #. Description of the plugin
+#: wpFastestCache.php
 msgid "The simplest and fastest WP Cache system"
 msgstr "Sistem WP Cache paling sederhana dan tercepat"
 
 #. Plugin URI of the plugin
+#: wpFastestCache.php
 msgid "http://wordpress.org/plugins/wp-fastest-cache/"
 msgstr "https://id.wordpress.org/plugins/wp-fastest-cache/"
 
 #. Plugin Name of the plugin
+#: wpFastestCache.php
 msgid "WP Fastest Cache"
 msgstr "WP Fastest Cache"
 
-#: wpFastestCache.php:2252
+#: wpFastestCache.php:2275
 msgid "Once a Year"
 msgstr "Sekali Setahun"
 
-#: wpFastestCache.php:2246
+#: wpFastestCache.php:2269
 msgid "Once a Month"
 msgstr "Sekali Sebulan"
 
-#: wpFastestCache.php:2216
+#: wpFastestCache.php:2239
 msgid "Once a Day"
 msgstr "Sekali Sehari"
 
-#: wpFastestCache.php:2186
+#: wpFastestCache.php:2209
 msgid "Once Every 6 Hours"
 msgstr "Setiap 6 Jam Sekali"
 
-#: wpFastestCache.php:2156
+#: wpFastestCache.php:2179
 msgid "Once an Hour"
 msgstr "Sekali Sejam"
 
-#: wpFastestCache.php:2150
+#: wpFastestCache.php:2173
 msgid "Twice an Hour"
 msgstr "Dua Kali Sejam"
 
-#: wpFastestCache.php:2144
+#: wpFastestCache.php:2167
 msgid "Once Every 15 Minutes"
 msgstr "Setiap 15 Menit Sekali"
 
-#: wpFastestCache.php:2138
+#: wpFastestCache.php:2161
 msgid "Once Every 5 Minutes"
 msgstr "Setiap 5 Menit Sekali"
 
-#: wpFastestCache.php:2132
+#: wpFastestCache.php:2155
 msgid "Once Every 1 Minute"
 msgstr "Setiap 1 Menit Sekali"

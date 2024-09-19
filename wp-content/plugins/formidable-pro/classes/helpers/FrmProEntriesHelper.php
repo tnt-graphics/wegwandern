@@ -390,6 +390,126 @@ class FrmProEntriesHelper {
 	}
 
 	/**
+	 * Returns a string to display in for child entries of an entry.
+	 *
+	 * @since 6.12
+	 *
+	 * @param object $entry
+	 * @param object $field
+	 * @param array  $atts
+	 *
+	 * @return string
+	 */
+	public static function prepare_child_display_value( $entry, $field, $atts ) {
+		$child_entries_data = self::get_display_value_child_entries_data( $entry, $field, $atts );
+
+		$child_entries = $child_entries_data['child_entries'];
+
+		if ( count( $child_entries ) > $child_entries_data['child_entries_limit'] ) {
+			$truncated = true;
+		}
+
+		// Remove the extra item since we used '$child_entries_limit + 1' when querying db.
+		if ( count( $child_entries ) > $child_entries_data['child_entries_limit'] ) {
+			array_pop( $child_entries );
+		}
+
+		if ( empty( $child_entries ) ) {
+			return '';
+		}
+
+		$field_value = array();
+
+		foreach ( $child_entries as $child_entry ) {
+			$atts['item_id'] = $child_entry->id;
+			$atts['post_id'] = $child_entry->post_id;
+
+			// Get the value for this field -- check for post values as well.
+			$entry_val = FrmProEntryMetaHelper::get_post_or_meta_value( $child_entry, $field );
+
+			if ( $entry_val || '0' === $entry_val ) {
+				// foreach entry get display_value.
+				$field_value[] = FrmEntriesHelper::display_value( $entry_val, $field, $atts );
+			}
+
+			unset( $child_entry );
+		}
+
+		$sep = ', ';
+		if ( strpos( implode( ' ', $field_value ), '<img' ) !== false ) {
+			$sep = '<br/>';
+		}
+		$val = implode( $sep, $field_value );
+
+		if ( ! empty( $truncated ) ) {
+			$val = self::maybe_append_ellipses( $val );
+		}
+
+		return FrmAppHelper::kses( $val, 'all' );
+	}
+
+	/**
+	 * Returns child entries data from repeater or embedded forms.
+	 *
+	 * @since 6.12
+	 * @param stdClass $entry
+	 * @param stdClass $field
+	 * @param array    $atts
+	 *
+	 * @return array
+	 */
+	private static function get_display_value_child_entries_data( $entry, $field, $atts ) {
+		$is_repeating_section = strpos( $atts['embedded_field_id'], 'form' ) === 0;
+		if ( $is_repeating_section ) {
+			/**
+			 * This filter allows updating the limit of child entries in entry list page. The default is 5.
+			 *
+			 * @since 6.12
+			 * @param array $args {
+			 *    @type object $field
+			 *    @type array  $atts
+			 * }
+			 */
+			$child_entries_limit = apply_filters( 'frm_pro_repeated_entries_display_limit', 5, compact( 'field', 'atts' ) );
+
+			return array(
+				'child_entries'       => FrmEntry::getAll( array( 'it.parent_item_id' => $entry->id ), '', $child_entries_limit + 1, true ),
+				'child_entries_limit' => $child_entries_limit,
+			);
+		}
+
+		// This is an embedded form. Get all values for this field.
+		$child_values = isset( $entry->metas[ $atts['embedded_field_id'] ] ) ? $entry->metas[ $atts['embedded_field_id'] ] : false;
+
+		if ( $child_values ) {
+			return FrmEntry::getAll( array( 'it.id' => (array) $child_values ) );
+		}
+
+		return array(
+			'child_entries'       => array(),
+			'child_entries_limit' => 0,
+		);
+	}
+
+	/**
+	 * Appends ellipses to the displayed value for a repeater field in entries list page, if it is truncated
+	 * and isn't already ending with ellipses.
+	 *
+	 * @since 6.12
+	 *
+	 * @param string $val
+	 *
+	 * @return string
+	 */
+	private static function maybe_append_ellipses( $val ) {
+		if ( substr( $val, -3 ) === '...' ) {
+			return $val;
+		}
+
+		return $val . ' ...';
+	}
+
+	/**
 	 * @param int|string $entry_id
 	 * @param int|string $form_id
 	 * @param array      $args
@@ -941,24 +1061,6 @@ class FrmProEntriesHelper {
 	 * @param int $form_id
 	 * @return array
 	 */
-	private static function get_repeater_form_ids( $form_id ) {
-		return array_reduce(
-			FrmField::get_all_types_in_form( $form_id, 'divider' ),
-			function ( $total, $divider ) {
-				if ( FrmField::is_repeating_field( $divider ) && ! empty( $divider->field_options['form_select'] ) ) {
-					$total[] = $divider->field_options['form_select'];
-				}
-
-				return $total;
-			},
-			array()
-		);
-	}
-
-	/**
-	 * @param int $form_id
-	 * @return array
-	 */
 	private static function get_embedded_form_ids( $form_id ) {
 		return array_map(
 			function ( $embed ) {
@@ -980,7 +1082,7 @@ class FrmProEntriesHelper {
 		return array_merge(
 			array( $form_id ),
 			self::get_embedded_form_ids( $form_id ),
-			self::get_repeater_form_ids( $form_id )
+			FrmProFormsHelper::get_repeater_form_ids( $form_id )
 		);
 	}
 
@@ -1141,10 +1243,15 @@ class FrmProEntriesHelper {
 	private static function search_form_posts( $form_id, $p_search, $pmeta_search, &$p_ids ) {
 		global $wpdb;
 
-		$post_ids = FrmDb::get_col( 'frm_items', array( 'form_id' => (int) $form_id ), 'post_id' );
-		if ( ! $post_ids ) {
-			return;
-		}
+		// Excluding 0 values significantly improves query performance when there are no posts.
+		$post_ids = FrmDb::get_col(
+			'frm_items',
+			array(
+				'form_id'   => (int) $form_id,
+				'post_id !' => 0,
+			),
+			'post_id'
+		);
 
 		$matching_posts = FrmDb::get_col( $wpdb->posts, $p_search, 'ID' );
 		list( $dynamic_field_ids, $target_form_ids, $dynamic_post_ids ) = self::get_dynamic_field_search_info( $form_id );

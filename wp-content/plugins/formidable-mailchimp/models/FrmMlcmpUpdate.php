@@ -3,12 +3,12 @@
 class FrmMlcmpUpdate extends FrmAddon {
 
 	public $plugin_file;
-	public $plugin_name = 'MailChimp';
+	public $plugin_name = 'Mailchimp';
 	public $download_id = 170655;
-	public $version = '2.06';
+	public $version = '2.08';
 
 	public function __construct() {
-		$this->plugin_file = dirname( dirname( __FILE__ ) ) . '/formidable-mailchimp.php';
+		$this->plugin_file = dirname( __DIR__ ) . '/formidable-mailchimp.php';
 		parent::__construct();
 	}
 
@@ -16,5 +16,4 @@ class FrmMlcmpUpdate extends FrmAddon {
 		add_filter( 'frm_include_addon_page', '__return_true' );
 		new FrmMlcmpUpdate();
 	}
-
 }

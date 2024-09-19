@@ -22,7 +22,7 @@ trait Stats
         $table_name = $this->getTableName(RealCookieBannerStats::TABLE_NAME_TERMS);
         $rows = $wpdb->get_results(
             // phpcs:disable WordPress.DB.PreparedSQL
-            $wpdb->prepare("SELECT IFNULL(t.name, CONCAT(s.term_name, %s)) AS term_name, s.accepted, SUM(s.count) AS `count`\n                FROM {$table_name} AS s\n                LEFT JOIN {$wpdb->terms} AS t\n                ON s.term_id = t.term_id\n                WHERE s.day BETWEEN %s AND %s\n                AND s.context = %s\n                GROUP BY 1, 2\n                ORDER BY s.term_id ASC, s.accepted ASC", ' (' . \__('deleted', RCB_TD) . ')', $from, $to, $context),
+            $wpdb->prepare("SELECT IFNULL(t.name, CONCAT(s.term_name, %s)) AS term_name, s.accepted, SUM(s.count) AS `count`\n                FROM {$table_name} AS s\n                LEFT JOIN {$wpdb->terms} AS t\n                ON s.term_id = t.term_id\n                WHERE s.day BETWEEN %s AND %s\n                AND s.context = %s\n                GROUP BY 1, 2\n                ORDER BY s.term_id ASC, s.accepted DESC", ' (' . \__('deleted', RCB_TD) . ')', $from, $to, $context),
             ARRAY_A
         );
         // Transform object types
@@ -83,7 +83,7 @@ trait Stats
         $where = [];
         $where[] = $context === null ? '1 = 1' : $wpdb->prepare('context = %s', $context);
         // phpcs:disable WordPress.DB
-        $sql = $wpdb->prepare("SELECT button_clicked, SUM(`count`) as cnt\n            FROM {$table_name}\n            WHERE `day` BETWEEN %s AND %s\n                AND button_clicked <> 'none'\n                AND " . \join(' AND ', $where) . ' GROUP BY 1', $from, $to);
+        $sql = $wpdb->prepare("SELECT button_clicked, SUM(`count`) as cnt\n            FROM {$table_name}\n            WHERE `day` BETWEEN %s AND %s\n                AND button_clicked NOT IN ('none', 'implicit_all', 'implicit_essential')\n                AND " . \join(' AND ', $where) . ' GROUP BY 1', $from, $to);
         $rows = $wpdb->get_results($sql, ARRAY_A);
         // phpcs:enable WordPress.DB
         foreach ($rows as $row) {

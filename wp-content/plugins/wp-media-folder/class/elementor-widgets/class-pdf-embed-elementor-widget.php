@@ -16,9 +16,9 @@ class WpmfPdfEmbedElementorWidget extends \Elementor\Widget_Base
     public function get_script_depends() // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps -- Method extends from \Elementor\Widget_Base class
     {
         return array(
-                'wpmf_embed_pdf_js',
-            'wpmf_compat_js',
-            'wpmf_pdf_js'
+            'wpmf_pdf_js',
+            'wpmf_embed_pdf_js',
+            'wpmf_compat_js'
         );
     }
 
@@ -163,7 +163,7 @@ class WpmfPdfEmbedElementorWidget extends \Elementor\Widget_Base
                 wpmf_pdfemb_trans = JSON.parse(wpmf_pdfemb_trans);
             </script>
             <script type="text/javascript"
-                    src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/js/pdf-embed/all-pdfemb-basic.min.js?v=' . WPMF_VERSION) ?>"></script>
+                    src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/js/pdf-embed/viewer.js?v=' . WPMF_VERSION) ?>"></script>
             <?php
         }
         $settings = $this->get_settings_for_display();

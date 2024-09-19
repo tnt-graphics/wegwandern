@@ -478,6 +478,7 @@ class WpmfGalleryElementorWidget extends \Elementor\Widget_Base
         $folders_order = $getFolders['attachment_terms_order'];
         $list_cloud = array();
         $list_local = array();
+        $ai = 'a';
         foreach ($folders_order as $folder_order) {
             $folder = $folders[$folder_order];
             if ($folder['id'] !== 0) {
@@ -486,13 +487,14 @@ class WpmfGalleryElementorWidget extends \Elementor\Widget_Base
                 }
 
                 if (isset($folder['drive_type']) &&  $folder['drive_type'] !== '') {
-                    $list_cloud[$folder['slug']] = str_repeat('&nbsp;&nbsp;', $folder['depth']) . $folder['label'];
+                    $list_cloud[$ai.'|'.$folder['slug']] = str_repeat('&nbsp;&nbsp;', $folder['depth']) . $folder['label'];
                 } else {
-                    $list_local[$folder['slug']] = str_repeat('&nbsp;&nbsp;', $folder['depth']) . $folder['label'];
+                    $list_local[$ai.'|'.$folder['slug']] = str_repeat('&nbsp;&nbsp;', $folder['depth']) . $folder['label'];
                 }
             } else {
                 $list_local[0] = $folder['label'];
             }
+            $ai++;
         }
 
         $this->add_control(
@@ -547,11 +549,17 @@ class WpmfGalleryElementorWidget extends \Elementor\Widget_Base
 
         $enable_gallery_folder = (!empty($settings['wpmf_gallery_folder']) && $settings['wpmf_gallery_folder'] === 'yes') ? 1 : 0;
         $folder_slug = (!empty($settings['wpmf_gallery_folder_id'])) ? $settings['wpmf_gallery_folder_id'] : 0;
-        if ((int)$folder_slug !== 0) {
-            $folder_id = $folder_slug;
+        $pos = strpos($folder_slug, '|');
+        if ($pos) {
+            $folder_slug =  substr($folder_slug, $pos+1);
+        }
+
+        $folder_id = 0;
+        $folder = get_term_by('slug', $folder_slug, WPMF_TAXO);
+        if (!empty($folder)) {
+            $folder_id = $folder->term_id;
         } else {
-            $folder = get_term_by('slug', $folder_slug, WPMF_TAXO);
-            $folder_id = 0;
+            $folder   = get_term_by('id', (int)$folder_slug, WPMF_TAXO);
             if (!empty($folder)) {
                 $folder_id = $folder->term_id;
             }

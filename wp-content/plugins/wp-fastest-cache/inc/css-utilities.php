@@ -496,7 +496,10 @@
 			
 			if(preg_match("/data\:font\/opentype/i", $matches[1])){
 				$matches[1] = $matches[1];
-			}else if(preg_match("/data\:application\/x-font-woff/i", $matches[1])){
+			}else if(preg_match("/data\:application\/(x-)?font-woff/i", $matches[1])){
+				// data:application/font-woff
+				// data:application/x-font-woff
+
 				$matches[1] = $this->woff_to_file($matches[1]);
 			}else if(preg_match("/data\:image\/svg\+xml/i", $matches[1])){
 				$matches[1] = $this->svg_to_file($matches[1]);

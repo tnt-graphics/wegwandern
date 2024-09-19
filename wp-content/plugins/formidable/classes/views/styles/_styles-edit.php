@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // It is accessed from /wp-admin/admin.php?page=formidable-styles&frm_action=edit&form=782
 ?>
 <div id="frm_style_sidebar" class="frm-right-panel frm-fields frm_wrap frm-p-6">
-	<form id="frm_styling_form" method="post" action="<?php echo esc_url( FrmStylesHelper::get_edit_url( $style, $form->id ) ); ?>">
+	<form id="frm_styling_form" method="post" action="<?php echo esc_url( FrmStylesHelper::get_edit_url( $style, $form->id, FrmAppHelper::get_param( 'section' ) ) ); ?>">
 		<input type="hidden" name="ID" value="<?php echo esc_attr( $style->ID ); ?>" />
 		<input type="hidden" name="frm_action" value="save" />
 
@@ -31,7 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	 * We need this style_name field for calls made from the changeStyling function.
 	 * Without it, some styles (including background image opacity and repeater button icons) don't properly sync when updated.
 	 * It isn't required for frm_styling_form so it's left out of the form.
-	 * It is targetted in JavaScript by its #frm_style_sidebar parent though, so it's important that it's inside the sidebar.
+	 * It is targeted in JavaScript by its #frm_style_sidebar parent though, so it's important that it's inside the sidebar.
 	 */
 	?>
 	<input type="hidden" name="style_name" value="frm_style_<?php echo esc_attr( $style->post_name ); ?>" />

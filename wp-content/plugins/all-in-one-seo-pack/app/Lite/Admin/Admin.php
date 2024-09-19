@@ -29,7 +29,7 @@ class Admin extends CommonAdmin\Admin {
 	 * @since 4.0.0
 	 */
 	public function __construct() {
-		if ( ! wp_doing_ajax() && ! wp_doing_cron() ) {
+		if ( ! wp_doing_cron() ) {
 			parent::__construct();
 		}
 
@@ -105,7 +105,7 @@ class Admin extends CommonAdmin\Admin {
 		];
 
 		foreach ( $mappedUrls as $queryArg => $redirectUrl ) {
-			if ( isset( $_GET[ $queryArg ] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended
+			if ( isset( $_GET[ $queryArg ] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
 				wp_redirect( $redirectUrl );
 			}
 		}

@@ -6,7 +6,7 @@
 class FrmMlcmpActionHelper {
 
 	/**
-	 * Check if any MailChimp actions exist in database
+	 * Check if any Mailchimp actions exist in database
 	 *
 	 * @since 2.02
 	 *
@@ -23,5 +23,4 @@ class FrmMlcmpActionHelper {
 
 		return $action_id !== null;
 	}
-
 }

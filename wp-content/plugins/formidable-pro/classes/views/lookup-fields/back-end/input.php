@@ -15,7 +15,7 @@ if ( empty( $field['get_values_field'] ) ) {
 }
 
 // Lookup Field Dropdown
-if ( 'select' == $field['data_type'] ) {
+if ( 'select' === $field['data_type'] ) {
 ?>
 <select name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>"
 	<?php echo FrmField::is_multiple_select( $field ) ? 'multiple="multiple" ' : ''; ?>>
@@ -67,7 +67,7 @@ if ( 'select' == $field['data_type'] ) {
 		?>
 		</ul><?php
 	}
-} elseif ( 'text' == $field['data_type'] ) {
+} elseif ( 'text' === $field['data_type'] ) {
 	// Text Lookup Field
 
 	?><input type="text" id="<?php echo esc_attr( $html_id ); ?>" name="<?php echo esc_attr( $field_name ); ?>" value="<?php echo esc_attr( $field['default_value'] ); ?>"<?php echo $width_string; ?> class="dyn_default_value" /><?php

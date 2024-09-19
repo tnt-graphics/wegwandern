@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="frm6 frm_form_field">
 		<label class="frm_primary_label">&nbsp;
 			<?php esc_html_e( 'Type', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" data-placement="right" title="<?php esc_attr_e( 'Text calculations are combined literally, as is. Math calculations only use numbers in the calculation, and any included math operations will be applied.', 'formidable-pro' ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'Text calculations are combined literally, as is. Math calculations only use numbers in the calculation, and any included math operations will be applied.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
 		</label>
 		<label for="calc_type_<?php echo esc_attr( $field['id'] ); ?>" class="frm_toggle frm_toggle_long">
 			<input type="checkbox" value="text" name="field_options[calc_type_<?php echo esc_attr( $field['id'] ); ?>]" id="calc_type_<?php echo esc_attr( $field['id'] ); ?>" <?php checked( $field['calc_type'], 'text' ); ?> />

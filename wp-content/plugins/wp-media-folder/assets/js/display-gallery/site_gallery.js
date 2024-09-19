@@ -95,6 +95,13 @@
                         if ($(this).find('a[data-lightbox="1"]').length) {
                             e.preventDefault();
                             var index = $(this).find('a[data-lightbox="1"]').data('index');
+                            var item = (items[index]);
+                            if (item['src'] !== "undefined") {
+                                var check_video_kaltura = item['src'].indexOf("cdnapisec.kaltura.com");
+                                if (check_video_kaltura !== "undefined" && check_video_kaltura > 0) {
+                                    $('.mfp-iframe-holder .mfp-content').css('max-width', '640px');
+                                }
+                            }
                             $.magnificPopup.open({
                                 items: items,
                                 gallery: {

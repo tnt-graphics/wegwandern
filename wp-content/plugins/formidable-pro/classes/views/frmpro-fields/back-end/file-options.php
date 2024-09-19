@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'<a href="' . esc_url( $settings_url ) . '">' . esc_html__( 'Form Permissions Settings', 'formidable-pro' ) . '</a>'
 			);
 			?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php echo esc_attr( $public_files_tooltip ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( $public_files_tooltip ); ?>
 		</div>
 	<?php } ?>
 	<p>
@@ -45,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<label>
 			<input type="checkbox" id="resize_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[resize_<?php echo esc_attr( $field['id'] ); ?>]" value="1" onchange="frm_show_div('resize_file_<?php echo absint( $field['id'] ); ?>',this.checked,1,'.')" <?php checked( $field['resize'], 1 ); ?> />
 			<?php esc_html_e( 'Automatically resize files before upload', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'When a large image is uploaded, resize it before you save it to your site.', 'formidable-pro' ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'When a large image is uploaded, resize it before you save it to your site.', 'formidable-pro' ) ); ?>
 		</label>
 	</p>
 	<p class="resize_file_<?php echo esc_attr( $field['id'] ); ?> <?php echo esc_attr( $field['resize'] == 1 ? '' : 'frm_hidden' ); ?>">
@@ -86,9 +86,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm_form_field restrict_box_<?php echo absint( $field['id'] ); ?> <?php echo ( $field['restrict'] == 1 ? '' : 'frm_hidden' ); ?>">
 		<select name="field_options[ftypes_<?php echo esc_attr( $field['id'] ); ?>][]" multiple="multiple" class="frm_multiselect">
 			<?php foreach ( $mimes as $ext_preg => $mime ) { ?>
-				<option value="<?php echo esc_attr( $ext_preg . '|||' . $mime ); ?>" <?php echo isset( $field['ftypes'][ $ext_preg ] ) ? ' selected="selected"' : ''; ?>>
-					<?php echo esc_html( str_replace( '|', ', ', $ext_preg ) ); ?>
-				</option>
+				<option value="<?php echo esc_attr( $ext_preg . '|||' . $mime ); ?>" <?php echo isset( $field['ftypes'][ $ext_preg ] ) ? ' selected="selected"' : ''; ?>><?php echo esc_html( str_replace( '|', ', ', $ext_preg ) ); ?></option>
 			<?php } ?>
 		</select>
 	</p>
@@ -98,14 +96,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm6 frm_form_field">
 		<label for="min_size_<?php echo esc_attr( $field['id'] ); ?>">
 			<?php esc_html_e( 'Min file size (MB)', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php echo esc_attr( __( 'Set the minimum file size limit for each file uploaded.', 'formidable-pro' ) ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'Set the minimum file size limit for each file uploaded.', 'formidable-pro' ) ); ?>
 		</label>
 		<input type="text" id="min_size_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[min_size_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['min_size'] ); ?>" size="5" />
 	</p>
 	<p class="frm6 frm_form_field">
 		<label for="size_<?php echo esc_attr( $field['id'] ); ?>">
 			<?php esc_html_e( 'Max file size (MB)', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php echo esc_attr( sprintf( __( 'Set the file size limit for each file uploaded. Your server settings allow a maximum of %d MB.', 'formidable-pro' ), FrmProFileField::get_max_file_size() ) ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( sprintf( __( 'Set the file size limit for each file uploaded. Your server settings allow a maximum of %d MB.', 'formidable-pro' ), FrmProFileField::get_max_file_size() ) ); ?>
 		</label>
 		<input type="text" id="size_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[size_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['size'] ); ?>" size="5" />
 	</p>
@@ -125,7 +123,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p>
 		<label for="choose_msg_<?php echo esc_attr( $field['id'] ); ?>">
 			<?php esc_html_e( 'Compact upload text', 'formidable-pro' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'The label shown when the file upload field is compacted with the frm_compact CSS layout class.', 'formidable-pro' ); ?>"></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'The label shown when the file upload field is compacted with the frm_compact CSS layout class.', 'formidable-pro' ) ); ?>
 		</label>
 		<input type="text" id="choose_msg_<?php echo esc_attr( $field['id'] ); ?>" class="frm_long_input" name="field_options[choose_msg_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['choose_msg'] ); ?>" />
 	</p>

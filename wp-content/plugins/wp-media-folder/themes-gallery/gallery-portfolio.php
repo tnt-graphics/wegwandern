@@ -3,7 +3,7 @@
 defined('ABSPATH') || die('No direct script access allowed!');
 wp_enqueue_script('jquery-masonry');
 wp_enqueue_script('wpmf-gallery');
-$class[] = 'gallery_life wpmf_gallery_default gallery_default gallery-portfolio '. $align .'';
+$class[] = 'gallery_life wpmf_gallery_default gallery_default gallery-portfolio ';
 $class[] = 'gallery-columns-' . $columns;
 $class[] = 'gallery-size-' . $size_class;
 $class[] = 'wpmf-gallery-bottomspace-' . $bottomspace;
@@ -32,7 +32,13 @@ $output = '';
 if (!empty($is_divi)) {
     $output .= '<style>' . $style . '</style>';
 }
-$output .= "<div class='wpmf-gallerys wpmf-gallerys-life'>";
+$galleryStyle = '';
+if ($align === 'alignleft' || $align === 'alignright' || $align === 'aligncenter') {
+    $galleryStyle = 'style="width: 100%; max-width: 620px!important;"';
+} elseif ($align === 'none') {
+    $align = '';
+}
+$output .= '<div class="wpmf-gallerys wpmf-gallerys-life '. $align . '" ' . $galleryStyle . '>';
 $output .= '<div id="' . $selector . '"
  data-gutter-width="' . $gutterwidth . '"
   data-wpmfcolumns="' . $columns . '" class="' . $class . '">';
@@ -114,7 +120,7 @@ target="' . $link_target . '" data-index="'. esc_attr($pos) .'">+</a>';
         $image_output .= '<a data-href="'.esc_url($downloads['download_link']).'" '. (($downloads['type'] === 'local') ? 'download' : '') .' class="wpmf_gallery_download_icon"><span class="material-icons-outlined"> file_download </span></a>';
     }
 
-    $output .= '<div class="wpmf-gallery-item
+    $output .= '<figure class="wpmf-gallery-item
      wpmf-gallery-item-position-'. $pos .' wpmf-gallery-item-attachment-' . $item_id . '" data-index="'. esc_attr($pos) .'">';
     $output .= '<div class="wpmf-gallery-icon">';
     $output .= wpmfRenderVideoIcon($attachment->ID);
@@ -141,7 +147,7 @@ target="' . $link_target . '" data-index="'. esc_attr($pos) .'">+</a>';
         }
         $output .= '</div>';
     }
-    $output .= '</div>';
+    $output .= '</figure>';
 
     $pos++;
 }

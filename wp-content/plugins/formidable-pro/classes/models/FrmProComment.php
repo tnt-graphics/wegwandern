@@ -40,7 +40,7 @@ class FrmProComment {
 
 		do_action( 'pre_comment_on_post', $comment_post_ID );
 
-		$comment_content = isset( $_POST['comment'] ) ? trim( $_POST['comment'] ) : '';
+		$comment_content = FrmAppHelper::get_post_param( 'comment', '', 'sanitize_textarea_field' );
 
 		// If the user is logged in
 		$user_ID = get_current_user_id();
@@ -52,9 +52,9 @@ class FrmProComment {
 			$comment_author_email = ''; //get email from field
 			$comment_author_url   = $current_user->user_url;
 		} else {
-			$comment_author       = isset( $_POST['author'] ) ? trim( strip_tags( $_POST['author'] ) ) : '';
-			$comment_author_email = isset( $_POST['email'] ) ? trim( $_POST['email'] ) : '';
-			$comment_author_url   = isset( $_POST['url'] ) ? trim( $_POST['url'] ) : '';
+			$comment_author       = FrmAppHelper::get_post_param( 'author', '', 'sanitize_text_field' );
+			$comment_author_email = FrmAppHelper::get_post_param( 'email', '', 'sanitize_email' );
+			$comment_author_url   = FrmAppHelper::get_post_param( 'url', '', 'esc_url_raw' );
 		}
 
 		$comment_type = '';

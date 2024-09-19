@@ -12,6 +12,11 @@ class FrmFormsListHelper extends FrmListHelper {
 		$this->status = self::get_param( array( 'param' => 'form_type' ) );
 
 		parent::__construct( $args );
+		$this->screen->set_screen_reader_content(
+			array(
+				'heading_list' => esc_html__( 'Forms list', 'formidable' ),
+			)
+		);
 	}
 
 	/**
@@ -241,7 +246,7 @@ class FrmFormsListHelper extends FrmListHelper {
 			! empty( $item->name ) ? $item->name : __( '(no title)', 'formidable' )
 		);
 
-		$checkbox .= '<label for="cb-item-action-' . absint( $item->id ) . '"><span class="screen-reader-text">' . $checkbox_label_text . '</span></label>';
+		$checkbox .= '<label for="cb-item-action-' . absint( $item->id ) . '"><span class="screen-reader-text">' . esc_html( $checkbox_label_text ) . '</span></label>';
 
 		$r = '<tr id="item-action-' . absint( $item->id ) . '"' . $style . '>';
 

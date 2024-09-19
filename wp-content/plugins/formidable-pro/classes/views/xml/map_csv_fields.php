@@ -138,6 +138,15 @@ if ( ! defined( 'ABSPATH' ) ) {
                                             <option value="item_key" <?php selected( __( 'Entry Key', 'formidable-pro' ), htmlspecialchars( $header ) ) . selected( 'key', strtolower( htmlspecialchars( $header ) ) ); ?>>
                                                 <?php esc_html_e( 'Entry Key', 'formidable-pro' ); ?>
                                             </option>
+                                            <option value="comment_user" <?php selected( __( 'Comment User', 'formidable-pro' ), $header ); ?>>
+                                                <?php esc_html_e( 'Comment User', 'formidable-pro' ); ?>
+                                            </option>
+                                            <option value="comment" <?php selected( __( 'Comment', 'formidable-pro' ), $header ); ?>>
+                                                <?php esc_html_e( 'Comment', 'formidable-pro' ); ?>
+                                            </option>
+                                            <option value="comment_date" <?php selected( __( 'Comment Date', 'formidable-pro' ), $header ); ?>>
+                                                <?php esc_html_e( 'Comment Date', 'formidable-pro' ); ?>
+                                            </option>
                                         </select>
                                     </td>
                                 </tr>

@@ -30,7 +30,7 @@ class Post extends Model {
 	 */
 	protected $jsonFields = [
 		'keywords',
-		// 'keyphrases',
+		'keyphrases',
 		'page_analysis',
 		'schema',
 		// 'schema_type_options',
@@ -192,6 +192,7 @@ class Post extends Model {
 		$post = self::migrateRemovedQaSchema( $post );
 		$post = self::migrateImageTypes( $post );
 		$post = self::runDynamicSchemaMigration( $post );
+		$post = self::migrateKoreaCountryCodeSchemas( $post );
 
 		return $post;
 	}
@@ -219,11 +220,27 @@ class Post extends Model {
 		// is correctly propagated on the frontend after changing it.
 		$post->schema = self::getDefaultSchemaOptions( $post->schema );
 
+		// Filter out null or empty graphs.
+		$post->schema->graphs = array_filter( $post->schema->graphs, function( $graph ) {
+			return ! empty( $graph );
+		} );
+
 		foreach ( $post->schema->graphs as $graph ) {
 			// If the first character of the graph ID isn't a pound, add one.
 			// We have to do this because the schema migration in 4.2.5 didn't add the pound for custom graphs.
 			if ( property_exists( $graph, 'id' ) && '#' !== substr( $graph->id, 0, 1 ) ) {
 				$graph->id = '#' . $graph->id;
+			}
+
+			// If the graph has an old rating value, we need to migrate it to the review.
+			if (
+				property_exists( $graph, 'id' ) &&
+				preg_match( '/(movie|software-application)/', $graph->id ) &&
+				property_exists( $graph->properties, 'rating' ) &&
+				property_exists( $graph->properties->rating, 'value' )
+			) {
+				$graph->properties->review->rating = $graph->properties->rating->value;
+				unset( $graph->properties->rating->value );
 			}
 		}
 
@@ -414,7 +431,7 @@ class Post extends Model {
 		$thePost->keywords                    = ! empty( $data['keywords'] ) ? aioseo()->helpers->sanitize( $data['keywords'] ) : null;
 		$thePost->pillar_content              = isset( $data['pillar_content'] ) ? rest_sanitize_boolean( $data['pillar_content'] ) : 0;
 		// TruSEO
-		$thePost->keyphrases                  = ! empty( $data['keyphrases'] ) ? wp_json_encode( self::sanitizeKeyphrases( $data['keyphrases'] ) ) : null;
+		$thePost->keyphrases                  = ! empty( $data['keyphrases'] ) ? self::sanitizeKeyphrases( $data['keyphrases'] ) : null;
 		$thePost->page_analysis               = ! empty( $data['page_analysis'] ) ? self::sanitizePageAnalysis( $data['page_analysis'] ) : null;
 		$thePost->seo_score                   = ! empty( $data['seo_score'] ) ? sanitize_text_field( $data['seo_score'] ) : 0;
 		// Sitemap
@@ -429,7 +446,7 @@ class Post extends Model {
 		$thePost->robots_noimageindex         = isset( $data['noimageindex'] ) ? rest_sanitize_boolean( $data['noimageindex'] ) : 0;
 		$thePost->robots_nosnippet            = isset( $data['nosnippet'] ) ? rest_sanitize_boolean( $data['nosnippet'] ) : 0;
 		$thePost->robots_noodp                = isset( $data['noodp'] ) ? rest_sanitize_boolean( $data['noodp'] ) : 0;
-		$thePost->robots_max_snippet          = ! empty( $data['maxSnippet'] ) ? (int) sanitize_text_field( $data['maxSnippet'] ) : -1;
+		$thePost->robots_max_snippet          = isset( $data['maxSnippet'] ) && is_numeric( $data['maxSnippet'] ) ? (int) sanitize_text_field( $data['maxSnippet'] ) : -1;
 		$thePost->robots_max_videopreview     = isset( $data['maxVideoPreview'] ) && is_numeric( $data['maxVideoPreview'] ) ? (int) sanitize_text_field( $data['maxVideoPreview'] ) : -1;
 		$thePost->robots_max_imagepreview     = ! empty( $data['maxImagePreview'] ) ? sanitize_text_field( $data['maxImagePreview'] ) : 'large';
 		// Open Graph Meta
@@ -630,6 +647,8 @@ class Post extends Model {
 					'Movie'               => [],
 					'Person'              => [],
 					'Product'             => [],
+					'ProductReview'       => [],
+					'Car'                 => [],
 					'Recipe'              => [],
 					'Service'             => [],
 					'SoftwareApplication' => [],
@@ -668,12 +687,11 @@ class Post extends Model {
 	 *
 	 * @since 4.1.7
 	 *
-	 * @param  string $keyphrases The database keyphrases.
-	 * @return object             The defaults.
+	 * @param  null|object $keyphrases The database keyphrases.
+	 * @return object                  The defaults.
 	 */
-	public static function getKeyphrasesDefaults( $keyphrases = '' ) {
-		$keyphrases = json_decode( (string) $keyphrases );
-		$defaults   = [
+	public static function getKeyphrasesDefaults( $keyphrases = null ) {
+		$defaults = [
 			'focus'      => [
 				'keyphrase' => '',
 				'score'     => 0,
@@ -764,5 +782,49 @@ class Post extends Model {
 		$existingOptions = array_replace_recursive( $defaults, $existingOptions );
 
 		return json_decode( wp_json_encode( $existingOptions ) );
+	}
+
+		/**
+	 * Migrates update Korea country code for Person, Product, Event, and JobsPosting schemas.
+	 *
+	 * @since 4.7.1
+	 *
+	 * @param  Post $aioseoPost The post object.
+	 * @return Post             The modified post object.
+	 */
+	private static function migrateKoreaCountryCodeSchemas( $aioseoPost ) {
+		if ( empty( $aioseoPost->schema ) || empty( $aioseoPost->schema->graphs ) ) {
+			return $aioseoPost;
+		}
+
+		foreach ( $aioseoPost->schema->graphs as $key => $graph ) {
+			if ( isset( $aioseoPost->schema->graphs[ $key ]->properties->location->country ) ) {
+				$aioseoPost->schema->graphs[ $key ]->properties->location->country = self::invertKoreaCode( $graph->properties->location->country );
+			}
+
+			if ( isset( $aioseoPost->schema->graphs[ $key ]->properties->shippingDestinations ) ) {
+				$aioseoPost->schema->graphs[ $key ]->properties->shippingDestinations = array_map( function( $item ) {
+					$item->country = self::invertKoreaCode( $item->country );
+
+					return $item;
+				}, $graph->properties->shippingDestinations );
+			}
+		}
+
+		$aioseoPost->save();
+
+		return $aioseoPost;
+	}
+
+	/**
+	 * Utility function to invert the country code for Korea.
+	 *
+	 * @since 4.7.1
+	 *
+	 * @param  string $code country code.
+	 * @return string       country code.
+	 */
+	public static function invertKoreaCode( $code ) {
+		return 'KP' === $code ? 'KR' : $code;
 	}
 }

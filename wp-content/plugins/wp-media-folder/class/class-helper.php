@@ -1,6 +1,8 @@
 <?php
 namespace Joomunited\WPMediaFolder;
 
+use \WP_Query;
+
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
 /**
@@ -995,6 +997,19 @@ class WpmfHelper
 
         return $is_access;
     }
+    
+    /**
+     * Get kaltura video ID from URL
+     *
+     * @param string $url URL of video
+     *
+     * @return mixed|string
+     */
+    public static function getKalturaVideoIdFromUrl($url = '')
+    {
+        $array = explode('/', basename($url));
+        return end($array);
+    }
 
     /**
      * Get dailymotion video ID from URL
@@ -1041,7 +1056,7 @@ class WpmfHelper
         $title   = '';
         $ext     = '';
         $content = '';
-        if ($action === 'video_to_gallery' && (int)$thumbnail !== 0) {
+        if ($action === 'video_to_gallery' && (int)$thumbnail !== 0 && !strpos($video_url, 'kaltura')) {
             update_post_meta($thumbnail, 'wpmf_remote_video_link', $video_url);
             return $thumbnail;
         }
@@ -1049,7 +1064,8 @@ class WpmfHelper
         $video_url = str_replace('manage/videos/', '', $video_url);
         if (!preg_match(self::$vimeo_pattern, $video_url, $output_array)
             && !preg_match('/(youtube.com|youtu.be)\/(watch)?(\?v=)?(\S+)?/', $video_url, $match)
-            && !preg_match('/\b(?:dailymotion)\.com\b/i', $video_url, $vresult)) {
+            && !preg_match('/\b(?:dailymotion)\.com\b/i', $video_url, $vresult)
+            && !preg_match('/(videos.kaltura)\.com\b/i', $video_url, $vresult)) {
             return false;
         } elseif (preg_match(self::$vimeo_pattern, $video_url, $output_array)) {
             // for vimeo
@@ -1154,6 +1170,35 @@ class WpmfHelper
             $content = $thumb_gets['body'];
             $info_thumbnail = pathinfo($info['thumbnail_url']); // get info thumbnail
             $ext            = (!empty($info_thumbnail['extension'])) ? $info_thumbnail['extension'] : 'jpg';
+        } elseif (preg_match('/(videos.kaltura)\.com\b/i', $video_url, $vresult)) {
+            // for kaltura
+            $id   = self::getKalturaVideoIdFromUrl($video_url);
+            $partner_id = '5944002'; //partner id from account on Kaltura
+            $thumb = 'http://cdnsecakmi.kaltura.com/p/' . $partner_id . '/thumbnail/entry_id/' . $id . '/width/2560/height/1920';
+            $gets = wp_remote_get($thumb);
+
+            if (empty($gets)) {
+                return false;
+            }
+            $content = $gets['body'];
+
+            //get title video
+            $array_video_url = explode('/', $video_url);
+            array_pop($array_video_url);
+            $title = str_replace('+', ' ', end($array_video_url));
+
+            $src = 'https://cdnapisec.kaltura.com/p/' . $partner_id . '/sp/' . $partner_id . '00/playManifest/entryId/'.$id.'/format/url/protocol/https/'.$partner_id.'/2000/name/'.$id.'.mp4';
+            $video_url = $src;
+            update_post_meta($thumbnail, 'wpmf_remote_video_link', $video_url);
+            $json_datas = wp_remote_get('https://cdnapisec.kaltura.com/p/' . $partner_id . '/sp/' . $partner_id . '00/playManifest/entryId/'.$id.'/format/url/protocol/https/'.$partner_id.'/2000/name/'.$id.'.mp4');
+            
+            if (empty($json_datas)) {
+                return false;
+            }
+
+            $infos = array();
+            $infos['html'] = "<iframe width='200' height='150' src='".$src."' frameborder='0' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' referrerpolicy='strict-origin-when-cross-origin' allowfullscreen title='".$title."'></iframe>";
+            $ext            = 'jpeg';
         }
 
         $upload_dir = wp_upload_dir();
@@ -1329,6 +1374,7 @@ class WpmfHelper
             'atx'          => 'application/vnd.antix.game-component',
             'au'           => 'audio/basic',
             'avi'          => 'video/avi',
+            'avif'         => 'image/avif',
             'aw'           => 'application/applixware',
             'azf'          => 'application/vnd.airzip.filesecure.azf',
             'azs'          => 'application/vnd.airzip.filesecure.azs',
@@ -2295,5 +2341,25 @@ class WpmfHelper
         } else {
             return 'application/octet-stream';
         }
+    }
+
+    /**
+     * Check is folder active for post type
+     *
+     * @param string $post_type Post type name
+     *
+     * @return boolean
+     */
+    public static function isForThisPostType($post_type)
+    {
+        $settings         = get_option('wpmf_settings');
+        if (isset($settings) && isset($settings['wpmf_active_folders_post_types'])) {
+            $post_types = $settings['wpmf_active_folders_post_types'];
+            $post_types = is_array($post_types) ? $post_types : array();
+        } else {
+            $post_types = array();
+        }
+
+        return in_array($post_type, $post_types);
     }
 }

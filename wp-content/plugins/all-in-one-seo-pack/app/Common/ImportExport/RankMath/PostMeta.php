@@ -149,7 +149,7 @@ class PostMeta {
 							$keyphraseArray['additional'][] = [ 'keyphrase' => aioseo()->helpers->sanitizeOption( $keyphrase ) ];
 						}
 
-						$meta['keyphrases'] = wp_json_encode( $keyphraseArray );
+						$meta['keyphrases'] = $keyphraseArray;
 						break;
 					case 'rank_math_robots':
 						$value = aioseo()->helpers->maybeUnserialize( $value );
@@ -162,7 +162,7 @@ class PostMeta {
 						break;
 					case 'rank_math_advanced_robots':
 						$value = aioseo()->helpers->maybeUnserialize( $value );
-						if ( ! empty( $value['max-snippet'] ) && intval( $value['max-snippet'] ) ) {
+						if ( isset( $value['max-snippet'] ) && is_numeric( $value['max-snippet'] ) ) {
 							$meta['robots_max_snippet'] = intval( $value['max-snippet'] );
 						}
 						if ( isset( $value['max-video-preview'] ) && is_numeric( $value['max-video-preview'] ) ) {

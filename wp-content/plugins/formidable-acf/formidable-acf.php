@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Formidable ACF
- * Description: Addon description
- * Version: 1.0.1
+ * Description: Map Formidable fields to Advanced Custom Fields.
+ * Version: 1.0.2
  * Plugin URI: https://formidableforms.com/
  * Author URI: https://formidableforms.com/
  * Author: Strategy11
@@ -27,7 +27,7 @@ if ( class_exists( 'FrmAcfAppController', false ) ) {
  * @param string $class_name The name of the class to load.
  */
 function frm_acf_autoloader( $class_name ) {
-	$path = dirname( __FILE__ );
+	$path = __DIR__;
 
 	// Only load Frm classes here.
 	if ( ! preg_match( '/^FrmAcf.+$/', $class_name ) ) {

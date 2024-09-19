@@ -10,17 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProFieldValueSelector extends FrmFieldValueSelector {
 
 	/**
-	 * @var FrmProFieldSettings
-	 *
-	 * @since 2.03.05
-	 */
-	protected $field_settings;
-
-	public function __construct( $field_id, $args ) {
-		parent::__construct( $field_id, $args );
-	}
-
-	/**
 	 * Set the field_settings property
 	 *
 	 * @since 2.03.05

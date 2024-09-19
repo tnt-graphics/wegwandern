@@ -433,7 +433,7 @@ class FrmProGraphsController {
 			$field_ids,
 			function ( $total, $field_id ) use ( $fields ) {
 				foreach ( $fields as $field ) {
-					if ( (int) $field->id === (int) $field_id ) {
+					if ( is_array( $total ) && (int) $field->id === (int) $field_id ) {
 						$total[] = $field;
 						break;
 					}

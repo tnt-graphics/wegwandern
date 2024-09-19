@@ -88,7 +88,7 @@
 					__( 'Add existing forms%s', 'formidable-pro' ).replace( '%s', getConditionalAndViewsText() ),
 					/* %s: conditional "and views" text. */
 					__( 'Select existing forms%s to add to the application', 'formidable-pro' ).replace( '%s', getConditionalAndViewsText() ),
-					svg({ href: '#frm_folder_icon' }),
+					svg({ href: '#frm_add_existing_forms_icon' }),
 					handleAddExistingClick
 				),
 				getNewApplicationOption(

@@ -52,7 +52,7 @@
 				</div>
 				<div class="wiz-input-cont">
 					<label class="mc-input-label" style="margin-right: 5px;"><input type="radio" <?php echo $wpFastestCacheNewPost_type_homepage; ?> action-id="wpFastestCacheNewPost_type_homepage" id="wpFastestCacheNewPost_type_homepage" name="wpFastestCacheNewPost_type" value="homepage"></label>
-					<label for="wpFastestCacheNewPost_type_homepage"><?php _e("Clear Cache of Homepage", "wp-fastest-cache"); ?></label><br>
+					<label for="wpFastestCacheNewPost_type_homepage"><?php _e("Clear Cache of Home page", "wp-fastest-cache"); ?></label><br>
 					<label style="margin-left:24px;" for="wpFastestCacheNewPost_type_homepage"><?php _e("Clear Cache of Post Categories", "wp-fastest-cache"); ?></label><br>
 					<label style="margin-left:24px;" for="wpFastestCacheNewPost_type_homepage"><?php _e("Clear Cache of Post Tags", "wp-fastest-cache"); ?></label><br>
 					<label style="margin-left:24px;" for="wpFastestCacheNewPost_type_homepage"><?php _e("Clear Cache of Pagination", "wp-fastest-cache"); ?></label><br>

@@ -37,7 +37,6 @@ class FrmMlcmpHooksController {
 
 		// Importing
 		add_action( 'frm_after_import_form', 'FrmMlcmpActionController::migrate_settings_to_action_after_import', 10, 2 );
-
 	}
 
 	/**
@@ -50,5 +49,4 @@ class FrmMlcmpHooksController {
 		add_action( 'admin_notices', 'FrmMlcmpAppController::display_admin_notices' );
 		add_action( 'after_plugin_row_formidable-mailchimp/formidable-mailchimp.php', 'FrmMlcmpAppController::min_version_notice' );
 	}
-
 }

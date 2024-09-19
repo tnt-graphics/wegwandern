@@ -295,7 +295,7 @@ class FrmAppController {
 			),
 		);
 
-		$views_installed = is_callable( 'FrmProAppHelper::views_is_installed' ) ? FrmProAppHelper::views_is_installed() : FrmAppHelper::pro_is_installed();
+		$views_installed = is_callable( 'FrmProAppHelper::views_is_installed' ) && FrmProAppHelper::views_is_installed();
 
 		if ( ! $views_installed ) {
 			$nav_items[] = array(
@@ -354,7 +354,7 @@ class FrmAppController {
 	 */
 	public static function pro_get_started_headline() {
 		self::review_request();
-		FrmAppHelper::min_pro_version_notice( '4.0' );
+		FrmAppHelper::min_pro_version_notice( '6.0' );
 	}
 
 	/**
@@ -583,7 +583,6 @@ class FrmAppController {
 		}
 
 		self::maybe_add_ip_warning();
-		self::maybe_add_deprecated_message();
 	}
 
 	/**
@@ -759,7 +758,7 @@ class FrmAppController {
 			wp_enqueue_style( 'formidable-admin' );
 			if ( 'formidable-styles' !== $page && 'formidable-styles2' !== $page ) {
 				wp_enqueue_style( 'formidable-grids' );
-				wp_enqueue_style( 'formidable-dropzone' );
+				self::maybe_enqueue_dropzone_css( $page );
 			} else {
 				wp_enqueue_style( 'formidable-grids' );
 			}
@@ -797,6 +796,25 @@ class FrmAppController {
 		if ( 'formidable-addons' === $page ) {
 			wp_register_script( 'formidable_addons', $plugin_url . '/js/admin/addons.js', array( 'formidable_admin', 'wp-dom-ready' ), $version, true );
 			wp_enqueue_script( 'formidable_addons' );
+		}
+	}
+
+	/**
+	 * Avoid loading dropzone CSS on the form list page. It isn't required there.
+	 *
+	 * @since 6.11
+	 *
+	 * @param string $page
+	 * @return void
+	 */
+	private static function maybe_enqueue_dropzone_css( $page ) {
+		if ( ! FrmAppHelper::pro_is_installed() ) {
+			return;
+		}
+
+		$should_avoid_loading_dropzone = 'formidable' === $page && ! FrmAppHelper::simple_get( 'frm_action', 'sanitize_title' );
+		if ( ! $should_avoid_loading_dropzone ) {
+			wp_enqueue_style( 'formidable-dropzone' );
 		}
 	}
 
@@ -897,7 +915,40 @@ class FrmAppController {
 	 * @return void
 	 */
 	private static function register_popper1() {
+		if ( ! self::should_register_popper() ) {
+			return;
+		}
 		wp_register_script( 'popper', FrmAppHelper::plugin_url() . '/js/popper.min.js', array( 'jquery' ), '1.16.0', true );
+	}
+
+	/**
+	 * Only register popper on Formidable pages.
+	 * This helps to avoid popper conflicts on other plugin pages, including the WP Bakery page editor.
+	 *
+	 * @since 6.11.1
+	 *
+	 * @return bool
+	 */
+	private static function should_register_popper() {
+		global $pagenow;
+
+		$post_id = FrmAppHelper::simple_get( 'post', 'absint' );
+		if ( 'post.php' === $pagenow && $post_id && 'frm_display' === get_post_type( $post_id ) ) {
+			return true;
+		}
+
+		$post_type          = FrmAppHelper::simple_get( 'post_type', 'sanitize_title' );
+		$is_views_post_type = 'frm_display' === $post_type;
+		if ( in_array( $pagenow, array( 'post-new.php', 'edit.php' ), true ) && $is_views_post_type ) {
+			return true;
+		}
+
+		$page = FrmAppHelper::simple_get( 'page', 'sanitize_title' );
+		if ( strpos( $page, 'formidable' ) === 0 ) {
+			return true;
+		}
+
+		return in_array( $pagenow, array( 'term.php', 'edit-tags.php' ), true ) && FrmAppHelper::simple_get( 'taxonomy' ) === 'frm_application';
 	}
 
 	/**
@@ -1264,93 +1315,7 @@ class FrmAppController {
 	}
 
 	/**
-	 * @return void
-	 */
-	private static function maybe_add_deprecated_message() {
-		$settings = FrmAppHelper::get_settings();
-
-		if ( ! empty( $settings->use_html ) ) {
-			// Dont' show a message if Use HTML 5 is already enabled.
-			return;
-		}
-
-		if ( FrmAppHelper::is_admin_page( 'formidable-settings' ) ) {
-			add_action(
-				'frm_update_settings',
-				function ( $params ) {
-					if ( ! empty( $params['frm_use_html'] ) ) {
-						$inbox = new FrmInbox();
-						$inbox->dismiss( 'deprecated_use_html' );
-					}
-				}
-			);
-			// Don't show the message on global settings.
-			return;
-		}
-
-		$url = admin_url( 'admin.php?page=formidable-settings&t=misc_settings' );
-
-		add_filter(
-			'frm_message_list',
-			/**
-			 * @param array $messages
-			 * @return array
-			 */
-			function ( $messages ) use ( $url ) {
-				$messages[] = '<p>The option to use HTML5 in forms is currently disabled. In a future release, this setting will be removed and using HTML5 will be a requirement. <a href="' . esc_url( $url ) . '">Click here to enable it in Global Settings now</a>.</p>';
-				return $messages;
-			}
-		);
-
-		$inbox = new FrmInbox();
-		$inbox->add_message(
-			array(
-				'key'     => 'deprecated_use_html',
-				'force'   => true,
-				'subject' => 'The option to use HTML5 in forms will soon be removed',
-				'message' => 'The option to use HTML5 in forms is currently disabled. In a future release, this setting will be removed and using HTML5 will be a requirement.',
-				'icon'    => 'frm_report_problem_icon',
-				'cta'     => '<a class="button-secondary frm-button-secondary" href="' . esc_url( $url ) . '">Enable in Global Settings</a>',
-			)
-		);
-	}
-
-	/**
-	 * Include icons on page for Embed Form modal.
-	 *
-	 * @since 5.2
-	 *
-	 * @return void
-	 */
-	public static function include_embed_form_icons() {
-		_deprecated_function( __METHOD__, '5.3' );
-	}
-
-	/**
-	 * @deprecated 1.07.05 This is still referenced in the API add on as of v1.13.
-	 * @codeCoverageIgnore
-	 *
-	 * @param array $atts
-	 * @return string
-	 */
-	public static function get_form_shortcode( $atts ) {
-		_deprecated_function( __FUNCTION__, '1.07.05', 'FrmFormsController::get_form_shortcode' );
-		return FrmFormsController::get_form_shortcode( $atts );
-	}
-
-	/**
-	 * @deprecated 3.0.04
-	 *
-	 * @codeCoverageIgnore
-	 *
-	 * @return void
-	 */
-	public static function activation_install() {
-		FrmDeprecated::activation_install();
-	}
-
-	/**
-	 * @deprecated 3.0
+	 * @deprecated 3.0 This is still referenced in https://formidableforms.com/knowledgebase/php-examples/ as of May 8, 2024.
 	 * @codeCoverageIgnore
 	 */
 	public static function page_route( $content ) {

@@ -81,7 +81,7 @@ class FrmMlcmpDb {
 	}
 
 	/**
-	 * Check if MailChimp settings need migrating
+	 * Check if Mailchimp settings need migrating
 	 *
 	 * @since 2.0
 	 * @return bool
@@ -116,7 +116,7 @@ class FrmMlcmpDb {
 	}
 
 	/**
-	 * Convert settings to MailChimp action
+	 * Convert settings to Mailchimp action
 	 * Update group settings for 3.0 API
 	 *
 	 * @since 2.0

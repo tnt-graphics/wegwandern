@@ -28,7 +28,7 @@ class WpmfGalleryAddonDivi extends Component {
             || this.props.border_width !== nextProps.border_width || this.props.border_color !== nextProps.border_color || this.props.border_style !== nextProps.border_style
             || this.props.enable_shadow !== nextProps.enable_shadow || this.props.shadow_color !== nextProps.shadow_color || this.props.shadow_horizontal !== nextProps.shadow_horizontal || this.props.shadow_vertical !== nextProps.shadow_vertical || this.props.shadow_blur !== nextProps.shadow_blur || this.props.shadow_spread !== nextProps.shadow_spread
             || this.props.gallery_image_tags !== nextProps.gallery_image_tags || this.props.gallery_navigation !== nextProps.gallery_navigation || this.props.sub_galleries_listing !== nextProps.sub_galleries_listing || this.props.number_lines !== nextProps.number_lines
-            || this.props.disable_overlay !== nextProps.disable_overlay || this.props.hover_color !== nextProps.hover_color || this.props.hover_opacity !== nextProps.hover_opacity || this.props.hover_title_position !== nextProps.hover_title_position
+            || this.props.disable_overlay !== nextProps.disable_overlay || this.props.download_all !== nextProps.download_all || this.props.hover_color !== nextProps.hover_color || this.props.hover_opacity !== nextProps.hover_opacity || this.props.hover_title_position !== nextProps.hover_title_position
             || this.props.hover_title_size !== nextProps.hover_title_size || this.props.hover_title_color !== nextProps.hover_title_color || this.props.hover_desc_position !== nextProps.hover_desc_position
             || this.props.hover_desc_size !== nextProps.hover_desc_size || this.props.hover_desc_color !== nextProps.hover_desc_color) {
             this.loadHtml(nextProps);
@@ -36,7 +36,15 @@ class WpmfGalleryAddonDivi extends Component {
     }
 
     componentDidMount() {
-        if (parseInt(this.props.gallery_id) !== 0) {
+        let gallery_id_string = this.props.gallery_id;
+        let gallery_id;
+        if (gallery_id_string.indexOf('-') != -1) {
+            let gallery_ids = gallery_id_string.split('-');
+            gallery_id = gallery_ids[1];
+        } else {
+            gallery_id = gallery_id_string;
+        }
+        if (gallery_id !== 0) {
             let t = this;
             let a = setInterval(function () {
                 $(t.wrap.current).find('.loading_gallery').hide();
@@ -73,7 +81,15 @@ class WpmfGalleryAddonDivi extends Component {
 
     componentDidUpdate(prevProps) {
         // Deselect images when deselecting the block
-        if (parseInt(this.props.gallery_id) !== 0 && !(this.props.gallery_id === prevProps.gallery_id && this.props.columns === prevProps.columns && this.props.theme === prevProps.theme && this.props.layout === prevProps.layout && this.props.row_height === prevProps.row_height && this.props.aspect_ratio === prevProps.aspect_ratio && this.props.size === prevProps.size && this.props.orderby === prevProps.orderby && this.props.order === prevProps.order && this.props.border_radius === prevProps.border_radius && this.props.gutterwidth === prevProps.gutterwidth && this.props.border_width === prevProps.border_width && this.props.border_color === prevProps.border_color && this.props.border_style === prevProps.border_style && this.props.enable_shadow === prevProps.enable_shadow && this.props.shadow_color === prevProps.shadow_color && this.props.shadow_horizontal === prevProps.shadow_horizontal && this.props.shadow_vertical === prevProps.shadow_vertical && this.props.shadow_blur === prevProps.shadow_blur && this.props.shadow_spread === prevProps.shadow_spread && this.props.gallery_image_tags === prevProps.gallery_image_tags && this.props.disable_overlay === prevProps.disable_overlay && this.props.gallery_navigation === prevProps.gallery_navigation && this.props.sub_galleries_listing === prevProps.sub_galleries_listing && this.props.number_lines === prevProps.number_lines && this.props.hover_color === prevProps.hover_color && this.props.hover_opacity === prevProps.hover_opacity && this.props.hover_title_position === prevProps.hover_title_position && this.props.hover_title_size === prevProps.hover_title_size && this.props.hover_title_color === prevProps.hover_title_color && this.props.hover_desc_position === prevProps.hover_desc_position && this.props.hover_desc_size === prevProps.hover_desc_size && this.props.hover_desc_color === prevProps.hover_desc_color)) {
+        let gallery_id_string = this.props.gallery_id;
+        let gallery_id;
+        if (gallery_id_string.indexOf('-') != -1) {
+            let gallery_ids = gallery_id_string.split('-');
+            gallery_id = gallery_ids[1];
+        } else {
+            gallery_id = gallery_id_string;
+        }
+        if (gallery_id !== 0 && !(gallery_id === prevProps.gallery_id && this.props.columns === prevProps.columns && this.props.theme === prevProps.theme && this.props.layout === prevProps.layout && this.props.row_height === prevProps.row_height && this.props.aspect_ratio === prevProps.aspect_ratio && this.props.size === prevProps.size && this.props.orderby === prevProps.orderby && this.props.order === prevProps.order && this.props.border_radius === prevProps.border_radius && this.props.gutterwidth === prevProps.gutterwidth && this.props.border_width === prevProps.border_width && this.props.border_color === prevProps.border_color && this.props.border_style === prevProps.border_style && this.props.enable_shadow === prevProps.enable_shadow && this.props.shadow_color === prevProps.shadow_color && this.props.shadow_horizontal === prevProps.shadow_horizontal && this.props.shadow_vertical === prevProps.shadow_vertical && this.props.shadow_blur === prevProps.shadow_blur && this.props.shadow_spread === prevProps.shadow_spread && this.props.gallery_image_tags === prevProps.gallery_image_tags && this.props.disable_overlay === prevProps.disable_overlay && this.props.download_all === prevProps.download_all && this.props.gallery_navigation === prevProps.gallery_navigation && this.props.sub_galleries_listing === prevProps.sub_galleries_listing && this.props.number_lines === prevProps.number_lines && this.props.hover_color === prevProps.hover_color && this.props.hover_opacity === prevProps.hover_opacity && this.props.hover_title_position === prevProps.hover_title_position && this.props.hover_title_size === prevProps.hover_title_size && this.props.hover_title_color === prevProps.hover_title_color && this.props.hover_desc_position === prevProps.hover_desc_position && this.props.hover_desc_size === prevProps.hover_desc_size && this.props.hover_desc_color === prevProps.hover_desc_color)) {
             let t = this;
             let a = setInterval(function () {
                 $(t.wrap.current).find('.loading_gallery').hide();
@@ -376,6 +392,7 @@ class WpmfGalleryAddonDivi extends Component {
             sub_galleries_listing: props.sub_galleries_listing,
             display_tag: props.gallery_image_tags,
             disable_overlay: props.disable_overlay,
+            download_all: props.download_all,
             hover_color: props.hover_color,
             hover_opacity: props.hover_opacity,
             hover_title_position: props.hover_title_position,
@@ -439,7 +456,15 @@ class WpmfGalleryAddonDivi extends Component {
             </svg>
         );
 
-        if (parseInt(this.props.gallery_id) === 0) {
+        let gallery_id_string = this.props.gallery_id;
+        let gallery_id;
+        if (gallery_id_string.indexOf('-') != -1) {
+            let gallery_ids = gallery_id_string.split('-');
+            gallery_id = gallery_ids[1];
+        } else {
+            gallery_id = gallery_id_string;
+        }
+        if (gallery_id === 0) {
             return (
                 <div className="wpmf-divi-container wpmf-gallery-divi-wrap" ref={this.wrap}>
                     <div id="divi-gallery-addon-placeholder" className="divi-gallery-addon-placeholder">

@@ -338,7 +338,7 @@ class FrmProApplicationsHelper {
 	}
 
 	/**
-	 * Get all applicatino ids for a single form.
+	 * Get all application ids for a single form.
 	 *
 	 * @param int $form_id
 	 * @return array<int>

@@ -1,30 +1,31 @@
 <div class="frm_mlcmp_fields frm_grid_container <?php echo esc_attr( $action_control->get_field_id('frm_mlcmp_fields') ) ?>">
-	<?php include( FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/email_setting.php' ); ?>
+	<?php include  FrmMlcmpAppHelper::plugin_path() . '/views/action-settings/email_setting.php'; ?>
     <div id="frm_mlcmp_subscribe_options_<?php echo esc_attr( $action_control->number )?>" class="frm_grid_container" <?php echo
     $list_options['address_action'] === 'unsubscribe' ? ' style="display:none"' : '';
     ?>><?php
 
 if ( isset( $list_fields['merge_fields'] ) && is_array( $list_fields['merge_fields'] ) ) {
-foreach ( $list_fields['merge_fields'] as $list_field ) {
-    if ( 'FRM_TAGS' === $list_field['tag'] ) {
-        include( dirname( __FILE__ ) .'/_frm_tags_field.php' );
-        continue;
-    }
-	?>
+	foreach ( $list_fields['merge_fields'] as $list_field ) {
+		if ( 'FRM_TAGS' === $list_field['tag'] ) {
+			include  __DIR__ .'/_frm_tags_field.php';
+			continue;
+			}
+		?>
 
 <p class="frm6">
 	<label><?php echo esc_html( $list_field['name'] ); ?>
-    <?php
-    if ( $list_field['required'] ) {
-        ?><span class="frm_required">*</span><?php
-    } ?>
+		<?php
+		if ( $list_field['required'] ) {
+			?><span class="frm_required">*</span><?php
+    	}
+		?>
     </label>
     
     <select name="<?php echo esc_attr( $action_control->get_field_name('fields') ) ?>[<?php echo esc_attr( $list_field['tag'] ) ?>]">
         <option value=""><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
         <?php foreach ( $form_fields as $form_field ) {
                 if ( $list_field['type'] == 'email' && ! in_array( $form_field->type, array( 'email', 'hidden', 'user_id', 'text' ) ) ) {
-                    continue;
+				continue;
                 }
                 
                 $selected = ( isset($list_options['fields'][$list_field['tag'] ]) && $list_options['fields'][$list_field['tag']] == $form_field->id ) ? ' selected="selected"' : '';
@@ -33,7 +34,7 @@ foreach ( $list_fields['merge_fields'] as $list_field ) {
         <?php } ?>
     </select>
 </p>
-<?php
+			<?php
 }
 }
 
@@ -41,15 +42,15 @@ if ( $groups ) {
 
 foreach ( $groups['categories'] as $group ) {
 
-    if ( ! isset($group['id']) ) {
-        continue;
-    }
+		if ( ! isset($group['id']) ) {
+			continue;
+			}
 
-	$selected_field = '';
-	if ( isset( $list_options['groups'][ $group['id'] ] ) ) {
-		$selected_field = $list_options['groups'][ $group['id'] ]['id'];
-	}
-?>
+		$selected_field = '';
+		if ( isset( $list_options['groups'][ $group['id'] ] ) ) {
+			$selected_field = $list_options['groups'][ $group['id'] ]['id'];
+			}
+		?>
 <div class="frm_mlcmp_group_box frm_grid_container" data-gid="<?php echo esc_attr( $group['id'] ) ?>">
 	<p class="frm6">
 		<label><?php echo esc_html( $group['title'] ); ?></label>
@@ -70,16 +71,16 @@ foreach ( $groups['categories'] as $group ) {
             <?php } ?>
     </select>
 	</p>
-    <?php
-    include('_group_values.php');
+			<?php
+			include '_group_values.php';
         
-    if ( isset($new_field) ) {
-        unset($new_field);
-    }
+			if ( isset($new_field) ) {
+				unset($new_field);
+				}
         
-    ?>
+			?>
 </div>
-	<?php
+			<?php
 	}
 }
 
@@ -107,7 +108,7 @@ if ( $has_gdpr ) {
 		</select>
 	</p>
 	<?php
-	include( '_gdpr_values.php' );
+	include  '_gdpr_values.php';
 	if ( isset( $new_field ) ) {
 		unset( $new_field );
 	}

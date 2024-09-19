@@ -103,6 +103,9 @@ class FrmProFormState {
 	}
 
 	public function render_state_field() {
+		if ( ! self::open_ssl_is_installed() ) {
+			return;
+		}
 		if ( ! $this->state && ! self::get_state_from_request() ) {
 			return;
 		}
@@ -114,11 +117,24 @@ class FrmProFormState {
 	 * @return string
 	 */
 	private function get_state_string() {
+		if ( ! self::open_ssl_is_installed() ) {
+			return '';
+		}
 		$secret           = self::get_encryption_secret();
 		$compressed_state = $this->compressed_state();
 		$json_encoded     = json_encode( $compressed_state );
 		$encrypted        = openssl_encrypt( $json_encoded, 'AES-128-ECB', $secret );
 		return $encrypted;
+	}
+
+	/**
+	 * Returns true if open SSL is installed.
+	 *
+	 * @since 6.12
+	 * @return bool
+	 */
+	private static function open_ssl_is_installed() {
+		return function_exists( 'openssl_encrypt' );
 	}
 
 	private function compressed_state() {

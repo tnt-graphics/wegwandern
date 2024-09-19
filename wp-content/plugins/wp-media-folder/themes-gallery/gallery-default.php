@@ -4,7 +4,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
 wp_enqueue_script('wpmf-gallery');
 
 $class_default = array();
-$class_default[] = 'gallery gallery_life wpmf_gallery_default gallery_default '. $align .'';
+$class_default[] = 'gallery gallery_life wpmf_gallery_default gallery_default ';
 $class_default[] = 'gallery-columns-' . $columns;
 $class_default[] = 'gallery-size-' . $size_class;
 $class_default[] = 'gallery-link-' . $link;
@@ -28,7 +28,13 @@ $output = '';
 if (!empty($is_divi)) {
     $output .= '<style>' . $style . '</style>';
 }
-$output .= '<div class="wpmf-gallerys wpmf-gallerys-life">';
+$galleryStyle = '';
+if ($align === 'alignleft' || $align === 'alignright' || $align === 'aligncenter') {
+    $galleryStyle = 'style="width: 100%; max-width: 620px!important;"';
+} elseif ($align === 'none') {
+    $align = '';
+}
+$output .= '<div class="wpmf-gallerys wpmf-gallerys-life '. $align . '" '. $galleryStyle .'>';
 $output .= '<div id="' . $selector . '" class="' . implode(' ', $class_default) . '">';
 
 $pos = 0;

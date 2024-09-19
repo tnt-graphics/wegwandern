@@ -66,7 +66,7 @@ class FrmProSettingsController {
 	 * @since 4.0
 	 */
 	public static function add_settings_section( $sections ) {
-		add_action( 'frm_style_general_settings', 'FrmProSettingsController::general_style_settings' );
+		add_action( 'frm_settings_form', 'FrmProSettingsController::general_style_settings' );
 		add_action( 'frm_messages_settings_form', 'FrmProSettingsController::message_settings' );
 		add_action( 'frm_settings_form', 'FrmProSettingsController::more_settings', 1 );
 

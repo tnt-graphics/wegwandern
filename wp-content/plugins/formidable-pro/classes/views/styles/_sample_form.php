@@ -60,9 +60,13 @@ $svg_args = array(
 </div>
 
 <div class="frm_form_field frm_section_heading form-field frm_half">
-	<h3 class="frm_pos_top frm_trigger active frm_section_spacing"><i class="frm_icon_font frm_arrow_icon frm_before_collapse"></i><?php esc_html_e( 'Collapsible Section', 'formidable-pro' ); ?><i class="frm_icon_font frm_arrow_icon frm_after_collapse"></i></h3>
-    <div class="frm_toggle_container">
+	<h3 class="frm_pos_top frm_trigger active frm_section_spacing">
+		<i class="frm_icon_font frm_arrow_icon frm_before_collapse"></i>
+		<?php esc_html_e( 'Collapsible Section', 'formidable-pro' ); ?>
+		<i class="frm_icon_font frm_arrow_icon frm_after_collapse"></i>
+	</h3>
 
+    <div class="frm_toggle_container">
 		<div class="frm_form_field form-field">
 			<div id="datepicker_sample" class="frm-datepicker" style="margin-bottom:<?php echo esc_attr( $style->post_content['field_margin'] ); ?>;"></div>
 		</div>
@@ -100,7 +104,7 @@ $svg_args = array(
 	</label>
 	<div class="frm_range_container">
 		<span class="frm_range_value">150</span>
-		<input type="range" id="field_slider" value="150" min="100" max="200" step="1" />
+		<input type="range" data-frmrange id="field_slider" value="150" min="100" max="200" step="1" />
 		<div class="frm_description">
 			<span class="frm_range_min">100</span>
 			<span class="frm_range_max">200</span>

@@ -21,6 +21,7 @@ class FrmProHooksController {
 		}
 
 		add_action( 'admin_init', 'FrmProAppController::admin_init' );
+		add_action( 'plugins_loaded', 'FrmProAppController::load_lang' );
 
 		global $frm_vars;
 		if ( ! $frm_vars['pro_is_authorized'] ) {
@@ -67,7 +68,6 @@ class FrmProHooksController {
 	public static function load_hooks() {
 		global $wp_version;
 
-		add_action( 'plugins_loaded', 'FrmProAppController::load_lang' );
 		add_action( 'init', 'FrmProAppController::create_taxonomies', 0 );
 		add_filter( 'frm_combined_js_files', 'FrmProAppController::combine_js_files' );
 		add_filter( 'frm_js_location', 'FrmProAppController::pro_js_location' );
@@ -167,6 +167,7 @@ class FrmProHooksController {
 		add_filter( 'frm_trigger_create_action', 'FrmProFormActionsController::maybe_trigger_draft_actions', 10, 2 );
 		add_action( 'frm_after_update_entry', 'FrmProFormActionsController::trigger_update_actions', 10, 2 );
 		add_action( 'frm_on_submit_control_settings', 'FrmProFormActionsController::change_on_submit_action_ops' );
+		add_filter( 'frm_custom_trigger_action', 'FrmProFormActionsController::custom_trigger', 10, 5 );
 
 		// Forms Controller
 		if ( ! FrmAppHelper::is_admin() ) {
@@ -312,7 +313,7 @@ class FrmProHooksController {
 		add_filter( 'frm_build_field_class', 'FrmProFieldsController::build_field_class', 10, 2 );
 		add_filter( 'frm_clean_divider_field_options_before_update', 'FrmProFieldsController::update_repeater_form_name' );
 		add_action( 'restrict_manage_posts', 'FrmProFieldsController::filter_media_library_link' );
-		add_action( 'frm_is_field_type', 'FrmProFieldsController::is_field_type', 9, 2 );
+		add_filter( 'frm_is_field_type', 'FrmProFieldsController::is_field_type', 9, 2 );
 		if ( FrmProAppHelper::is_cron_disabled() ) {
 			add_action( 'admin_footer', 'FrmProFieldsController::delete_temp_files' );
 		}
@@ -339,6 +340,7 @@ class FrmProHooksController {
 		add_filter( 'frm_create_repeat_form', 'FrmProField::create_repeat_form', 10, 2 );
 
 		// Form Actions Controller
+		add_action( 'frm_before_action_settings', 'FrmProFormActionsController::before_form_action_settings', 10, 2 );
 		add_action( 'frm_additional_action_settings', 'FrmProFormActionsController::form_action_settings', 10, 2 );
 		add_action( 'frm_form_action_settings', 'FrmProFormActionsController::fill_action_options', 10, 2 );
 		add_filter( 'frm_action_update_callback', 'FrmProFormActionsController::remove_incomplete_logic' );

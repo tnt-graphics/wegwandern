@@ -344,25 +344,71 @@ class FrmAcfSyncController {
 			$post_data['meta_input'] = array();
 		}
 
+		$no_save_entry = ! empty( $args['form']->options['no_save'] );
+
 		foreach ( $mapping as $meta_key => $mapping_data ) {
 			$post_data['meta_input'][ '_' . $meta_key ] = $mapping_data['acf_field_key'];
 
 			$is_repeater = ! empty( $args['entry']->metas[ $mapping_data['field_id'] ] ) && is_array( $args['entry']->metas[ $mapping_data['field_id'] ] );
 
 			if ( ! empty( $mapping_data['child_mapping'] ) && $is_repeater ) {
-				foreach ( $mapping_data['child_mapping'] as $child_mapping ) {
-					$acf_field = FrmAcfAppHelper::get_acf_field( $child_mapping['meta_name'] );
-					if ( $acf_field ) {
-						foreach ( $args['entry']->metas[ $mapping_data['field_id'] ] as $item_index => $item_value ) {
-							$post_data['meta_input'][ '_' . $meta_key . '_' . $item_index . '_' . $child_mapping['meta_name'] ] = $acf_field['key'];
-						}
-					}
-
-					unset( $acf_field );
+				if ( $no_save_entry ) {
+					self::populate_meta_data_for_repeater_for_no_save_entry( $post_data['meta_input'], $meta_key, $mapping_data, $args );
+				} else {
+					self::populate_meta_data_for_repeater( $post_data['meta_input'], $meta_key, $mapping_data, $args );
 				}
 			}
 		}
 
 		return $post_data;
+	}
+
+	/**
+	 * Populates meta data for repeater mapping.
+	 *
+	 * @since 1.0.2
+	 *
+	 * @param array  $meta_input   Post meta.
+	 * @param string $meta_key     Meta key.
+	 * @param array  $mapping_data Mapping data.
+	 * @param array  $args         See {@see FrmAcfSyncController::update_acf_field_key_in_post_meta()}.
+	 */
+	private static function populate_meta_data_for_repeater( &$meta_input, $meta_key, $mapping_data, $args ) {
+		foreach ( $mapping_data['child_mapping'] as $child_mapping ) {
+			$acf_field = FrmAcfAppHelper::get_acf_field( $child_mapping['meta_name'] );
+			if ( $acf_field ) {
+				foreach ( $args['entry']->metas[ $mapping_data['field_id'] ] as $item_index => $item_value ) {
+					$meta_input[ '_' . $meta_key . '_' . $item_index . '_' . $child_mapping['meta_name'] ] = $acf_field['key'];
+				}
+			}
+
+			unset( $acf_field );
+		}
+	}
+
+	/**
+	 * Populates meta data for repeater mapping.
+	 *
+	 * @since 1.0.2
+	 *
+	 * @param array  $meta_input   Post meta.
+	 * @param string $meta_key     Meta key.
+	 * @param array  $mapping_data Mapping data.
+	 * @param array  $args         See {@see FrmAcfSyncController::update_acf_field_key_in_post_meta()}.
+	 */
+	private static function populate_meta_data_for_repeater_for_no_save_entry( &$meta_input, $meta_key, $mapping_data, $args ) {
+		foreach ( $mapping_data['child_mapping'] as $child_mapping ) {
+			$acf_field = FrmAcfAppHelper::get_acf_field( $child_mapping['meta_name'] );
+			if ( $acf_field ) {
+				foreach ( $args['entry']->metas[ $mapping_data['field_id'] ] as $item_index => $item_value ) {
+					$meta_input[ $meta_key . '_' . $item_index . '_' . $child_mapping['meta_name'] ] = FrmEntryMeta::get_entry_meta_by_field( $item_value, $child_mapping['field_id'] );
+				}
+				$meta_input[ $meta_key ]++;
+			}
+
+			unset( $acf_field );
+		}
+
+		$meta_input[ $meta_key ] = count( $args['entry']->metas[ $mapping_data['field_id'] ] );
 	}
 }

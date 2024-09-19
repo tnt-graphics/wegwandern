@@ -23,7 +23,7 @@ class FrmProStylesController extends FrmStylesController {
 		add_action( 'frm_sample_style_form', 'FrmProStylesController::append_style_form' );
 		add_action( 'admin_enqueue_scripts', 'FrmProAppController::load_style_manager_js_assets' );
 		add_action( 'frm_style_settings_input_atts', 'FrmProStylesController::echo_style_settings_input_atts' );
-		add_action( 'frm_style_settings_general_section_after_background', 'FrmProStylesController::echo_bg_image_settings', 10 );
+		add_action( 'frm_style_settings_bg_image_component_upload_button', 'FrmProStylesController::echo_bg_image_settings', 10 );
 		add_action( 'frm_style_settings_general_section_after_background', 'FrmProStylesController::echo_additional_background_image_settings', 20 );
 		add_action( 'frm_style_preview_after_toggle', 'FrmProStylesController::preview_after_toggle' );
 
@@ -46,7 +46,7 @@ class FrmProStylesController extends FrmStylesController {
 	}
 
 	/**
-	 * Make sure that additional datepicker scipts don't load to avoid a "Uncaught ReferenceError: frmProForm is not defined" error.
+	 * Make sure that additional datepicker scripts don't load to avoid a "Uncaught ReferenceError: frmProForm is not defined" error.
 	 *
 	 * @since 6.0
 	 *
@@ -367,7 +367,6 @@ class FrmProStylesController extends FrmStylesController {
 		$important = self::is_important( $defaults );
 		$vars      = self::css_vars();
 
-		self::maybe_include_icon_font_css();
 		include FrmProAppHelper::plugin_path() . '/css/pro_fields.css.php';
 
 		if ( FrmProAppHelper::use_chosen_js() ) {
@@ -417,27 +416,6 @@ class FrmProStylesController extends FrmStylesController {
 	}
 
 	/**
-	 * Maybe read the font icons CSS when including additional CSS for the front end.
-	 * As of v6.4 this is now only required for old versions of the signatures add on.
-	 * Signatures v3.0.4 no longer requires the font icons either.
-	 *
-	 * @return void
-	 */
-	private static function maybe_include_icon_font_css() {
-		$signature_add_on_is_active = class_exists( 'FrmSigAppHelper', false );
-		if ( ! $signature_add_on_is_active ) {
-			return;
-		}
-
-		if ( is_callable( 'FrmSigAppHelper::get_svg_icon' ) ) {
-			// This is no longer required in newer versions of the signatures add on.
-			return;
-		}
-
-		readfile( FrmAppHelper::plugin_path() . '/css/font_icons.css' );
-	}
-
-	/**
 	 * @since 3.01.01
 	 */
 	public static function add_defaults( $settings ) {
@@ -470,20 +448,20 @@ class FrmProStylesController extends FrmStylesController {
 		$settings['toggle_on_color']  = $settings['progress_active_bg_color'];
 		$settings['toggle_off_color'] = $settings['progress_bg_color'];
 
-		$settings['slider_font_size']   = '24px';
-		$settings['slider_track_size']  = '5px';
+		$settings['slider_font_size']   = $settings['field_font_size'];
+		$settings['slider_track_size']  = '8px';
 		$settings['slider_circle_size'] = '24px';
 		$settings['slider_color']       = $settings['progress_active_bg_color'];
-		$settings['slider_bar_color']   = $settings['progress_active_bg_color'];
+		$settings['slider_bar_color']   = $settings['progress_bg_color'];
 	}
 
 	/**
 	 * @since 3.03
 	 */
 	private static function set_toggle_date_colors( &$settings ) {
-		$settings['date_head_bg_color'] = $settings['progress_active_bg_color'];
-		$settings['date_head_color']    = $settings['progress_active_color'];
-		$settings['date_band_color']    = FrmStylesHelper::adjust_brightness( $settings['progress_active_bg_color'], -50 );
+		$settings['date_head_bg_color'] = $settings['bg_color'];
+		$settings['date_head_color']    = $settings['text_color'];
+		$settings['date_band_color']    = 'ECF5FF';
 	}
 
 	/**
@@ -633,17 +611,19 @@ class FrmProStylesController extends FrmStylesController {
 	}
 
 	/**
-	 * Called when the frm_style_settings_general_section_after_background action is triggered the first time in the pro plugin.
+	 * Called when the frm_style_settings_bg_image_component_upload_button action is triggered the first time in the pro plugin.
 	 *
 	 * @since 5.0.08
 	 *
 	 * @param array $args with keys 'frm_style', 'style'.
 	 */
 	public static function echo_bg_image_settings( $args ) {
-		$style = $args['style'];
+		$style               = $args['style'];
+		$frm_style           = $args['frm_style'];
+		$image_id_input_name = ! empty( $args['image_id_input_name'] ) ? $args['image_id_input_name'] : 'bg_image_id';
 
-		if ( ! empty( $style->post_content['bg_image_id'] ) ) {
-			$bg_image_id       = absint( $style->post_content['bg_image_id'] );
+		if ( ! empty( $style->post_content[ $image_id_input_name ] ) ) {
+			$bg_image_id       = absint( $style->post_content[ $image_id_input_name ] );
 			$bg_image          = wp_get_attachment_image( $bg_image_id );
 			$bg_image_filepath = get_attached_file( $bg_image_id );
 			$bg_image_filename = basename( $bg_image_filepath );
@@ -665,6 +645,12 @@ class FrmProStylesController extends FrmStylesController {
 	 * @param array $args with keys 'frm_style', 'style'.
 	 */
 	public static function echo_additional_background_image_settings( $args ) {
+		// Support for FF LITE versions older than 6.14
+		// Starting from version 6.14, this is handled by a separate hook: "frm_style_settings_bg_image_component_upload_button" in FF LITE
+		if ( ! class_exists( 'FrmStyleComponent' ) ) {
+			self::echo_bg_image_settings( $args );
+		}
+
 		$style            = $args['style'];
 		$hidden           = empty( $style->post_content['bg_image_id'] );
 		$class            = $hidden ? 'frm_hidden ' : '';
@@ -938,49 +924,6 @@ class FrmProStylesController extends FrmStylesController {
 	}
 
 	/**
-	 * @since 6.0
-	 *
-	 * @return false|string
-	 */
-	public static function get_disabled_javascript_features() {
-		global $frm_vars;
-
-		$includes_conditional_logic   = ! empty( $frm_vars['rules'] );
-		$includes_lookup_fields       = ! empty( $frm_vars['lookup_fields'] );
-		$includes_dynamic_fields      = ! empty( $frm_vars['dep_dynamic_fields'] );
-		$includes_calculations        = ! empty( $frm_vars['calc_fields'] );
-		$includes_chosen_autocomplete = ! empty( $frm_vars['autocomplete_loaded'] );
-
-		// Group together all of these features into a single list.
-		$disabled_features = array();
-		if ( $includes_conditional_logic ) {
-			$disabled_features[] = __( 'conditionally hidden fields', 'formidable-pro' );
-		}
-		if ( $includes_lookup_fields ) {
-			$disabled_features[] = __( 'lookup data', 'formidable-pro' );
-		}
-		if ( $includes_dynamic_fields ) {
-			$disabled_features[] = __( 'dynamic field data', 'formidable-pro' );
-		}
-		if ( $includes_calculations ) {
-			$disabled_features[] = __( 'calculations', 'formidable-pro' );
-		}
-		if ( $includes_chosen_autocomplete ) {
-			$disabled_features[] = __( 'autocomplete', 'formidable-pro' );
-		}
-
-		if ( $disabled_features ) {
-			return sprintf(
-				// translators: %s: List of disabled features.
-				__( 'The following Pro features are disabled: %s.', 'formidable-pro' ),
-				implode( ', ', $disabled_features )
-			);
-		}
-
-		return false;
-	}
-
-	/**
 	 * Get the XML template file style data for the styler preview.
 	 *
 	 * @since 6.0
@@ -1211,7 +1154,7 @@ class FrmProStylesController extends FrmStylesController {
 	}
 
 	/**
-	 * Handles the backward compatibility for "Visual Views", version < 5.6. It Keeps the old style for Calendar view.
+	 * Loads the legacy calendar styles for the views.
 	 *
 	 * @since 6.9.1
 	 *
@@ -1230,44 +1173,6 @@ class FrmProStylesController extends FrmStylesController {
 	public static function style_switcher( $style, $styles ) {
 		_deprecated_function( __METHOD__, '4.0', 'FrmProStylesController::add_new_button' );
 		self::add_new_button( $style );
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function section_fields_file() {
-		_deprecated_function( __METHOD__, '3.01.01', 'FrmProStylesController::style_box_file' );
-		return self::view_folder() . '/_section-fields.php';
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function date_settings_file() {
-		_deprecated_function( __METHOD__, '3.01.01', 'FrmProStylesController::style_box_file' );
-		return self::view_folder() . '/_date-fields.php';
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function progress_settings_file() {
-		_deprecated_function( __METHOD__, '3.01.01', 'FrmProStylesController::style_box_file' );
-		return self::view_folder() . '/_progress-bars.php';
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function get_datepicker_names( $jquery_themes ) {
-		_deprecated_function( __METHOD__, '3.03' );
-		$alt_img_name       = array();
-		$theme_names        = array_keys( $jquery_themes );
-		$theme_names        = array_combine( $theme_names, $theme_names );
-		$alt_img_name       = array_merge( $theme_names, $alt_img_name );
-		$alt_img_name['-1'] = '';
-
-		return $alt_img_name;
 	}
 
 	/**
@@ -1290,5 +1195,16 @@ class FrmProStylesController extends FrmStylesController {
 	 */
 	public static function add_new_button( $style ) {
 		_deprecated_function( __METHOD__, '6.0' );
+	}
+
+	/**
+	 * @since 6.0
+	 * @deprecated 6.11.2
+	 *
+	 * @return false|string
+	 */
+	public static function get_disabled_javascript_features() {
+		_deprecated_function( __METHOD__, '6.11.2' );
+		return false;
 	}
 }

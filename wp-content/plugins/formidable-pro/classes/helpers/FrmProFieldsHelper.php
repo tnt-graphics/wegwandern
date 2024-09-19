@@ -864,6 +864,11 @@ class FrmProFieldsHelper {
 		return $values;
 	}
 
+	/**
+	 * @param array      $values
+	 * @param stdClass   $field
+	 * @param int|string $entry_id
+	 */
 	public static function setup_edit_vars( $values, $field, $entry_id = 0 ) {
 		$values['entry_id'] = $entry_id;
 
@@ -1002,7 +1007,7 @@ class FrmProFieldsHelper {
 
 	/**
 	 * @param stdClass $field
-	 * @param array $values
+	 * @param array    $values
 	 * @return void
 	 */
 	private static function prepare_post_fields( $field, &$values ) {
@@ -1059,6 +1064,11 @@ class FrmProFieldsHelper {
 		}
 	}
 
+	/**
+	 * @param stdClass $field
+	 * @param array    $values
+	 * @return void
+	 */
 	private static function maybe_show_hidden_field( $field, &$values ) {
 		if ( $values['type'] === 'hidden' ) {
 			$admin_edit = FrmAppHelper::is_admin() && current_user_can( 'administrator' ) && ! FrmAppHelper::is_admin_page( 'formidable' );
@@ -1073,13 +1083,20 @@ class FrmProFieldsHelper {
 	 * Add field-specific JavaScript to global $frm_vars
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $values
+	 * @return void
 	 */
 	public static function add_field_javascript( $values ) {
 		self::setup_conditional_fields( $values );
 		FrmProLookupFieldsController::setup_lookup_field_js( $values );
 	}
 
+	/**
+	 * @param array      $values
+	 * @param int|string $entry_id
+	 * @return void
+	 */
 	public static function tags_to_list( &$values, $entry_id ) {
 		$post_id = FrmDb::get_var( 'frm_items', array( 'id' => $entry_id ), 'post_id' );
 		if ( ! $post_id ) {
@@ -1100,6 +1117,11 @@ class FrmProFieldsHelper {
 		$values['value'] = implode( ', ', $names );
 	}
 
+	/**
+	 * @param array $settings
+	 * @param array $atts
+	 * @return array
+	 */
 	public static function add_default_field_settings( $settings, $atts ) {
 		$add_settings = self::get_default_field_opts();
 		FrmProLookupFieldsController::add_autopopulate_value_field_options( $atts, $atts['field'], $add_settings );
@@ -1108,6 +1130,8 @@ class FrmProFieldsHelper {
 
 	/**
 	 * Fill the settings for each field
+	 *
+	 * @return array
 	 */
 	public static function get_default_field_opts() {
 		$frm_settings = FrmAppHelper::get_settings();
@@ -1208,27 +1232,10 @@ class FrmProFieldsHelper {
 	}
 
 	/**
-	 * Triggered when the repeat option is toggled on the form builder page
-	 *
-	 * When a field is changed to repeat:
-	 *  - Get the metas for the fields in the section
-	 *  - Create an entry and change the entry id on those metas
-	 *
-	 * When a field is changed to not repeat:
-	 *  - Change the entry id on all metas for the first entry to the parent entry id
-	 *  - Delete the other entries and meta
-	 *
-	 * @since 2.0
-	 * @deprecated 3.06.01
-	 */
-	public static function update_for_repeat( $args ) {
-		_deprecated_function( __METHOD__, '3.06.01' );
-	}
-
-	/**
 	 * Set up the $frm_vars['rules'] array
 	 *
 	 * @param array $field
+	 * @return void
 	 */
 	public static function setup_conditional_fields( $field ) {
 		// TODO: prevent this from being called at all on the form builder page
@@ -1238,7 +1245,7 @@ class FrmProFieldsHelper {
 
 		global $frm_vars;
 
-		if ( false == self::are_logic_rules_needed_for_this_field( $field, $frm_vars ) ) {
+		if ( false === self::are_logic_rules_needed_for_this_field( $field, $frm_vars ) ) {
 			return;
 		}
 
@@ -3378,12 +3385,12 @@ class FrmProFieldsHelper {
 		}
 
 		if ( is_array( $value ) ) {
-			$formated_values = array();
+			$formatted_values = array();
 			foreach ( $value as $v ) {
-				$formated_values[] = call_user_func_array( $callback, array( $v, $format ) );
+				$formatted_values[] = call_user_func_array( $callback, array( $v, $format ) );
 				unset( $v );
 			}
-			$value = $formated_values;
+			$value = $formatted_values;
 		} else {
 			$value = call_user_func_array( $callback, array( $value, $format ) );
 		}
@@ -4353,36 +4360,6 @@ class FrmProFieldsHelper {
 	}
 
 	/**
-	 * Get the hidden inputs for a Dynamic field when it has no options to show or when it is readonly
-	 *
-	 * @since 2.0.16
-	 * @codeCoverageIgnore
-	 *
-	 * @param array $field
-	 * @param array $args
-	 */
-	public static function maybe_get_hidden_dynamic_field_inputs( $field, $args ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldType::maybe_include_hidden_values' );
-		if ( ! in_array( $field['data_type'], array( 'select', 'radio', 'checkbox' ) ) ) {
-			return;
-		}
-
-		if ( ( empty( $field['options'] ) || ! empty( $args['disabled'] ) ) ) {
-			$field_name = $args['field_name'];
-			$html_id    = $args['html_id'];
-
-			if ( is_array( $field['value'] ) ) {
-				foreach ( $field['value'] as $value ) {
-					require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/hidden-dynamic-inputs.php';
-				}
-			} else {
-				$value = $field['value'];
-				require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/hidden-dynamic-inputs.php';
-			}
-		}
-	}
-
-	/**
 	 * Get the classes for a field div
 	 *
 	 * @since 2.02.05
@@ -4398,7 +4375,7 @@ class FrmProFieldsHelper {
 		}
 
 		// Add classes to inline confirmation field (if it doesn't already have classes set)
-		if ( isset( $field['conf_field'] ) && $field['conf_field'] == 'inline' && ! $field['classes'] ) {
+		if ( isset( $field['conf_field'] ) && $field['conf_field'] === 'inline' && ! $field['classes'] ) {
 			$classes .= ' frm_first frm_half';
 		}
 
@@ -4483,8 +4460,8 @@ class FrmProFieldsHelper {
 			'email'                => __( 'Email', 'formidable-pro' ),
 			'family-name'          => __( 'Family name', 'formidable-pro' ),
 			'given-name'           => __( 'Given name', 'formidable-pro' ),
-			'honorific-prefix'     => __( 'Honoric prefix', 'formidable-pro' ),
-			'honorific-suffix'     => __( 'Honoric suffix', 'formidable-pro' ),
+			'honorific-prefix'     => __( 'Honorific prefix', 'formidable-pro' ),
+			'honorific-suffix'     => __( 'Honorific suffix', 'formidable-pro' ),
 			'impp'                 => __( 'IMPP', 'formidable-pro' ),
 			'language'             => __( 'Language', 'formidable-pro' ),
 			'name'                 => __( 'Name', 'formidable-pro' ),
@@ -4634,6 +4611,24 @@ class FrmProFieldsHelper {
 	}
 
 	/**
+	 * Gets repeater fields from form ID.
+	 *
+	 * @since 6.10.1
+	 *
+	 * @param $form_id
+	 * @return array
+	 */
+	public static function get_repeater_fields( $form_id ) {
+		$dividers = FrmField::get_all_types_in_form( $form_id, 'divider' );
+		return array_filter(
+			$dividers,
+			function ( $item ) {
+				return FrmField::is_repeating_field( $item ) && ! empty( $item->field_options['form_select'] );
+			}
+		);
+	}
+
+	/**
 	 * @since 2.0
 	 * @deprecated 3.0
 	 * @codeCoverageIgnore
@@ -4660,37 +4655,10 @@ class FrmProFieldsHelper {
 	}
 
 	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function setup_input_masks( $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldsController::setup_input_masks' );
-		return FrmProFieldsController::setup_input_masks( $field );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function setup_input_mask( $format ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldsController::setup_input_mask' );
-		return FrmProFieldsController::setup_input_mask( $format );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_default_html( $default_html, $type ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldType::input_html' );
-		return $default_html;
-	}
-
-	/**
 	 * Get HTML for a file upload field depending on atts and file type
 	 *
 	 * @since 2.0.19
-	 * @deprecated 3.0
+	 * @deprecated 3.0 This is still referenced in the registration add-on.
 	 * @codeCoverageIgnore
 	 *
 	 * @param array $ids
@@ -4705,7 +4673,7 @@ class FrmProFieldsHelper {
 	}
 
 	/**
-	 * @deprecated 3.0
+	 * @deprecated 3.0 As of August 7th 2024 this function was still referenced in our documentation.
 	 * @codeCoverageIgnore
 	 */
 	public static function get_display_value( $value, $field, $atts = array() ) {
@@ -4714,181 +4682,5 @@ class FrmProFieldsHelper {
 			$field = FrmField::getOne( $field['id'] );
 		}
 		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_user_id_display_value( $value, $atts, $field = array() ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		if ( is_array( $field ) ) {
-			$field = FrmField::getOne( $field['id'] );
-		}
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * Get a JSON array of values from Repeating Section
-	 *
-	 * @since 2.03.08
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 *
-	 * @param $value
-	 * @param $atts
-	 * @param $field
-	 *
-	 * @return mixed
-	 */
-	public static function get_divider_display_value( $value, $atts, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_time_display_value( $value, $atts, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_file_display_value( $value, $atts, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_image_display_value( $value, $atts, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_number_display_value( $value, $atts, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_data_display_value( $value, $atts, $field ) {
-		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldsHelper::get_unfiltered_display_value' );
-		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function setup_new_field_vars( $values ) {
-		_deprecated_function( __METHOD__, '3.0', 'FrmFieldsHelper::get_default_field_options_from_field' );
-
-		return $values;
-	}
-
-	/**
-	 * @deprecated 3.0
-	 * @codeCoverageIgnore
-	 */
-	public static function get_user_options() {
-		_deprecated_function( __METHOD__, '3.0', 'FrmFieldUserId::get_options' );
-		$field_obj = FrmFieldFactory::get_field_type( 'user_id' );
-		return $field_obj->get_options( array() );
-	}
-
-	/**
-	 * @deprecated 2.02.05
-	 * @codeCoverageIgnore
-	 */
-	public static function get_field_matches() {
-		_deprecated_function( __FUNCTION__, '2.02.05', 'FrmProStatisticsController::stats_shortcode' );
-		return '';
-	}
-
-	/**
-	 * @deprecated 2.0
-	 * @codeCoverageIgnore
-	 */
-	public static function value_meets_condition( $observed_value, $cond, $hide_opt ) {
-		_deprecated_function( __FUNCTION__, '2.0', 'FrmFieldsHelper::value_meets_condition' );
-		return FrmFieldsHelper::value_meets_condition( $observed_value, $cond, $hide_opt );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function check_conditional_shortcode( &$content, $replace_with, $atts, $tag, $condition = 'if', $args = array() ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		FrmProContent::check_conditional_shortcode( $content, $replace_with, $atts, $tag, $condition, $args );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function foreach_shortcode( $replace_with, $args, &$repeat_content ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		FrmProContent::foreach_shortcode( $replace_with, $args, $repeat_content );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function trigger_shortcode_atts( $atts, $display, $args, &$replace_with ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		FrmProContent::trigger_shortcode_atts( $atts, $display, $args, $replace_with );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function atts_sanitize( $replace_with ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		return FrmProContent::atts_sanitize( $replace_with );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function atts_sanitize_url( $replace_with ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		return FrmProContent::atts_sanitize_url( $replace_with );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function atts_truncate( $replace_with, $atts, $display, $args ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		return FrmProContent::atts_truncate( $replace_with, $atts, $display, $args );
-	}
-
-	/**
-	 * @deprecated 2.02.08
-	 * @codeCoverageIgnore
-	 */
-	public static function atts_clickable( $replace_with ) {
-		_deprecated_function( __FUNCTION__, '2.02.08', 'FrmProContent::' . __FUNCTION__ );
-		return FrmProContent::atts_clickable( $replace_with );
 	}
 }

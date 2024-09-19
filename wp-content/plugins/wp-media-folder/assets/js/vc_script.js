@@ -9,7 +9,7 @@
             // Create the media frame.
             var frame = wp.media({
                 library: {
-                    type: '*'
+                    type: 'application/pdf'
                 }
             });
 

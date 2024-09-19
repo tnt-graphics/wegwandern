@@ -137,7 +137,7 @@ class FrmProGlobalVarsHelper {
 			$atts['exclude_fields'] = explode( ',', $atts['exclude_fields'] );
 		}
 
-		$fields = FrmField::get_all_for_form( (int) $atts['id'], '', 'include' );
+		$fields = FrmField::get_all_for_form( $this->prepare_form_id( $atts['id'] ), '', 'include' );
 		list( $this->exclude_ids, $this->exclude_keys ) = FrmProAppHelper::pull_ids_and_keys( $atts['exclude_fields'] );
 
 		$include_ids = array();
@@ -177,6 +177,20 @@ class FrmProGlobalVarsHelper {
 			return array( (int) $field->id, $field->field_key );
 		}
 		return array( (int) $field['id'], $field['field_key'] );
+	}
+
+	/**
+	 * Get form ID by ID or key.
+	 *
+	 * @param int|string $form_id_or_key
+	 *
+	 * @return int
+	 */
+	private function prepare_form_id( $form_id_or_key ) {
+		if ( ! is_numeric( $form_id_or_key ) ) {
+			return FrmForm::get_id_by_key( $form_id_or_key );
+		}
+		return (int) $form_id_or_key;
 	}
 
 	/**

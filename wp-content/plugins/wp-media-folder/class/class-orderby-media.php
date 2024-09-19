@@ -230,7 +230,7 @@ class WpmfOrderbyMedia
                         $extensions = array_merge($extensions, wp_get_video_extensions(), array('mpg', 'mov', 'avi', 'wmv', '3gp', '3g2'));
                         break;
                     case 'image':
-                        $extensions = array_merge($extensions, array('jpg', 'jpeg', 'jpe', 'gif', 'png', 'webp', 'svg', 'heic', 'heif'));
+                        $extensions = array_merge($extensions, array('jpg', 'jpeg', 'jpe', 'gif', 'png', 'webp', 'svg', 'heic', 'heif', 'avif'));
                         break;
                     case 'wpmf-pdf':
                         $extensions = array_merge($extensions, array('pdf'));

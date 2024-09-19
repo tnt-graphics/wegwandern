@@ -8,7 +8,7 @@ wp_enqueue_script('wpmf-slick-script');
 wp_enqueue_script('wpmf-gallery');
 
 $class_default = array();
-$class_default[] = 'gallery gallery_life wpmfslick wpmfslick_life '. $align .'';
+$class_default[] = 'gallery gallery_life wpmfslick wpmfslick_life ';
 $class_default[] = 'gallery-link-' . $link;
 $class_default[] = 'wpmf-has-border-radius-' . $img_border_radius;
 $class_default[] = 'wpmf-gutter-' . $gutterwidth;
@@ -41,6 +41,12 @@ if ($border_style !== 'none') {
     $border_width = 0;
 }
 
+$galleryStyle = '';
+if ($align === 'alignleft' || $align === 'alignright' || $align === 'aligncenter') {
+    $galleryStyle = 'style="width: 100%; max-width: 620px!important;"';
+} elseif ($align === 'none') {
+    $align = '';
+}
 wp_add_inline_style('wpmf-gallery-style', $style);
 $output = '';
 if (!empty($is_divi)) {
@@ -63,7 +69,7 @@ foreach ($gallery_items as $item_id => $attachment) {
     }
 }
 
-$output .= '<div class="wpmf-gallerys wpmf-gallerys-life" data-items="'. esc_attr(json_encode($items)) .'">';
+$output .= '<div class="wpmf-gallerys wpmf-gallerys-life '. $align . '" data-items="'. esc_attr(json_encode($items)) .'" '.$galleryStyle.'>';
 $output .= '<div id="' . $selector . '" data-id="' . $selector . '" data-gutterwidth="' . $gutterwidth . '" 
  class="' . implode(' ', $class_default) . '" data-count="'. esc_attr(count($gallery_items)) .'" data-wpmfcolumns="' . $columns . '" data-auto_animation="' . esc_html($autoplay) . '" data-duration="' . (int)$duration . '" data-border-width="' . $border_width . '" data-shadow="' . $shadow . '">';
 

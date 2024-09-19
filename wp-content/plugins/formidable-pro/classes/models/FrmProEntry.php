@@ -125,7 +125,7 @@ class FrmProEntry {
 		$new_values = $values;
 		unset( $new_values['item_meta'], $new_values['item_key'] );
 
-		// allow for multiple embeded forms
+		// Allow for multiple embedded forms.
 		foreach ( $form_fields as $field ) {
 			if ( ! isset( $values['item_meta'][ $field->id ] ) || ! isset( $field->field_options['form_select'] ) || ! isset( $values['item_meta'][ $field->id ]['form'] ) ) {
 				// don't continue if we don't know which form to insert the sub entries into

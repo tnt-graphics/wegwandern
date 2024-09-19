@@ -156,7 +156,7 @@ class FrmProNotification {
 	}
 
 	/**
-	 * @deprecated 2.03.04
+	 * @deprecated 2.03.04 This is still referenced in the PayPal add-on as of version v3.09.
 	 */
 	public static function entry_created( $entry_id, $form_id ) {
 		$new_function = 'FrmFormActionsController::trigger_actions("create", ' . $form_id . ', ' . $entry_id . ', "email")';

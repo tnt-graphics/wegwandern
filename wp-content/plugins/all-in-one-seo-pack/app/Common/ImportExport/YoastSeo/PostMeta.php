@@ -155,8 +155,8 @@ class PostMeta {
 					case '_yoast_wpseo_meta-robots-noindex':
 					case '_yoast_wpseo_meta-robots-nofollow':
 						if ( (bool) $value ) {
-							$meta[ $mappedMeta[ $name ] ]       = ! empty( $value );
-							$meta['robots_default'] = false;
+							$meta[ $mappedMeta[ $name ] ] = $value;
+							$meta['robots_default']       = false;
 						}
 						break;
 					case '_yoast_wpseo_meta-robots-adv':
@@ -294,10 +294,6 @@ class PostMeta {
 			if ( $meta['twitter_use_og'] && $title && empty( $meta['twitter_title'] ) ) {
 				$meta['twitter_use_og'] = false;
 				$meta['twitter_title']  = $title;
-			}
-
-			if ( ! empty( $meta['keyphrases'] ) && is_array( $meta['keyphrases'] ) ) {
-				$meta['keyphrases'] = wp_json_encode( $meta['keyphrases'] );
 			}
 
 			$aioseoPost = Models\Post::getPost( (int) $post->ID );
