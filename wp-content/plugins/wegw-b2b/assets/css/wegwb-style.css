@@ -216,6 +216,7 @@ html {
     visibility: visible;
     margin: 0;
     margin-right:10px;
+    background: transparent !important;
 }
 
 .loginMenu .with_frm_style .frm_checkbox input[type=checkbox]:checked:before,
