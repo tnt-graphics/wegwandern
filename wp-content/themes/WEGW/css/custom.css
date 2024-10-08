@@ -1678,8 +1678,8 @@ body.weg_ele_popup_show{
 }
 .close_ad{
     margin: 30px;
-    right:0;
-    z-index:999;
+    right: 0;
+    z-index: 10;
 }
 .close_map:hover, .close_ad:hover{
      background:#BE000B;
@@ -5085,6 +5085,12 @@ input::placeholder, textarea::placeholder{
 }
 .fc_heading .ui-slider .startHandleEnd.ui-slider-handle:nth-of-type(odd){
     margin-left: -18px !important;
+}
+.close_ad {
+    display: none;
+}
+.ad-visibility > div ~ .close_ad {
+    display: block;
 }
 
 @media only screen and (min-width: 1199.99px){

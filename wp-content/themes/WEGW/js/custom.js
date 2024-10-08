@@ -2,44 +2,44 @@ if (typeof $ == 'undefined') {
     var $ = jQuery;
 }
 
-jQuery(document).ready(function($) { 
-  
- //easy fix to speed up the optical filled heart when logged in
-$('.single-wander-heart').on('click', function(){
-     var isWatchlisted = $(this).data('watchlist');
-     
-     if (isWatchlisted === "true") {
-         // Perform action if watchlisted
-         $(this).data('watchlist', 'false'); // Update data attribute
-         // Perform action here when already watchlisted
-         //alert('Already watchlisted!'); // Example: show an alert
-     } else {
-         // Add the watchlist state and perform action if not watchlisted
-         $(this).data('watchlist', 'true'); // Update data attribute
-         // Perform action here when not watchlisted
-         $(this).addClass('watchlisted'); // Example: add a class
-     }
- });
-  
-  // show more on hiking comments would not from plugin script.
-  $('.show-full-comment').on('click', function(){
-       $(this).parent().parent().find('.long-comment-version').removeClass('hide');
-       $(this).parent().addClass('hide');
-   });
-  
-  $(".comment-imgs .each-comment-img img").on("click", function(){
-      var originalDiv = $(this).parent();
-      var clonedDiv = originalDiv.clone().addClass("cloned regMenu regWindow");
-      var parentDiv = $('<div class="parent-zoom-image"></div>');
-      clonedDiv.append('<div class="close_wrap"><span class="filter_close" onclick="closeReg()"></span></div>');
-      parentDiv.append(clonedDiv);
-      $(".comments-section-wrapper").after(parentDiv);
-  });
-  
-  $(document).on("click", ".parent-zoom-image span.filter_close", function() {
-      var parentZoomImage = $(this).closest('.parent-zoom-image');
-      parentZoomImage.remove();
-  });
+jQuery(document).ready(function ($) {
+
+    //easy fix to speed up the optical filled heart when logged in
+    $('.single-wander-heart').on('click', function () {
+        var isWatchlisted = $(this).data('watchlist');
+
+        if (isWatchlisted === "true") {
+            // Perform action if watchlisted
+            $(this).data('watchlist', 'false'); // Update data attribute
+            // Perform action here when already watchlisted
+            //alert('Already watchlisted!'); // Example: show an alert
+        } else {
+            // Add the watchlist state and perform action if not watchlisted
+            $(this).data('watchlist', 'true'); // Update data attribute
+            // Perform action here when not watchlisted
+            $(this).addClass('watchlisted'); // Example: add a class
+        }
+    });
+
+    // show more on hiking comments would not from plugin script.
+    $('.show-full-comment').on('click', function () {
+        $(this).parent().parent().find('.long-comment-version').removeClass('hide');
+        $(this).parent().addClass('hide');
+    });
+
+    $(".comment-imgs .each-comment-img img").on("click", function () {
+        var originalDiv = $(this).parent();
+        var clonedDiv = originalDiv.clone().addClass("cloned regMenu regWindow");
+        var parentDiv = $('<div class="parent-zoom-image"></div>');
+        clonedDiv.append('<div class="close_wrap"><span class="filter_close" onclick="closeReg()"></span></div>');
+        parentDiv.append(clonedDiv);
+        $(".comments-section-wrapper").after(parentDiv);
+    });
+
+    $(document).on("click", ".parent-zoom-image span.filter_close", function () {
+        var parentZoomImage = $(this).closest('.parent-zoom-image');
+        parentZoomImage.remove();
+    });
 
 
     // $('.ad-section').append('<div id="div-ad-gds-1280-1">' +
@@ -49,22 +49,22 @@ $('.single-wander-heart').on('click', function(){
     stickyHeaderforAdAboveHeader();
     /** append download to the a tag who parent has class name is-style-download-button */
     var parentDivs = document.querySelectorAll('.is-style-download-button');
-    
-    parentDivs.forEach(function(parentDiv) {
+
+    parentDivs.forEach(function (parentDiv) {
         var link = parentDiv.querySelector('a');
         link.setAttribute('download', '');
     });
 
-    
-    if(jQuery(".demo-gallery").length > 0 || jQuery(".img-gallery-wrap").length > 0){
+
+    if (jQuery(".demo-gallery").length > 0 || jQuery(".img-gallery-wrap").length > 0) {
         // Define URLs for CSS and JavaScript files
         var cssURLs = [
-            window.location.origin+ "/wp-content/themes/WEGW/css/lightgallery.min.css",
+            window.location.origin + "/wp-content/themes/WEGW/css/lightgallery.min.css",
         ];
 
         var jsURLs = [
-            window.location.origin+ "/wp-content/themes/WEGW/js/lightgallery-umd.min.js", // OpenLayers library
-            window.location.origin+ "/wp-content/themes/WEGW/js/lg-autoplay-umd.min.js",
+            window.location.origin + "/wp-content/themes/WEGW/js/lightgallery-umd.min.js", // OpenLayers library
+            window.location.origin + "/wp-content/themes/WEGW/js/lg-autoplay-umd.min.js",
             window.location.origin + "/wp-content/themes/WEGW/js/lg-fullscreen-umd.min.js",
             window.location.origin + "/wp-content/themes/WEGW/js/lg-video-umd.min.js",
             window.location.origin + "/wp-content/themes/WEGW/js/lg-comment-umd.min.js",
@@ -77,7 +77,7 @@ $('.single-wander-heart').on('click', function(){
             window.location.origin + "/wp-content/themes/WEGW/js/lg-vimeo-thumbnail-umd.min.js"
         ];
         // Insert CSS files if not already loaded
-        cssURLs.forEach(function(url) {
+        cssURLs.forEach(function (url) {
             insertCSS(url);
         });
 
@@ -90,7 +90,7 @@ $('.single-wander-heart').on('click', function(){
             }
         }
 
-        jsURLs.forEach(function(url) {
+        jsURLs.forEach(function (url) {
             insertJS(url, checkAllScriptsLoaded);
         });
     }
@@ -115,7 +115,7 @@ $('.single-wander-heart').on('click', function(){
     //         mobileSettings:{ controls: false, showCloseIcon: true, fullScreen: true, toggleThumb:false, allowMediaOverlap: false}
 
     //     });
-        
+
     // }
 
     // /**light gallery for master content page */ 
@@ -146,22 +146,22 @@ $('.single-wander-heart').on('click', function(){
     var i;
 
     for (i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function() {
+        acc[i].addEventListener("click", function () {
             const parentWithMapFixedPosition = this.closest('.map-fixed-position');
-            if(!parentWithMapFixedPosition){
+            if (!parentWithMapFixedPosition) {
                 /* Toggle between adding and removing the "active" class,
                 to highlight the button that controls the panel */
                 this.classList.toggle("active");
 
                 /* Toggle between hiding and showing the active panel */
                 var panel = this.nextElementSibling;
-                if(this.parentElement.className === 'botom_layer_icon'){
+                if (this.parentElement.className === 'botom_layer_icon') {
                     if (panel.style.display === "block") {
                         panel.style.display = "none";
                     } else {
                         panel.style.display = "block";
                     }
-                }else{
+                } else {
                     if (panel.style.maxHeight) {
                         panel.style.maxHeight = null;
                     } else {
@@ -171,19 +171,19 @@ $('.single-wander-heart').on('click', function(){
             }
         });
     }
-    
-    jQuery('body').on('click','.map-fixed-position .accordion', function(event){
+
+    jQuery('body').on('click', '.map-fixed-position .accordion', function (event) {
         this.classList.toggle("active");
 
         /* Toggle between hiding and showing the active panel */
         var panel = this.nextElementSibling;
-        if(this.parentElement.className === 'botom_layer_icon'){
+        if (this.parentElement.className === 'botom_layer_icon') {
             if (panel.style.display === "block") {
                 panel.style.display = "none";
             } else {
                 panel.style.display = "block";
             }
-        }else{
+        } else {
             if (panel.style.maxHeight) {
                 panel.style.maxHeight = null;
             } else {
@@ -199,14 +199,14 @@ $('.single-wander-heart').on('click', function(){
     for (i = 0; i < acc.length; i++) {
         var panel = acc[i].children[1];
         if (acc[i].classList.contains('active')) {
-                panel.style.display = "block";
+            panel.style.display = "block";
         } else {
-               panel.style.display = "none";
+            panel.style.display = "none";
         }
-        acc[i].addEventListener("click", function() {
+        acc[i].addEventListener("click", function () {
             /* Toggle between adding and removing the "active" class,
             to highlight the button that controls the panel */
-            
+
             jQuery(this).toggleClass("active");
             var panel = jQuery(this).children(":eq(1)");
             /* Toggle between hiding and showing the active panel with a smooth fade down effect */
@@ -214,11 +214,11 @@ $('.single-wander-heart').on('click', function(){
 
         });
     }
-    
-    jQuery('body').on('click','.elevationGraph', function(event){
+
+    jQuery('body').on('click', '.elevationGraph', function (event) {
         $('.options').toggleClass('open');
     });
-    jQuery('body').on('click','#mapOptions', function(event){
+    jQuery('body').on('click', '#mapOptions', function (event) {
         if (event.target.id === 'mapOptions') {
             this.classList.remove('open');
         }
@@ -238,137 +238,137 @@ $('.single-wander-heart').on('click', function(){
     });
 
     /*show hide of the activity in filter sidebar*/
-    jQuery('.fc_check_wrap .check_wrapper input').on('click', function(){
-        if(this.value === '20' ) {
-            if(jQuery(".activity_type_1").prop('checked') === true){
-            jQuery(".activity_type_2").prop('checked', false ); 
-                jQuery(".activity_type_3").prop('checked', false ); 
+    jQuery('.fc_check_wrap .check_wrapper input').on('click', function () {
+        if (this.value === '20') {
+            if (jQuery(".activity_type_1").prop('checked') === true) {
+                jQuery(".activity_type_2").prop('checked', false);
+                jQuery(".activity_type_3").prop('checked', false);
                 jQuery(".fc_difficult_wt_block").removeClass('hide');
                 jQuery(".fc_difficult_t_block").addClass('hide');
-                jQuery(".difficulty_search").prop('checked', false ); 
+                jQuery(".difficulty_search").prop('checked', false);
                 jQuery('.fc_heading.fc_diff_level').removeClass('fc_devel_default');
                 jQuery('.fc_heading.fc_diff_level .fc_block_select_wrapper .fc_difficult_t_block.fc_block_select label').removeClass('active');
-            }else{
+            } else {
                 clearActivityCheck();
-                
+
             }
-                
-        }else if(this.value === '18' ) {
-            if(jQuery(".activity_type_2").prop('checked') === true){
-            jQuery(".activity_type_1").prop('checked', false ); 
-                jQuery(".activity_type_3").prop('checked', false ); 
+
+        } else if (this.value === '18') {
+            if (jQuery(".activity_type_2").prop('checked') === true) {
+                jQuery(".activity_type_1").prop('checked', false);
+                jQuery(".activity_type_3").prop('checked', false);
                 jQuery(".fc_difficult_t_block").removeClass('hide');
                 jQuery(".fc_difficult_wt_block").addClass('hide');
-                jQuery(".difficulty_search").prop('checked', false ); 
+                jQuery(".difficulty_search").prop('checked', false);
                 jQuery('.fc_heading.fc_diff_level').removeClass('fc_devel_default');
                 jQuery('.fc_heading.fc_diff_level .fc_block_select_wrapper .fc_difficult_wt_block.fc_block_select label').removeClass('active');
-            }else{
+            } else {
                 clearActivityCheck();
-                
+
             }
-                
-        }else if(this.value === '19' ) {
-        
-                jQuery(".activity_type_1").prop('checked', false );
-                jQuery(".activity_type_2").prop('checked', false ); 
-                jQuery(".fc_difficult_wt_block").removeClass('hide');
-                jQuery(".fc_difficult_t_block").removeClass('hide');
-                jQuery(".difficulty_search").prop('checked', false ); 
-                jQuery('.fc_heading.fc_diff_level').addClass('fc_devel_default');
-                jQuery('.fc_heading.fc_diff_level .fc_block_select_wrapper .fc_block_select label').removeClass('active');
+
+        } else if (this.value === '19') {
+
+            jQuery(".activity_type_1").prop('checked', false);
+            jQuery(".activity_type_2").prop('checked', false);
+            jQuery(".fc_difficult_wt_block").removeClass('hide');
+            jQuery(".fc_difficult_t_block").removeClass('hide');
+            jQuery(".difficulty_search").prop('checked', false);
+            jQuery('.fc_heading.fc_diff_level').addClass('fc_devel_default');
+            jQuery('.fc_heading.fc_diff_level .fc_block_select_wrapper .fc_block_select label').removeClass('active');
         }
     });
 
     /**region page nav slider below featured image */
-    $(".mainNav_region").owlCarousel({       
+    $(".mainNav_region").owlCarousel({
         loop: false,
-        autoWidth:true,
-        dots:false,
-        nav:false,
-         autoplay:false,
-         responsive : {
-            0 : {
-              items:1,
+        autoWidth: true,
+        dots: false,
+        nav: false,
+        autoplay: false,
+        responsive: {
+            0: {
+                items: 1,
             },
-            700 : {
-             items:1,
+            700: {
+                items: 1,
             },
-            900 : {
-              items:1,
+            900: {
+                items: 1,
             },
-            1200 : {
-                items:1,
-                
+            1200: {
+                items: 1,
+
             }
         }
     });
-   
+
     /**Region page teaser slider */
     jQuery('.owl-carousel.region_teaser_wrap').owlCarousel({
-        nav:true,
-        dots:false,
-        loop:false,
-        rewindNav:false,
-        autoplay:false,
-        navText: ["<div class='nav-btn prev-slide'></div>","<div class='nav-btn next-slide'></div>"],
-        responsive : {
-            0 : {
-              margin:16, 
-              items:1,
-               nav:false,
+        nav: true,
+        dots: false,
+        loop: false,
+        rewindNav: false,
+        autoplay: false,
+        navText: ["<div class='nav-btn prev-slide'></div>", "<div class='nav-btn next-slide'></div>"],
+        responsive: {
+            0: {
+                margin: 16,
+                items: 1,
+                nav: false,
                 stagePadding: 43
             },
-            700 : {
-              margin:7, 
-             items:3,
-               nav:false,
-               stagePadding: 42
+            700: {
+                margin: 7,
+                items: 3,
+                nav: false,
+                stagePadding: 42
             },
-            900 : {
-              margin:9, 
-              items:3,
-                 stagePadding: 72
+            900: {
+                margin: 9,
+                items: 3,
+                stagePadding: 72
             },
-            1200 : {
-              margin:12,
-                items:3,
-                 stagePadding: 100
-                
+            1200: {
+                margin: 12,
+                items: 3,
+                stagePadding: 100
+
             }
         }
     });
 
     /**Region icon slider slider */
     jQuery('.region_icon_slider').owlCarousel({
-        nav:true,
-        dots:false,
-        loop:false,
-        rewindNav:false,
-        autoplay:false,
-        navText: ["<div class='nav-btn prev-slide'></div>","<div class='nav-btn next-slide'></div>"],
-        responsive : {
-            0 : {
-              margin:8, 
-              items:2,
-               nav:false,
+        nav: true,
+        dots: false,
+        loop: false,
+        rewindNav: false,
+        autoplay: false,
+        navText: ["<div class='nav-btn prev-slide'></div>", "<div class='nav-btn next-slide'></div>"],
+        responsive: {
+            0: {
+                margin: 8,
+                items: 2,
+                nav: false,
                 stagePadding: 21
             },
-            700 : {
-              margin:7, 
-             items:4,
-               nav:false,
-               stagePadding: 72
+            700: {
+                margin: 7,
+                items: 4,
+                nav: false,
+                stagePadding: 72
             },
-            900 : {
-              margin:9, 
-              items:5,
-                 stagePadding: 56
+            900: {
+                margin: 9,
+                items: 5,
+                stagePadding: 56
             },
-            1200 : {
-              margin:12,
-                items:6,
-                 stagePadding: 87
-                
+            1200: {
+                margin: 12,
+                items: 6,
+                stagePadding: 87
+
             }
         }
     });
@@ -402,69 +402,69 @@ $('.single-wander-heart').on('click', function(){
 
     /**hike detail page region slider*/
     jQuery('.owl-carousel.wander-in-region-carousel').owlCarousel({
-        nav:true,
-        dots:false,
-        loop:false,
-        rewindNav:false,
-        autoplay:false,
-        navText: ["<div class='nav-btn prev-slide'></div>","<div class='nav-btn next-slide'></div>"],
-        responsive : {
-            0 : {
-              margin:17, 
-              items:1,
-               nav:false,
+        nav: true,
+        dots: false,
+        loop: false,
+        rewindNav: false,
+        autoplay: false,
+        navText: ["<div class='nav-btn prev-slide'></div>", "<div class='nav-btn next-slide'></div>"],
+        responsive: {
+            0: {
+                margin: 17,
+                items: 1,
+                nav: false,
                 stagePadding: 43
             },
-            700 : {
-              margin:26, 
-             items:2,
-               nav:false,
-               stagePadding: 92
+            700: {
+                margin: 26,
+                items: 2,
+                nav: false,
+                stagePadding: 92
             },
-            900 : {
-              margin:26, 
-              items:3,
-                 stagePadding: 49
+            900: {
+                margin: 26,
+                items: 3,
+                stagePadding: 49
             },
-            1200 : {
-              margin:36,
-                items:3,
-                 stagePadding: 115
-                
+            1200: {
+                margin: 36,
+                items: 3,
+                stagePadding: 115
+
             }
         }
     });
     //angebote slider
     jQuery('.angebote_slider').owlCarousel({
-        nav:true,
-        dots:false,
-        loop:false,
-        rewindNav:false,
-        autoplay:false,
-        navText: ["<div class='nav-btn prev-slide'></div>","<div class='nav-btn next-slide'></div>"],
-        responsive : {
-            0 : {
-              margin:17, 
-              items:1,
-               nav:false,
+        nav: true,
+        dots: false,
+        loop: false,
+        rewindNav: false,
+        autoplay: false,
+        navText: ["<div class='nav-btn prev-slide'></div>", "<div class='nav-btn next-slide'></div>"],
+        responsive: {
+            0: {
+                margin: 17,
+                items: 1,
+                nav: false,
                 stagePadding: 43
             },
-            700 : {
-              margin:26, 
-             items:2,
-               nav:false,
-               stagePadding: 92
+            700: {
+                margin: 26,
+                items: 2,
+                nav: false,
+                stagePadding: 92
             },
-            900 : {
-              margin:26, 
-              items:3,
-                 stagePadding: 49
+            900: {
+                margin: 26,
+                items: 3,
+                stagePadding: 49
             },
-            1200 : {
-              margin:36,
-                items:3,
-                 stagePadding: 115
-                
+            1200: {
+                margin: 36,
+                items: 3,
+                stagePadding: 115
+
             }
         }
     });
@@ -520,8 +520,8 @@ $('.single-wander-heart').on('click', function(){
             jQuery('.searchResult_search_close').addClass("hide");
         }
     }
-      
-    
+
+
     jQuery(".searchinputField input").on("keyup", function (e) {
         /* show/hide close icon in search in search results page  */
         if (jQuery('.searchinputField input').val().length != 0) {
@@ -553,7 +553,7 @@ $('.single-wander-heart').on('click', function(){
     //         success: function (response) {
     //             var posts = JSON.parse(response);
     //             var countp = jQuery(posts[0]).filter(".single-wander").length;
-                
+
     //             if (posts == "" || countp < 1) {
     //                 jQuery(".LoadMore").hide();
     //             }
@@ -581,13 +581,13 @@ $('.single-wander-heart').on('click', function(){
     //         },
     //         error: function () { },
     //     });
-        
+
     //     // wegw_map_filter_results('btnClick', e, filterOtherPage);
     //     FilterList('btnClick', e, filterOtherPage);
     //     }
     // });
 
-     /* clear the menu serach when clicked on close icon  */
+    /* clear the menu serach when clicked on close icon  */
     jQuery('.navigation_search .navigation_search_close').on("click", function (e) {
         jQuery(".navigation_search input").val("");
         jQuery('.navigation_search_close').addClass("hide");
@@ -619,44 +619,44 @@ $('.single-wander-heart').on('click', function(){
 
 });
 
-function toRemoveEmptyHikeInfo(){
-     // Remove "hike_level" div if "hike-level" child does not have a class
-     jQuery('.hike_level').each(function() {
+function toRemoveEmptyHikeInfo() {
+    // Remove "hike_level" div if "hike-level" child does not have a class
+    jQuery('.hike_level').each(function () {
         var hikeLevelChild = jQuery(this).children().eq(0);
         if (!hikeLevelChild.attr('class').match(/(^|\s)hike-\S+/)) {
             $(this).remove();
-          }
+        }
     });
     // Remove "hike_time" div if "hike-time" child p tag has only h
-    jQuery('.hike_time').each(function() {
+    jQuery('.hike_time').each(function () {
         var hikeTimeChild = jQuery(this).find('p');
         if (hikeTimeChild.text().trim() === 'h') {
             jQuery(this).remove();
         }
     });
     // Remove "hike_distance" div if "hike_distance" child p tag has only h
-    jQuery('.hike_distance').each(function() {
+    jQuery('.hike_distance').each(function () {
         var hikeTimeChild = jQuery(this).find('p');
         if (hikeTimeChild.text().trim() === 'km') {
             jQuery(this).remove();
         }
     });
     // Remove "hike_ascent" div if "hike_ascent" child p tag has only h
-    jQuery('.hike_ascent').each(function() {
+    jQuery('.hike_ascent').each(function () {
         var hikeTimeChild = jQuery(this).find('p');
         if (hikeTimeChild.text().trim() === 'm') {
             jQuery(this).remove();
         }
     });
     // Remove "hike_descent" div if "hike_descent" child p tag has only h
-    jQuery('.hike_descent').each(function() {
+    jQuery('.hike_descent').each(function () {
         var hikeTimeChild = jQuery(this).find('p');
         if (hikeTimeChild.text().trim() === 'm') {
             jQuery(this).remove();
         }
     });
     // Remove "hike_month" div if "hike_month" child p tag has only h
-    jQuery('.hike_month').each(function() {
+    jQuery('.hike_month').each(function () {
         var hikeTimeChild = jQuery(this).find('p');
         if (hikeTimeChild.text().trim() === '') {
             jQuery(this).remove();
@@ -666,27 +666,27 @@ function toRemoveEmptyHikeInfo(){
 
 /* slide count of the carousel slider*/
 function counter(event) {
-    var element   = event.target;         // DOM element, in this example .owl-carousel
-    var items     = event.item.count;     // Number of items
-    var item      = event.item.index + 1;     // Position of the current item
-  
+    var element = event.target;         // DOM element, in this example .owl-carousel
+    var items = event.item.count;     // Number of items
+    var item = event.item.index + 1;     // Position of the current item
+
     // it loop is true then reset counter from 1
-    if(item > items) {
+    if (item > items) {
         item = item - items
     }
     var current = event.item.index;
     var currentImg = jQuery(element).find('.owl-item').eq(current).find('.justified-gallery');
     jQuery(element).parent().parent().find('.figcaption').text(currentImg.attr('data-sub-html'));
-    jQuery(element).parent().parent().find('#count').html(item+"/"+items);
+    jQuery(element).parent().parent().find('#count').html(item + "/" + items);
 }
 
 /*close elevation map*/
 function closeElement(element) {
     // if($('.single-wander-wrappe-json').length > 0 || jQuery('.map_region').length > 0){
-        jQuery('#weg-map-popup'+ jQuery(element).attr("data-hikeid")).css("display", "none");
-        // jQuery('body').removeClass("weg_ele_popup_show");
-        jQuery('#weg-map-popup'+jQuery(element).attr("data-hikeid")+' .ol-viewport').addClass("hide");
-        jQuery(".popover").css("display", "none");
+    jQuery('#weg-map-popup' + jQuery(element).attr("data-hikeid")).css("display", "none");
+    // jQuery('body').removeClass("weg_ele_popup_show");
+    jQuery('#weg-map-popup' + jQuery(element).attr("data-hikeid") + ' .ol-viewport').addClass("hide");
+    jQuery(".popover").css("display", "none");
     // }
     // else{
     //     jQuery('#weg-map-popup').css("display", "none");
@@ -701,17 +701,17 @@ function closeElementMapResp(element) {
     jQuery("#map-resp .ol-viewport").addClass('hide');
 }
 /*close login sidebar*/
-function closeSummitLoginContent(){
+function closeSummitLoginContent() {
     jQuery(".summitLoginMenu").addClass("summitLoginWindow");
-    if($('.home').length > 0){
-        $('.login').toggleClass("loginHome");  
+    if ($('.home').length > 0) {
+        $('.login').toggleClass("loginHome");
     }
 }
 /*close navigation menu summit book sidebar*/
-function closeNavigationMenu(){
+function closeNavigationMenu() {
     jQuery(".userNavigationMenu").addClass("userNavigationWindow");
-    if($('.home').length > 0){
-        $('.login').toggleClass("loginHome");  
+    if ($('.home').length > 0) {
+        $('.login').toggleClass("loginHome");
     }
 }
 /*close filter sidebar*/
@@ -746,17 +746,17 @@ function clearSearchFilter() {
 function openDropdown(element) {
     var $dropdown = jQuery(element).find(".sort_dropdown");
     $dropdown.toggleClass("showSort");
-  
+
     var panel = $dropdown[0];
-  
+
     if (panel.style.maxHeight) {
-      $dropdown.css('max-height', "");
-     // $dropdown.css('padding', "0px");
+        $dropdown.css('max-height', "");
+        // $dropdown.css('padding', "0px");
     } else {
-    //  $dropdown.css('padding', "20px");
-      $dropdown.css('max-height', panel.scrollHeight + "px");
+        //  $dropdown.css('padding', "20px");
+        $dropdown.css('max-height', panel.scrollHeight + "px");
     }
-    
+
 }
 
 /*popup in elevation map(different layer)*/
@@ -764,14 +764,14 @@ function closeTransportLayerPopup() {
     jQuery(".popover").css("display", "none");
 }
 /**to show lightgallery on the click of the fullscreen icon in lightgallery */
-function openLightGallery(e){
+function openLightGallery(e) {
     jQuery(e.nextElementSibling).find(".justified-gallery a:first-child > img").eq(0).trigger("click");
-    jQuery(e.nextElementSibling).find(".owl-item.active > .justified-gallery a >img").eq(0).trigger("click");   
+    jQuery(e.nextElementSibling).find(".owl-item.active > .justified-gallery a >img").eq(0).trigger("click");
 }
 
 /*loader*/
-jQuery(window).on("load", function() {
-    setTimeout(function() {
+jQuery(window).on("load", function () {
+    setTimeout(function () {
         jQuery("#wegw-preloader").css("display", "none");
     }, 1000);
 
@@ -780,116 +780,116 @@ jQuery(window).on("load", function() {
 });
 
 /*clear activity filter*/
-function clearActivityCheck(){
-    jQuery(".activity_type_1").prop('checked', false );
-    jQuery(".activity_type_2").prop('checked', false ); 
-    jQuery(".activity_type_3").prop('checked', false );
-    jQuery('.difficulty_search').prop('checked', false );
+function clearActivityCheck() {
+    jQuery(".activity_type_1").prop('checked', false);
+    jQuery(".activity_type_2").prop('checked', false);
+    jQuery(".activity_type_3").prop('checked', false);
+    jQuery('.difficulty_search').prop('checked', false);
     jQuery(".fc_difficult_wt_block").removeClass('hide');
     jQuery(".fc_difficult_t_block").removeClass('hide');
     jQuery('.fc_heading.fc_diff_level').addClass('fc_devel_default');
     jQuery('.fc_heading.fc_diff_level .fc_block_select_wrapper .fc_block_select label').removeClass('active');
 }
 /**close the ad above the header */
-function adCloseHeader(){
+function adCloseHeader() {
     jQuery('.ad-above-header-container').addClass("hide");
     jQuery('body').removeClass('Top');
 }
 /** scroll to header on the button click over the ad above the header */
-function adScrollToHeader(){
-    if(jQuery('.home').length > 0){
+function adScrollToHeader() {
+    if (jQuery('.home').length > 0) {
         jQuery('html, body').animate({
             scrollTop: jQuery('header').offset().top + 0
-    }, 500);
-    }else{
+        }, 500);
+    } else {
         jQuery('html, body').animate({
             scrollTop: jQuery('header').offset().top + 2
-    }, 500);
+        }, 500);
     }
-    
+
 }
 
 jQuery(window).scroll(function (elem) {
     var headerHeight = $('header').outerHeight();
     var scrollTop = $(this).scrollTop();
     var adContainer;
-    var adContainerHeight =0;
-    
-  //  jQuery(window).scrollTop() > 100 ? $('body.home').addClass('sticky') : $('body.home').removeClass('sticky');
+    var adContainerHeight = 0;
+
+    //  jQuery(window).scrollTop() > 100 ? $('body.home').addClass('sticky') : $('body.home').removeClass('sticky');
 
     /**ad above the header */
-    if(window.innerWidth >= 1200 /*&& jQuery('.ad-above-header-container.header-ad-desktop-wrapper').length > 0*/){
-        if(jQuery('.ad-above-header-container.header-ad-desktop-wrapper').length > 0){
-        adContainer = $('.ad-above-header-container.header-ad-desktop-wrapper');
-        if(!jQuery('.ad-above-header-container.header-ad-desktop-wrapper').hasClass('hide')){
-            var myElement = jQuery('.ad-above-header-container.header-ad-desktop-wrapper')[0];
-            var bounding = myElement.getBoundingClientRect();
-            var myElementHeight = myElement.offsetHeight;
-            var myElementWidth = myElement.offsetWidth;
+    if (window.innerWidth >= 1200 /*&& jQuery('.ad-above-header-container.header-ad-desktop-wrapper').length > 0*/) {
+        if (jQuery('.ad-above-header-container.header-ad-desktop-wrapper').length > 0) {
+            adContainer = $('.ad-above-header-container.header-ad-desktop-wrapper');
+            if (!jQuery('.ad-above-header-container.header-ad-desktop-wrapper').hasClass('hide')) {
+                var myElement = jQuery('.ad-above-header-container.header-ad-desktop-wrapper')[0];
+                var bounding = myElement.getBoundingClientRect();
+                var myElementHeight = myElement.offsetHeight;
+                var myElementWidth = myElement.offsetWidth;
 
-        
-            if (bounding.top >= -myElementHeight 
-                && bounding.left >= -myElementWidth
-                && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
-                && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight) {
 
-                jQuery('body').addClass('Top');
-            } else {
-                jQuery('body').removeClass('Top');
+                if (bounding.top >= -myElementHeight
+                    && bounding.left >= -myElementWidth
+                    && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
+                    && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight) {
+
+                    jQuery('body').addClass('Top');
+                } else {
+                    jQuery('body').removeClass('Top');
+                }
             }
-        }
-        adContainerHeight = adContainer.offset().top + adContainer.outerHeight();
-        }else{
+            adContainerHeight = adContainer.offset().top + adContainer.outerHeight();
+        } else {
             jQuery('body').removeClass('Top');
         }
     }
-    else if(window.innerWidth < 1200 && window.innerWidth >= 900 /*&& jQuery('.ad-above-header-container.header-ad-tablet-wrapper').length > 0*/){
-        if(jQuery('.ad-above-header-container.header-ad-tablet-wrapper').length > 0){
-        adContainer = $('.ad-above-header-container.header-ad-tablet-wrapper');
-        if(!jQuery('.ad-above-header-container.header-ad-tablet-wrapper').hasClass('hide')){
-            var myElement = jQuery('.ad-above-header-container.header-ad-tablet-wrapper')[0];
-            var bounding = myElement.getBoundingClientRect();
-            var myElementHeight = myElement.offsetHeight;
-            var myElementWidth = myElement.offsetWidth;
+    else if (window.innerWidth < 1200 && window.innerWidth >= 900 /*&& jQuery('.ad-above-header-container.header-ad-tablet-wrapper').length > 0*/) {
+        if (jQuery('.ad-above-header-container.header-ad-tablet-wrapper').length > 0) {
+            adContainer = $('.ad-above-header-container.header-ad-tablet-wrapper');
+            if (!jQuery('.ad-above-header-container.header-ad-tablet-wrapper').hasClass('hide')) {
+                var myElement = jQuery('.ad-above-header-container.header-ad-tablet-wrapper')[0];
+                var bounding = myElement.getBoundingClientRect();
+                var myElementHeight = myElement.offsetHeight;
+                var myElementWidth = myElement.offsetWidth;
 
-        
-            if (bounding.top >= -myElementHeight 
-                && bounding.left >= -myElementWidth
-                && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
-                && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight) {
 
-                jQuery('body').addClass('Top');
-            } else {
-                jQuery('body').removeClass('Top');
+                if (bounding.top >= -myElementHeight
+                    && bounding.left >= -myElementWidth
+                    && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
+                    && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight) {
+
+                    jQuery('body').addClass('Top');
+                } else {
+                    jQuery('body').removeClass('Top');
+                }
             }
-        }
-        adContainerHeight = adContainer.offset().top + adContainer.outerHeight();
-        }else{
+            adContainerHeight = adContainer.offset().top + adContainer.outerHeight();
+        } else {
             jQuery('body').removeClass('Top');
         }
     }
-    else if(window.innerWidth < 900 && window.innerWidth > 0  /*&& jQuery('.ad-above-header-container.header-ad-mobile-wrapper').length > 0*/){
-        if(jQuery('.ad-above-header-container.header-ad-mobile-wrapper').length > 0){
-        adContainer = $('.ad-above-header-container.header-ad-mobile-wrapper');
-        if(!jQuery('.ad-above-header-container.header-ad-mobile-wrapper').hasClass('hide')){
-            var myElement = jQuery('.ad-above-header-container.header-ad-mobile-wrapper')[0];
-            var bounding = myElement.getBoundingClientRect();
-            var myElementHeight = myElement.offsetHeight;
-            var myElementWidth = myElement.offsetWidth;
+    else if (window.innerWidth < 900 && window.innerWidth > 0  /*&& jQuery('.ad-above-header-container.header-ad-mobile-wrapper').length > 0*/) {
+        if (jQuery('.ad-above-header-container.header-ad-mobile-wrapper').length > 0) {
+            adContainer = $('.ad-above-header-container.header-ad-mobile-wrapper');
+            if (!jQuery('.ad-above-header-container.header-ad-mobile-wrapper').hasClass('hide')) {
+                var myElement = jQuery('.ad-above-header-container.header-ad-mobile-wrapper')[0];
+                var bounding = myElement.getBoundingClientRect();
+                var myElementHeight = myElement.offsetHeight;
+                var myElementWidth = myElement.offsetWidth;
 
-        
-            if (bounding.top >= -myElementHeight 
-                && bounding.left >= -myElementWidth
-                && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
-                && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight) {
 
-                jQuery('body').addClass('Top');
-            } else {
-                jQuery('body').removeClass('Top');
+                if (bounding.top >= -myElementHeight
+                    && bounding.left >= -myElementWidth
+                    && bounding.right <= (window.innerWidth || document.documentElement.clientWidth) + myElementWidth
+                    && bounding.bottom <= (window.innerHeight || document.documentElement.clientHeight) + myElementHeight) {
+
+                    jQuery('body').addClass('Top');
+                } else {
+                    jQuery('body').removeClass('Top');
+                }
             }
-        }
-        adContainerHeight = adContainer.offset().top + adContainer.outerHeight();
-        }else{
+            adContainerHeight = adContainer.offset().top + adContainer.outerHeight();
+        } else {
             jQuery('body').removeClass('Top');
         }
     }
@@ -900,30 +900,62 @@ jQuery(window).scroll(function (elem) {
     }
 });
 
-function stickyHeaderforAdAboveHeader(){
-    if(window.innerWidth >= 1200 && jQuery('.ad-above-header-container.header-ad-desktop-wrapper').length > 0){
+function stickyHeaderforAdAboveHeader() {
+    if (window.innerWidth >= 1200 && jQuery('.ad-above-header-container.header-ad-desktop-wrapper').length > 0) {
         jQuery('body').addClass('Top');
-    }else if(window.innerWidth >= 900 && jQuery('.ad-above-header-container.header-ad-tablet-wrapper').length > 0){
+    } else if (window.innerWidth >= 900 && jQuery('.ad-above-header-container.header-ad-tablet-wrapper').length > 0) {
         jQuery('body').addClass('Top');
-    }else if(window.innerWidth >= 0 && jQuery('.ad-above-header-container.header-ad-mobile-wrapper').length > 0){
+    } else if (window.innerWidth >= 0 && jQuery('.ad-above-header-container.header-ad-mobile-wrapper').length > 0) {
         jQuery('body').addClass('Top');
-    }else{
+    } else {
         jQuery('body').removeClass('Top');
     }
 }
 jQuery(window).resize(function () {
     /**ad based on the screen width */
-   stickyHeaderforAdAboveHeader();
+    stickyHeaderforAdAboveHeader();
 });
+
+function checkAdVisibility() {
+    var closeAdDiv = document.querySelector('.close_ad');
+    var adVisibility = document.querySelector('.ad-visibility');
+    // Check if the ad div is present and visible
+
+    // Get all div children inside adVisibilityDiv
+    var childDivs = adVisibility.querySelectorAll('div');
+
+    // Initialize a variable to hold the banner div
+    var bannerDiv = null;
+
+    // Iterate through the child divs
+    childDivs.forEach(function (div) {
+        // Check if this div is not the close_ad
+        if (!div.classList.contains('close_ad')) {
+            bannerDiv = div; // Assign the first non-close_ad div found
+            return; // Exit the loop after the first match
+        }
+    });
+
+    if (bannerDiv.innerHTML.length > 0) {
+        closeAdDiv.style.display = 'block'; // Show close button
+    } else {
+        closeAdDiv.style.display = 'none'; // Hide close button
+    }
+}
+
+// Call the function on page load
+window.onload = function () {
+    checkAdVisibility();
+};
 
 // Function to determine the appropriate thumbWidth based on window width
 function getThumbWidth(windowWidth) {
     if (windowWidth >= 1200) {
-      return 108;
+        return 108;
     } else if (windowWidth >= 900) {
-      return 96;
+        return 96;
     } else {
-      return 75;
+        return 75;
     }
 }
 
@@ -940,161 +972,161 @@ function clearSearch() {
 
 jQuery(document).on("click", "#blog-loadmore", function () {
     var itemcount = jQuery(".blog-wander").length;
-    var loadmore  = jQuery(".LoadMore");
-    var listDiv   = jQuery('.blog_list');
+    var loadmore = jQuery(".LoadMore");
+    var listDiv = jQuery('.blog_list');
     var page_type = jQuery(".page_type").val();
     jQuery('#loader-icon').removeClass("hide");
     var data = {
-      'action' : 'wanderung_blogs_load_more',
-      'nonce': ajax_object.ajax_nonce,
-      'count'  : itemcount,
-      'page_type' : page_type,
+        'action': 'wanderung_blogs_load_more',
+        'nonce': ajax_object.ajax_nonce,
+        'count': itemcount,
+        'page_type': page_type,
     };
-  
+
     jQuery.ajax({
-      url: ajax_object.ajax_url,
-      type: "post",
-      data: data,
-      beforeSend: function () {
-        loadmore.addClass("active");
-      },
-      complete: function () {
-        loadmore.removeClass("active");
-      },
-      success: function (response) {
-        var posts = JSON.parse(response);
-        var countp = jQuery(posts[0]).filter(".blog-wander").length;
-        console.log(countp);
-        if (posts == "" || countp < 1) {
-          console.log("empty");
-          jQuery(".LoadMore").hide();
-        }
-        jQuery('#loader-icon').addClass("hide");
-  
-        if (countp > 0) {
-          console.log(posts[0]);
-          listDiv.append(posts[0]);
-          jQuery(".noWanderung").remove();
-        } else {
-  
-          if (jQuery(".noWanderung").length < 1) {
-            jQuery("#blog-loadmore").before(posts);
-          }
-        }
-      },
-      error: function () {
-        jQuery('#loader-icon').addClass("hide");
-      },
+        url: ajax_object.ajax_url,
+        type: "post",
+        data: data,
+        beforeSend: function () {
+            loadmore.addClass("active");
+        },
+        complete: function () {
+            loadmore.removeClass("active");
+        },
+        success: function (response) {
+            var posts = JSON.parse(response);
+            var countp = jQuery(posts[0]).filter(".blog-wander").length;
+            console.log(countp);
+            if (posts == "" || countp < 1) {
+                console.log("empty");
+                jQuery(".LoadMore").hide();
+            }
+            jQuery('#loader-icon').addClass("hide");
+
+            if (countp > 0) {
+                console.log(posts[0]);
+                listDiv.append(posts[0]);
+                jQuery(".noWanderung").remove();
+            } else {
+
+                if (jQuery(".noWanderung").length < 1) {
+                    jQuery("#blog-loadmore").before(posts);
+                }
+            }
+        },
+        error: function () {
+            jQuery('#loader-icon').addClass("hide");
+        },
     });
-  
-  });
-  
-  //loadmore for Search page
-  jQuery(document).on("click", "#search-loadmore", function () {
-    
-    var loadmore  = jQuery(".LoadMore");
-   
+
+});
+
+//loadmore for Search page
+jQuery(document).on("click", "#search-loadmore", function () {
+
+    var loadmore = jQuery(".LoadMore");
+
     var itemcounts = jQuery(this).data("count");
-    var search_query =  jQuery(this).data("query");
-    var search_offset =  jQuery(this).data("offset");
+    var search_query = jQuery(this).data("query");
+    var search_offset = jQuery(this).data("offset");
     var post_type = jQuery(this).attr("data-postType");
-    let next_offset = parseInt(search_offset) + 9 ; 
+    let next_offset = parseInt(search_offset) + 9;
     jQuery(this).data("offset", next_offset);
-    
-    var search_nonce =  jQuery(this).data("nonce");
-  
-  
-    if( itemcounts < next_offset ){
-      jQuery('#search-loadmore').hide();
-      jQuery('.noWanderungSearchPost').show();
+
+    var search_nonce = jQuery(this).data("nonce");
+
+
+    if (itemcounts < next_offset) {
+        jQuery('#search-loadmore').hide();
+        jQuery('.noWanderungSearchPost').show();
     }
-  
-  
+
+
     jQuery('#loader-icon').removeClass("hide");
     var data = {
-      'action' : 'wanderung_search_load_more',
-      'count'  : itemcounts,
-      'search_query' : search_query,
-      'offset' : search_offset,
-      'search_nonce' : search_nonce,
-      'post_type' : post_type
-    
+        'action': 'wanderung_search_load_more',
+        'count': itemcounts,
+        'search_query': search_query,
+        'offset': search_offset,
+        'search_nonce': search_nonce,
+        'post_type': post_type
+
     };
-  
+
     jQuery.ajax({
-      url: ajax_object.ajax_url,
-      type: "post",
-      data: data,
-      beforeSend: function () {
-        loadmore.addClass("active");
-      },
-      complete: function () {
-        loadmore.removeClass("active");
-      },
-      success: function (response) {
-        jQuery('.searchResult_list').append(response.data);
-        jQuery('#loader-icon').addClass("hide");
-      },
-      error: function () {
-        jQuery('#loader-icon').addClass("hide");
-      },
+        url: ajax_object.ajax_url,
+        type: "post",
+        data: data,
+        beforeSend: function () {
+            loadmore.addClass("active");
+        },
+        complete: function () {
+            loadmore.removeClass("active");
+        },
+        success: function (response) {
+            jQuery('.searchResult_list').append(response.data);
+            jQuery('#loader-icon').addClass("hide");
+        },
+        error: function () {
+            jQuery('#loader-icon').addClass("hide");
+        },
     });
-  
-  });
-  
-  //loadmore for taxonomies
-  jQuery(document).on("click", "#taxonomy-loadmore", function () {
-    
-    var loadmore  = jQuery(".LoadMore");
-   
+
+});
+
+//loadmore for taxonomies
+jQuery(document).on("click", "#taxonomy-loadmore", function () {
+
+    var loadmore = jQuery(".LoadMore");
+
     var itemcounts = jQuery(this).data("count");
-    var search_offset =  jQuery(this).data("offset");
+    var search_offset = jQuery(this).data("offset");
     var post_type = jQuery(this).attr("data-postType");
     var taxonomy = jQuery(this).attr("data-taxonomy");
     var term_id = jQuery(this).attr("data-termId");
-    let next_offset = parseInt(search_offset) + 9 ; 
+    let next_offset = parseInt(search_offset) + 9;
     jQuery(this).data("offset", next_offset);
-    
-    var taxonomy_nonce =  jQuery(this).data("nonce");
-  
-  
-    if( itemcounts < next_offset ){
-      jQuery('#taxonomy-loadmore').hide();
-      jQuery('.noWanderungSearchPost').show();
+
+    var taxonomy_nonce = jQuery(this).data("nonce");
+
+
+    if (itemcounts < next_offset) {
+        jQuery('#taxonomy-loadmore').hide();
+        jQuery('.noWanderungSearchPost').show();
     }
-  
-  
+
+
     jQuery('#loader-icon').removeClass("hide");
     var data = {
-      'action' : 'wanderung_taxonomy_load_more',
-      'count'  : itemcounts,
-      'offset' : search_offset,
-      'taxonomy_nonce' : taxonomy_nonce,
-      'post_type' : post_type,
-      'taxonomy' : taxonomy,
-      'term_id' : term_id
+        'action': 'wanderung_taxonomy_load_more',
+        'count': itemcounts,
+        'offset': search_offset,
+        'taxonomy_nonce': taxonomy_nonce,
+        'post_type': post_type,
+        'taxonomy': taxonomy,
+        'term_id': term_id
     };
-  
+
     jQuery.ajax({
-      url: ajax_object.ajax_url,
-      type: "post",
-      data: data,
-      beforeSend: function () {
-        loadmore.addClass("active");
-      },
-      complete: function () {
-        loadmore.removeClass("active");
-      },
-      success: function (response) {
-        jQuery('.searchResult_list').append(response.data);
-          jQuery('#loader-icon').addClass("hide");
-      },
-      error: function () {
-        jQuery('#loader-icon').addClass("hide");
-      },
+        url: ajax_object.ajax_url,
+        type: "post",
+        data: data,
+        beforeSend: function () {
+            loadmore.addClass("active");
+        },
+        complete: function () {
+            loadmore.removeClass("active");
+        },
+        success: function (response) {
+            jQuery('.searchResult_list').append(response.data);
+            jQuery('#loader-icon').addClass("hide");
+        },
+        error: function () {
+            jQuery('#loader-icon').addClass("hide");
+        },
     });
-  
-  });
+
+});
 
 function wegw_get_data(json_gpx_data) {
     /* Check if GPX file is uploaded */
@@ -1169,7 +1201,7 @@ function wegw_get_data(json_gpx_data) {
 
             if (gpx_trackpoints.length) {
 
-                var gpx_middle_cordinates = parseInt(gpx_trackpoints.length/2);
+                var gpx_middle_cordinates = parseInt(gpx_trackpoints.length / 2);
                 var lat = parseFloat(gpx_trackpoints[gpx_middle_cordinates]["@attributes"].lat);
                 var lon = parseFloat(gpx_trackpoints[gpx_middle_cordinates]["@attributes"].lon);
 
@@ -1201,15 +1233,15 @@ function wegw_get_data(json_gpx_data) {
 
                 var totalDistance = gpx_trackpoints[gpx_trackpoints.length - 1].distance;
 
-                var GPXdata                 = new Array();
-                GPXdata['latitude']         = lat;
-                GPXdata['longitude']        = lon;
-                GPXdata['dauer']            = hike_hours;
-                GPXdata['km']               = totalDistance.toFixed(2);
-                GPXdata['aufstieg']         = sumUp;
-                GPXdata['abstieg']          = Math.abs(sumDown);
-                GPXdata['tiefster_punkt']   = Number(min_altitude).toFixed(2);
-                GPXdata['hochster_punkt']   = Number(max_altitude).toFixed(2);
+                var GPXdata = new Array();
+                GPXdata['latitude'] = lat;
+                GPXdata['longitude'] = lon;
+                GPXdata['dauer'] = hike_hours;
+                GPXdata['km'] = totalDistance.toFixed(2);
+                GPXdata['aufstieg'] = sumUp;
+                GPXdata['abstieg'] = Math.abs(sumDown);
+                GPXdata['tiefster_punkt'] = Number(min_altitude).toFixed(2);
+                GPXdata['hochster_punkt'] = Number(max_altitude).toFixed(2);
                 return GPXdata;
             }
         }
@@ -1253,69 +1285,69 @@ function insertJS(url, callback) {
     }
 }
 
-function loadLightGallery(){
+function loadLightGallery() {
     var windowWidth = window.innerWidth;
     var thumbWidth = getThumbWidth(windowWidth);
-    /**light gallery in hike detail page */  
-    if(jQuery(".demo-gallery").length > 0){
+    /**light gallery in hike detail page */
+    if (jQuery(".demo-gallery").length > 0) {
         lightGallery(document.getElementById('lightgallery'), {
             plugins: [lgThumbnail, lgComment, lgFullscreen, lgAutoplay, lgZoom],
             speed: 500,
-            thumbnail:true,
-            thumbHeight:"72px",
+            thumbnail: true,
+            thumbHeight: "72px",
             thumbWidth: thumbWidth,
-            thumbMargin:10,
-            toggleThumb:true,
-            download:false,
+            thumbMargin: 10,
+            toggleThumb: true,
+            download: false,
             allowMediaOverlap: true,
-            showZoomInOutIcons:true,
-            appendThumbnailsTo:".lg-components",
+            showZoomInOutIcons: true,
+            appendThumbnailsTo: ".lg-components",
             showThumbByDefault: false,
-            enableThumbDrag:true,
-            enableThumbSwipe : true,
-            mobileSettings:{ controls: false, showCloseIcon: true, fullScreen: true, toggleThumb:false, allowMediaOverlap: false}
+            enableThumbDrag: true,
+            enableThumbSwipe: true,
+            mobileSettings: { controls: false, showCloseIcon: true, fullScreen: true, toggleThumb: false, allowMediaOverlap: false }
 
         });
-        
+
     }
 
-    /**light gallery for master content page */ 
-    var elements = document.getElementsByClassName('img-gallery-wrap'); 
+    /**light gallery for master content page */
+    var elements = document.getElementsByClassName('img-gallery-wrap');
     for (let item of elements) {
         lightGallery(item, {
             plugins: [lgThumbnail, lgComment, lgFullscreen, lgAutoplay, lgZoom],
             speed: 500,
-            thumbnail:true,
-            thumbHeight:"72px",
+            thumbnail: true,
+            thumbHeight: "72px",
             thumbWidth: thumbWidth,
-            thumbMargin:10,
-            toggleThumb:true,
-            download:false,
+            thumbMargin: 10,
+            toggleThumb: true,
+            download: false,
             allowMediaOverlap: true,
-            showZoomInOutIcons:true,
-            appendThumbnailsTo:".lg-components",
+            showZoomInOutIcons: true,
+            appendThumbnailsTo: ".lg-components",
             showThumbByDefault: false,
-            enableThumbDrag:true,
-            enableThumbSwipe : true,
-            mobileSettings:{ controls: false, showCloseIcon: true, fullScreen: true, toggleThumb:false, allowMediaOverlap: false}
+            enableThumbDrag: true,
+            enableThumbSwipe: true,
+            mobileSettings: { controls: false, showCloseIcon: true, fullScreen: true, toggleThumb: false, allowMediaOverlap: false }
 
         });
     }
 
     /** carousel for lightgallery as in master content(to make it as a slider if there are more than one image) */
     for (let galleyItem of elements) {
-        if(galleyItem.children.length > 1){
+        if (galleyItem.children.length > 1) {
             jQuery(galleyItem).owlCarousel({
-                items:1,
-                lazyLoad:true,
-                loop:true,
-                dots:false,
-                nav:true,
-                navText: ["<div class='nav-btn gal_prev-slide'></div>","<div class='nav-btn gal_next-slide'></div>"],
+                items: 1,
+                lazyLoad: true,
+                loop: true,
+                dots: false,
+                nav: true,
+                navText: ["<div class='nav-btn gal_prev-slide'></div>", "<div class='nav-btn gal_next-slide'></div>"],
                 autoplay: 2000,
-                onInitialized  : counter, 
-                onTranslated : counter,
-                afterMove: function(elem) {
+                onInitialized: counter,
+                onTranslated: counter,
+                afterMove: function (elem) {
                     var current = this.currentItem;
                     var currentImg = elem.find('.owl-item').eq(current).find('.justified-gallery');
                     jQuery('.figcaption').text(currentImg.attr('data-sub-html'));
@@ -1323,24 +1355,24 @@ function loadLightGallery(){
             });
         }
         /** to show the caption of light gallery as in masdter content page just below the image */
-        if(galleyItem.children.length <= 1){
+        if (galleyItem.children.length <= 1) {
             var currentImg = jQuery(galleyItem).eq(0).find('.justified-gallery');
             jQuery(galleyItem).parent().parent().find('.figcaption').text(currentImg.attr('data-sub-html'));
         }
     }
 }
 
-function infoIconClicked(event, parentId){
+function infoIconClicked(event, parentId) {
     event.preventDefault();
-   
-    if ( window.innerWidth < 767 ) {
-        $("#"+parentId+" .snow_info_details").addClass("hide");
-        window.open('https://wegwandern.ch/schneekarten-wo-liegt-jetzt-schnee/', '_blank'); 
+
+    if (window.innerWidth < 767) {
+        $("#" + parentId + " .snow_info_details").addClass("hide");
+        window.open('https://wegwandern.ch/schneekarten-wo-liegt-jetzt-schnee/', '_blank');
     } else {
-        $("#"+parentId+" .snow_info_details").removeClass("hide"); 
+        $("#" + parentId + " .snow_info_details").removeClass("hide");
     }
 }
 
-function infoIconClosed( event, parentId ) {
-    $("#"+parentId+" .snow_info_details").addClass("hide"); 
+function infoIconClosed(event, parentId) {
+    $("#" + parentId + " .snow_info_details").addClass("hide");
 }
