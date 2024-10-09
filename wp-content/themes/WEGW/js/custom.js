@@ -951,6 +951,19 @@ function checkAdVisibility() {
 // Call the function on page load
 window.onload = function () {
     checkAdVisibility();
+
+    // Set up MutationObserver to monitor changes to the body
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            // Check if the ad div element is added/modified
+            if (mutation.type === 'childList') {
+                checkAdVisibility();
+            }
+        });
+    });
+
+    // Start observing the body for changes
+    observer.observe(document.body, { childList: true, subtree: true });
 };
 
 // Function to determine the appropriate thumbWidth based on window width
