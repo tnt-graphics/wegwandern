@@ -546,3 +546,57 @@ function wegw_b2b_custom_title( $title ) {
 if ( function_exists( 'add_image_size' ) ) {
 	add_image_size( 'b2b-slider-listing', 450, 300, true );
 }
+
+/**
+ * Cron to check if any published ads have reached the `end_date` (date manually set by the user at the time of ad creation)
+ * If end date reached update ad status to `Draft` and add 2 post_meta fields
+ * `wegw_b2b_ad_credits_end` - denote ended ad (boolean)
+ * `wegw_b2b_ad_credits_end_date` - date which the ad is ended (date)
+ * 
+ * Fn added here as Cron job moved to server
+ * 
+ */
+function wegwb_check_ads_end_date_daily_cron_event() {
+	$args = array(
+		'post_type'      => 'b2b-werbung',
+		'post_status'    => 'publish',
+		'posts_per_page' => -1,
+	);
+
+	$result = new WP_Query( $args );
+
+	if ( $result->have_posts() ) :
+		while ( $result->have_posts() ) :
+			$result->the_post();
+
+			$ad_ID       = get_the_ID();
+			$ad_end_date = get_post_meta( $ad_ID, 'wegw_b2b_ad_end_date', true );
+
+			/* Check if the `wegw_b2b_ad_end_date` has a value. */
+			if ( ! empty( $ad_end_date ) ) {
+				$ad_end_date_formatted = date( 'Y-m-d', strtotime( $ad_end_date ) );
+				$current_date   = date( 'Y-m-d' );
+
+				if ( $current_date >= $ad_end_date_formatted ) {
+					add_post_meta( $ad_ID, 'wegw_b2b_ad_credits_end', 1 );
+					add_post_meta( $ad_ID, 'wegw_b2b_ad_credits_end_date', date( 'Y-m-d H:i:s' ) );
+
+					$b2b_ads_args = array(
+						'ID'          => $ad_ID,
+						'post_status' => 'draft',
+					);
+
+					wp_update_post( $b2b_ads_args );
+				}
+			}
+
+		endwhile;
+	endif; 
+}
+
+/* Schedule cron job */
+add_action( 'wegwb_check_ads_end_date_daily_cron', 'wegwb_check_ads_end_date_daily_cron_event' );
+
+if ( ! wp_next_scheduled( 'wegwb_check_ads_end_date_daily_cron' ) ) {
+	wp_schedule_event( time(), 'daily', 'wegwb_check_ads_end_date_daily_cron' );
+}
