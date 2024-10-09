@@ -939,10 +939,12 @@ function checkAdVisibility() {
         }
     });
 
-    if (bannerDiv.innerHTML.length > 0) {
-        closeAdDiv.style.display = 'block'; // Show close button
-    } else {
-        closeAdDiv.style.display = 'none'; // Hide close button
+    if (bannerDiv !== null) {
+        if (bannerDiv.innerHTML.length > 0) {
+            closeAdDiv.style.display = 'block'; // Show close button
+        } else {
+            closeAdDiv.style.display = 'none'; // Hide close button
+        }
     }
 }
 
