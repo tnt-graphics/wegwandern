@@ -6483,7 +6483,10 @@ input::placeholder, textarea::placeholder{
     .region-ad-between-contents.ad-ipad {
         display:none;
     }
-
+    .home:not(.sticky) header, .home.Top header {
+        position: relative;
+        margin-bottom: -67px;
+    }
 }
 @media only screen and (min-width: 699.99px) and (max-width: 899.98px){
    /* .container{
