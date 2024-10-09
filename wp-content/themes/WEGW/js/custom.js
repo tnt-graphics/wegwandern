@@ -617,6 +617,9 @@ jQuery(document).ready(function ($) {
         jQuery('.searchResult_search_close').addClass("hide");
     });
 
+    /* Fn to check if the ad div is present and visible */
+    checkAdVisibility();
+
 });
 
 function toRemoveEmptyHikeInfo() {
