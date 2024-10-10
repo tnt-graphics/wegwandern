@@ -924,20 +924,26 @@ function checkAdVisibility() {
     var adVisibility = document.querySelector('.ad-visibility');
     // Check if the ad div is present and visible
 
-    // Get all div children inside adVisibilityDiv
-    var childDivs = adVisibility.querySelectorAll('div');
-
     // Initialize a variable to hold the banner div
     var bannerDiv = null;
 
-    // Iterate through the child divs
-    childDivs.forEach(function (div) {
-        // Check if this div is not the close_ad
-        if (!div.classList.contains('close_ad')) {
-            bannerDiv = div; // Assign the first non-close_ad div found
-            return; // Exit the loop after the first match
+    if (adVisibility !== null) {
+        // Get all div children inside adVisibilityDiv
+        var childDivs = adVisibility.querySelectorAll('div');
+
+        if (childDivs !== null) {
+            // Iterate through the child divs
+            childDivs.forEach(function (div) {
+                // Check if this div is not the close_ad
+                if (!div.classList.contains('close_ad')) {
+                    bannerDiv = div; // Assign the first non-close_ad div found
+                    return; // Exit the loop after the first match
+                }
+            });
         }
-    });
+
+    }
+
 
     if (bannerDiv !== null) {
         if (bannerDiv.innerHTML.length > 0) {
