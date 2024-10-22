@@ -2329,6 +2329,7 @@ var hikeDescriptionLetterCount = 197;
                                             app._hikesListing(jsonplaces); 
                                         } else {
                                             //jQuery(".single-wander-wrappe").html(posts[0]);
+                                            jQuery(".single-wander-wrappe-json").html("");
                                             app._hikesListing(jsonplaces); 
                                         }
                                         if (countp > 0) {
