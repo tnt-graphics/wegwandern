@@ -1679,7 +1679,7 @@ body.weg_ele_popup_show{
 .close_ad{
     margin: 30px;
     right: 0;
-    z-index: 10;
+    z-index: 12;
 }
 .close_map:hover, .close_ad:hover{
      background:#BE000B;
