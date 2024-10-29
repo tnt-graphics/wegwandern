@@ -161,8 +161,6 @@ function change_pinwall_ad_status( $post_id, $ad_status ) {
 function wegwandern_summit_book_pinwand_ad_expiry() {
 	$current_date = date( 'Y-m-d' );
 
-	error_log("Cron job started at: " . date('Y-m-d H:i:s'));
-
 	$args = array(
 		'post_type'   => 'pinnwand_eintrag',
 		'post_status' => array( 'publish', 'draft' ),
