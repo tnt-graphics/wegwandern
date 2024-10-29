@@ -166,6 +166,9 @@ function wegwandern_summit_book_pinwand_ad_expiry() {
 	$args = array(
 		'post_type'   => 'pinnwand_eintrag',
 		'post_status' => array( 'publish', 'draft' ),
+		'posts_per_page' => -1,
+    	'orderby'        => 'date',
+    	'order'          => 'ASC',
 	);
 
 	$pinwand_ads = new WP_Query( $args );
