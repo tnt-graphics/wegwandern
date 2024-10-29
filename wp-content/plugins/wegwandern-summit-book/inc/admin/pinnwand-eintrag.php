@@ -161,6 +161,8 @@ function change_pinwall_ad_status( $post_id, $ad_status ) {
 function wegwandern_summit_book_pinwand_ad_expiry() {
 	$current_date = date( 'Y-m-d' );
 
+	error_log("Cron job started at: " . date('Y-m-d H:i:s'));
+
 	$args = array(
 		'post_type'   => 'pinnwand_eintrag',
 		'post_status' => array( 'publish', 'draft' ),
@@ -169,6 +171,8 @@ function wegwandern_summit_book_pinwand_ad_expiry() {
 	$pinwand_ads = new WP_Query( $args );
 
 	if ( $pinwand_ads->have_posts() ) :
+		error_log("Found pinnwand ads : " . $pinwand_ads->found_posts);
+
 		while ( $pinwand_ads->have_posts() ) :
 			$pinwand_ads->the_post();
 
@@ -179,15 +183,20 @@ function wegwandern_summit_book_pinwand_ad_expiry() {
 			$pinwand_ad_publish_date                 = get_the_date( 'Y-m-d' );
 			$pinwand_ad_auto_expiry_frm_publish_date = date( 'Y-m-d', strtotime( '+6 months', strtotime( $pinwand_ad_publish_date ) ) );
 
+			error_log("Processing post ID: $pinwand_ad_ID, Status: $pinwand_post_status, Meta Status: $pinwand_meta_status, Expiry Date: $pinwand_ad_expiry_date");
+
+
 			/* Make published ad Expired */
 			if ( $pinwand_post_status == 'publish' && $pinwand_meta_status == 'published' ) {
 				if ( $pinwand_ad_expiry_date != '' ) {
 
 					if ( $current_date >= $pinwand_ad_expiry_date ) {
+						error_log("Expiring post ID: $pinwand_ad_ID by expiry date.");
 						change_pinwall_ad_status( $pinwand_ad_ID, 'expiry' );
 					}
 				} else {
 					if ( $current_date >= $pinwand_ad_auto_expiry_frm_publish_date ) {
+						error_log("Deleting post ID: $pinwand_ad_ID due to auto-expiry from publish date.");
 						wp_delete_post( $pinwand_ad_ID );
 					}
 				}
@@ -202,6 +211,7 @@ function wegwandern_summit_book_pinwand_ad_expiry() {
 				}
 
 				if ( $current_date >= $pinwand_ad_removal_date ) {
+					error_log("Deleting post ID: $pinwand_ad_ID due to 6-month expiry from expiry/rejection.");
 					wp_delete_post( $pinwand_ad_ID );
 				}
 			}
@@ -210,6 +220,7 @@ function wegwandern_summit_book_pinwand_ad_expiry() {
 	endif;
 
 	wp_reset_postdata();
+	error_log("Cron job finished at: " . date('Y-m-d H:i:s'));
 	wp_die();
 }
 
