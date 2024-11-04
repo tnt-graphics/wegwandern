@@ -50,12 +50,17 @@
 			var adScript = document.createElement('script');
 			adScript.type = 'text/javascript';
 			adScript.innerHTML = 'gbcallslot1280("div-ad-gds-1280-1", "");';
-
-			// Append the ad close button to the created div
+			
+			// Create the Adform script element testpixel
+			var adformScript = document.createElement('script');
+			adformScript.type = 'text/javascript';
+			adformScript.src = "https://track.adform.net/adfscript/?bn=67858885";
+			
+			// Append elements to the ad div
 			adDiv.append(adCloseBtn);
-
-			// Append the script to the created div
 			adDiv.append(adScript);
+			adDiv.append(adformScript);
+
 
 			// Append the created div with the script to the '.ad-section' div
 			$('.ad-section.header').html(adDiv);
@@ -71,12 +76,16 @@
 			var adScript = document.createElement('script');
 			adScript.type = 'text/javascript';
 			adScript.innerHTML = 'gbcallslot1281("div-ad-gds-1281-1", "");';
+			
+			// Create the Adform script element testpixel
+			var adformScript = document.createElement('script');
+			adformScript.type = 'text/javascript';
+			adformScript.src = "https://track.adform.net/adfscript/?bn=70102338";
 
-			// Append the ad close button to the created div
+			// Append elements to the ad div
 			adDiv.append(adCloseBtn);
-
-			// Append the script to the created div
 			adDiv.append(adScript);
+			adDiv.append(adformScript);
 
 			// Append the created div with the script to the '.ad-section' div
 			$('.ad-section.header').html(adDiv);
