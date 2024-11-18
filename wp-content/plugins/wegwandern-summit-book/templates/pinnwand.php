@@ -7,7 +7,7 @@
 
 get_header();
 $pinwand_heading           = __( 'Pinwand', 'wegwandern-summit-book' );
-$pinwand_desc              = __( 'Sundendestis aped mos volorio nsequos et aut diciae conecus evendisima quam, se molore minia del int, similis sitat ma qui sum quis ab ipsaectur assinum, ut eostem ex eum et volupis quosto Mottet.', 'wegwandern-summit-book', 'wegwandern-summit-book' );
+$pinwand_desc              = __( 'Suchst du oder bietest du? Suchst du zum Beispiel eine Wanderbegleitung? Oder hast du keine Verwendung mehr für deine Softshelljacke? Hier kannst du gratis suchen und anbieten. Alles rund um’s Wandern… Du musst dazu ein kostenloses Gipfelbuch-Konto erstellen und eingeloggt sein. Dann gehts los…', 'wegwandern-summit-book' );
 $pinwand_button_text       = __( 'Inserat erstellen', 'wegwandern-summit-book' );
 $pinwand_button_below_text = __( 'Inserat erfassen', 'wegwandern-summit-book' );
 $post_thumb                = get_the_post_thumbnail_url( $post->ID, 'full' );
