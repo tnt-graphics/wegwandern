@@ -511,7 +511,7 @@ class WpmfMediaFolderOption
             $wpmfQueue = JuMainQueue::getInstance('wpmf');
             $wpmfQueue->updateQueueTermMeta((int)$responses['folder_id'], (int)$element_id);
             $wpmfQueue->updateResponses((int)$element_id, $responses);
-            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id']);
+            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $datas['only_file']);
         } else {
             $upload_dir = wp_upload_dir();
             $info_file  = wp_check_filetype($datas['path']);
@@ -908,10 +908,11 @@ class WpmfMediaFolderOption
      *
      * @param string  $directory     Directory
      * @param integer $folder_parent ID of folder parent on media library
+     * @param integer $only_file     Import file without subdirectories
      *
      * @return void
      */
-    public function doAddImportFtpQueue($directory, $folder_parent = 0)
+    public function doAddImportFtpQueue($directory, $folder_parent = 0, $only_file = null)
     {
         if (file_exists($directory)) {
             $dir_files = glob($directory . '*');
@@ -929,7 +930,7 @@ class WpmfMediaFolderOption
                     'folder_parent' => $folder_parent,
                     'action' => 'wpmf_import_ftp_to_library'
                 );
-                if (is_dir($dir_file)) {
+                if (is_dir($dir_file) && empty($only_file)) {
                     $datas['name'] = $name;
                     $datas['type'] = 'folder';
                 } else {
@@ -1315,6 +1316,7 @@ class WpmfMediaFolderOption
         }
 
         $list_import = $_POST['wpmf_list_import'];
+        $only_file = $_POST['wpmf_only_file'];
         if ($list_import !== '') {
             $lists = explode(',', $list_import);
             if (in_array('', $lists)) {
@@ -1337,7 +1339,8 @@ class WpmfMediaFolderOption
                         'folder_parent' => 0,
                         'action' => 'wpmf_import_ftp_to_library',
                         'name' => basename($validate_path),
-                        'type' => 'folder'
+                        'type' => 'folder',
+                        'only_file' => $only_file
                     );
 
                     $wpmfQueue = JuMainQueue::getInstance('wpmf');
@@ -1347,7 +1350,7 @@ class WpmfMediaFolderOption
                     } else {
                         $responses = json_decode($row->responses, true);
                         if (isset($responses['folder_id'])) {
-                            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id']);
+                            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $only_file);
                         }
                     }
                 }
@@ -1624,6 +1627,10 @@ class WpmfMediaFolderOption
 
         if (!get_option('wpmf_watermark_image_id', false)) {
             add_option('wpmf_watermark_image_id', 0, '', 'yes');
+        }
+
+        if (!get_option('wpmf_watermark_only_woo', false)) {
+            add_option('wpmf_watermark_only_woo', 0, '', 'yes');
         }
 
         $gallery_settings = array(
@@ -2139,7 +2146,7 @@ class WpmfMediaFolderOption
                 'wpmf_root_site'  => $this->validatePath($site_path),
                 'root_media_root' => $root_media_root->term_id,
                 'featured_image_folder' => $featured_image_folder,
-                'image_path'      => WPMF_PLUGIN_URL . '/assets/images/',
+                'image_path'      => WPMF_PLUGIN_URL . 'assets/images/',
                 'wpmf_nonce'      => wp_create_nonce('wpmf_nonce')
             )
         );
@@ -2182,7 +2189,7 @@ class WpmfMediaFolderOption
         $portfolio_theme = $this->themeSettings('portfolio_theme', $gallery_configs, $portfolio_label);
         $masonry_theme   = $this->themeSettings('masonry_theme', $gallery_configs, $masonry_label);
         $slider_theme    = $this->themeSettings('slider_theme', $gallery_configs, $slider_label);
-        require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/gallery_settings/gallery_settings.php');
+        require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/gallery_settings/gallery_settings.php');
         $html .= ob_get_contents();
         ob_end_clean();
         return $html;
@@ -2202,7 +2209,7 @@ class WpmfMediaFolderOption
         ob_start();
         $settings = $gallery_configs['theme'][$theme_name];
         $slider_animation  = get_option('wpmf_slider_animation');
-        require(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/gallery_settings/theme_settings.php');
+        require(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/gallery_settings/theme_settings.php');
         $html = ob_get_contents();
         ob_end_clean();
         return $html;
@@ -2546,27 +2553,27 @@ class WpmfMediaFolderOption
                 }
 
                 if (!file_exists($upload_dir['basedir'] . '/wpmf/images/download.png')) {
-                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/download.png', $upload_dir['basedir'] . '/wpmf/images/download.png');
+                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/download.png', $upload_dir['basedir'] . '/wpmf/images/download.png');
                 }
 
                 if (!file_exists($upload_dir['basedir'] . '/wpmf/images/download_style_0.svg')) {
-                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/download_style_0.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_0.svg');
+                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/download_style_0.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_0.svg');
                 }
 
                 if (!file_exists($upload_dir['basedir'] . '/wpmf/images/download_style_1.svg')) {
-                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/download_style_1.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_1.svg');
+                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/download_style_1.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_1.svg');
                 }
 
                 if (!file_exists($upload_dir['basedir'] . '/wpmf/images/download_style_2.svg')) {
-                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/download_style_2.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_2.svg');
+                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/download_style_2.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_2.svg');
                 }
 
                 if (!file_exists($upload_dir['basedir'] . '/wpmf/images/download_style_3.svg')) {
-                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/download_style_3.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_3.svg');
+                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/download_style_3.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_3.svg');
                 }
 
                 if (!file_exists($upload_dir['basedir'] . '/wpmf/images/download_style_4.svg')) {
-                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/download_style_4.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_4.svg');
+                    copy(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/download_style_4.svg', $upload_dir['basedir'] . '/wpmf/images/download_style_4.svg');
                 }
 
                 // get custom settings single file
@@ -2579,7 +2586,7 @@ class WpmfMediaFolderOption
                         $icon_color = '#f4f6ff';
                     }
 
-                    $icon_content = file_get_contents(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/images/'. $media_download['icon_image'] .'.svg');
+                    $icon_content = file_get_contents(WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/images/'. $media_download['icon_image'] .'.svg');
                     $icon_content = str_replace('#f4f6ff', $icon_color, $icon_content);
                     file_put_contents($upload_dir['basedir'] . '/wpmf/images/'. $media_download['icon_image'] .'.svg', $icon_content);
                 } else {
@@ -2751,7 +2758,8 @@ class WpmfMediaFolderOption
                 'wpmf_image_watermark_apply',
                 'wpmf_options_format_title',
                 'wpmf_watermark_image',
-                'wpmf_watermark_image_id'
+                'wpmf_watermark_image_id',
+                'wpmf_watermark_only_woo'
             );
 
             foreach ($options_name as $option) {
@@ -2859,6 +2867,7 @@ class WpmfMediaFolderOption
         $options_format_title       = wpmfGetOption('wpmf_options_format_title');
         $watermark_image            = get_option('wpmf_watermark_image');
         $watermark_image_id         = get_option('wpmf_watermark_image_id');
+        $watermark_only_woo         = get_option('wpmf_watermark_only_woo');
 
         $padding_masonry   = get_option('wpmf_padding_masonry');
         $padding_portfolio = get_option('wpmf_padding_portfolio');
@@ -3453,7 +3462,7 @@ class WpmfMediaFolderOption
         if (!current_user_can('manage_options')) {
             wp_send_json(array('status' => false, 'msg' => esc_html__('Not have permission!', 'wpmf')));
         }
-        require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/class-main.php');
+        require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-main.php');
         WpMediaFolder::importCategories();
     }
 

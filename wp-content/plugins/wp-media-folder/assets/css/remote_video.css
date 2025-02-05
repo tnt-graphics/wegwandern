@@ -27,3 +27,11 @@
     width: 100%;
     max-width: 100%;
 }
+
+.wpmf-block-embed .wrapper-kaltura {
+    width: 50%;
+}
+
+.wrapper-kaltura-center {
+    text-align: -webkit-center;
+}

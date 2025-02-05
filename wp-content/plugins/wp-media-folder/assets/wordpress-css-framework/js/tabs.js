@@ -36,23 +36,23 @@
                 $($content).show();
 
                 // append indicator then set indicator width to tab width
-                $this.append('<div class="indicator"></div>');
-                var $indicator = $this.find('.indicator');
-                if ($this.is(":visible")) {
-                    $indicator.css({"right": $tabs_width - (($index + 1) * $tab_width)});
-                    $indicator.css({"left": $index * $tab_width});
-                }
-                $(window).resize(function () {
-                    $tabs_width = $this.width();
-                    $tab_width = $this.find('li').first().outerWidth();
-                    if ($index < 0) {
-                        $index = 0;
-                    }
-                    if ($tab_width !== 0 && $tabs_width !== 0) {
-                        $indicator.css({"right": $tabs_width - (($index + 1) * $tab_width)});
-                        $indicator.css({"left": $index * $tab_width});
-                    }
-                });
+                // $this.append('<div class="indicator"></div>');
+                // var $indicator = $this.find('.indicator');
+                // if ($this.is(":visible")) {
+                //     $indicator.css({"right": $tabs_width - (($index + 1) * $tab_width)});
+                //     $indicator.css({"left": $index * $tab_width});
+                // }
+                // $(window).resize(function () {
+                //     $tabs_width = $this.width();
+                //     $tab_width = $this.find('li').first().outerWidth();
+                //     if ($index < 0) {
+                //         $index = 0;
+                //     }
+                //     if ($tab_width !== 0 && $tabs_width !== 0) {
+                //         $indicator.css({"right": $tabs_width - (($index + 1) * $tab_width)});
+                //         $indicator.css({"left": $index * $tab_width});
+                //     }
+                // });
 
                 // Hide the remaining content
                 $links.not($active).each(function () {

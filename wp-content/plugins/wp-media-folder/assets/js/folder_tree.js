@@ -489,6 +489,21 @@ var wpmfFoldersTreeModule = void 0;
                 if ($(e.target).hasClass('wpmf-arrow') || $(e.target).hasClass('wpmf-tree-checkbox')) {
                     return;
                 }
+                // Set cookie filter tag
+                var this_url = new URL(location.href);
+                var get_taxonomy = this_url.searchParams.get("taxonomy");
+                var get_term = this_url.searchParams.get("term");
+                var get_wpmf_tag = this_url.searchParams.get("wpmf_tag");
+                var wpmf_tag = 0;
+                if ((get_taxonomy && get_term && get_taxonomy == 'wpmf_tag') || get_wpmf_tag) {
+                    if (get_term) {
+                        wpmf_tag = get_term;
+                    }
+                    if (get_wpmf_tag) {
+                        wpmf_tag = get_wpmf_tag;
+                    }
+                    wpmfFoldersModule.setCookie('wpmf_tag', wpmf_tag, 365);
+                }
                 // single click
                 var id = $(this).data('id');
                 if (parseInt(id) !== parseInt(wpmfFoldersModule.last_selected_folder)) {

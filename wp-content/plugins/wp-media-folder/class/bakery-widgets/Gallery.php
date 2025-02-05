@@ -55,15 +55,15 @@ if (class_exists('WPBakeryShortCode')) {
                     'description' => esc_html__('Responsive image gallery with themes', 'wpmf'),
                     'base' => 'vc_wpmf_gallery',
                     'category' => 'JoomUnited',
-                    'icon' => WPMF_PLUGIN_URL . '/assets/images/gallery-bakery.svg',
+                    'icon' => WPMF_PLUGIN_URL . 'assets/images/gallery-bakery.svg',
                     'front_enqueue_js' => array(
                         WPMF_PLUGIN_URL . 'assets/js/slick/slick.min.js',
-                        WPMF_PLUGIN_URL . '/assets/js/vc_front.js'
+                        WPMF_PLUGIN_URL . 'assets/js/vc_front.js'
                     ),
                     'front_enqueue_css' => array(
                         WPMF_PLUGIN_URL . 'assets/js/slick/slick.css',
                         WPMF_PLUGIN_URL . 'assets/js/slick/slick-theme.css',
-                        WPMF_PLUGIN_URL . '/assets/css/display-gallery/style-display-gallery.css',
+                        WPMF_PLUGIN_URL . 'assets/css/display-gallery/style-display-gallery.css',
                     ),
                     'params' => array(
                         array(

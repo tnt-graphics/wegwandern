@@ -542,7 +542,7 @@ function wpmfFusionElementGallery()
 
     wp_enqueue_style(
         'wpmf-avada-style',
-        WPMF_PLUGIN_URL . '/assets/css/avada_style.css',
+        WPMF_PLUGIN_URL . 'assets/css/avada_style.css',
         array(),
         WPMF_VERSION
     );

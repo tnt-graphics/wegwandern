@@ -97,10 +97,15 @@ var wpmfReplaceModule;
                                 $('#thumbnail-head-' + attachmentID + ' img').attr('src', old_url + '?ver=' + n);
                             } else {
                                 var src_thumbnail = $thumb.attr('src');
-                                $thumb.attr('src', src_thumbnail + '?ver=' + n);
                                 var $img = $('.attachment-details').find('.thumbnail img');
                                 var src_detail = $img.attr('src');
-                                $img.attr('src', src_detail + '?ver=' + n);
+                                if (ob.cloud_file_type === 'google_drive' || ob.cloud_file_type === 'onedrive_business' || ob.cloud_file_type === 'nextcloud') {
+                                    $thumb.attr('src', src_thumbnail + '&ver=' + n);
+                                    $img.attr('src', src_detail + '&ver=' + n);
+                                } else {
+                                    $thumb.attr('src', src_thumbnail + '?ver=' + n);
+                                    $img.attr('src', src_detail + '?ver=' + n);
+                                }
                                 /* clear cache img */
                                 wpmfReplaceModule.forceImgReload(src_thumbnail, false, null, false);
                                 wpmfReplaceModule.forceImgReload(src_detail, false, null, false);
@@ -253,6 +258,49 @@ var wpmfReplaceModule;
     };
 
     $(document).ready(function () {
+        if (wpmfParams.vars.wpmf_pagenow === 'upload.php' && typeof wpmfParams.vars.override !== 'undefined' && parseInt(wpmfParams.vars.override) === 1) {
+            // add Replace button on list mode
+            $('.wpmf-action-attachment').each(function(i, obj) {
+                const id = $(this).attr('data-id');
+                const form_replace = document.createElement('div');
+                var this_url = new URL(location.href);
+                form_replace.innerHTML = 
+                `<form id="wpmf_form_upload_` + id + `" method="post" class="wpmf_form_upload" data-id="` + id + `" action="` + wpmfParams.vars.ajaxurl + `" enctype="multipart/form-data">
+                    <input type="hidden" name="wpmf_nonce" value="` + wpmfParams.vars.wpmf_nonce + `">
+                    <input class="hide" type="file" name="wpmf_replace_file" id="wpmf_upload_input_version_` + id +`" style="display: none"><input type="button" value="` + wpmfParams.l18n.replace + `" class="button-primary wpmf_submit_upload" data-id="` + id + `"/>
+                    <input type="hidden" name="mode_list" value="1">
+                    <input type="hidden" name="this_url" value="` + this_url + `">
+                    <input type="hidden" name="action" value="wpmf_replace_file">
+                    <input type="hidden" name="post_selected" value="` + id + `">
+                </form>`;
+                obj.appendChild(form_replace);
+            });
+
+            // select file replace
+            $('.wpmf-action-attachment .wpmf_submit_upload').off('click').on('click', function (event) {
+                var id = $(this).attr('data-id');
+                if (id) {
+                    var element_input_upload = '#wpmf_upload_input_version_' + id;
+                    $(element_input_upload).click();
+                    /* submit form upload */
+                    $(element_input_upload).off('change').on('change', function (event) {
+                        var form_submit = '#wpmf_form_upload_' + id;
+                        $(form_submit).submit();
+                    });
+                }
+            });
+
+            // show notification when replace file
+            var msgReplaceFile = wpmfFoldersModule.getCookie('msgReplaceFile_' + wpmf.vars.host);
+            if (msgReplaceFile) {
+                wpmfSnackbarModule.show({
+                    id: 'replace_file',
+                    content: decodeURIComponent(msgReplaceFile),
+                });
+                wpmfFoldersModule.setCookie('msgReplaceFile_' + wpmf.vars.host, '', 365);
+            }
+        }
+        
         if (wpmfParams.vars.wpmf_pagenow === 'post.php') {
             if (!$('.wpmf_replace_btn').length) {
                 $('.wp_attachment_image').append('<p><input type="button" value="'+ wpmfParams.l18n.replace +'" class="button-primary wpmf_replace_btn"></p>');

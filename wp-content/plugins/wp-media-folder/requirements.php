@@ -163,7 +163,7 @@ class JUCheckRequirements
             if (!function_exists('get_plugin_data')) {
                 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
             }
-            $addonData = get_plugin_data(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . self::$path, false);
+            $addonData = get_plugin_data(WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . self::$path, false, false);
             self::$version = isset($addonData['Version']) ? $addonData['Version'] : null;
         }
 
@@ -201,7 +201,7 @@ class JUCheckRequirements
                         }
                         /* translators: Plugins name and requirement module name */
                         // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                        $message = __('<strong>%s</strong> requires php extension <strong>%s</strong> installed.' . $additionsMessage, self::$namedomain);
+                        $message = '<strong>%s</strong> requires php extension <strong>%s</strong> installed.' . $additionsMessage;
                         self::addText(
                             $type,
                             sprintf(strip_tags($message, '<strong>'), self::$name, $module)
@@ -228,7 +228,7 @@ class JUCheckRequirements
                     }
                     /* translators: Plugins name and requirement class name */
                     // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                    $message = __('<strong>%s</strong> requires php class <strong>%s</strong> to be enable.' . $additionsMessage, self::$namedomain);
+                    $message = '<strong>%s</strong> requires php class <strong>%s</strong> to be enable.' . $additionsMessage;
                     self::addText(
                         $type,
                         sprintf(strip_tags($message, '<strong>'), self::$name, $class)
@@ -254,7 +254,7 @@ class JUCheckRequirements
                     }
                     /* translators: Plugins name and requirement function name */
                     // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                    $message = __('<strong>%s</strong> requires php function <strong>%s</strong> to be enable.' . $additionsMessage, self::$namedomain);
+                    $message = '<strong>%s</strong> requires php function <strong>%s</strong> to be enable.' . $additionsMessage;
                     self::addText(
                         $type,
                         sprintf(strip_tags($message, '<strong>'), self::$name, $function)
@@ -274,7 +274,7 @@ class JUCheckRequirements
             if (version_compare(PHP_VERSION, self::$requirePhpVersion, '<')) {
                 /* translators: Plugins name and version */
                 // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                $message = __('<strong>%1$s</strong> need at least PHP %2$s version, please update php before installing the plugin.', self::$namedomain);
+                $message = '<strong>%1$s</strong> need at least PHP %2$s version, please update php before installing the plugin.';
                 self::addText(
                     'error',
                     sprintf(strip_tags($message, '<strong>'), self::$name, self::$requirePhpVersion)
@@ -300,7 +300,7 @@ class JUCheckRequirements
                     if (!is_plugin_active($plugin['path'])) {
                         /* translators: Plugins name and plugin requirement name */
                         // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                        $message = __('<strong>%1$s</strong> requires <strong>%2$s</strong> plugin to be activated.', self::$namedomain);
+                        $message = '<strong>%1$s</strong> requires <strong>%2$s</strong> plugin to be activated.';
                         self::addText(
                             isset($plugin['type']) ? $plugin['type'] : 'error',
                             sprintf(strip_tags($message, '<strong>'), self::$name, $plugin['name'])
@@ -311,13 +311,13 @@ class JUCheckRequirements
                             // Check minimum of require plugin version if set
                             if (isset($plugin['requireVersion']) && $plugin['requireVersion'] !== '') {
                                 $requireVersion = $plugin['requireVersion'];
-                                $addonData = get_plugin_data($pluginPath, false);
+                                $addonData = get_plugin_data($pluginPath, false, false);
                                 $installedVersion = (isset($addonData['Version']) && strpos($addonData['Version'], '{{version') === false) ? $addonData['Version'] : null;
                                 if ($installedVersion !== null) {
                                     if (self::versionCompare((string) $installedVersion, '<', (string) $requireVersion)) {
                                         /* translators: Plugins name and requirement function name */
                                         // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                                        $message = __('<strong>%1$s %2$s</strong> requires at least <strong>%3$s %4$s</strong>.', self::$namedomain);
+                                        $message = '<strong>%1$s %2$s</strong> requires at least <strong>%3$s %4$s</strong>.';
                                         self::addText(
                                             'error',
                                             sprintf(strip_tags($message, '<strong>'), self::$name, self::$version, $plugin['name'], $requireVersion)
@@ -356,13 +356,13 @@ class JUCheckRequirements
                 if (function_exists('get_plugin_data')) {
                     $pluginPath = WP_PLUGIN_DIR . DIRECTORY_SEPARATOR . $addonPath;
                     if (file_exists($pluginPath)) {
-                        $addonData = get_plugin_data($pluginPath, false);
+                        $addonData = get_plugin_data($pluginPath, false, false);
                         $addonVersion = (isset($addonData['Version']) && strpos($addonData['Version'], '{{version') === false) ? $addonData['Version'] : null;
                         if ($addonVersion !== null) {
                             if (self::versionCompare($addonVersion, '<', $requireVersion)) {
                                 /* translators: Plugins name and requirement function name */
                                 // phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralDomain,WordPress.WP.I18n.NonSingularStringLiteralText
-                                $message = __('Minimum required version of <strong>%1$s is %2$s</strong> to work with <strong>%3$s %4$s</strong>. Please update the plugin automatically or manually by downloading the latest version from JoomUnited website.', self::$namedomain);
+                                $message = 'Minimum required version of <strong>%1$s is %2$s</strong> to work with <strong>%3$s %4$s</strong>. Please update the plugin automatically or manually by downloading the latest version from JoomUnited website.';
                                 self::addText(
                                     'warning',
                                     sprintf(strip_tags($message, '<strong>'), $addonData['Name'], $requireVersion, self::$name, self::$version)

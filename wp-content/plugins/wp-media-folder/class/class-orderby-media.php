@@ -302,6 +302,11 @@ class WpmfOrderbyMedia
         $columns['wpmf_size']     = __('Size', 'wpmf');
         $columns['wpmf_filetype'] = __('File type', 'wpmf');
         $columns['wpmf_iptc'] = __('IPTC Meta', 'wpmf');
+        $option_override  = get_option('wpmf_option_override');
+        $option_duplicate  = get_option('wpmf_option_duplicate');
+        if ($option_override || $option_duplicate) {
+            $columns['wpmf_action'] = __('Actions', 'wpmf');
+        }
         return $columns;
     }
 
@@ -398,6 +403,10 @@ class WpmfOrderbyMedia
                 }
                 // phpcs:ignore WordPress.Security.EscapeOutput -- Content already escaped in the method
                 echo $iptchtml;
+                break;
+            case 'wpmf_action':
+                $html = "<div class='wpmf-action-attachment' data-id='" . esc_attr($id) . "'></div>";
+                echo wp_kses($html, array('div'=> array('class' =>  array(), 'data-id' => array())));
                 break;
         }
     }

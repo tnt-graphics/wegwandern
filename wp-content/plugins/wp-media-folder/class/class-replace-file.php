@@ -27,9 +27,18 @@ class WpmfReplaceFile
      */
     public function replaceFile()
     {
-        if (empty($_POST['wpmf_nonce'])
-            || !wp_verify_nonce($_POST['wpmf_nonce'], 'wpmf_nonce')) {
-            die();
+        $msg = __('Can not replace this file', 'wpmf');
+        $parse_url = parse_url(site_url());
+        $host = md5($parse_url['host']);
+
+        if (empty($_POST['wpmf_nonce']) || !wp_verify_nonce($_POST['wpmf_nonce'], 'wpmf_nonce')) {
+            if (isset($_POST['mode_list'])) {
+                setcookie('msgReplaceFile_' . $host, $msg, time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                header('Location: ' . $_POST['this_url']);
+                die();
+            } else {
+                die();
+            }
         }
 
         /**
@@ -44,11 +53,22 @@ class WpmfReplaceFile
          */
         $wpmf_capability = apply_filters('wpmf_user_can', current_user_can('edit_posts'), 'replace_file');
         if (!$wpmf_capability) {
-            wp_send_json(false);
+            if (isset($_POST['mode_list'])) {
+                setcookie('msgReplaceFile_' . $host, $msg, time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                header('Location: ' . $_POST['this_url']);
+                die();
+            } else {
+                wp_send_json(false);
+            }
         }
         if (!empty($_FILES['wpmf_replace_file'])) {
             if (empty($_POST['post_selected'])) {
-                esc_html_e('Post empty', 'wpmf');
+                if (isset($_POST['mode_list'])) {
+                    setcookie('msgReplaceFile_' . $host, 'Post empty', time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                    header('Location: ' . $_POST['this_url']);
+                } else {
+                    esc_html_e('Post empty', 'wpmf');
+                }
                 die();
             }
 
@@ -67,31 +87,50 @@ class WpmfReplaceFile
                 $infopath['extension'] = 'jpg';
             }
             if ($new_filetype['ext'] !== $infopath['extension']) {
-                wp_send_json(
-                    array(
-                        'status' => false,
-                        'msg'    => __('To replace a media and keep the link to this media working,
-it must be in the same format, ie. jpg > jpg… Thanks!', 'wpmf')
-                    )
-                );
-            }
-
-            if ($_FILES['wpmf_replace_file']['error'] > 0) {
-                wp_send_json(
-                    array(
-                        'status' => false,
-                        'msg'    => $_FILES['wpmf_replace_file']['error']
-                    )
-                );
-            } else {
-                $uploadpath = wp_upload_dir();
-                if (!file_exists($filepath)) {
+                if (isset($_POST['mode_list'])) {
+                    setcookie('msgReplaceFile_' . $host, __('To replace a media and keep the link to this media working,
+                    it must be in the same format, ie. jpg > jpg… Thanks!', 'wpmf'), time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                    header('Location: ' . $_POST['this_url']);
+                    die();
+                } else {
                     wp_send_json(
                         array(
                             'status' => false,
-                            'msg'    => __('File doesn\'t exist', 'wpmf')
+                            'msg'    => __('To replace a media and keep the link to this media working,
+    it must be in the same format, ie. jpg > jpg… Thanks!', 'wpmf')
                         )
                     );
+                }
+            }
+
+            if ($_FILES['wpmf_replace_file']['error'] > 0) {
+                if (isset($_POST['mode_list'])) {
+                    setcookie('msgReplaceFile_' . $host, $_FILES['wpmf_replace_file']['error'], time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                    header('Location: ' . $_POST['this_url']);
+                    die();
+                } else {
+                    wp_send_json(
+                        array(
+                            'status' => false,
+                            'msg'    => $_FILES['wpmf_replace_file']['error']
+                        )
+                    );
+                }
+            } else {
+                $uploadpath = wp_upload_dir();
+                if (!file_exists($filepath)) {
+                    if (isset($_POST['mode_list'])) {
+                        setcookie('msgReplaceFile_' . $host, __('File doesn\'t exist', 'wpmf'), time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                        header('Location: ' . $_POST['this_url']);
+                        die();
+                    } else {
+                        wp_send_json(
+                            array(
+                                'status' => false,
+                                'msg'    => __('File doesn\'t exist', 'wpmf')
+                            )
+                        );
+                    }
                 }
 
                 wp_delete_file($filepath);
@@ -190,13 +229,31 @@ it must be in the same format, ie. jpg > jpg… Thanks!', 'wpmf')
                 if (in_array($infopath['extension'], $allowedImageTypes) && $infopath['extension'] !== 'pdf') {
                     $metadata   = wp_get_attachment_metadata($id);
                     $dimensions = $metadata['width'] . ' x ' . $metadata['height'];
-                    wp_send_json(array('status' => true, 'size' => $size, 'dimensions' => $dimensions));
+                    if (isset($_POST['mode_list'])) {
+                        setcookie('msgReplaceFile_' . $host, 'File replace!', time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                        header('Location: ' . $_POST['this_url']);
+                        die();
+                    } else {
+                        wp_send_json(array('status' => true, 'size' => $size, 'dimensions' => $dimensions));
+                    }
                 } else {
-                    wp_send_json(array('status' => true, 'size' => $size));
+                    if (isset($_POST['mode_list'])) {
+                        setcookie('msgReplaceFile_' . $host, 'File replaced!', time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                        header('Location: ' . $_POST['this_url']);
+                        die();
+                    } else {
+                        wp_send_json(array('status' => true, 'size' => $size));
+                    }
                 }
             }
         } else {
-            wp_send_json(array('status' => false, 'msg' => __('File doesn\'t exist', 'wpmf')));
+            if (isset($_POST['mode_list'])) {
+                setcookie('msgReplaceFile_' . $host, __('File doesn\'t exist', 'wpmf'), time() + (365 * 24 * 60 * 60), '/', COOKIE_DOMAIN);
+                header('Location: ' . $_POST['this_url']);
+                die();
+            } else {
+                wp_send_json(array('status' => false, 'msg' => __('File doesn\'t exist', 'wpmf')));
+            }
         }
     }
 

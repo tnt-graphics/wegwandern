@@ -83,6 +83,16 @@ foreach ($gallery_items as $item_id => $attachment) {
         $image_alt = $attachment->post_title;
     }
     $img_tags = get_post_meta($attachment->ID, 'wpmf_img_tags', true);
+    $terms = wp_get_post_terms($attachment->ID, 'wpmf_tag');
+    if ($terms) {
+        $array_img_tags = array();
+        if ($img_tags) {
+            $array_img_tags = explode(',', $img_tags);
+        }
+        $img_tags_media = array_column($terms, 'name');
+        $all_img_tags = array_unique(array_merge($array_img_tags, $img_tags_media));
+        $img_tags = implode(',', $all_img_tags);
+    }
     $link_target = get_post_meta($attachment->ID, '_gallery_link_target', true);
     $custom_link = get_post_meta($attachment->ID, _WPMF_GALLERY_PREFIX . 'custom_image_link', true);
     $downloads = $this->wpmfGalleryGetDownloadLink($attachment->ID);

@@ -35,7 +35,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
                 echo '<div class="btn_wpmf_saves"><div class="ggd-connector-button"></div></div>';
             } else {
                 echo '<div class="btn_wpmf_saves"><div class="ggd-connector-button"></div></div>';
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
             }
         }
         ?>
@@ -47,7 +47,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php
@@ -99,7 +99,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
                 echo '<div class="btn_wpmf_saves"><div class="gpt-connector-button"></div></div>';
             } else {
                 echo '<div class="btn_wpmf_saves"><div class="gpt-connector-button"></div></div>';
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
             }
         }
         ?>
@@ -111,7 +111,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php
@@ -168,7 +168,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
                 echo '<div class="btn_wpmf_saves"><div class="dropbox-connector-button"></div></div>';
             } else {
                 echo '<div class="btn_wpmf_saves"><div class="dropbox-connector-button"></div></div>';
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
             }
         }
         ?>
@@ -180,7 +180,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php
@@ -204,7 +204,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
     <div class="wpmf_width_100 p-tb-20 wpmf_left top_bar">
         <h1 class="wpmf_left"><?php esc_html_e('OneDrive Personal', 'wpmf') ?></h1>
         <?php
-        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
         ?>
     </div>
 
@@ -215,7 +215,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php
@@ -253,7 +253,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
     <div class="wpmf_width_100 p-tb-20 wpmf_left top_bar">
         <h1 class="wpmf_left"><?php esc_html_e('Nextcloud', 'wpmf') ?></h1>
         <?php
-        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
         ?>
     </div>
 
@@ -264,7 +264,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php
@@ -312,7 +312,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
         </h1>
         <?php
-        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
         ?>
     </div>
     <div class="content-box content-wpmf-general">
@@ -322,7 +322,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php
@@ -346,7 +346,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
     <div class="wpmf_width_100 p-tb-20 wpmf_left top_bar">
         <h1 class="wpmf_left"><?php esc_html_e('Synchronization', 'wpmf') ?></h1>
         <?php
-        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
         ?>
     </div>
     <div class="content-box content-wpmf-general">
@@ -356,7 +356,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
             ?>
             <div class="wpmf_width_100 top_bar saved_infos" style="padding: 20px 0">
                 <?php
-                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                 ?>
             </div>
             <?php

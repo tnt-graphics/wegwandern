@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/install-wizard/handler-wizard.php');
+require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/install-wizard/handler-wizard.php');
 /**
  * Class WpmfInstallWizard
  */
@@ -95,9 +95,9 @@ class WpmfInstallWizard
         // Render
         $this->setHeader();
         if (!isset($_GET['step'])) {
-            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/install-wizard/content/viewWizard.php');
+            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/install-wizard/content/viewWizard.php');
         } elseif (isset($_GET['step']) && $_GET['step'] === 'wizard_done') {
-            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/install-wizard/content/viewDone.php');
+            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/install-wizard/content/viewDone.php');
         } else {
             $this->setMenu();
             $this->setContent();
@@ -185,7 +185,7 @@ class WpmfInstallWizard
     {
         echo '<div class="">';
         if (!empty($this->steps[$this->current_step]['view'])) {
-            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/install-wizard/content/' . $this->steps[$this->current_step]['view'] . '.php');
+            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/install-wizard/content/' . $this->steps[$this->current_step]['view'] . '.php');
         }
         echo '</div>';
     }

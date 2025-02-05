@@ -228,7 +228,7 @@ $onedrive_business_config = get_option('_wpmfAddon_onedrive_business_config');
                             <div class="wpmf_width_100 top_bar">
                                 <h1><?php echo esc_html($ju_tab['title']) ?></h1>
                                 <?php
-                                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+                                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
                                 ?>
                             </div>
                         <?php endif; ?>
@@ -239,16 +239,16 @@ $onedrive_business_config = get_option('_wpmfAddon_onedrive_business_config');
                             ?>
                             <div class="wpmf_width_100 top_bar saved_infos">
                                 <?php
-                                require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/saved_info.php';
+                                require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/saved_info.php';
                                 ?>
                             </div>
                             <?php
                         }
                         ?>
 
-                        <?php include_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/' . $ju_tab['id'] . '.php'); ?>
+                        <?php include_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/' . $ju_tab['id'] . '.php'); ?>
                         <?php
-                        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+                        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
                         ?>
                     </div>
                 <?php endforeach; ?>

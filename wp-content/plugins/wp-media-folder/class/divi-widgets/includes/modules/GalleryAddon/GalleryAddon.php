@@ -72,15 +72,25 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
             )
         );
 
-        if (count($galleries) < 100) {
-            $galleries = wpmfParentSort($galleries);
+
+        $galleries = wpmfParentSort($galleries);
+
+        $term_ids = array();
+        foreach ($galleries as $gallery) {
+            $term_ids[] = (int)$gallery->term_id;
+        }
+        $galleries_types = array();
+        if (file_exists(WPMF_GALLERY_ADDON_PLUGIN_DIR . 'admin/class/helper.php')) {
+            require_once WPMF_GALLERY_ADDON_PLUGIN_DIR . 'admin/class/helper.php';
+            $WpmfGlrAddonHelper = new WpmfGlrAddonHelper();
+            $galleries_types = $WpmfGlrAddonHelper->getGalleriesType($term_ids);
         }
 
         $galleries_list = array();
         $galleries_list[0] = esc_html__('WP Media Folder Gallery', 'wpmf');
         $i = 0;
         foreach ($galleries as $gallery) {
-            $gallery_type = get_term_meta((int)$gallery->term_id, 'gallery_type', true);
+            $gallery_type = isset($galleries_types[(int)$gallery->term_id])? $galleries_types[(int)$gallery->term_id] : '' ;
             if (!empty($gallery_type) && ($gallery_type === 'photographer' || $gallery_type === 'archive')) {
                 continue;
             }
@@ -89,13 +99,14 @@ class WpmfGalleryAddonDivi extends ET_Builder_Module
             $i++;
         }
 
+        //List photographer galleries
+        $root = get_term_by('slug', 'photographer-gallery', WPMF_GALLERY_ADDON_TAXO);
         foreach ($galleries as $gallery) {
-            $gallery_type = get_term_meta((int)$gallery->term_id, 'gallery_type', true);
+            $gallery_type = isset($galleries_types[(int)$gallery->term_id])? $galleries_types[(int)$gallery->term_id] : '' ;
             if (!empty($gallery_type) && $gallery_type === 'archive') {
                 continue;
             }
             if (!empty($gallery_type) && $gallery_type === 'photographer') {
-                $root = get_term_by('slug', 'photographer-gallery', WPMF_GALLERY_ADDON_TAXO);
                 if ((int)$root->term_id === (int)$gallery->term_id) {
                     $galleries_list[$i . '-' . $gallery->term_id] = esc_html__('Photographer Gallery', 'wpmf');
                 } else {

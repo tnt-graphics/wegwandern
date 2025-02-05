@@ -4,7 +4,7 @@
   Plugin URI: http://www.joomunited.com
   Description: WP media Folder is a WordPress plugin that enhance the WordPress media manager by adding a folder manager inside.
   Author: Joomunited
-  Version: 5.9.5
+  Version: 6.0.1
   Update URI: https://www.joomunited.com/juupdater_files/wp-media-folder.json
   Author URI: http://www.joomunited.com
   Text Domain: wpmf
@@ -79,9 +79,11 @@ if (!defined('WPMF_TAXO')) {
 define('_WPMF_GALLERY_PREFIX', '_wpmf_gallery_');
 define('WPMF_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPMF_DOMAIN', 'wpmf');
-define('WPMF_VERSION', '5.9.5');
+define('WPMF_VERSION', '6.0.1');
 define('WPMF_HIDE_USER_MEDIA_FOLDER_ROOT', true);
 
+// disable warning function _load_textdomain_just_in_time was called incorrectly
+add_filter('doing_it_wrong_trigger_error', '__return_false');
 include_once(ABSPATH . 'wp-admin/includes/plugin.php');
 //Include the jutranslation helpers
 include_once('jutranslation' . DIRECTORY_SEPARATOR . 'jutranslation.php');
@@ -243,15 +245,17 @@ if (is_admin()) {
      * ***** DO NOT REMOVE *****
      * End translate for queue class
      */
-    $args = wpmfGetQueueOptions(false);
-    $wpmfQueue = call_user_func('\Joomunited\Queue\JuMainQueue::getInstance', 'wpmf');
-    $wpmfQueue->init($args);
-    $folder_options = get_option('wpmf_queue_options');
-    if (!empty($folder_options['enable_physical_folders'])) {
-        require_once WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/physical-folder' . DIRECTORY_SEPARATOR . 'wpmf.php';
-        new JUQueueActions();
-        require_once WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/physical-folder' . DIRECTORY_SEPARATOR . 'helper.php';
-    }
+    add_action('init', function () {
+        $args = wpmfGetQueueOptions(false);
+        $wpmfQueue = call_user_func('\Joomunited\Queue\JuMainQueue::getInstance', 'wpmf');
+        $wpmfQueue->init($args);
+        $folder_options = get_option('wpmf_queue_options');
+        if (!empty($folder_options['enable_physical_folders'])) {
+            require_once WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/physical-folder' . DIRECTORY_SEPARATOR . 'wpmf.php';
+            new JUQueueActions();
+            require_once WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/physical-folder' . DIRECTORY_SEPARATOR . 'helper.php';
+        }
+    });
 
     add_action(
         'wpmf_before_delete_folder',
@@ -284,50 +288,66 @@ if (is_admin()) {
             }
         }
     }, 10);
+    add_action('wpmf_delete_attachment', function ($id) {
+        $queue_id = get_post_meta($id, 'wpmf_sync_queue', true);
+        $wpmfQueue = \Joomunited\Queue\JuMainQueue::getInstance('wpmf');
+        if (!empty($queue_id)) {
+            if (is_array($queue_id)) {
+                foreach ($queue_id as $queueID) {
+                    $wpmfQueue->deleteQueue($queueID);
+                }
+            } else {
+                $wpmfQueue->deleteQueue($queue_id);
+            }
+        }
+    }, 10);
 }
 
-if (!class_exists('\Joomunited\WPMF\JUCheckRequirements')) {
-    require_once(trailingslashit(dirname(__FILE__)) . 'requirements.php');
-}
-
-if (class_exists('\Joomunited\WPMF\JUCheckRequirements')) {
-    // Plugins name for translate
-    $args = array(
-        'plugin_name' => esc_html__('WP Media Folder', 'wpmf'),
-        'plugin_path' => wpmfGetPath(),
-        'plugin_textdomain' => 'wpmf',
-        'requirements' => array(
-            'php_version' => '5.6',
-            'php_modules' => array(
-                'curl' => 'warning'
-            ),
-            'functions' => array(
-                'gd_info' => 'warning'
-            ),
-            // Minimum addons version
-            'addons_version' => array(
-                'wpmfAddons' => '3.6.9',
-                'wpmfGalleryAddons' => '2.4.6'
-            )
-        ),
-    );
-    $wpmfCheck = call_user_func('\Joomunited\WPMF\JUCheckRequirements::init', $args);
-
-    if (!$wpmfCheck['success']) {
-        // Do not load anything more
-        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
-        unset($_GET['activate']);
-        return;
+add_action('init', function () {
+    if (!class_exists('\Joomunited\WPMF\JUCheckRequirements')) {
+        require_once(trailingslashit(dirname(__FILE__)) . 'requirements.php');
     }
 
-    if (isset($wpmfCheck) && !empty($wpmfCheck['load'])) {
-        foreach ($wpmfCheck['load'] as $addonName) {
-            if (function_exists($addonName . 'Init')) {
-                call_user_func($addonName . 'Init');
+    if (class_exists('\Joomunited\WPMF\JUCheckRequirements')) {
+        // Plugins name for translate
+        $args = array(
+            'plugin_name' => esc_html__('WP Media Folder', 'wpmf'),
+            'plugin_path' => wpmfGetPath(),
+            'plugin_textdomain' => 'wpmf',
+            'requirements' => array(
+                'php_version' => '7.4',
+                'php_modules' => array(
+                    'curl' => 'warning'
+                ),
+                'functions' => array(
+                    'gd_info' => 'warning'
+                ),
+                // Minimum addons version
+                'addons_version' => array(
+                    'wpmfAddons' => '3.6.9',
+                    'wpmfGalleryAddons' => '2.4.6'
+                )
+            ),
+        );
+        $wpmfCheck = call_user_func('\Joomunited\WPMF\JUCheckRequirements::init', $args);
+
+        if (!$wpmfCheck['success']) {
+            // Do not load anything more
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+            unset($_GET['activate']);
+            return;
+        }
+
+        if (isset($wpmfCheck) && !empty($wpmfCheck['load'])) {
+            foreach ($wpmfCheck['load'] as $addonName) {
+                if (function_exists($addonName . 'Init')) {
+                    call_user_func($addonName . 'Init');
+                }
             }
         }
     }
-}
+});
+
 
 /**
  * Get queue options
@@ -472,98 +492,20 @@ function wpmfUnInstall()
         global $wpdb;
         $wpdb->query('DROP TABLE IF EXISTS ' . $wpdb->prefix . 'wpmf_s3_queue');
 
-        // delete option
+        // delete all options with prefix 'wpmf_';
+        $wpdb->query('DELETE FROM '.$wpdb->options. " WHERE option_name LIKE '%wpmf_%'");
+        // delete all options with prefix '_wpmfAddon_';
+        $wpdb->query('DELETE FROM '.$wpdb->options. " WHERE option_name LIKE '%_wpmfAddon_%'");
+
+        // delete other options
         $options_list = array(
-            'wpmf_addon_version',
-            'wpmf_folder_root_id',
-            'wpmf_update_count',
-            'wpmf_version',
-            'wpmf_gallery_image_size_value',
-            'wpmf_padding_masonry',
-            'wpmf_padding_portfolio',
-            'wpmf_usegellery',
-            'wpmf_useorder',
-            'wpmf_create_folder',
-            'wpmf_option_override',
-            'wpmf_option_duplicate',
-            'wpmf_active_media',
-            'wpmf_folder_option2',
-            'wpmf_usegellery_lightbox',
-            'wpmf_media_rename',
-            'wpmf_patern_rename',
-            'wpmf_rename_number',
-            'wpmf_option_media_remove',
-            'wpmf_default_dimension',
-            'wpmf_selected_dimension',
-            'wpmf_weight_default',
-            'wpmf_weight_selected',
-            'wpmf_color_singlefile',
-            'wpmf_option_singlefile',
-            'wpmf_option_sync_media',
-            'wpmf_option_sync_media_external',
-            'wpmf_list_sync_media',
-            'wpmf_time_sync',
-            'wpmf_lastRun_sync',
-            'wpmf_slider_animation',
-            'wpmf_option_mediafolder',
-            'wpmf_option_countfiles',
-            'wpmf_option_lightboximage',
-            'wpmf_option_hoverimg',
-            'wpmf_options_format_title',
-            'wpmf_image_watermark_apply',
-            'wpmf_option_image_watermark',
-            'wpmf_watermark_position',
-            'wpmf_watermark_image',
-            'wpmf_watermark_image_id',
-            'wpmf_gallery_settings',
+            '_wpmf_import_notice_flag',
             '_wpmf_import_order_notice_flag',
-            '_wpmfAddon_cloud_config',
-            '_wpmfAddon_dropbox_config',
-            'wpmf_onedrive_business',
-            '_wpmfAddon_aws3_config',
-            'wpmf_gallery_img_per_page',
+            '_wpmf_import_size_notice_flag',
+            '_wpmf_activation_redirect',
             'wpmfgrl_relationships_media',
             'wpmfgrl_relationships',
-            'wpmf_galleries',
-            'wpmf_import_nextgen_gallery',
-            'wpmf_onedrive_business_files',
-            'wpmf_odv_business_files',
-            'wpmf_odv_allfiles',
-            'wpmf_google_folders',
-            'wpmf_google_allfiles',
-            'wpmf_dropbox_allfiles',
-            'wpmf_dropbox_folders',
-            'wpmf_odv_folders',
-            'wpmf_odv_business_folders',
-            'wpmf_odv_business_allfiles',
-            '_wpmfAddon_onedrive_business_config',
-            'wpmf_onedrive_notice',
-            '_wpmfAddon_onedrive_config',
-            'wpmf_google_folder_id',
-            'wpmf_dropbox_folder_id',
-            'wpmf_odv_business_folder_id',
-            'wpmf_odv_folder_id',
-            'wpmf_cloud_connection_notice',
-            'wp-media-folder-addon-tables',
-            '_wpmf_activation_redirect',
-            'wpmf_use_taxonomy',
-            'wpmf_cloud_time_last_sync',
-            'wpmf_dropbox_attachments',
-            'wpmf_dropbox_folders',
-            'wpmf_dropbox_allfiles',
-            'wpmf_google_attachments',
-            'wpmf_google_folders',
-            'wpmf_google_allfiles',
-            'wpmf_odv_attachments',
-            'wpmf_odv_folders',
-            'wpmf_odv_allfiles',
-            'wpmf_odv_business_attachments',
-            'wpmf_odv_business_folders',
-            'wpmf_odv_business_allfiles',
-            'wpmf_cloud_name_syncing',
-            'wpmf_ftp_sync_time',
-            'wpmf_ftp_sync_token',
-            'wpmf_settings'
+            'wp-media-folder-addon-tables'
         );
 
         foreach ($options_list as $option) {
@@ -966,6 +908,7 @@ function wpmfGetOption($option_name)
 
 require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-helper.php');
 $frontend = get_option('wpmf_option_mediafolder');
+
 if (!empty($frontend) || is_admin()) {
     global $wpmfwatermark;
     require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-main.php');
@@ -1200,7 +1143,7 @@ function wpmfVcBeforeInit()
     );
     wp_enqueue_style(
         'wpmf-bakery-display-gallery-style',
-        WPMF_PLUGIN_URL . '/assets/css/display-gallery/style-display-gallery.css',
+        WPMF_PLUGIN_URL . 'assets/css/display-gallery/style-display-gallery.css',
         array(),
         WPMF_VERSION
     );
@@ -1312,7 +1255,7 @@ function wpmfAvadaEnqueueSeparateLiveScripts()
     $pdf = new WpmfPdfEmbed;
     $pdf->registerScript();
     $pdf->enqueue();
-    wp_enqueue_script('wpmf_fusion_view_element', WPMF_PLUGIN_URL . '/class/avada-widgets/js/avada.js', array(), WPMF_VERSION, true);
+    wp_enqueue_script('wpmf_fusion_view_element', WPMF_PLUGIN_URL . 'class/avada-widgets/js/avada.js', array(), WPMF_VERSION, true);
 }
 
 $active_media = get_option('wpmf_active_media');
@@ -1328,8 +1271,10 @@ if (isset($enable_gallery) && (int) $enable_gallery === 1) {
 }
 
 if (is_admin()) {
-    require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-wp-folder-option.php');
-    new WpmfMediaFolderOption;
+    add_action('init', function () {
+        require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-wp-folder-option.php');
+        new WpmfMediaFolderOption;
+    });
 }
 
 $wpmf_option_singlefile = get_option('wpmf_option_singlefile');
@@ -1347,12 +1292,14 @@ if (isset($wpmf_option_lightboximage) && (int) $wpmf_option_lightboximage === 1)
 require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-pdf-embed.php');
 new WpmfPdfEmbed();
 
-//  load gif file on page load or not
-$load_gif = wpmfGetOption('load_gif');
-if (isset($load_gif) && (int) $load_gif === 0) {
-    require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-load-gif.php');
-    new WpmfLoadGif();
-}
+add_action('init', function () {
+    //  load gif file on page load or not
+    $load_gif = wpmfGetOption('load_gif');
+    if (isset($load_gif) && (int) $load_gif === 0) {
+        require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-load-gif.php');
+        new WpmfLoadGif();
+    }
+});
 
 require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-folder-post-type.php');
 new WpmfMediaFolderPostType();
@@ -1712,10 +1659,13 @@ function wpmfRenderVideoIcon($attachment_id)
     return '';
 }
 
-$remote_video = wpmfGetOption('hide_remote_video');
-if ($remote_video) {
-    add_filter('the_content', 'wpmfFindImages');
-}
+add_action('init', function () {
+    $remote_video = wpmfGetOption('hide_remote_video');
+    if ($remote_video) {
+        add_filter('the_content', 'wpmfFindImages');
+    }
+});
+
 
 /**
  * Find image in content
@@ -1726,13 +1676,20 @@ if ($remote_video) {
  */
 function wpmfFindImages($content)
 {
-    if (preg_match_all('/<img [^<>]+ \/>/i', $content, $matches)) {
+    if (!class_exists('DOMDocument')) {
+        return $content;
+    }
+    if (preg_match_all('/(<img[^>]+>)/i', $content, $matches)) {
         if (isset($matches[0]) && is_array($matches[0])) {
             foreach ($matches[0] as $img) {
                 $dom = new DOMDocument();
                 $dom->loadHTML($img, LIBXML_NOERROR);
-                $src = $dom->getElementsByTagName('img')->item(0)->getAttribute('src');
-                $type = $dom->getElementsByTagName('img')->item(0)->getAttribute('data-type');
+                $imgItem = $dom->getElementsByTagName('img')->item(0);
+                if (empty($imgItem)) {
+                    return $content;
+                }
+                $src = $imgItem->getAttribute('src');
+                $type = $imgItem->getAttribute('data-type');
                 if ($type === 'wpmfgalleryimg') {
                     return $content;
                 }
@@ -1776,7 +1733,7 @@ function wpmfFindImages($content)
             }
         }
     }
-    
+
     // otherwise returns the database content
     return $content;
 }
@@ -1955,7 +1912,7 @@ function wpmfDownloadFile()
                                 break;
                             case 'onedrive':
                                 require_once WPMFAD_PLUGIN_DIR . '/class/wpmfAddonOneDriveAdmin.php';
-                                $library = new WpmfAddonOneDriveBusinessAdmin;
+                                $library = new WpmfAddonOneDrive;
                                 $library->getContentFile($drive_id, 1);
                                 break;
                             case 'onedrive_business':
@@ -2025,5 +1982,77 @@ function wpmfDownloadFile()
                 }
             }
         }
+    }
+}
+
+/* Register wpmf_tag taxonomy */
+add_action('init', 'wpmfTagRegisterTaxonomy', 0);
+/**
+ * Register gallery taxonomy
+ *
+ * @return void
+ */
+function wpmfTagRegisterTaxonomy()
+{
+    if (!taxonomy_exists('wpmf_tag')) {
+        register_taxonomy(
+            'wpmf_tag',
+            'attachment',
+            array(
+                'hierarchical' => false,
+                'show_in_nav_menus' => false,
+                'show_admin_column' => true,
+                'show_ui' => true,
+                'public' => true,
+                'update_count_callback' => '_update_generic_term_count',
+                'labels' => array(
+                    'name' => __('Tags', 'wpmf'),
+                    'singular_name' => __('Tags', 'wpmf'),
+                    'menu_name' => __('Media Folder Tags', 'wpmf'),
+                    'all_items' => __('All Tags', 'wpmf'),
+                    'edit_item' => __('Edit Tag', 'wpmf'),
+                    'view_item' => __('View Tag', 'wpmf'),
+                    'update_item' => __('Update Tag', 'wpmf'),
+                    'add_new_item' => __('Add New Tag', 'wpmf'),
+                    'new_item_name' => __('New Tag Name', 'wpmf'),
+                    'parent_item' => __('Parent Tag', 'wpmf'),
+                    'parent_item_colon' => __('Parent Tag:', 'wpmf'),
+                    'search_items' => __('Search Tag', 'wpmf'),
+                )
+            )
+        );
+    }
+}
+
+if (class_exists('WooCommerce')) {
+    $option_image_watermark = get_option('wpmf_option_image_watermark');
+    $option_watermark_only_woo = get_option('wpmf_watermark_only_woo');
+    if (!empty($option_image_watermark) && (int) $option_image_watermark === 1 && !empty($option_watermark_only_woo) && (int) $option_watermark_only_woo === 1) {
+        add_action('woocommerce_new_product', 'wpmfCreateWatermarkAfterProductSave', 10, 1);
+        add_action('woocommerce_update_product', 'wpmfCreateWatermarkAfterProductSave', 10, 1);
+    }
+}
+
+/**
+ * Create watermark image after product creation or product update
+ *
+ * @param integer $product_id Current product ID.
+ *
+ * @return void
+ */
+function wpmfCreateWatermarkAfterProductSave($product_id)
+{
+    $product = wc_get_product($product_id);
+    $main_image_id = get_post_thumbnail_id($product_id);
+    $gallery_image_ids = $product->get_gallery_image_ids();
+
+    $all_image_ids = array_merge([$main_image_id], $gallery_image_ids);
+    
+    require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-image-watermark.php');
+    $wpmfwatermark = new WpmfWatermark();
+
+    foreach ($all_image_ids as $image_id) {
+        $metadata   = wp_get_attachment_metadata($image_id);
+        $wpmfwatermark->createWatermarkImage($metadata, $image_id, true);
     }
 }

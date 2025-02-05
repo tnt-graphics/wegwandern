@@ -131,6 +131,15 @@ function showDialog(options) {
         if (options.onLoaded)
             options.onLoaded();
     }, 1);
+
+    var this_url = new URL(location.href);
+    var get_post = this_url.searchParams.get("post");
+    if (get_post) {
+        var modal_dialog_remote_video = document.getElementById("wpmf-add-video-dialog");
+        if (modal_dialog_remote_video) {
+            modal_dialog_remote_video.setAttribute('style', 'z-index:999999999 !important');
+        }
+    }
 }
 
 function hideDialog(dialog, question = false, text = '') {

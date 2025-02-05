@@ -1126,6 +1126,7 @@ if (!class_exists('JuPluginInfo', false)) :
     /**
      * A container class for holding and transforming various plugin metadata.
      */
+    #[AllowDynamicProperties]
     class JuPluginInfo // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 

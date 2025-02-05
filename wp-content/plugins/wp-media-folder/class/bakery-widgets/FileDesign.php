@@ -30,9 +30,9 @@ if (class_exists('WPBakeryShortCode')) {
                     'description' => esc_html__('Display media download', 'wpmf'),
                     'base' => 'vc_sing_file',
                     'category' => 'JoomUnited',
-                    'icon' => WPMF_PLUGIN_URL . '/assets/images/file_design-bakery.svg',
-                    'admin_enqueue_js' => WPMF_PLUGIN_URL . '/assets/js/vc_script.js',
-                    'front_enqueue_js' => WPMF_PLUGIN_URL . '/assets/js/vc_script.js',
+                    'icon' => WPMF_PLUGIN_URL . 'assets/images/file_design-bakery.svg',
+                    'admin_enqueue_js' => WPMF_PLUGIN_URL . 'assets/js/vc_script.js',
+                    'front_enqueue_js' => WPMF_PLUGIN_URL . 'assets/js/vc_script.js',
                     'params' => array(
                         array(
                             'type' => 'wpmf_media',

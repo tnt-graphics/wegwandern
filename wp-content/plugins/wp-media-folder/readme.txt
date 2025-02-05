@@ -1,9 +1,9 @@
 === WP Media Folder ===
 Tags: media, folder
 Requires at least: 4.7.0
-Tested up to: 6.6
+Tested up to: 6.7
 Requires PHP: 5.6
-Stable tag: 5.9.5
+Stable tag: 6.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,45 @@ I can not tell more just watch our demo and please try it to make your own idea.
 Stop searching for an image through thousand of media, just navigate like you do on your desktop file manager.
 
 = Changelog = 
+
+= 6.0.1 =
+ * Fix : Cannot set feature image for post when creating a new post
+ * Fix : Column width issue in the list view of the media library
+
+= 6.0 =
+ * Add : Possibility to replace and duplicate file in the list view in media library
+
+= 5.9.14 =
+ * Fix : Update and synchronize the image tags between the media library and Media Folder Galleries
+
+= 5.9.13 =
+ * Add : Possibility to apply watermark for Woocommerce products only
+
+= 5.9.12 =
+ * Fix : Thumbnail display issue on file uploads in some cases
+ * Fix : Error physical folder upload
+
+= 5.9.11 =
+ * Fix : Disable warning _load_textdomain_just_in_time in WordPress 6.7
+ * Fix : Error when missing required PHP DOM extension
+
+= 5.9.10 =
+ * Fix : Upload file to wrong folder in specific case
+ * Fix : A PHP warning
+
+= 5.9.9 =
+ * Fix : Conflict with Woocomerce product listing in dashboard
+
+= 5.9.8 =
+ * Add : Create tags: Possibility to create tags for media files
+ * Add : Bulk add tags: You can add tags to multiple media files at once.
+ * Add : Filter by tag: Filter your media files by tag
+
+= 5.9.7 =
+ * Fix : Error while using Elementor theme builder
+
+= 5.9.6 =
+ * Add : Option to import files without subdirectories
 
 = 5.9.5 =
  * Fix : Upload image error at the 'Add new media' page
@@ -119,7 +158,7 @@ Stop searching for an image through thousand of media, just navigate like you do
 
 = 5.6.0 =
  * Add : Download a folder in the media library using right click
- * Add : Folder bulk selet and remove in folder tree
+ * Add : Folder bulk select and remove in folder tree
  * Add : New uploader styling and notifications
  * Add : Media download button in block editor improvement
  * Fix : Single file download style

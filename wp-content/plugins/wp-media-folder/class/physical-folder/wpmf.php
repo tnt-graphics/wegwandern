@@ -178,16 +178,18 @@ class JUQueueActions
                     );
                     JUQueueHelper::moveFile($datas);
                 }
-
-                if (isset($data['file'])) {
+                
+                if (isset($data['file']) && isset($destination) && $destination) {
                     $dirname = _wp_get_attachment_relative_path($data['file']);
                     if ($dirname) {
                         $dirname = trailingslashit($dirname);
                     }
-                    if ($dirname === '') {
-                        $data['file'] = $destination . '/' . $data['file'];
-                    } else {
-                        $data['file'] = str_replace($dirname, $destination . '/', $data['file']);
+                    if (isset($destination)) {
+                        if ($dirname === '') {
+                            $data['file'] = $destination . '/' . $data['file'];
+                        } else {
+                            $data['file'] = str_replace($dirname, $destination . '/', $data['file']);
+                        }
                     }
                 }
 

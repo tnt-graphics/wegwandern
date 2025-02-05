@@ -237,4 +237,117 @@ class WpmfFolderAccess
 
         return $parent;
     }
+
+    /**
+     * Delete folders created by the user
+     *
+     * @param integer $user_id User ID
+     *
+     * @return void
+     */
+    public static function deleteUserFolders($user_id)
+    {
+        global $wpdb;
+
+        // Get folders created by the user
+        $folders = $wpdb->get_results($wpdb->prepare(
+            'SELECT term_id FROM ' . $wpdb->terms . ' WHERE term_group = %d',
+            $user_id
+        ));
+
+        if (!empty($folders)) {
+            foreach ($folders as $folder) {
+                wp_delete_term($folder->term_id, WPMF_TAXO);
+            }
+        }
+    }
+
+    /**
+     * Delete folders created by deleted users
+     *
+     * @return void
+     */
+    public static function deleteFoldersOfDeletedUsers()
+    {
+        global $wpdb;
+
+        $wpmf_checkbox_tree = get_option('wpmf_checkbox_tree');
+        $parent = 0;
+        if (!empty($wpmf_checkbox_tree)) {
+            $current_parrent = get_term($wpmf_checkbox_tree, WPMF_TAXO);
+            if (!empty($current_parrent)) {
+                $parent = $wpmf_checkbox_tree;
+            }
+        }
+
+        $descendant_term_ids = get_term_children($parent, WPMF_TAXO);
+
+        if (empty($descendant_term_ids)) {
+            return;
+        }
+        $descendant_term_ids_str = implode(',', $descendant_term_ids);
+
+        $query = '
+            SELECT t.term_id, t.term_group 
+            FROM ' . $wpdb->terms . ' t
+            INNER JOIN ' . $wpdb->term_taxonomy . ' tt ON t.term_id = tt.term_id
+            WHERE tt.taxonomy = %s
+            AND t.term_group != 0
+            AND tt.term_id IN (' . $descendant_term_ids_str . ')
+        ';
+        
+        $folders = $wpdb->get_results($wpdb->prepare($query, WPMF_TAXO)); // phpcs:ignore
+
+        if (!empty($folders)) {
+            foreach ($folders as $folder) {
+                // Check if the user still exists
+                if (!get_user_by('ID', $folder->term_group)) {
+                    // If the user does not exist, delete the folder
+                    wp_delete_term($folder->term_id, WPMF_TAXO);
+                }
+            }
+        }
+    }
+
+    /**
+     * Add admin menu for deleting user folders
+     *
+     * @return void
+     */
+    public static function addDeleteUserFoldersMenu()
+    {
+        add_menu_page(
+            esc_html__('WPMF Delete Folders of Deleted Users', 'wpmf'),
+            esc_html__('WPMF Delete Folders', 'wpmf'),
+            'manage_options',
+            'wpmf-delete-user-folders',
+            array('WpmfFolderAccess', 'deleteUserFoldersPage')
+        );
+    }
+
+    /**
+     * Callback to render the admin page for deleting folders
+     *
+     * @return void
+     */
+    public static function deleteUserFoldersPage()
+    {
+        // Handle the form submission
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
+        if (isset($_POST['delete_folders'])) {
+            self::deleteFoldersOfDeletedUsers();
+            echo '<div class="updated"><p>' . esc_html__('All folders of deleted users have been removed.', 'wpmf') . '</p></div>';
+        }
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html__('Delete Folders of Deleted Users', 'wpmf'); ?></h1>
+            <form method="post" action="">
+                <input type="hidden" name="delete_folders" value="1" />
+                <p>
+                    <input type="submit" class="button-primary" value="<?php echo esc_attr__('Delete Folders', 'wpmf'); ?>" />
+                </p>
+            </form>
+        </div>
+        <?php
+    }
 }

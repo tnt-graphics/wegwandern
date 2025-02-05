@@ -138,30 +138,19 @@ class WpmfPdfEmbed
     }
 
     /**
-     * Render PDF embed
+     * Get url of pdf on cloud.
      *
-     * @param array $attrs Shortcode params
+     * @param integer $id  Attachment ID
+     * @param string  $url Link file
      *
      * @return string
      */
-    public function wpmfPdf($attrs)
+    public function getUrlOnCloud($id, $url)
     {
-        if (!empty($attrs['url'])) {
-            $url = $attrs['url'];
-            $title = basename($attrs['url']);
-        } else {
-            if (empty($attrs['id'])) {
-                return '';
-            }
-            $url = wp_get_attachment_url($attrs['id']);
-            $pdf = get_post($attrs['id']);
-            if (empty($pdf)) {
-                return '';
-            }
-
-            $cloud_type = get_post_meta((int)$attrs['id'], 'wpmf_drive_type', true);
-            $drive_id = get_post_meta((int)$attrs['id'], 'wpmf_drive_id', true);
-            $baseUrl = admin_url('admin-ajax.php');
+        $cloud_type = get_post_meta((int)$id, 'wpmf_drive_type', true);
+        $drive_id = get_post_meta((int)$id, 'wpmf_drive_id', true);
+        $baseUrl = admin_url('admin-ajax.php');
+        if ($cloud_type && $drive_id) {
             switch ($cloud_type) {
                 case 'dropbox':
                     $action = '?action=wpmf-dbxdownload-file&id=' . urlencode($drive_id) . '&link=true&dl=0';
@@ -180,16 +169,48 @@ class WpmfPdfEmbed
                     break;
                 default:
                     $action = '';
-                    $offload_infos = get_post_meta($attrs['id'], 'wpmf_awsS3_info', true);
+                    $offload_infos = get_post_meta($id, 'wpmf_awsS3_info', true);
                     if (!empty($offload_infos)) {
                         $action = '?action=wpmf_offload_get_content&url=' . urlencode($url);
                     }
                     break;
             }
+        }
 
-            if ($action) {
-                $url = $baseUrl . $action;
+        if ($action) {
+            $url = $baseUrl . $action;
+        }
+
+        return $url;
+    }
+
+    /**
+     * Render PDF embed
+     *
+     * @param array $attrs Shortcode params
+     *
+     * @return string
+     */
+    public function wpmfPdf($attrs)
+    {
+        if (!empty($attrs['url'])) {
+            $url = $attrs['url'];
+            $title = basename($attrs['url']);
+            //file on cloud
+            if (strpos($attrs['url'], '.pdf') === false && strpos($attrs['url'], '?action=wpmf') === false && $attrs['id']) {
+                $url = $this->getUrlOnCloud($attrs['id'], $attrs['url']);
             }
+        } else {
+            if (empty($attrs['id'])) {
+                return '';
+            }
+            $url = wp_get_attachment_url($attrs['id']);
+            $pdf = get_post($attrs['id']);
+            if (empty($pdf)) {
+                return '';
+            }
+
+            $url = $this->getUrlOnCloud($attrs['id'], $url);
 
             $title = $pdf->post_title;
         }
@@ -210,6 +231,8 @@ class WpmfPdfEmbed
                 $plugin_dir_url = plugin_dir_url(__DIR__);
                 $viewer_base_url = $plugin_dir_url . 'class/templates/pdf-embed.php';
 
+                $remove_items = apply_filters('wpmf_pdf_embed_remove_button', false);
+
                 $response = wp_remote_head($url);
                 if (is_wp_error($response)) {
                     $url = $plugin_dir_url . 'assets/pdf-loading-error.pdf';
@@ -222,6 +245,11 @@ class WpmfPdfEmbed
 
                 $attachment_info = '?file=' . urlencode($url);
                 $final_url = $viewer_base_url . $attachment_info . '&plugins_url=' . urlencode($plugin_dir_url);
+                if (!empty($remove_items) && is_array($remove_items)) {
+                    $remove_items = implode(',', $remove_items);
+                    $remove_items = urlencode($remove_items);
+                    $final_url .= '&remove_items='.$remove_items;
+                }
                 $return = '<div><iframe width="' . esc_attr($width) . '" height="' . esc_attr($height) . '" src="' . esc_url($final_url) . '" title="Embedded PDF" class="wpmf-pdfjs-iframe"></iframe></div>';
             }
         } else {

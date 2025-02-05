@@ -59,6 +59,43 @@ var wpmfDuplicateModule;
     };
 
     $(document).ready(function () {
+        if (wpmfParams.vars.wpmf_pagenow === 'upload.php'  && typeof wpmfParams.vars.duplicate !== 'undefined' && parseInt(wpmfParams.vars.duplicate) === 1) {
+            // add Duplicate button on list mode
+            $('.wpmf-action-attachment').each(function(i, obj) {
+                const id = $(this).attr('data-id');
+                const form_duplicate = document.createElement('div');
+                form_duplicate.innerHTML = `<input type="button" value="` + wpmfParams.l18n.duplicate + `" class="button wpmf_duplicate" data-id="` + id + `"/>`;
+                obj.appendChild(form_duplicate);
+            });
+
+            // duplicate file
+            $('.wpmf-action-attachment .wpmf_duplicate').off('click').on('click', function (event) {
+                var id = $(this).attr('data-id');
+                if (id) {
+                    $.ajax({
+                        method: 'post',
+                        url: ajaxurl,
+                        dataType: 'json',
+                        data: {
+                            action: 'wpmf_duplicate_file',
+                            id: id,
+                            wpmf_nonce: wpmf.vars.wpmf_nonce
+                        },
+                        success: function (res) {
+                            if (res.message) {
+                                wpmfSnackbarModule.show({
+                                    content: (res.message),
+                                });
+                                if (res.status) {
+                                    setTimeout(function(){location.reload()}, 2000);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
         if (typeof wpmfFoldersModule === "undefined" || typeof wp === "undefined") {
             return;
         }

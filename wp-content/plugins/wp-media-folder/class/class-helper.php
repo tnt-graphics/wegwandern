@@ -370,19 +370,25 @@ class WpmfHelper
     /**
      * Create thumbnail after replace
      *
-     * @param string  $filepath Physical path of file
-     * @param string  $extimage Extension of file
-     * @param array   $metadata Meta data of file
-     * @param integer $post_id  ID of file
+     * @param string  $filepath  Physical path of file
+     * @param string  $extimage  Extension of file
+     * @param array   $metadata  Meta data of file
+     * @param integer $post_id   ID of file
+     * @param boolean $isOffload Check file is AWS
      *
      * @return void
      */
-    public static function createThumbs($filepath, $extimage, $metadata, $post_id)
+    public static function createThumbs($filepath, $extimage, $metadata, $post_id, $isOffload = false)
     {
         if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
             $uploadpath = wp_upload_dir();
             foreach ($metadata['sizes'] as $size => $sizeinfo) {
                 $intermediate_file = str_replace(basename($filepath), $sizeinfo['file'], $filepath);
+                if ($isOffload) {
+                    $filepath = apply_filters('wp_get_attachment_url', $filepath, $post_id);
+                    $physicalPath = get_attached_file($post_id);
+                    $intermediate_file = str_replace(basename($physicalPath), $sizeinfo['file'], $physicalPath);
+                }
 
                 // load image and get image size
                 list($width, $height) = getimagesize($filepath);
@@ -450,6 +456,18 @@ class WpmfHelper
                 $metadata[$size]['width'] = $new_width;
                 $metadata[$size]['width'] = $new_height;
                 wp_update_attachment_metadata($post_id, $metadata);
+
+                if ($isOffload) {
+                    $physicalPath = path_join($uploadpath['basedir'], $intermediate_file);
+                    if (file_exists($physicalPath)) {
+                        $awsS3infos = get_post_meta($post_id, 'wpmf_awsS3_info', true);
+                        if (isset($awsS3infos['Key'])) {
+                            $intermediate_file = str_replace(basename($awsS3infos['Key']), $sizeinfo['file'], $awsS3infos['Key']);
+                            apply_filters('wpmfAddonReplaceFileOffload', file_get_contents($physicalPath), $intermediate_file);
+                        }
+                        unlink($physicalPath);
+                    }
+                }
             }
         } else {
             wp_update_attachment_metadata($post_id, $metadata);

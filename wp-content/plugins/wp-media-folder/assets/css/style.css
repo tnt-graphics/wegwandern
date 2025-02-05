@@ -15,12 +15,61 @@
     url('../fonts/MaterialIcons-Regular.ttf') format('truetype');
 }
 
-/* Remote video CSS */
+/* Tagify */
+.tagify {
+    width: 100%;
+}
+
+.tagify--outside {
+    border: 0;
+}
+
+.tagify--outside .tagify__input {
+    order: -1;
+    flex: 100%;
+    border: 1px solid var(--tags-border-color);
+    margin-bottom: 1em;
+    transition: .1s;
+    text-transform: lowercase;
+}
+
+.tagify--outside .tagify__input:hover {
+    border-color: var(--tags-hover-border-color);
+}
+
+.tagify--outside.tagify--focus .tagify__input {
+    transition: 0s;
+    border-color: var(--tags-focus-border-color);
+}
+
+.tagify__dropdown {
+    z-index: 999999999 !important;
+}
+
+.wpmf-dialog-text .tagify__input {
+    margin: 5px 0;
+}
+
+.wpmf-dialog-text .tagify__tag>div {
+    padding-left: 0 !important;
+}
+
+.wpmf-dialog-text .tagify__tag {
+    margin-left: 0;
+    margin-right: 5px;
+    text-transform: lowercase;
+}
+
+#wpmf_tag input, #wpmf_tag .tagchecklist li{
+    text-transform: lowercase;
+}
+
+/* Remote video, add tag CSS */
 #wpmf-add-video-dialog {
     z-index: 9999 !important;
 }
 
-#wpmf-add-video-dialog h5 {
+#wpmf-add-video-dialog h5, #wpmf-add-tag-dialog h5 {
     font-size: 16px;
     margin-bottom: 0 !important;
 }
@@ -29,8 +78,8 @@
     max-width: 600px;
 }
 
-#wpmf-add-video-dialog_content {
-    max-width: 600px;
+#tagcloud-wpmf_tag .wp-tag-cloud a {
+    font-size: 14px !important;
 }
 
 .add_video_msg {
@@ -414,7 +463,7 @@
 /* ===== Material Design ===== */
 .wpmf-attachment.mdc-list-item {
     width: 190px !important;
-    padding: 0 16px !important;
+    padding: 0 10px !important;
     margin: 8px !important;
     overflow: hidden;
     height: 48px !important;
@@ -455,6 +504,9 @@
     display: inline-block !important;
     width: 100% !important;
     max-width: 100% !important;
+}
+.upload-php .media-frame-content .compat-field-wpmf_tag input{
+    text-transform: lowercase;
 }
 
 #wp-media-grid .media-frame-content[data-columns="3"] .wpmf-attachment.mdc-list-item,
@@ -517,7 +569,7 @@
     -ms-flex-direction: column;
     flex-direction: column;
     display: inline-block;
-    width: 90px;
+    width: 135px;
     white-space: nowrap;
     overflow: hidden !important;
     text-overflow: ellipsis;
@@ -3893,4 +3945,30 @@ body.woocommerce-page th#taxonomy-wpmf-folder-type-product, body.woocommerce-adm
 }
 #plupload-upload-ui{
     margin-top: 10px;
+}
+
+/** Actions button in table attachment */
+table.media .column-title .has-media-icon~.row-actions {
+    margin-left: 0;
+}
+.fixed .column-wpmf_filetype, .fixed .column-wpmf_size {
+    width: 10%;
+}
+.table-view-list thead #parent, .table-view-list thead #date {
+    width: 10%;
+}
+.table-view-list thead #wpmf_action {
+    text-align: center;
+    width: 150px;
+}
+.table-view-list tbody .column-wpmf_action {
+    vertical-align: middle;
+}
+.wpmf-action-attachment input[type=button] {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 15px;
+}
+.wpmf-action-attachment div:last-child input {
+    margin-bottom: 0;
 }

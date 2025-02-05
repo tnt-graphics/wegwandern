@@ -52,8 +52,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
             <div class="ju-settings-option wpmf-no-shadow">
                 <div class="wpmf_row_full">
                     <h4 class="text font-size-19 line-height-30">
-                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/facebook/facebook.png') ?>"
-                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/facebook/facebook@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/facebook/facebook@3x.png') ?> 3x"
+                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/facebook/facebook.png') ?>"
+                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/facebook/facebook@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/facebook/facebook@3x.png') ?> 3x"
                              class="img_social">
                         <label class="social-label wpmf_middle"><?php esc_html_e('Facebook', 'wpmf') ?></label>
                     </h4>
@@ -65,8 +65,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
             <div class="ju-settings-option wpmf-no-shadow">
                 <div class="wpmf_row_full">
                     <h4 class="text font-size-19 line-height-30">
-                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/twitter/twitter.png') ?>"
-                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/twitter/twitter@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/twitter/twitter@3x.png') ?> 3x"
+                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/twitter/twitter.png') ?>"
+                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/twitter/twitter@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/twitter/twitter@3x.png') ?> 3x"
                              class="img_social">
                         <label class="social-label wpmf_middle"><?php esc_html_e('Twitter', 'wpmf') ?></label>
                     </h4>
@@ -78,8 +78,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
             <div class="ju-settings-option wpmf-no-shadow">
                 <div class="wpmf_row_full">
                     <h4 class="text font-size-19 line-height-30">
-                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/instagram/instagram.png') ?>"
-                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/instagram/instagram@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/instagram/instagram@3x.png') ?> 3x"
+                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/instagram/instagram.png') ?>"
+                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/instagram/instagram@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/instagram/instagram@3x.png') ?> 3x"
                              class="img_social">
                         <label class="social-label wpmf_middle"><?php esc_html_e('Instagram', 'wpmf') ?></label>
                     </h4>
@@ -91,8 +91,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
             <div class="ju-settings-option wpmf-no-shadow">
                 <div class="wpmf_row_full">
                     <h4 class="text font-size-19 line-height-30">
-                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/pinterest/pinterest.png') ?>"
-                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/pinterest/pinterest@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/social/pinterest/pinterest@3x.png') ?> 3x"
+                        <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/pinterest/pinterest.png') ?>"
+                             srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/pinterest/pinterest@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/social/pinterest/pinterest@3x.png') ?> 3x"
                              class="img_social">
                         <label class="social-label wpmf_middle"><?php esc_html_e('Pinterest', 'wpmf') ?></label>
                     </h4>

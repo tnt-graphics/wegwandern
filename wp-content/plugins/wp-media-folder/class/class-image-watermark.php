@@ -29,10 +29,11 @@ class WpmfWatermark
      *
      * @param array   $metadata      An array of attachment meta data.
      * @param integer $attachment_id Current attachment ID.
+     * @param boolean $isWoo         Check images of woocommerce product
      *
      * @return mixed $metadata
      */
-    public function createWatermarkImage($metadata, $attachment_id)
+    public function createWatermarkImage($metadata, $attachment_id, $isWoo = false)
     {
         $option_image_watermark = get_option('wpmf_option_image_watermark');
         if (empty($option_image_watermark)) {
@@ -45,29 +46,59 @@ class WpmfWatermark
         }
 
         if (!empty($attachment_id)) {
-            // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
-            $galleryid = (int)$_POST['up_gallery_id'];
             if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
+                // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
+                $galleryid = isset($_POST['up_gallery_id']) ? (int)$_POST['up_gallery_id'] : 0;
                 $watermark_exclude_public_gallery = wpmfGetOption('watermark_exclude_public_gallery');
                 $watermark_exclude_photograph_gallery = wpmfGetOption('watermark_exclude_photograph_gallery');
                 $check = false;
                 if (!empty($watermark_exclude_public_gallery)) {
-                    if (!empty($galleryid)) {
-                        $gallery_type = get_term_meta((int)$galleryid, 'gallery_type', true);
-                        if (!empty($gallery_type) && $gallery_type === 'photographer') {
+                    if ($isWoo) {
+                        $gallery_terms = get_the_terms($attachment_id, WPMF_GALLERY_ADDON_TAXO);
+                        if (!empty($gallery_terms)) {
                             $check = true;
+                            if (empty($watermark_exclude_photograph_gallery)) {
+                                foreach ($gallery_terms as $gallery_term) {
+                                    $gallery_type = get_term_meta((int)$gallery_term->term_id, 'gallery_type', true);
+                                    if (!empty($gallery_type) && $gallery_type === 'photographer') {
+                                        $check = false;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (!empty($galleryid)) {
+                            $check = true;
+                            if (empty($watermark_exclude_photograph_gallery)) {
+                                $gallery_type = get_term_meta((int)$galleryid, 'gallery_type', true);
+                                if (!empty($gallery_type) && $gallery_type === 'photographer') {
+                                    $check = false;
+                                }
+                            }
                         }
                     }
-                    if (!$check) {
+                    if ($check) {
                         return $metadata;
                     }
                 }
 
                 if (!empty($watermark_exclude_photograph_gallery)) {
-                    if (!empty($galleryid)) {
-                        $gallery_type = get_term_meta((int)$galleryid, 'gallery_type', true);
-                        if (!empty($gallery_type) && $gallery_type === 'photographer') {
-                            $check = true;
+                    if ($isWoo) {
+                        $gallery_terms = get_the_terms($attachment_id, WPMF_GALLERY_ADDON_TAXO);
+                        if (!empty($gallery_terms)) {
+                            foreach ($gallery_terms as $gallery_term) {
+                                $gallery_type = get_term_meta((int)$gallery_term->term_id, 'gallery_type', true);
+                                if (!empty($gallery_type) && $gallery_type === 'photographer') {
+                                    $check = true;
+                                }
+                            }
+                        }
+                    } else {
+                        if (!empty($galleryid)) {
+                            $gallery_type = get_term_meta((int)$galleryid, 'gallery_type', true);
+                            if (!empty($gallery_type) && $gallery_type === 'photographer') {
+                                $check = true;
+                            }
                         }
                     }
 
@@ -128,18 +159,24 @@ class WpmfWatermark
                     }
                     // Using the wp_upload_dir replace the baseurl with the basedir
                     $path = str_replace($uploads['baseurl'], $uploads['basedir'], $image_url);
-                    if (!empty($path)) {
+                    if (!empty($path) && file_exists($path)) {
                         $pathinfo  = pathinfo($path);
                         $imageInfo = getimagesize($path);
                     }
 
                     try {
                         if (!empty($pathinfo)) {
-                            $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize);
+                            $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize, '', $isWoo);
                         } else {
+                            if ($isWoo) {
+                                return;
+                            }
                             wp_send_json(array('status' => false));
                         }
                     } catch (Exception $e) {
+                        if ($isWoo) {
+                            return;
+                        }
                         wp_send_json(array('status' => false));
                     }
                 }
@@ -169,11 +206,17 @@ class WpmfWatermark
 
                     try {
                         if (!empty($pathinfo)) {
-                            $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize);
+                            $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize, '', $isWoo);
                         } else {
+                            if ($isWoo) {
+                                return;
+                            }
                             wp_send_json(array('status' => false));
                         }
                     } catch (Exception $e) {
+                        if ($isWoo) {
+                            return;
+                        }
                         wp_send_json(array('status' => false));
                     }
                 }
@@ -249,6 +292,7 @@ class WpmfWatermark
         $excludes = array();
         $exclude_folders = wpmfGetOption('watermark_exclude_folders');
         $watermark_apply = get_option('wpmf_image_watermark_apply');
+        $option_watermark_only_woo = get_option('wpmf_watermark_only_woo');
         foreach (array_unique($exclude_folders) as $folder) {
             if ($folder === 'root') {
                 $excludes[] = 0;
@@ -287,6 +331,16 @@ class WpmfWatermark
         }
         if (!empty($attachments)) {
             foreach ($attachments as $attachment) {
+                $isWoo = false;
+                if (!empty($option_watermark_only_woo) && (int) $option_watermark_only_woo === 1 && class_exists('WooCommerce')) {
+                    $product_id = $this->getProductIdByImageId($attachment->ID);
+                    if (!empty($product_id)) {
+                        $isWoo = true;
+                    } else {
+                        $k ++;
+                        continue;
+                    }
+                }
                 // exclude watermark on gallery
                 if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
                     $watermark_exclude_public_gallery = wpmfGetOption('watermark_exclude_public_gallery');
@@ -295,14 +349,17 @@ class WpmfWatermark
                     if (!empty($watermark_exclude_public_gallery)) {
                         $gallery_terms = get_the_terms($attachment->ID, WPMF_GALLERY_ADDON_TAXO);
                         if (!empty($gallery_terms)) {
-                            foreach ($gallery_terms as $gallery_term) {
-                                $gallery_type = get_term_meta((int)$gallery_term->term_id, 'gallery_type', true);
-                                if (!empty($gallery_type) && $gallery_type === 'photographer') {
-                                    $check = true;
+                            $check = true;
+                            if (empty($watermark_exclude_photograph_gallery)) {
+                                foreach ($gallery_terms as $gallery_term) {
+                                    $gallery_type = get_term_meta((int)$gallery_term->term_id, 'gallery_type', true);
+                                    if (!empty($gallery_type) && $gallery_type === 'photographer') {
+                                        $check = false;
+                                    }
                                 }
                             }
                         }
-                        if (!$check) {
+                        if ($check) {
                             $k ++;
                             continue;
                         }
@@ -363,7 +420,7 @@ class WpmfWatermark
                             $pathinfo  = pathinfo($path);
                             $imageInfo = getimagesize($path);
                             try {
-                                $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize);
+                                $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize, '', $isWoo);
                             } catch (Exception $e) {
                                 wp_send_json(array('status' => 'limit', 'percent' => $present));
                             }
@@ -396,7 +453,7 @@ class WpmfWatermark
                             $imageInfo = getimagesize($path);
                             if ((int) $value === 1) {
                                 try {
-                                    $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize);
+                                    $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize, '', $isWoo);
                                 } catch (Exception $e) {
                                     wp_send_json(array('status' => 'limit', 'percent' => $present));
                                 }
@@ -414,8 +471,8 @@ class WpmfWatermark
                             }
                         }
                     }
-                    $k ++;
                 }
+                $k ++;
             }
             if ($k >= $limit) {
                 wp_send_json(array('status' => 'limit', 'percent' => $present));
@@ -428,15 +485,16 @@ class WpmfWatermark
     /**
      * Generate Picture
      *
-     * @param string $newname      New name of image
-     * @param array  $imageInfo    Image infomartion
-     * @param string $full_dir     Path of image
-     * @param string $wtm_apply_on Image size
-     * @param string $type         Type
+     * @param string  $newname      New name of image
+     * @param array   $imageInfo    Image infomartion
+     * @param string  $full_dir     Path of image
+     * @param string  $wtm_apply_on Image size
+     * @param string  $type         Type
+     * @param boolean $isWoo        Check images of woocommerce product
      *
      * @return void
      */
-    public function generatePicture($newname, $imageInfo, $full_dir, $wtm_apply_on, $type = '')
+    public function generatePicture($newname, $imageInfo, $full_dir, $wtm_apply_on, $type = '', $isWoo = false)
     {
         $wtm_images             = get_option('wpmf_option_image_watermark');
         //$wtm_apply_on           = get_option('wpmf_image_watermark_apply');
@@ -455,49 +513,40 @@ class WpmfWatermark
                 $check_image_logo_exit = false;
             }
         }
-
-        $this->copyFileWithNewName($full_dir, $newname, 'initimage');
-        if ($imageInfo['mime'] === 'image/jpeg') {
-            if (!empty($wtm_images) && $check_image_logo_exit) {
-                $this->checkCopyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type);
-            }
-        } elseif ($imageInfo['mime'] === 'image/png') {
-            if (!empty($wtm_images) && $check_image_logo_exit) {
-                $this->checkCopyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type);
-            }
-        } elseif ($imageInfo['mime'] === 'image/gif') {
-            if (!empty($wtm_images) && $check_image_logo_exit) {
-                $this->checkCopyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type);
-            }
+        $this->copyFileWithNewName($full_dir, $newname, 'initimage', $isWoo);
+        if (in_array($imageInfo['mime'], ['image/jpeg', 'image/png', 'image/gif']) && !empty($wtm_images) && $check_image_logo_exit) {
+            $this->checkCopyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type, $isWoo);
         }
     }
 
     /**
      * Generate Picture
      *
-     * @param string $full_dir     Path of image
-     * @param string $newname      New name of image
-     * @param string $wtm_apply_on The sizes to apply watermark
-     * @param string $type         Type
+     * @param string  $full_dir     Path of image
+     * @param string  $newname      New name of image
+     * @param string  $wtm_apply_on The sizes to apply watermark
+     * @param string  $type         Type
+     * @param boolean $isWoo        Check images of woocommerce product
      *
      * @return void
      */
-    public function checkCopyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type = '')
+    public function checkCopyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type = '', $isWoo = false)
     {
-        $this->copyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type);
+        $this->copyFileWithNewName($full_dir, $newname, $wtm_apply_on, $type, $isWoo);
     }
 
     /**
      * Generate Picture
      *
-     * @param string $pathdir    Path to file
-     * @param string $fname      New file name
-     * @param string $wtmApplyOn The size to apply watermark
-     * @param string $type       Type
+     * @param string  $pathdir    Path to file
+     * @param string  $fname      New file name
+     * @param string  $wtmApplyOn The size to apply watermark
+     * @param string  $type       Type
+     * @param boolean $isWoo      Check images of woocommerce product
      *
      * @return void
      */
-    public function copyFileWithNewName($pathdir, $fname, $wtmApplyOn, $type = '')
+    public function copyFileWithNewName($pathdir, $fname, $wtmApplyOn, $type = '', $isWoo = false)
     {
         $option_image_watermark = get_option('wpmf_option_image_watermark');
         if ((int) $option_image_watermark === 0) {
@@ -549,6 +598,11 @@ class WpmfWatermark
                     }
                 }
             }
+        }
+
+        $option_watermark_only_woo = get_option('wpmf_watermark_only_woo');
+        if (!empty($option_watermark_only_woo) && (int) $option_watermark_only_woo === 1 && !$isWoo && class_exists('WooCommerce')) {
+            return;
         }
 
         if ($add_water) {
@@ -610,7 +664,7 @@ class WpmfWatermark
                                     $watermark_opacity,
                                     $watermark_margin_unit
                                 );
-                            }//
+                            }
                         }
                     }
                 }
@@ -637,6 +691,14 @@ class WpmfWatermark
                 return imagecreatefrompng($image);
             case 'image/gif':
                 return imagecreatefromgif($image);
+            case 'image/webp':
+                if (function_exists('imagecreatefromwebp')) {
+                    return imagecreatefromwebp($image);
+                } else {
+                    return imagecreatefromstring(readfile($image));
+                }
+            default:
+                return imagecreatefromstring(readfile($image));
         }
     }
 
@@ -698,6 +760,9 @@ class WpmfWatermark
             // Find base image size
             $image     = $this->imagecreatefrom($image_path);
             $logoImage = $this->imagecreatefrom($logoImage_path);
+            if (!$image || !$logoImage) {
+                return;
+            }
             // opacity watermark
             if ((int) $watermark_opacity !== 1) {
                 $logoImage = $this->imagesetopacity($logoImage, $watermark_opacity);
@@ -720,35 +785,35 @@ class WpmfWatermark
 
             // set image scaling
             $r = $logo_x / $logo_y;
-            $new_width  = $image_x * (int) $percent / 100;
+            $new_width = round($image_x * (int) $percent / 100);
             if ($new_width > $logo_x) {
                 $new_width = $logo_x;
             }
 
-            $new_height = $new_width / $r;
+            $new_height = round($new_width / $r);
             if ($new_height > $logo_y) {
                 $new_height = $logo_y;
             }
 
             if ($position === 'center' || (int) $position === 0) {
-                $watermark_pos_x = ($image_x - $new_width) / 2; //watermark left
-                $watermark_pos_y = ($image_y - $new_height) / 2; //watermark bottom
+                $watermark_pos_x = round(($image_x - $new_width) / 2); //watermark left
+                $watermark_pos_y = round(($image_y - $new_height) / 2); //watermark bottom
             }
             if ($position === 'top_left') {
                 $watermark_pos_x = (int) $watermark_margin['left'];
                 $watermark_pos_y = (int) $watermark_margin['top'];
             }
             if ($position === 'top_right') {
-                $watermark_pos_x = $image_x - $new_width - (int) $watermark_margin['right'];
+                $watermark_pos_x = round($image_x - $new_width - (int) $watermark_margin['right']);
                 $watermark_pos_y = (int) $watermark_margin['top'];
             }
             if ($position === 'bottom_right') {
-                $watermark_pos_x = $image_x - $new_width - (int) $watermark_margin['right'];
-                $watermark_pos_y = $image_y - $new_height - (int) $watermark_margin['bottom'];
+                $watermark_pos_x = round($image_x - $new_width - (int) $watermark_margin['right']);
+                $watermark_pos_y = round($image_y - $new_height - (int) $watermark_margin['bottom']);
             }
             if ($position === 'bottom_left') {
                 $watermark_pos_x = (int) $watermark_margin['left'];
-                $watermark_pos_y = $image_y - $new_height - (int) $watermark_margin['bottom'];
+                $watermark_pos_y = round($image_y - $new_height - (int) $watermark_margin['bottom']);
             }
 
             imagecopyresampled(
@@ -804,5 +869,46 @@ class WpmfWatermark
         } catch (Exception $e) {
             return;
         }
+    }
+
+    /**
+     * Optimized function to get WooCommerce product ID by image attachment ID.
+     *
+     * @param integer $attachment_id The ID of the image attachment.
+     *
+     * @return integer|boolean Product ID if found, otherwise false.
+     */
+    public function getProductIdByImageId($attachment_id)
+    {
+        $args = array(
+            'post_type'      => 'product',
+            'post_status'    => 'publish',
+            'posts_per_page' => 1,
+            'meta_query'     => array(
+                'relation' => 'OR',
+                array(
+                    'key'     => '_thumbnail_id',
+                    'value'   => $attachment_id,
+                    'compare' => '='
+                ),
+                array(
+                    'key'     => '_product_image_gallery',
+                    'value'   => $attachment_id,
+                    'compare' => 'LIKE'
+                ),
+            ),
+        );
+
+        $query = new WP_Query($args);
+
+        if ($query->have_posts()) {
+            $query->the_post();
+            $product_id = get_the_ID();
+            wp_reset_postdata();
+            return $product_id;
+        }
+
+        wp_reset_postdata();
+        return false;
     }
 }

@@ -182,7 +182,7 @@ class WpmfSingleFile
      */
     public function register($plugin_array)
     {
-        $url                      = WPMF_PLUGIN_URL . '/assets/js/single-file.js';
+        $url                      = WPMF_PLUGIN_URL . 'assets/js/single-file.js';
         $plugin_array['wpmf_mce'] = $url;
         return $plugin_array;
     }

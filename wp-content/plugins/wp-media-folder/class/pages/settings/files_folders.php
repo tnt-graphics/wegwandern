@@ -1,6 +1,12 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+
+if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
+    $col_class = 'wpmf_width_50 m-r-0';
+} else {
+    $col_class = '';
+}
 ?>
 <div id="rename_on_upload" class="tab-content">
     <div class="content-box content-wpmf-files-folders">
@@ -274,9 +280,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
             <div class="ju-settings-option wpmf_width_40 wpmf-no-shadow wpmf-no-padding wpmf-no-margin">
                 <div class="wpmf_row_full">
                     <input type="hidden" name="wpmf_option_image_watermark" value="0">
-                    <b data-wpmftippy="<?php esc_html_e('Watermark will be applied only after saving the
-             settings and regenerate the thumnails (hit the regenerate thumnails button)', 'wpmf'); ?>"
-                       class="ju-setting-label text wpmf-no-padding"><?php esc_html_e('Images watermark', 'wpmf') ?></b>
+                    <label data-wpmftippy="<?php esc_html_e('Watermark will be applied only after saving the settings and regenerate the thumnails (hit the regenerate thumnails button)', 'wpmf'); ?>"
+                       class="ju-setting-label text wpmf-no-padding"><?php esc_html_e('Images watermark', 'wpmf') ?></label>
                     <div class="ju-switch-button">
                         <label class="switch">
                             <input type="checkbox" id="cb_option_image_watermark"
@@ -292,7 +297,6 @@ defined('ABSPATH') || die('No direct script access allowed!');
                     </div>
                 </div>
             </div>
-
             <div class="ju-settings-option wpmf_width_100 wpmf-no-shadow">
                 <div class="wpmf_row_full">
                     <label data-wpmftippy="<?php esc_html_e('Select a picture that will be applied over your images', 'wpmf') ?>"
@@ -449,10 +453,10 @@ defined('ABSPATH') || die('No direct script access allowed!');
         </div>
 
         <div class="ju-settings-option wpmf_width_100 p-lr-20">
-            <div class="ju-settings-option wpmf-no-shadow">
+            <div class="ju-settings-option wpmf-no-shadow <?php echo esc_attr($col_class); ?>">
                 <div class="wpmf_row_full">
                     <h4 data-wpmftippy="<?php esc_html_e('Select the size where you want to apply the watermark', 'wpmf'); ?>"
-                        class="text title_h4 font-size-16 color-7f8a98"><?php esc_html_e('Apply watermark on', 'wpmf') ?></h4>
+                        class="text title_h4 font-size-16 color-404852"><?php esc_html_e('Apply watermark on', 'wpmf') ?></h4>
                     <div class="ju-settings-option wpmf-no-shadow wpmf_width_100">
                         <div class="pure-checkbox ju-setting-label line-height-30">
                             <input type="hidden" name="wpmf_image_watermark_apply[all_size]" value="0">
@@ -494,10 +498,10 @@ defined('ABSPATH') || die('No direct script access allowed!');
             </div>
 
             <?php if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) : ?>
-                <div class="ju-settings-option wpmf-no-shadow wpmf_right m-r-0">
+                <div class="ju-settings-option wpmf-no-shadow <?php echo esc_attr($col_class); ?>">
                     <div class="wpmf_row_full">
                         <h4 data-wpmftippy="<?php esc_html_e('Select the size where you want to apply the watermark', 'wpmf'); ?>"
-                            class="text title_h4 font-size-16 color-7f8a98"><?php esc_html_e('Watermark on photograph image', 'wpmf') ?></h4>
+                            class="text title_h4 font-size-16 color-404852"><?php esc_html_e('Watermark on photograph image', 'wpmf') ?></h4>
                         <?php
                         $sizes = array(
                             'all_size' => array(
@@ -542,11 +546,12 @@ defined('ABSPATH') || die('No direct script access allowed!');
                     </div>
                 </div>
             <?php endif; ?>
-
+        </div>
+        <div class="ju-settings-option wpmf_width_100 p-lr-20">
             <div class="ju-settings-option wpmf-no-shadow">
                 <div class="wpmf_row_full">
                     <h4 data-wpmftippy="<?php esc_html_e('Exclude Folders', 'wpmf'); ?>"
-                        class="text title_h4 font-size-16 color-7f8a98"><?php esc_html_e('Exclude Folders', 'wpmf') ?></h4>
+                        class="text title_h4 font-size-16 color-404852"><?php esc_html_e('Exclude Folders', 'wpmf') ?></h4>
                     <input type="hidden" name="wpmf_watermark_exclude_folders">
                     <div class="wrap_apply">
                         <div class="watermark_exclude_folders tree_option_folders">
@@ -555,11 +560,35 @@ defined('ABSPATH') || die('No direct script access allowed!');
                     </div>
                 </div>
             </div>
+
+            <?php if (class_exists('WooCommerce')) : ?>
+                <div class="ju-settings-option wpmf-transparent">
+                    <div class="wpmf_row_full">
+                        <input type="hidden" name="wpmf_watermark_only_woo" value="0">
+                        <label data-wpmftippy="<?php esc_attr_e('Possibility to add watermark to only images of WooCommerce Products', 'wpmf') ?>" class="ju-setting-label text wpmf-no-padding">
+                            <?php esc_html_e('Apply watermark only on WooC. products', 'wpmf') ?>
+                        </label>
+                        <div class="ju-switch-button">
+                            <label class="switch">
+                                <input type="checkbox" name="wpmf_watermark_only_woo" value="1"
+                                    <?php
+                                    if (isset($watermark_only_woo) && (int)$watermark_only_woo === 1) {
+                                        echo 'checked';
+                                    }
+                                    ?>
+                                >
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <?php if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) : ?>
                 <div class="ju-settings-option wpmf-transparent">
                     <div class="wpmf_row_full">
                         <input type="hidden" name="watermark_exclude_public_gallery" value="0">
-                        <label class="ju-setting-label text"><?php esc_html_e('Exclude public galleries', 'wpmf') ?>
+                        <label class="ju-setting-label text wpmf-no-padding"><?php esc_html_e('Exclude public galleries', 'wpmf') ?>
                         </label>
                         <div class="ju-switch-button">
                             <label class="switch">
@@ -579,7 +608,7 @@ defined('ABSPATH') || die('No direct script access allowed!');
                 <div class="ju-settings-option wpmf-transparent">
                     <div class="wpmf_row_full">
                         <input type="hidden" name="watermark_exclude_photograph_gallery" value="0">
-                        <label class="ju-setting-label text"><?php esc_html_e('Exclude photographer galleries', 'wpmf') ?>
+                        <label class="ju-setting-label text wpmf-no-padding"><?php esc_html_e('Exclude photographer galleries', 'wpmf') ?>
                         </label>
                         <div class="ju-switch-button">
                             <label class="switch">

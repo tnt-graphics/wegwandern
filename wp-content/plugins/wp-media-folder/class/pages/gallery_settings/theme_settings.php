@@ -209,9 +209,9 @@ if (empty($settings['aspect_ratio'])) {
                         <div data-value="slide" class="gallery-slider-animation ju-settings-option wpmf_width_20 wpmf-no-shadow <?php echo ($slider_animation === 'slide') ? 'animation_selected' : '' ?>">
                             <div class="wpmf_row_full">
                                 <?php if ($slider_animation === 'slide') { ?>
-                                    <img class="wpmf_middle img_slide" src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/slide_white.png') ?>">
+                                    <img class="wpmf_middle img_slide" src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/slide_white.png') ?>">
                                 <?php } else { ?>
-                                    <img class="wpmf_middle" src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/slide.png') ?>">
+                                    <img class="wpmf_middle" src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/slide.png') ?>">
                                 <?php } ?>
                                 <label class="wpmf_middle"><?php esc_html_e('Slide', 'wpmf') ?></label>
                             </div>

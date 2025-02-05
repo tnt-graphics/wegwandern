@@ -181,6 +181,233 @@ var wpmfFoldersModule = void 0,
                     $('.page-title-action').after('<a href="#" class="wpmf_btn_upload_folder">' + wpmf.l18n.upload_folder_label + '</a><input name="id_category" class="wpmf_id_category" type="hidden" value="0">');
                 }
 
+                // Download file table list media
+                $('.wp-list-table .download').off('click').on('click', function (e){
+                    e.preventDefault();
+                    var post_id = $(this).parent().parent().parent().attr('id');
+                    if (post_id) {
+                        var post_id_array = post_id.split("-");
+                        if (Array.isArray(post_id_array)) {
+                            let id = post_id_array.pop();
+                            if (id) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: wpmf.vars.ajaxurl,
+                                    data: {
+                                        action: "wpmf",
+                                        task: "wpmf_download_file",
+                                        id: id,
+                                        wpmf_nonce: wpmf.vars.wpmf_nonce
+                                    },
+                                    success: function success(response) {
+                                        if (response.status) {
+                                            window.location.href = wpmf.vars.site_url + '?act=wpmf_download_file&id=' + id + '&wpmf_nonce=' + wpmf.vars.wpmf_nonce;
+                                        } else {
+                                            showDialog({
+                                                text: wpmf.l18n.cannot_download,
+                                                closeicon: true
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        } 
+                    }
+                })
+                
+                $('#doaction').on('click', function (e) {
+                    var action = $('#bulk-action-selector-top').val();
+                    //get list post id
+                    var cboxes = document.getElementsByName('media[]');
+                    var post_ids = [];
+                    var len = cboxes.length;
+                    if (cboxes !== 'undefined') {
+                        for (var i=0; i<len; i++) {
+                            if(cboxes[i].checked) {
+                                post_ids.push(cboxes[i].value);
+                            }
+                        }
+                    }
+                    //Select tag for media
+                    if (wpmf.vars.wpmf_pagenow === 'upload.php' && action == 'tag') {
+                        e.preventDefault();
+                        if (post_ids.length > 0) {
+                            var html = "<p class='tag-note'>To select a tag, first choose one from the existing list. If the tag you need isn't there, you can create a new one.</p>";
+                            html += '<input name="tags-outside" class="tagify--outside" value="" placeholder="Write tags to add below">';
+                            //show tagify for tags
+                            showDialog({
+                                id: 'wpmf-add-tag-dialog',
+                                title: wpmf.l18n.create_or_select_tag,
+                                text: html,
+                                negative: {
+                                    title: wpmf.l18n.cancel
+                                },
+                                positive: {
+                                    title: wpmf.l18n.add,
+                                    onClick: function onClick(e) {
+                                        var value = $('input[name=tags-outside]').val();
+                                        if (value) {
+                                            var array_value = JSON.parse(value);
+                                            var tag_name = [];
+                                            array_value.forEach(element => {
+                                                tag_name.push(element.value);
+                                            });
+                                            //save tag
+                                            if (tag_name.length) {
+                                                $.ajax({
+                                                    method: "POST",
+                                                    dataType: "json",
+                                                    url: wpmf.vars.ajaxurl,
+                                                    data: {
+                                                        action: "wpmf",
+                                                        task: "save_tag_item",
+                                                        tag_name: tag_name,
+                                                        post_ids: post_ids,
+                                                        wpmf_nonce: wpmf.vars.wpmf_nonce
+                                                    },
+                                                    success: function success(response) {
+                                                        if (response.status) {
+                                                            window.location.reload();
+                                                        } else {
+                                                            console.log(response.status);
+                                                        }             
+                                                    }
+                                                });
+                                            } 
+                                        }
+                                    }
+                                }
+                            });
+                            //set tagify
+                            var input = document.querySelector('input[name=tags-outside]')
+                            var tagify = new Tagify(input, {
+                                focusable: false,
+                                dropdown: {
+                                    position: 'input',
+                                    enabled: 0 // always opens dropdown when input gets focus
+                                }
+                            });
+                            //get 10 tag items
+                            $.ajax({
+                                method: "POST",
+                                dataType: "json",
+                                url: wpmf.vars.ajaxurl,
+                                data: {
+                                    action: "wpmf",
+                                    task: "get_tag_item",
+                                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                                },
+                                success: function success(response) {
+                                    if (response.status) {
+                                        tagify.whitelist = response.list_tags; // update whitelist
+                                    }
+                                }
+                            });
+                            //search tag
+                            document.querySelector('.tagify__input').addEventListener("keyup", function (e) {
+                                var tag_name = $(this).html();
+                                if (tag_name.length > 1) {
+                                    $.ajax({
+                                        method: "POST",
+                                        dataType: "json",
+                                        url: wpmf.vars.ajaxurl,
+                                        data: {
+                                            action: "wpmf",
+                                            task: "get_tag_item",
+                                            tag_name : tag_name,
+                                            wpmf_nonce: wpmf.vars.wpmf_nonce
+                                        },
+                                        success: function success(response) {
+                                            if (response.status) {
+                                                tagify.whitelist = response.list_tags // update whitelist
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        } else {
+                            showDialog({
+                                text: wpmf.l18n.select_file_required,
+                                closeicon: true
+                            });
+                        }
+                    }
+                });
+
+                //fix delete file submit on list view
+                $('.wp-list-table .row-actions .delete .submitdelete').attr('onclick', 'return');
+                $('.wp-list-table .row-actions .delete .submitdelete').off('click').on('click', function (e) { 
+                    e.preventDefault();
+                    var confirm = showNotice.warn();
+                    if (confirm) {
+                        var href = $(this).attr('href');
+                        var id = href.substring(
+                            href.indexOf("post=") + 5, 
+                            href.lastIndexOf("&")
+                        );
+                        if (id && !isNaN(id)){
+                            $.ajax({
+                                type: "POST",
+                                url: wpmf.vars.ajaxurl,
+                                data: {
+                                    action: "wpmf",
+                                    task: "delete_file",
+                                    id: id,
+                                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                                },
+                                success: function success(response) {
+                                    if (response.status) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        } 
+                    }
+                });
+
+                // add iframe to play mp4 in attachment detail on google drive
+                $('#wp-media-grid .media-frame').off('click').on('click', function (e) { 
+                    var file_name = $(".attachment-info .details .filename").html();
+                    if (file_name && file_name.indexOf('.mp4') > 0) {
+                        var src = $('.thumbnail-video img').attr('src');
+                        if (src && src.indexOf('drive.google.com') > 0) {
+                            //get id video
+                            var id = src.substring(
+                                src.indexOf("id=") + 3, 
+                                src.lastIndexOf("&")
+                            );
+                            $('.wp-video').remove();
+                            $('.thumbnail-video .details-image').remove();
+                            $('.thumbnail-video').attr('style', 'width: 480px; height: 270px');
+                            if (id) {
+                                var html = "<iframe src='https://drive.google.com/file/d/" + id + "/preview' width='100%' height='100%'  allow='autoplay'";
+                                html += "></iframe>";
+                                $('.thumbnail-video').append(html);
+                            }
+                        }
+                    } else if (file_name && file_name.indexOf('.mp3') > 0) {
+                        var src = $('.thumbnail-audio .wp-audio-shortcode mediaelementwrapper audio').attr('src');
+                        if (src && src.indexOf('drive.google.com') > 0) {
+                            //get id video
+                            var id = src.substring(
+                                src.indexOf("id=") + 3, 
+                                src.lastIndexOf("&e")
+                            );
+                            //get width and height video
+                            $('.wp-audio').remove();
+                            if (id) {
+                                var html = "<iframe src='https://drive.google.com/file/d/" + id + "/preview' allow='autoplay'";
+                                html += "></iframe>";
+                                $('.thumbnail-audio').append(html);
+                            }
+                        }
+                    }
+                    //fix style for google item
+                    if (file_name && file_name.indexOf('.mp3') > 0 || file_name && file_name.indexOf('.csv') > 0 || file_name && file_name.indexOf('.zip') > 0) {
+                        $('.thumbnail .details-image').attr('style', 'background-image:none');
+                    }
+                })
+
                 // add bulk upload to s3 button
                 if (parseInt(wpmf.vars.copy_files_to_bucket) === 1) {
                     if (!$current_frame.find('.bulk-upload-s3-btn').length) {
@@ -393,17 +620,23 @@ var wpmfFoldersModule = void 0,
                 var upload_type = 'file';
                 $.extend(wp.Uploader.prototype, {
                     init: function init() {
-                        // Add the current wpmf folder to the request
-                        this.uploader.bind('BeforeUpload', function (t, e) {
-                            e.wpmf_folder = typeof e.wpmf_folder !== "undefined" ? e.wpmf_folder : wpmfFoldersModule.last_selected_folder;
-                            t.settings.multipart_params.wpmf_folder = e.wpmf_folder;
-                            var file = e.getSource();
-                            delete this.settings.multipart_params['relativePath'];
-                            if (file.relativePath !== '') {
-                                this.settings.multipart_params['relativePath'] = file.relativePath;
-                                upload_type = 'folder';
-                            }
-                        });
+                        var this_url = document.URL;
+                        if (this_url.indexOf('media-new.php') < 0) {
+                            // Add the current wpmf folder to the request
+                            this.uploader.bind('BeforeUpload', function(up, e) {
+                                e.wpmf_folder = typeof e.wpmf_folder !== "undefined" ? e.wpmf_folder : wpmfFoldersModule.last_selected_folder;
+                                var file = e.getSource();
+                                delete this.settings.multipart_params['relativePath'];
+                                if (file.relativePath !== '') {
+                                    this.settings.multipart_params['relativePath'] = file.relativePath;
+                                    upload_type = 'folder';
+                                }
+                                var multipart_params = up.settings.multipart_params;
+                                multipart_params['wpmf_nonce'] = wpmf.vars.wpmf_nonce;
+                                multipart_params['wpmf_folder'] = e.wpmf_folder;
+                                up.settings.multipart_params = multipart_params;
+                            });
+                        }
 
                         this.uploader.bind('FilesAdded', function (up, files) {
                             wpmfFoldersModule.added_files_length = parseInt(wpmfFoldersModule.added_files_length) + files.length;
@@ -762,7 +995,7 @@ var wpmfFoldersModule = void 0,
             /**
              * We extend the AttachmentFilters view to add our own filtering
              */
-            if (typeof wp.media.view.AttachmentFilters !== "undefined") {
+            if (typeof wp.media !== 'undefined' && typeof wp.media.view !== 'undefined' && typeof wp.media.view.AttachmentFilters !== "undefined") {
                 wp.media.view.AttachmentFilters['wpmf_categories'] = wp.media.view.AttachmentFilters.extend({
                     className: 'wpmf-media-categories attachment-filters',
                     id: 'wpmf-media-category',
@@ -804,7 +1037,9 @@ var wpmfFoldersModule = void 0,
             }
 
             // render filter
-            var myAttachmentsBrowser = wp.media.view.AttachmentsBrowser;
+            if (typeof wp.media !== "undefined" && typeof wp.media.view !== "undefined" && typeof wp.media.view.AttachmentsBrowser !== "undefined") {
+                var myAttachmentsBrowser = wp.media.view.AttachmentsBrowser;
+            }
             if (typeof myAttachmentsBrowser !== "undefined") {
                 wp.media.view.AttachmentsBrowser = wp.media.view.AttachmentsBrowser.extend({
 
@@ -852,7 +1087,9 @@ var wpmfFoldersModule = void 0,
             }
 
             // order image gallery
-            var myMediaControllerGalleryEdit = wp.media.controller.GalleryEdit;
+            if (typeof wp.media !== "undefined" && typeof wp.media.controller !== "undefined" && typeof wp.media.controller.GalleryEdit !== "undefined") {
+                var myMediaControllerGalleryEdit = wp.media.controller.GalleryEdit;
+            }
             if (typeof myMediaControllerGalleryEdit !== "undefined") {
                 wp.media.controller.GalleryEdit = wp.media.controller.GalleryEdit.extend({
                     gallerySettings: function gallerySettings(browser) {
@@ -904,7 +1141,9 @@ var wpmfFoldersModule = void 0,
             }
 
             // Reload folders after searching
-            var mySearch = wp.media.view.Search;
+            if (typeof wp.media !== "undefined" && typeof wp.media.view !== "undefined" && typeof wp.media.view.Search !== "undefined") {
+                var mySearch = wp.media.view.Search;
+            }
             var search_initialized = false;
             if (typeof mySearch !== "undefined") {
                 wp.media.view.Search = wp.media.view.Search.extend({
@@ -1343,7 +1582,7 @@ var wpmfFoldersModule = void 0,
                         }
 
                         if (parseInt(wpmf.vars.wpmf_post_type) !== 1 || !$('#wpb_visual_composer').is(":visible")) {
-                            if (typeof wp.media.frame !== 'undefined' && typeof wp.media.frame._state !== 'undefined') {
+                            if (typeof wp.media !== 'undefined' && typeof wp.media.frame !== 'undefined' && typeof wp.media.frame._state !== 'undefined') {
                                 var first_file = files[0];
                                 var relativePath = first_file.relativePath;
                                 var relativePaths = relativePath.split('/');
@@ -1857,7 +2096,26 @@ var wpmfFoldersModule = void 0,
             $('.material_downloadfile').off('click').on('click', function (e) {
                 e.preventDefault();
                 var id = $(this).data('id');
-                window.location.href = wpmf.vars.site_url + '?act=wpmf_download_file&id=' + id + '&wpmf_nonce=' + wpmf.vars.wpmf_nonce;
+                $.ajax({
+                    type: "POST",
+                    url: wpmf.vars.ajaxurl,
+                    data: {
+                        action: "wpmf",
+                        task: "wpmf_download_file",
+                        id: id,
+                        wpmf_nonce: wpmf.vars.wpmf_nonce
+                    },
+                    success: function success(response) {
+                        if (response.status) {
+                            window.location.href = wpmf.vars.site_url + '?act=wpmf_download_file&id=' + id + '&wpmf_nonce=' + wpmf.vars.wpmf_nonce;
+                        } else {
+                            showDialog({
+                                text: wpmf.l18n.cannot_download,
+                                closeicon: true
+                            });
+                        }
+                    }
+                });
             });
 
             $('.material_overridefile').off('click').on('click', function (e) {

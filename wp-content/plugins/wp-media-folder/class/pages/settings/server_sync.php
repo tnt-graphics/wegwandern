@@ -8,7 +8,7 @@ $iptcHeaderArray = getIptcHeader();
     <div class="wpmf_width_100 top_bar">
         <h1><?php echo esc_html__('Server Folder Sync', 'wpmf') ?></h1>
         <?php
-        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
         ?>
     </div>
     <div class="content-box content-wpmf-media-sync">
@@ -134,7 +134,7 @@ $iptcHeaderArray = getIptcHeader();
     <div class="wpmf_width_100 top_bar">
         <h1><?php echo esc_html__('Settings', 'wpmf') ?></h1>
         <?php
-        require WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/pages/settings/submit_button.php';
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
         ?>
     </div>
     <div class="content-box">

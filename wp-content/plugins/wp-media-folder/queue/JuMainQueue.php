@@ -1133,9 +1133,18 @@ class JuMainQueue
     {
         global $wpdb;
         $pluginPrefix = self::getOption('plugin_prefix');
-        $charset_collate = $this->getWpCharsetCollate();
-        // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- Params has prepared
-        $createTable = "CREATE TABLE `" . $wpdb->prefix . $pluginPrefix . "_queue` (
+
+        $result = false;
+        $table_name = $wpdb->prefix . $pluginPrefix . '_queue' ;
+        $query = $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->prefix . $pluginPrefix . '_queue' ) );
+        if ( $wpdb->get_var( $query ) ===  $table_name) {
+            $result = true;
+        }
+
+        if(!$result) {
+            $charset_collate = $this->getWpCharsetCollate();
+            // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared -- Params has prepared
+            $createTable = "CREATE TABLE `" . $wpdb->prefix . $pluginPrefix . "_queue` (
                       `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
                       `datas` LONGTEXT NOT NULL,
                       `data_hash` VARCHAR(32) NOT NULL DEFAULT '',
@@ -1149,10 +1158,15 @@ class JuMainQueue
                       KEY idx_data_hash (data_hash(32)),
                       KEY idx_status (status)
                     ) " . $charset_collate . " ENGINE=InnoDB";
-        // phpcs:enable
-        // Create table if not exists. Return true on table exists or success.
-        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-        $result = \maybe_create_table($wpdb->prefix . $pluginPrefix . '_queue', $createTable);
+            // phpcs:enable
+            // Didn't find it, so try to create it.
+            $wpdb->query( $createTable );
+
+            // We cannot directly tell that whether this succeeded!
+            if ( $wpdb->get_var( $query ) === $table_name ) {
+                $result = true;
+            }
+        }
 
         // Update
         $queueVersion = get_option($pluginPrefix . '_queue', false);

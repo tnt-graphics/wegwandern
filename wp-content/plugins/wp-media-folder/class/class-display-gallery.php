@@ -400,11 +400,23 @@ class WpmfDisplayGallery
                 )
             );
 
+            /**
+             * Filter gallery query argument to get images.
+             *
+             * @param array Gallery query arguments
+             *
+             * @return array
+             */
+            $args     = apply_filters('wpmf_gallery_query_args', $args);
             $query = new WP_Query($args);
             $_attachments = $query->get_posts();
             $gallery_items = array();
+            
+            $last_folder_parent = $this->getFolderParent($wpmf_folder_id[0]);
             foreach ($_attachments as $key => $val) {
-                $gallery_items[$val->ID] = $_attachments[$key];
+                if ($last_folder_parent->slug !== 'nextcloud' || !strpos($val->post_mime_type, 'avif')) { // hide avif in nextcloud folder
+                    $gallery_items[$val->ID] = $_attachments[$key];
+                }
             }
         } else {
             $args = array(
@@ -1141,9 +1153,10 @@ class WpmfDisplayGallery
 
         $query = new WP_Query($args);
         $attachments = $query->get_posts();
+        $last_folder_parent = $this->getFolderParent($folders[0]);
         $list_images = array();
         foreach ($attachments as $attachment) {
-            if (strpos($attachment->post_mime_type, 'image') !== false) {
+            if (strpos($attachment->post_mime_type, 'image') !== false && ($last_folder_parent->slug !== 'nextcloud' || !strpos($attachment->post_mime_type, 'avif'))) {
                 $custom_link = get_post_meta($attachment->ID, _WPMF_GALLERY_PREFIX . 'custom_image_link', true);
                 $target = get_post_meta($attachment->ID, '_gallery_link_target', true);
                 $details = array(
@@ -1172,6 +1185,26 @@ class WpmfDisplayGallery
         }
 
         wp_send_json(array('status' => true, 'images' => $list_images));
+    }
+
+    /**
+     * Get last folder parent
+     *
+     * @param integer $folder_id Folder ID
+     *
+     * @return object
+     */
+    public function getFolderParent($folder_id)
+    {
+        if ($folder_id) {
+            $term = get_term($folder_id, 'wpmf-category');
+            if ($term && $term->parent) {
+                $parent = $this->getFolderParent($term->parent);
+            } else {
+                return $term;
+            }
+        }
+        return $parent;
     }
 
     /**

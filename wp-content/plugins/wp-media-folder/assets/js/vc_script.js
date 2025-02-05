@@ -18,6 +18,7 @@
                 // Grab the selected attachment.
                 var attachment = frame.state().get('selection').first().toJSON();
                 $('.pdfembed_url_field').val(attachment.url);
+                $('.vc_param-name-id').val(attachment.id);
             });
 
             frame.open();
@@ -42,6 +43,7 @@
                 // Grab the selected attachment.
                 var attachment = frame.state().get('selection').first().toJSON();
                 $('.singlefile_url_field').val(attachment.url);
+                $('.vc_param-name-id').val(attachment.id);
             });
 
             frame.open();

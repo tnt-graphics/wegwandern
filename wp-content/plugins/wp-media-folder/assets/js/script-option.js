@@ -853,11 +853,17 @@ var wpmfTreeOptionsModule;
          */
         $('.import_ftp_button').on('click', function () {
             var $this = $(this);
+            var check_only_file = document.getElementById("only_file");
+            var wpmf_only_file = 0;
+            if (check_only_file.checked == true){
+                wpmf_only_file = 1;
+            } 
             $.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
                     action: "wpmf_import_folder",
+                    wpmf_only_file: wpmf_only_file,
                     wpmf_list_import: wpmf_list_import,
                     wpmf_nonce: wpmfoption.vars.wpmf_nonce
                 },

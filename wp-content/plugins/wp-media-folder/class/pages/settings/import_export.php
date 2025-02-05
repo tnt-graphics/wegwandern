@@ -124,6 +124,10 @@ $size = size_format($bytes);
                     <div class="wpmf-process-bar-full process_import_ftp_full" style="">
                         <div class="wpmf-process-bar process_import_ftp" data-w="0"></div>
                     </div>
+                    <div class="wpmf-setting-only-file-import">
+                        <input type="checkbox" id="only_file">
+                        <span>Import folders without their subdirectories</span>
+                    </div>
                     <button type="button"
                             class="ju-button no-background orange-button waves-effect waves-light import_ftp_button"
                             style="padding: 8.5px 15px">

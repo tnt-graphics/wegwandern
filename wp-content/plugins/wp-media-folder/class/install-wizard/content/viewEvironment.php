@@ -25,8 +25,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
 
                     <div class="right-checkbox">
                         <?php if (version_compare(PHP_VERSION, '5.6', '<')) : ?>
-                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information.png') ?>"
-                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@3x.png') ?> 3x"
+                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information.png') ?>"
+                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@3x.png') ?> 3x"
                                  class="img_warning">
                         <?php else : ?>
                             <input type="checkbox" checked disabled class="filled-in media_checkbox"/>
@@ -58,8 +58,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
                     <label class="ju-setting-label"><?php esc_html_e('Curl', 'wpmf'); ?></label>
                     <div class="right-checkbox">
                         <?php if (!in_array('curl', get_loaded_extensions())) : ?>
-                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information.png') ?>"
-                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@3x.png') ?> 3x"
+                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information.png') ?>"
+                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@3x.png') ?> 3x"
                                  class="img_warning">
                         <?php else : ?>
                             <input type="checkbox" id="php_curl" name="php_curl" checked
@@ -82,8 +82,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
                             <input type="checkbox" id="gd_info" name="gd_info" checked
                                    value="gd_info" disabled class="filled-in media_checkbox"/>
                         <?php else : ?>
-                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information.png') ?>"
-                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@3x.png') ?> 3x"
+                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information.png') ?>"
+                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@3x.png') ?> 3x"
                                  class="img_warning">
                         <?php endif; ?>
 
@@ -103,8 +103,8 @@ defined('ABSPATH') || die('No direct script access allowed!');
                     <label class="ju-setting-label"><?php esc_html_e('Allow URL open', 'wpmf'); ?></label>
                     <div class="right-checkbox">
                         <?php if (!ini_get('allow_url_fopen')) : ?>
-                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information.png') ?>"
-                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . '/assets/images/icon-information/icon-information@3x.png') ?> 3x"
+                            <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information.png') ?>"
+                                 srcset="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@2x.png') ?> 2x, <?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icon-information/icon-information@3x.png') ?> 3x"
                                  class="img_warning">
                         <?php else : ?>
                             <input type="checkbox" id="php_allow_url_fopen" name="php_allow_url_fopen" checked

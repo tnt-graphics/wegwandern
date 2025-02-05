@@ -30,9 +30,9 @@ if (class_exists('WPBakeryShortCode')) {
                     'description' => esc_html__('Display PDF embed', 'wpmf'),
                     'base' => 'vc_pdf_embed',
                     'category' => 'JoomUnited',
-                    'icon' => WPMF_PLUGIN_URL . '/assets/images/pdf_embed-bakery.svg',
-                    'admin_enqueue_js' => WPMF_PLUGIN_URL . '/assets/js/vc_script.js',
-                    'front_enqueue_js' => WPMF_PLUGIN_URL . '/assets/js/vc_script.js',
+                    'icon' => WPMF_PLUGIN_URL . 'assets/images/pdf_embed-bakery.svg',
+                    'admin_enqueue_js' => WPMF_PLUGIN_URL . 'assets/js/vc_script.js',
+                    'front_enqueue_js' => WPMF_PLUGIN_URL . 'assets/js/vc_script.js',
                     'params' => array(
                         array(
                             'type' => 'wpmf_media',
@@ -84,6 +84,15 @@ if (class_exists('WPBakeryShortCode')) {
                             'edit_field_class' => 'vc_col-sm-6',
                             'group' => esc_html__('Settings', 'wpmf')
                         ),
+                        array(
+                            'type' => 'hidden',
+                            'heading' => esc_html__('Id', 'wpmf'),
+                            'param_name' => 'id',
+                            'value' => '',
+                            'class' => 'wpmf_vc_id',
+                            'edit_field_class' => 'vc_col-sm-6',
+                            'group' => esc_html__('Settings', 'wpmf')
+                        ),
                     )
                 )
             );
@@ -112,7 +121,8 @@ if (class_exists('WPBakeryShortCode')) {
                 $target = (!empty($atts['target'])) ? $atts['target'] : 'self';
                 $width = (!empty($atts['width'])) ? $atts['width'] : '';
                 $height = (!empty($atts['height'])) ? $atts['height'] : '';
-                $html = do_shortcode('[wpmfpdf url="' . esc_url($atts['url']) . '" width="'. (int)$width .'" height="'. (int)$height .'" embed="' . esc_attr($embed) . '" target="' . esc_attr($target) . '"]');
+                $id = (!empty($atts['id'])) ? $atts['id'] : '';
+                $html = do_shortcode('[wpmfpdf url="' . esc_url($atts['url']) . '" id="'. (int)$id . '" width="'. (int)$width .'" height="'. (int)$height .'" embed="' . esc_attr($embed) . '" target="' . esc_attr($target) . '"]');
             }
             return $html;
         }

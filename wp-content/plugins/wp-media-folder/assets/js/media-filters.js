@@ -5,6 +5,11 @@
  */
 var wpmfFoldersFiltersModule = void 0;
 (function ($) {
+    var this_url = new URL(location.href);
+    var get_taxonomy = this_url.searchParams.get("taxonomy");
+    var get_term = this_url.searchParams.get("term");
+    var get_wpmf_tag = this_url.searchParams.get("wpmf_tag");
+    var wpmf_tag = 0;
 
     wpmfFoldersFiltersModule = {
         events: [], // event handling
@@ -928,6 +933,17 @@ var wpmfFoldersFiltersModule = void 0;
          * @param value
          */
         selectFilter: function selectFilter(filter_elem, value) {
+            // Check filter tags
+            if ((get_taxonomy && get_term && get_taxonomy == 'wpmf_tag') || get_wpmf_tag) {
+                if (get_term) {
+                    wpmf_tag = get_term;
+                }
+                if (get_wpmf_tag) {
+                    wpmf_tag = get_wpmf_tag;
+                }
+                wpmfFoldersModule.setCookie('wpmf_tag', wpmf_tag, 365);
+            }
+
             var multiple = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
             var selector = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '';
             var query_param = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
@@ -1187,6 +1203,9 @@ var wpmfFoldersFiltersModule = void 0;
          * Clear all filters
          */
         clearFilters: function clearFilters() {
+            // delete cookie filter tag
+            wpmfFoldersModule.setCookie('wpmf_tag', '0');
+
             $(['wpmf_post_mime_type', 'attachment-filter', 'wpmf_wpmf_date', 'wpmf_wpmf_size', 'wpmf_wpmf_weight', 'media-order-folder', 'media-order-media', 'wpmf-display-media-filters', 'wpmf_all_media']).each(function () {
                 // delete cookie filter
                 wpmfFoldersModule.setCookie(this.toString() + wpmf.vars.host, 'all', 365);
@@ -1223,6 +1242,10 @@ var wpmfFoldersFiltersModule = void 0;
             wpmfFoldersModule.renderFolders();
             // Reload the dropdown
             wpmfFoldersFiltersModule.initDropdown(wpmfFoldersModule.getFrame());
+            if (wpmfFoldersModule.page_type === 'upload-grid') {
+                wpmfFoldersModule.setCookie('wpmf_tag', '0');
+                location.href = wpmf.vars.site_url + '/wp-admin/upload.php';
+            }
         },
 
         /**
@@ -1282,5 +1305,39 @@ var wpmfFoldersFiltersModule = void 0;
     // Wait for the main WPMF module filters initialization
     wpmfFoldersModule.on('afterFiltersInitialization', function () {
         wpmfFoldersFiltersModule.initModule(wpmfFoldersModule.page_type);
+    });
+
+    jQuery(document).ready(function ($) {
+        if (get_wpmf_tag) {
+            wpmfFoldersModule.setCookie('lastAccessFolder_' + wpmf.vars.host, 0);
+            wpmfFoldersModule.setCookie('wpmf_all_media' + wpmf.vars.host, 1);
+            wpmfFoldersModule.setCookie('wpmf_tag', get_wpmf_tag, 365);
+        };
+        // Count tag button
+        var element_count_tag = $('#the-list .column-posts').attr('data-colname');
+        if (element_count_tag && element_count_tag.toLowerCase() == 'count') {
+            $('#the-list .column-posts a').on('click', function(e){
+                e.preventDefault();
+                let url = $(this).attr('href');
+                let url_array = url.split("=");
+                let wpmf_tag_array = null;
+                let wpmf_tag_filter = null;
+                if (url_array) {
+                    wpmf_tag_array = url_array[1].split("&");
+                    if (wpmf_tag_array) {
+                        wpmf_tag_filter = wpmf_tag_array[0];
+                    }
+                }
+                
+                if (url) {
+                    wpmfFoldersModule.setCookie('lastAccessFolder_' + wpmf.vars.host, 0);
+                    wpmfFoldersModule.setCookie('wpmf_all_media' + wpmf.vars.host, 1);
+                    if (wpmf_tag_filter) {
+                        wpmfFoldersModule.setCookie('wpmf_tag', wpmf_tag_filter, 365);
+                    }
+                    location.href = url;
+                }
+            });
+        }
     });
 })(jQuery);
