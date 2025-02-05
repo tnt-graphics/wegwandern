@@ -10,6 +10,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\Constants;
  */
 class ScriptInlineMatcher extends AbstractMatcher
 {
+    const DO_NOT_COMPUTE = 'DO_NOT_COMPUTE';
     /**
      * See `AbstractMatcher`.
      *
@@ -18,28 +19,10 @@ class ScriptInlineMatcher extends AbstractMatcher
     public function match($match)
     {
         $result = $this->createResult($match);
-        $blockedBySyntaxSelector = [];
         if (!$result->isBlocked()) {
-            // Check if this script got blocked by a custom element blocker
-            foreach ($this->getBlockables() as $blockable) {
-                $foundSelectorSyntaxFinder = $blockable->findSelectorSyntaxFinderForMatch($match);
-                if ($foundSelectorSyntaxFinder !== null) {
-                    foreach ($foundSelectorSyntaxFinder->getAttributes() as $attributeInstance) {
-                        $blockedBySyntaxSelector[$attributeInstance->getAttribute()] = $match->getAttribute($attributeInstance->getAttribute());
-                    }
-                    $result->setBlocked([$blockable]);
-                    $result->setBlockedExpressions([$foundSelectorSyntaxFinder->getExpression()]);
-                }
-            }
-            // Still not blocked?
-            if (!$result->isBlocked()) {
-                return $result;
-            }
+            return $result;
         }
         $this->applyCommonAttributes($result, $match);
-        foreach ($blockedBySyntaxSelector as $linkAttribute => $link) {
-            $this->applyNewLinkElement($match, $linkAttribute, $link);
-        }
         // Example: SendInBlue could be blocked twice by URL in script and Selector Syntax
         if (!$match->hasAttribute(Constants::HTML_ATTRIBUTE_INLINE)) {
             $match->setAttribute(Constants::HTML_ATTRIBUTE_INLINE, $match->getScript());
@@ -78,12 +61,13 @@ class ScriptInlineMatcher extends AbstractMatcher
         $cb = $this->getHeadlessContentBlocker();
         $names = $cb->getSkipInlineScriptVariableAssignments();
         $names = $cb->runSkipInlineScriptVariableAssignmentsCallback($names, $this, $match);
-        return $match->isScriptOnlyVariableAssignment($names, !\in_array('DO_NOT_COMPUTE', $names, \true));
+        return $match->isScriptOnlyVariableAssignment($names, !\in_array(self::DO_NOT_COMPUTE, $names, \true));
     }
     /**
      * Add a non-minifyable string to the passed JavaScript so it can be skipped by this identifier.
      *
      * @param string $js
+     * @codeCoverageIgnore
      */
     public static function makeInlineScriptSkippable($js)
     {

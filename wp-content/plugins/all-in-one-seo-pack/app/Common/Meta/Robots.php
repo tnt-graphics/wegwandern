@@ -6,6 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use AIOSEO\Plugin\Common\Integrations\BuddyPress as BuddyPressIntegration;
+
 /**
  * Handles the robots meta tag.
  *
@@ -100,6 +102,10 @@ class Robots {
 			$this->globalValues( [ 'archives', 'search' ] );
 
 			return $this->metaHelper();
+		}
+
+		if ( BuddyPressIntegration::isComponentPage() ) {
+			return aioseo()->standalone->buddyPress->component->getMeta( 'robots' );
 		}
 
 		if ( is_category() || is_tag() || is_tax() ) {
@@ -222,7 +228,7 @@ class Robots {
 	 */
 	public function term( $term = null ) {
 		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
-		$term           = is_a( $term, 'WP_Term' ) ? $term : get_queried_object();
+		$term           = is_a( $term, 'WP_Term' ) ? $term : aioseo()->helpers->getTerm();
 
 		// Misbehaving themes/plugins can manipulate the loop and make archives return a post as the queried object.
 		if ( ! is_a( $term, 'WP_Term' ) ) {
@@ -247,7 +253,7 @@ class Robots {
 	 */
 	private function archives() {
 		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
-		$postType       = get_queried_object();
+		$postType       = aioseo()->helpers->getTerm();
 		if ( ! empty( $postType->name ) && $dynamicOptions->searchAppearance->archives->has( $postType->name ) ) {
 			$this->globalValues( [ 'archives', $postType->name ], true );
 		}
@@ -262,7 +268,7 @@ class Robots {
 	 * @param  boolean $isDynamicOption Whether this is for a dynamic option.
 	 * @return void
 	 */
-	protected function globalValues( $optionOrder = [], $isDynamicOption = false ) {
+	public function globalValues( $optionOrder = [], $isDynamicOption = false ) {
 		$robotsMeta = [];
 		if ( count( $optionOrder ) ) {
 			$options = $isDynamicOption

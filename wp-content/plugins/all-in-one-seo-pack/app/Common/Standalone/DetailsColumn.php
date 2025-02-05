@@ -169,9 +169,19 @@ class DetailsColumn {
 		}
 
 		// Add this column/post to the localized array.
-		global $wp_scripts;
+		global $wp_scripts; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		if (
+			! is_object( $wp_scripts ) || // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+			! method_exists( $wp_scripts, 'get_data' ) || // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+			! method_exists( $wp_scripts, 'add_data' ) // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		) {
+			return;
+		}
 
-		$data = $wp_scripts->get_data( 'aioseo/js/' . $this->scriptSlug, 'data' );
+		$data = null;
+		if ( is_object( $wp_scripts ) ) { // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+			$data = $wp_scripts->get_data( 'aioseo/js/' . $this->scriptSlug, 'data' ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		}
 
 		if ( ! is_array( $data ) ) {
 			$data = json_decode( str_replace( 'var aioseo = ', '', substr( $data, 0, -1 ) ), true );
@@ -179,11 +189,13 @@ class DetailsColumn {
 
 		// We have to temporarily modify the query here since the query incorrectly identifies
 		// the current page as a category page when posts are filtered by a specific category.
+		// phpcs:disable Squiz.NamingConventions.ValidVariableName
 		global $wp_query;
 		$originalQuery         = clone $wp_query;
 		$wp_query->is_category = false;
 		$wp_query->is_tag      = false;
 		$wp_query->is_tax      = false;
+		// phpcs:enable Squiz.NamingConventions.ValidVariableName
 
 		$posts    = ! empty( $data['posts'] ) ? $data['posts'] : [];
 		$postData = $this->getPostData( $postId, $columnName );
@@ -194,7 +206,7 @@ class DetailsColumn {
 			$postData
 		] ) );
 
-		$wp_query = $originalQuery;
+		$wp_query = $originalQuery; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 
 		foreach ( $addonsColumnData as $addonColumnData ) {
 			$postData = array_merge( $postData, $addonColumnData );
@@ -203,7 +215,7 @@ class DetailsColumn {
 		$posts[]       = $postData;
 		$data['posts'] = $posts;
 
-		$wp_scripts->add_data( 'aioseo/js/' . $this->scriptSlug, 'data', '' );
+		$wp_scripts->add_data( 'aioseo/js/' . $this->scriptSlug, 'data', '' ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 		wp_localize_script( 'aioseo/js/' . $this->scriptSlug, 'aioseo', $data );
 
 		require AIOSEO_DIR . '/app/Common/Views/admin/posts/columns.php';
@@ -228,8 +240,10 @@ class DetailsColumn {
 			'nonce'              => $nonce,
 			'title'              => $thePost->title,
 			'defaultTitle'       => aioseo()->meta->title->getPostTypeTitle( $postType ),
+			'showTitle'          => apply_filters( 'aioseo_details_column_post_show_title', true, $postId ),
 			'description'        => $thePost->description,
 			'defaultDescription' => aioseo()->meta->description->getPostTypeDescription( $postType ),
+			'showDescription'    => apply_filters( 'aioseo_details_column_post_show_description', true, $postId ),
 			'value'              => ! empty( $thePost->seo_score ) ? (int) $thePost->seo_score : 0,
 			'showMedia'          => false,
 			'isSpecialPage'      => aioseo()->helpers->isSpecialPage( $postId ),

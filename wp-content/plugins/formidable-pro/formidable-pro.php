@@ -2,7 +2,7 @@
 /*
 Plugin Name: Formidable Forms Pro
 Description: Add more power to your forms, and bring your reports and data management to the front-end.
-Version: 6.14.1
+Version: 6.17.2
 Plugin URI: https://formidableforms.com/
 Author URI: https://formidableforms.com/
 Author: Strategy11
@@ -112,6 +112,10 @@ register_activation_hook(
 			return;
 		}
 
+		if ( is_callable( 'FrmInbox::clear_cache' ) ) {
+			FrmInbox::clear_cache();
+		}
+
 		// Register autoloader for Formidable Pro classes.
 		spl_autoload_register( 'frm_pro_forms_autoloader' );
 
@@ -141,6 +145,10 @@ register_deactivation_hook(
 		$is_free_installed = function_exists( 'load_formidable_forms' );
 		if ( ! $is_free_installed ) {
 			return;
+		}
+
+		if ( is_callable( 'FrmInbox::clear_cache' ) ) {
+			FrmInbox::clear_cache();
 		}
 
 		// Register autoloader for Formidable Pro classes.

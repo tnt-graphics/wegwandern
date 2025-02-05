@@ -16,7 +16,7 @@ use DevOwl\RealCookieBanner\view\shortcode\LinkShortcode;
 trait Stats
 {
     // Documented in IOverrideStats
-    public function fetchMainStats($from, $to, $context)
+    public function fetchMainStats($from, $to, $context = null)
     {
         global $wpdb;
         $table_name = $this->getTableName(RealCookieBannerStats::TABLE_NAME_TERMS);

@@ -18,23 +18,31 @@ class FrmRegLoginController {
 	 * Redirect the user to the custom login page instead of wp-login.php
 	 *
 	 * @since 2.0
+	 *
+	 * @return void
 	 */
 	public static function redirect_to_custom_login() {
-		if ( 'GET' === FrmRegAppHelper::request_method() && ! isset( $_GET['interim-login'] ) ) {
+		if ( 'GET' !== FrmRegAppHelper::request_method() || isset( $_GET['interim-login'] ) ) {
+			return;
+		}
 
-			$args = array();
-			foreach ( array( 'redirect_to', 'checkemail' ) as $param ) {
-				$request_param_string = self::get_request_param_string( $param );
+		if ( FrmRegAppHelper::siteground_security_is_active() && FrmAppHelper::simple_get( 'sgs-token' ) ) {
+			// Prevent redirect from custom Siteground login.
+			return;
+		}
 
-				if ( '' === $request_param_string ) {
-					continue;
-				}
+		$args = array();
+		foreach ( array( 'redirect_to', 'checkemail' ) as $param ) {
+			$request_param_string = self::get_request_param_string( $param );
 
-				$args[ $param ] = $request_param_string;
+			if ( '' === $request_param_string ) {
+				continue;
 			}
 
-			self::redirect_to_selected_login_page( $args );
+			$args[ $param ] = $request_param_string;
 		}
+
+		self::redirect_to_selected_login_page( $args );
 	}
 
 	/**
@@ -85,6 +93,17 @@ class FrmRegLoginController {
 			self::maybe_set_login_limit_exceeded_error( $user );
 
 			if ( $login_url && is_wp_error( $user ) ) {
+				if ( FrmRegAppHelper::siteground_security_is_active() ) {
+					$referer_url = FrmAppHelper::get_server_value( 'HTTP_REFERER' );
+					$parsed_url  = parse_url( $referer_url );
+
+					if ( is_array( $parsed_url ) && isset( $parsed_url['scheme'], $parsed_url['host'], $parsed_url['path'] ) ) {
+						$referer_match = $login_url === $parsed_url['scheme'] . '://' . $parsed_url['host'] . $parsed_url['path'];
+						if ( ! $referer_match ) {
+							return $user;
+						}
+					}
+				}
 
 				self::run_login_failed_hooks( FrmAppHelper::get_post_param( 'log' ), $user );
 
@@ -247,7 +266,7 @@ class FrmRegLoginController {
 	 * @param $login_url
 	 */
 	private static function add_posted_redirect_to_query_string( &$login_url ) {
-		if ( ! empty( $_POST['redirect_to'] ) ) {
+		if ( ! empty( $_POST['redirect_to'] ) && ! is_array( $_POST['redirect_to'] ) ) {
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$login_url = add_query_arg( 'redirect_to', urlencode( $_POST['redirect_to'] ), $login_url );
 		}
@@ -394,5 +413,32 @@ class FrmRegLoginController {
 		$settings->check_page_content( get_queried_object_id(), $page_key, $errors );
 
 		return empty( $errors );
+	}
+
+	/**
+	 * Handle AJAX request to login.
+	 *
+	 * @since 3.0.1
+	 */
+	public static function handle_alternative_login() {
+		if ( ! FrmRegAppHelper::supports_alternative_login_url() ) {
+			self::handle_invalid_alternative_login_attempt();
+		}
+
+		if ( empty( $_POST ) || ! isset( $_POST['log'] ) || ! isset( $_POST['pwd'] ) ) {
+			self::handle_invalid_alternative_login_attempt();
+		}
+
+		$login_file_path = ABSPATH . '/wp-login.php';
+		if ( ! file_exists( $login_file_path ) ) {
+			self::handle_invalid_alternative_login_attempt();
+		}
+
+		require_once $login_file_path;
+	}
+
+	private static function handle_invalid_alternative_login_attempt() {
+		wp_safe_redirect( site_url( 'wp-login.php' ) );
+		die();
 	}
 }

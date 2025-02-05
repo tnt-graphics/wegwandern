@@ -520,7 +520,10 @@ INNER JOIN {$wpdb->prefix}frm_items AS items ON posts.ID = items.post_id WHERE p
 
 			// Look for the entry ID based on the imported value
 			// TODO: this may not be needed for XML imports. It appears to always be the entry ID that's exported
-			$where  = array( 'field_id' => $this->field->field_options['form_select'], 'meta_value' => trim( $imported_value ) );
+			$where  = array(
+				'field_id'   => $this->field->field_options['form_select'],
+				'meta_value' => trim( $imported_value ),
+			);
 			$new_id = FrmDb::get_var( 'frm_item_metas', $where, 'item_id' );
 
 			if ( $new_id && is_numeric( $new_id ) ) {

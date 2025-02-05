@@ -176,8 +176,6 @@ class FrmProPostAction extends FrmFormAction {
 
 		if ( is_callable( 'FrmAppHelper::maybe_autocomplete_pages_options' ) ) {
 			FrmAppHelper::maybe_autocomplete_pages_options( $dropdown_args );
-		} else {
-			FrmAppHelper::wp_pages_dropdown( $dropdown_args );
 		}
 	}
 }

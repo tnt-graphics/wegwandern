@@ -16,11 +16,6 @@
 
 	hooks.addFilter( 'frm_conditional_logic_field_options', hookNamespace, updateFieldOptions );
 
-	hooks.addFilter( 'frm_fields_with_shortcode_popup', hookNamespace, function( fieldsWithShortcodesBox ) {
-		fieldsWithShortcodesBox.push( 'rte' );
-		return fieldsWithShortcodesBox;
-	});
-
 	hooks.addAction( 'frm_after_delete_field', 'formidable-pro', function( fieldLi ) {
 		const fieldID = getFieldIDFromHTMLID( fieldLi.id );
 		document.querySelector( `a[data-code="${fieldID}"]` )?.closest( '.frm-customize-list' )?.remove();
@@ -134,8 +129,55 @@
 		updateShortcodeTriggerLabel( fieldShortcodeTrigger.nextElementSibling, labelInput.value );
 	}
 
+	function handleModalDismiss( input ) {
+		const modalDismissers = document.querySelectorAll( '#frm_info_modal .dismiss, #frm_info_modal #frm-info-click, .ui-widget-overlay.ui-front' );
+		function onModalClose() {
+			input.classList.add( 'frm_invalid_field' );
+			setTimeout( () => input.focus(), 0 );
+			modalDismissers.forEach( el => {
+				el.removeEventListener( 'click', onModalClose );
+			});
+		}
+
+		modalDismissers.forEach( el => {
+			el.addEventListener( 'click', onModalClose );
+		});
+	}
+
+	function validateSizeLimitValue( target ) {
+		let validationFailMessage;
+		if ( isNaN( target.value.trim() ) ) {
+			validationFailMessage = wp.i18n.__( 'Please enter a valid number.', 'formidable-pro' );
+		} else {
+			const parent  = target.closest( '.frm_grid_container' );
+			const minSize = parent.querySelector( '[id^=min_size_]' );
+			const maxSize = parent.querySelector( '[id^=size_]' );
+			if ( minSize.value && maxSize.value && Number( minSize.value ) > Number( maxSize.value ) ) {
+				validationFailMessage = wp.i18n.__( 'Minimum size cannot be greater than maximum size.', 'formidable-pro' );
+			} else {
+				const otherInput = target.id.startsWith( 'min_size_' ) ? maxSize : minSize;
+				if ( ! isNaN( otherInput.value.trim() ) ) {
+					otherInput.classList.remove( 'frm_invalid_field' );
+				}
+			}
+		}
+
+		if ( validationFailMessage ) {
+			frmAdminBuild.infoModal( validationFailMessage );
+			handleModalDismiss( target );
+			return;
+		}
+		if ( target.classList.contains( 'frm_invalid_field' ) ) {
+			target.classList.remove( 'frm_invalid_field' );
+		}
+	}
+
 	function handleChangeEvent( e ) {
 		const target = e.target;
+
+		if ( target.id.startsWith( 'min_size' ) || target.id.startsWith( 'size' ) ) {
+			validateSizeLimitValue( target );
+		}
 
 		if ( target.id.startsWith( 'frm_name_' ) ) {
 			maybeUpdateFieldsShortcodeModal( target );
@@ -558,10 +600,6 @@
 		}
 
 		function appendModalTriggersToRtePlaceholderSettings() {
-			if ( document.getElementById( 'frm_adv_info' ) ) {
-				// Do not make the Smart Values popup if the fields popups is available.
-				return;
-			}
 			const rtePlaceholderDefaults = document.querySelectorAll( '.frm-single-settings.frm-type-rte .frm-default-value-wrapper' );
 			if ( ! rtePlaceholderDefaults.length ) {
 				return;
@@ -649,19 +687,7 @@
 		}
 
 		if ( ! isValid ) {
-			const modalDismissers = document.querySelectorAll( '#frm_info_modal .dismiss, #frm_info_modal #frm-info-click' );
-			function handleModalDismiss() {
-				timeRangeInput.classList.add( 'frm_invalid_field' );
-				setTimeout( () => timeRangeInput.focus(), 0 );
-				modalDismissers.forEach( el => {
-					el.removeEventListener( 'click', handleModalDismiss );
-				});
-			}
-
-			modalDismissers.forEach( el => {
-				el.addEventListener( 'click', handleModalDismiss );
-			});
-
+			handleModalDismiss( timeRangeInput );
 		} else if ( timeRangeInput.classList.contains( 'frm_invalid_field' ) ) {
 			timeRangeInput.classList.remove( 'frm_invalid_field' );
 		}

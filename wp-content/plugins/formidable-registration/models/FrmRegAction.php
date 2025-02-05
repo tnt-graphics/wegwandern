@@ -24,7 +24,11 @@ class FrmRegAction extends FrmFormAction {
 			return;
 		}
 
-		$fields = FrmRegActionController::get_user_meta_fields( $form->id );
+		if ( method_exists( $this, 'get_form_fields' ) ) {
+			$fields = $this->get_form_fields( $form->id );
+		} else {
+			$fields = FrmRegActionController::get_user_meta_fields( $form->id );
+		}
 
 		$show_auto_login = FrmRegActionHelper::is_auto_login_visible( $form_action );
 

@@ -13,9 +13,13 @@ class FrmProContent {
 		$args['odd']  = $odd;
 		$args['show'] = $show;
 
+		// track the count of shortcoe types that are replaced in "replace_single_shortcode"
+		$shortcode_types_count = array(
+			'date_field' => 0,
+		);
 		foreach ( $shortcodes[0] as $short_key => $tag ) {
 			$previous_content = $content;
-			self::replace_single_shortcode( $shortcodes, $short_key, $tag, $entry, $display, $args, $content );
+			self::replace_single_shortcode( $shortcodes, $short_key, $tag, $entry, $display, $args, $content, $shortcode_types_count );
 
 			$has_run = ( $content !== $previous_content );
 			if ( $has_run ) {
@@ -39,7 +43,7 @@ class FrmProContent {
 	 * @param string $content
 	 * @return void
 	 */
-	public static function replace_single_shortcode( $shortcodes, $short_key, $tag, $entry, $display, $args, &$content ) {
+	public static function replace_single_shortcode( $shortcodes, $short_key, $tag, $entry, $display, $args, &$content, &$shortcode_types_count = array() ) {
 		$conditional = preg_match( '/^\[if/s', $shortcodes[0][ $short_key ] ) ? true : false;
 		$foreach     = preg_match( '/^\[foreach/s', $shortcodes[0][ $short_key ] ) ? true : false;
 		$atts        = FrmShortcodeHelper::get_shortcode_attribute_array( $shortcodes[3][ $short_key ] );
@@ -64,6 +68,7 @@ class FrmProContent {
 			'entry_position',
 			'evenodd',
 			'event_date',
+			'end_event_date',
 			'get',
 			'id',
 			'is_draft',
@@ -73,12 +78,29 @@ class FrmProContent {
 			'updated_by',
 		);
 
+		$class = array();
+		/**
+		 * Allows modification of the class mapping for shortcode processing.
+		 *
+		 * @since 6.16.3
+		 *
+		 * @param array $class Array of tag => class_name pairs.
+		 * @return array
+		 */
+		$class = apply_filters( 'frm_single_shortcode_processing_class', $class );
+
 		if ( in_array( $tag, $tags, true ) ) {
 			$args['entry']       = $entry;
 			$args['tag']         = $tag;
 			$args['conditional'] = $conditional;
 			$function            = 'do_shortcode_' . $tag;
-			self::$function( $content, $atts, $shortcodes, $short_key, $args, $display );
+			$class               = ! empty( $class[ $tag ] ) ? $class[ $tag ] : 'FrmProContent';
+
+			/** @var class-string $class */
+			if ( class_exists( $class ) && is_callable( array( $class, $function ) ) ) {
+				$class::$function( $content, $atts, $shortcodes, $short_key, $args, $display );
+			}
+
 			return;
 		}
 
@@ -104,6 +126,10 @@ class FrmProContent {
 
 		if ( $field->form_id == $entry->form_id ) {
 			$replace_with = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $field, $atts );
+			// track number of date field types used as shortcodes
+			if ( 'date' === $field->type ) {
+				++$shortcode_types_count['date_field'];
+			}
 		} elseif ( ! empty( $entry->parent_entry ) && intval( $field->form_id ) === intval( $entry->parent_entry->form_id ) ) {
 			// If current entry is a repeater entry, and we want to access the parent entry meta.
 			$replace_with = FrmProEntryMetaHelper::get_post_or_meta_value( $entry->parent_entry, $field, $atts );
@@ -139,7 +165,7 @@ class FrmProContent {
 		 * @param array    $atts
 		 * @param stdClass $field
 		 */
-		$replace_with       = apply_filters( 'frmpro_fields_replace_shortcodes', $replace_with, $tag, $atts, $field );
+		$replace_with       = apply_filters( 'frmpro_fields_replace_shortcodes', $replace_with, $tag, $atts, $field, compact( 'args', 'shortcode_types_count' ) );
 		$value_was_imploded = false;
 
 		if ( isset( $atts['show'] ) && $atts['show'] === 'count' ) {
@@ -185,7 +211,16 @@ class FrmProContent {
 					}
 				}
 
-				$replace_with = FrmFieldsHelper::get_display_value( $replace_with, $field, $atts );
+				$display_atts = $atts;
+				if ( ! isset( $display_atts['entry'] ) ) {
+					/**
+					 * Pass the entry so FrmFieldType::should_strip_most_html_before_preparing_display_value
+					 * can avoid the call to FrmEntry::getOne, saving on db queries.
+					 */
+					$display_atts['entry'] = $entry;
+				}
+
+				$replace_with = FrmFieldsHelper::get_display_value( $replace_with, $field, $display_atts );
 				if ( ! empty( $allow_separator_tags_filter ) ) {
 					remove_filter( 'frm_allowed_form_input_html', $allow_separator_tags_filter );
 				}
@@ -194,6 +229,10 @@ class FrmProContent {
 			self::trigger_shortcode_atts( $atts, $display, $args, $replace_with );
 			if ( is_callable( 'FrmFieldsHelper::sanitize_embedded_shortcodes' ) ) {
 				FrmFieldsHelper::sanitize_embedded_shortcodes( compact( 'entry' ), $replace_with );
+			}
+
+			if ( is_null( $replace_with ) ) {
+				$replace_with = '';
 			}
 
 			$content = str_replace( $shortcodes[0][ $short_key ], $replace_with, $content );
@@ -332,12 +371,14 @@ class FrmProContent {
 	}
 
 	/**
+	 * Replace the calendar date shortcode with the event date.
+	 *
 	 * @param string $content
 	 * @param string $date
 	 * @return string
 	 */
 	public static function replace_calendar_date_shortcode( $content, $date ) {
-		preg_match_all( "/\[(calendar_date)\b(.*?)(?:(\/))?\]/s", $content, $matches, PREG_PATTERN_ORDER );
+		preg_match_all( "/\[(calendar_date|calendar_end_date)\b(.*?)(?:(\/))?\]/s", $content, $matches, PREG_PATTERN_ORDER );
 		if ( empty( $matches[0] ) ) {
 			return $content;
 		}
@@ -345,23 +386,32 @@ class FrmProContent {
 		foreach ( $matches[0] as $short_key => $tag ) {
 			$atts = FrmShortcodeHelper::get_shortcode_attribute_array( $matches[2][ $short_key ] );
 			self::do_shortcode_event_date( $content, $atts, $matches, $short_key, array( 'event_date' => $date ) );
+			if ( is_callable( 'FrmViewsCalendarHelper::do_shortcode_end_event_date' ) ) {
+				FrmViewsCalendarHelper::do_shortcode_end_event_date( $content, $atts, $matches, $short_key, array( 'event_date' => $date ) );
+			}
 		}
 		return $content;
 	}
 
 	/**
-	 * @param array $shortcodes
-	 * @param int   $short_key
-	 * @param array $args
+	 * Replace the calendar date shortcode with the event date.
+	 * Function used to render the shortcode for event date in FrmProContent::replace_single_shortcode
+	 *
+	 * @param string $content
+	 * @param array  $atts
+	 * @param array  $shortcodes
+	 * @param int    $short_key
+	 * @param array  $args Passed in FrmProContent::replace_single_shortcode when called.
+	 *
 	 * @return void
 	 */
 	public static function do_shortcode_event_date( &$content, $atts, $shortcodes, $short_key, $args ) {
-		$event_date = '';
-		if ( isset( $args['event_date'] ) ) {
-			if ( ! isset( $atts['format'] ) ) {
-				$atts['format'] = get_option( 'date_format' );
-			}
-			$event_date = FrmProFieldsHelper::get_date( $args['event_date'], $atts['format'] );
+		$event_date_get_param = FrmAppHelper::get_param( 'frmev-start', '', 'get', 'sanitize_text_field' ); // Modern Calendar.
+		$format               = isset( $atts['format'] ) ? $atts['format'] : get_option( 'date_format' );
+		$event_date           = isset( $args['event_date'] ) ? $args['event_date'] : $event_date_get_param; // Check for $args['event_date'] first to support Legacy Calendar.
+
+		if ( ! empty( $event_date ) ) {
+			$event_date = FrmProFieldsHelper::get_date( $event_date, $format );
 		}
 		$content = str_replace( $shortcodes[0][ $short_key ], $event_date, $content );
 	}
@@ -373,6 +423,11 @@ class FrmProContent {
 	public static function do_shortcode_detaillink( &$content, $atts, $shortcodes, $short_key, $args, $display ) {
 		if ( $display ) {
 			$detail_link = self::get_detail_link( $args, $display );
+			$content     = str_replace(
+				'<a href="[detaillink]"',
+				'<a href="[detaillink]" class="frm-detail-link"',
+				$content
+			);
 			$content     = str_replace( $shortcodes[0][ $short_key ], $detail_link, $content );
 		}
 	}
@@ -394,7 +449,7 @@ class FrmProContent {
 			$detail_link = self::get_pretty_url( compact( 'param', 'param_value' ) );
 		}
 
-		return $detail_link;
+		return apply_filters( 'frmpro_detaillink_shortcode', $detail_link, $args );
 	}
 
 	/**

@@ -23,4 +23,7 @@ for ( $i = 1; $i <= $max; $i++ ) {
 }
 ?>
 </div>
+<?php if ( $value > $max ) { ?>
+	<b><?php echo esc_html( $value ); ?></b>
+<?php } ?>
 <div class="frm_clear"></div>

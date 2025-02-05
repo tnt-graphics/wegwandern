@@ -627,6 +627,31 @@ class FrmProAppController {
 	}
 
 	/**
+	 * Returns array of 'frm_action' values that trigger loading common admin js.
+	 *
+	 * @since 6.17
+	 * @return array
+	 */
+	private static function pages_loading_common_admin_js() {
+		return array( 'edit', 'settings' );
+	}
+
+	/**
+	 * Loads admin js for common pages.
+	 *
+	 * @since 6.17
+	 *
+	 * @param string $action Value of 'frm_action' parameter.
+	 * @return void
+	 */
+	private static function load_common_admin_js( $action ) {
+		if ( ! in_array( $action, self::pages_loading_common_admin_js(), true ) ) {
+			return;
+		}
+		wp_enqueue_script( 'formidable_pro_admin_common' );
+	}
+
+	/**
 	 * Init admin head. It's called via action hook admin_head.
 	 *
 	 * @since 6.5.1
@@ -674,7 +699,10 @@ class FrmProAppController {
 			return;
 		}
 
-		$action = FrmAppHelper::get_param( 'frm_action' );
+		$action  = FrmAppHelper::get_param( 'frm_action' );
+		$version = FrmProDb::$plug_version;
+		wp_register_script( 'formidable_pro_admin_common', FrmProAppHelper::plugin_url() . '/js/admin/common.js', array(), $version, true );
+		self::load_common_admin_js( $action );
 		if ( in_array( $action, array( 'edit', 'duplicate' ), true ) ) {
 
 			self::register_admin_script( 'builder', array( 'formidable_admin' ) );
@@ -771,11 +799,7 @@ class FrmProAppController {
 	 * @return bool
 	 */
 	private static function on_form_listing_page() {
-		if ( is_callable( 'FrmAppHelper::on_form_listing_page' ) ) {
-			return FrmAppHelper::on_form_listing_page();
-		}
-		$action = FrmAppHelper::simple_get( 'frm_action', 'sanitize_title' );
-		return ! $action || in_array( $action, array( 'list', 'trash', 'untrash', 'destroy' ), true );
+		return FrmAppHelper::on_form_listing_page();
 	}
 
 	/**
@@ -855,11 +879,7 @@ class FrmProAppController {
 	 * @since 3.04.02
 	 */
 	public static function remove_upsells() {
-		if ( is_callable( 'FrmAppController::remove_upsells' ) ) {
-			FrmAppController::remove_upsells();
-		} else {
-			remove_action( 'frm_before_settings', 'FrmSettingsController::license_box' );
-		}
+		FrmAppController::remove_upsells();
 	}
 
 	/**
@@ -919,7 +939,7 @@ class FrmProAppController {
 		$version = FrmProDb::$plug_version;
 		wp_enqueue_media(); // Required for the bg image file upload.
 
-		if ( is_callable( 'FrmAppHelper::is_style_editor_page' ) && FrmAppHelper::is_style_editor_page( 'edit' ) ) {
+		if ( FrmAppHelper::is_style_editor_page( 'edit' ) ) {
 			wp_enqueue_script( 'wp-color-picker-alpha', self::get_settings_js_url() . 'wp-color-picker-alpha.js', array( 'wp-color-picker' ), '3.0.2', true );
 		}
 

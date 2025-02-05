@@ -16,7 +16,10 @@ class FrmProFormsHelper {
 
 	public static function setup_edit_vars( $values ) {
 		$record = FrmForm::getOne( $values['id'] );
-		foreach ( array( 'logged_in' => $record->logged_in, 'editable' => $record->editable ) as $var => $default ) {
+		foreach ( array(
+			'logged_in' => $record->logged_in,
+			'editable'  => $record->editable,
+		) as $var => $default ) {
 			$values[ $var ] = FrmAppHelper::get_param( $var, $default, 'get', 'sanitize_text_field' );
 		}
 
@@ -1235,7 +1238,13 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 */
 	public static function has_field( $type, $form_id, $single = true ) {
 		if ( $single ) {
-			$included = FrmDb::get_var( 'frm_fields', array( 'form_id' => $form_id, 'type' => $type ) );
+			$included = FrmDb::get_var(
+				'frm_fields',
+				array(
+					'form_id' => $form_id,
+					'type'    => $type,
+				) 
+			);
 			if ( $included ) {
 				$included = FrmField::getOne( $included );
 			}

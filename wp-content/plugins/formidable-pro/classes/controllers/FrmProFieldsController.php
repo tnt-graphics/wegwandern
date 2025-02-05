@@ -238,7 +238,7 @@ class FrmProFieldsController {
 	 */
 	private static function add_html_autocomplete( $field, &$add_html ) {
 		if ( ! empty( $field['autocomplete'] ) ) {
-			$add_html .= 'autocomplete="' . esc_attr( $field['autocomplete'] ) . '"';
+			$add_html .= ' autocomplete="' . esc_attr( $field['autocomplete'] ) . '" ';
 		}
 	}
 
@@ -437,7 +437,7 @@ class FrmProFieldsController {
 	 */
 	private static function maybe_add_data_attribute_for_section( $field, &$add_html ) {
 		if ( FrmField::is_option_true_in_array( $field, 'in_section' ) ) {
-			$add_html .= ' data-sectionid="' . $field['in_section'] . '"';
+			$add_html .= ' data-sectionid="' . $field['in_section'] . '" ';
 		}
 
 		// TODO: Add data attribute for embedded form fields as well
@@ -618,7 +618,7 @@ class FrmProFieldsController {
 			'frmshow' => '#calc-for-',
 		);
 
-		if ( ! isset( $atts['display']['calc'] ) || ! $atts['display']['calc'] ) {
+		if ( empty( $atts['display']['calc'] ) ) {
 			unset( $types['calc'] );
 		}
 
@@ -629,7 +629,7 @@ class FrmProFieldsController {
 			'frmhide' => '.frm-inline-modal,.default-value-section-',
 		);
 
-		if ( ! isset( $atts['display']['autopopulate'] ) || ! $atts['display']['autopopulate'] ) {
+		if ( empty( $atts['display']['autopopulate'] ) ) {
 			unset( $types['get_values_field'] );
 		}
 
@@ -863,7 +863,13 @@ class FrmProFieldsController {
 			wp_die();
 		}
 
-		$fields = FrmField::getAll( array( 'fi.type not' => FrmField::no_save_fields(), 'fi.form_id' => $form_id ), 'field_order' );
+		$fields = FrmField::getAll(
+			array(
+				'fi.type not' => FrmField::no_save_fields(),
+				'fi.form_id'  => $form_id,
+			),
+			'field_order' 
+		);
 
 		$options = array(
 			'titleValues' => array(),
@@ -928,7 +934,14 @@ class FrmProFieldsController {
 		}
 
 		if ( ! isset( $disabled ) || ! $disabled ) {
-			$disabled = FrmDb::get_col( $wpdb->prefix . 'frm_item_metas', array( 'field_id' => $options['field_id'], 'item_id !' => $options['entry_id'] ), 'meta_value' );
+			$disabled = FrmDb::get_col(
+				$wpdb->prefix . 'frm_item_metas',
+				array(
+					'field_id'  => $options['field_id'],
+					'item_id !' => $options['entry_id'],
+				),
+				'meta_value' 
+			);
 		}
 
 		if ( isset( $post_dates ) && $post_dates ) {
@@ -1049,7 +1062,13 @@ class FrmProFieldsController {
 				continue;
 			}
 
-			$data_display_opts = apply_filters( 'frm_display_data_opts', array( 'html' => true, 'wpautop' => false ) );
+			$data_display_opts = apply_filters(
+				'frm_display_data_opts',
+				array(
+					'html'    => true,
+					'wpautop' => false,
+				) 
+			);
 
 			$value = FrmFieldsHelper::get_display_value( $meta_value, $data_field, $data_display_opts );
 			if ( is_array( $value ) ) {
@@ -1261,7 +1280,11 @@ class FrmProFieldsController {
 		FrmFieldsHelper::prepare_new_front_field( $field, $args['field_data'] );
 
 		// Sort the options
-		$pass_args        = array( 'metas' => $metas, 'field' => $linked_field, 'dynamic_field' => $field );
+		$pass_args        = array(
+			'metas'         => $metas,
+			'field'         => $linked_field,
+			'dynamic_field' => $field,
+		);
 		$field['options'] = apply_filters( 'frm_data_sort', $field['options'], $pass_args );
 	}
 
@@ -1291,7 +1314,10 @@ class FrmProFieldsController {
 
 		$cat_ids = array_keys( $field['options'] );
 
-		$cat_args = array( 'include' => implode( ',', $cat_ids ), 'hide_empty' => false );
+		$cat_args = array(
+			'include'    => implode( ',', $cat_ids ),
+			'hide_empty' => false,
+		);
 
 		$post_type            = FrmProFormsHelper::post_type( $args['field_data']->form_id );
 		$cat_args['taxonomy'] = FrmProAppHelper::get_custom_taxonomy( $post_type, $args['field_data'] );
@@ -1653,7 +1679,11 @@ class FrmProFieldsController {
 
 		array_unshift( $fields, $section_field );
 
-		$order_query       = array( 'field_order >' => $section_field->field_order, 'form_id' => $form_id, 'type' => 'end_divider' );
+		$order_query       = array(
+			'field_order >' => $section_field->field_order,
+			'form_id'       => $form_id,
+			'type'          => 'end_divider',
+		);
 		$end_section_order = FrmDb::get_var( 'frm_fields', $order_query, 'field_order', array( 'order_by' => 'field_order ASC' ) );
 		$field_order       = max( $section_field->field_order, $end_section_order );
 
@@ -1661,7 +1691,13 @@ class FrmProFieldsController {
 
 		if ( ! empty( $section_field->field_options['repeat'] ) ) {
 			// create the repeatable form
-			$new_form_id = FrmProField::create_repeat_form( 0, array( 'parent_form_id' => $form_id, 'field_name' => $section_field->name ) );
+			$new_form_id = FrmProField::create_repeat_form(
+				0,
+				array(
+					'parent_form_id' => $form_id,
+					'field_name'     => $section_field->name,
+				) 
+			);
 		} else {
 			$new_form_id = $form_id;
 		}
@@ -1921,7 +1957,10 @@ class FrmProFieldsController {
 
 		$term = FrmAppHelper::get_param( 'term', '', 'get', 'sanitize_text_field' );
 		if ( empty( $term ) ) {
-			$args  = array( 'limit' => 20, 'order_by' => 'display_name' );
+			$args  = array(
+				'limit'    => 20,
+				'order_by' => 'display_name',
+			);
 			$items = FrmDb::get_results( $wpdb->users, array(), 'ID, display_name', $args );
 		} else {
 			$items = $wpdb->get_results(
@@ -2091,6 +2130,48 @@ class FrmProFieldsController {
 		}
 
 		return $is_field_type;
+	}
+
+	/**
+	 * If no placeholder option is added to a dropdown field and conditional logic is enabled, add a hidden empty option.
+	 * This fixes an issue with conditional logic, where conditionally hidden dropdown values cannot be cleared.
+	 * Triggered after dropdown field placeholder option is not added.
+	 *
+	 * @since 6.16.2
+	 *
+	 * @param array $field
+	 * @return void
+	 */
+	public static function dropdown_field_after_no_placeholder_option( $field ) {
+		if ( empty( $field['hide_field'] ) ) {
+			return;
+		}
+
+		// Do an additional check if the first option has an empty value before adding a hidden empty option.
+		if ( ! empty( $field['options'] ) && is_array( $field['options'] ) ) {
+			$first_option = reset( $field['options'] );
+			if ( is_array( $first_option ) && isset( $first_option['value'] ) && '' === $first_option['value'] ) {
+				return;
+			}
+
+			if ( is_string( $first_option ) && '' === $first_option ) {
+				return;
+			}
+		}
+
+		if ( ! isset( $_POST['item_meta'] ) || ! isset( $_POST['item_meta'][ $field['id'] ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			// This is only required when the field data is being posted.
+			return;
+		}
+
+		FrmProHtmlHelper::echo_dropdown_option(
+			'',
+			! isset( $field['value'] ) || '' === $field['value'],
+			array(
+				'value' => '',
+				'class' => 'frm_hidden frm_hidden_placeholder',
+			)
+		);
 	}
 
 	/**

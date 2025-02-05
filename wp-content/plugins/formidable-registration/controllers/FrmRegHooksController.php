@@ -21,6 +21,7 @@ class FrmRegHooksController {
 		add_filter( 'frm_twilio_action_options', 'FrmRegActionController::add_trigger_to_action' );
 		add_filter( 'frm_mailchimp_action_options', 'FrmRegActionController::add_trigger_to_action' );
 		add_filter( 'frm_api_action_options', 'FrmRegActionController::add_trigger_to_action' );
+		add_filter( 'frm_pro_repeater_action_support', 'FrmRegActionController::add_repeater_actions_support' );
 
 		// FrmRegUserController
 		add_action( 'frm_trigger_register_action', 'FrmRegUserController::register_user', 10, 3 );
@@ -41,7 +42,9 @@ class FrmRegHooksController {
 		add_filter( 'frm_setup_new_fields_vars', 'FrmRegEntry::reset_user_id_for_back_user_creation', 20, 2 );
 		add_filter( 'frm_setup_edit_fields_vars', 'FrmRegEntry::check_updated_user_meta', 10, 3 );
 		add_action( 'frm_after_create_entry', 'FrmRegEntry::maybe_hash_password', 40, 2 );
+		add_action( 'frm_after_create_entry', 'FrmRegEntry::maybe_update_entry_user_id', 40 );
 		add_action( 'frm_after_update_entry', 'FrmRegEntry::maybe_hash_password', 40, 2 );
+		add_action( 'frm_after_update_entry', 'FrmRegEntry::maybe_update_entry_user_id', 40 );
 
 		new FrmRegEntryController();
 
@@ -124,6 +127,10 @@ class FrmRegHooksController {
 		add_filter( 'frm_sc_popup_opts', 'FrmRegShortcodesController::get_login_form_sc_opts', 11, 2 );
 		add_action( 'admin_enqueue_scripts', 'FrmRegAppController::enqueue_assets' );
 		add_filter( 'frm_before_save_email_action', 'FrmRegShortcodesController::before_save_email_action' );
+
+		if ( FrmAppHelper::doing_ajax() ) {
+			add_action( 'wp_ajax_nopriv_frm_login', 'FrmRegLoginController::handle_alternative_login' );
+		}
 	}
 
 	/**

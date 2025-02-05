@@ -18,6 +18,7 @@ class FrmProSettings extends FrmSettings {
 	public $inbox;
 	public $repeater_row_delete_confirmation;
 	public $hide_dashboard_videos;
+	public $entry_delete_message;
 
 	/**
 	 * @return array
@@ -40,6 +41,7 @@ class FrmProSettings extends FrmSettings {
 			),
 			'repeater_row_delete_confirmation' => __( 'Are you sure you want to delete this row?', 'formidable-pro' ),
 			'hide_dashboard_videos'            => 0,
+			'entry_delete_message'             => __( 'Your entry was successfully deleted.', 'formidable-pro' ),
 		);
 	}
 
@@ -51,7 +53,14 @@ class FrmProSettings extends FrmSettings {
 	 * @since 4.06.01
 	 */
 	public function fill_with_defaults( $params = array() ) {
-		$params['additional_filter_keys'] = array( 'edit_msg', 'update_value', 'already_submitted', 'repeater_row_delete_confirmation', 'hide_dashboard_videos' );
+		$params['additional_filter_keys'] = array(
+			'edit_msg',
+			'update_value',
+			'already_submitted',
+			'repeater_row_delete_confirmation',
+			'hide_dashboard_videos',
+			'entry_delete_message',
+		);
 		parent::fill_with_defaults( $params );
 		$this->fill_inbox_defaults();
 	}

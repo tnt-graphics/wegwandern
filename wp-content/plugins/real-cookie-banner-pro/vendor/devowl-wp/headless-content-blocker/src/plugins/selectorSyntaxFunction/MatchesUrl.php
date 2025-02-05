@@ -2,10 +2,9 @@
 
 namespace DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction;
 
-use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\SelectorSyntaxMatch;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\AbstractMatch;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\SelectorSyntaxAttributeFunction;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\AbstractPlugin;
-use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\BlockedResult;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\matcher\SelectorSyntaxMatcher;
 /**
  * This plugin registers the selector syntax `matchesUrl()`.
@@ -48,7 +47,7 @@ class MatchesUrl extends AbstractPlugin
      * Function implementation.
      *
      * @param SelectorSyntaxAttributeFunction $fn
-     * @param SelectorSyntaxMatch $match
+     * @param AbstractMatch $match
      * @param mixed $value
      */
     public function fn($fn, $match, $value)
@@ -56,7 +55,7 @@ class MatchesUrl extends AbstractPlugin
         $headlessContentBlocker = $this->getHeadlessContentBlocker();
         $matcher = $headlessContentBlocker->getFinderToMatcher()[$fn->getAttribute()->getFinder()] ?? null;
         if ($matcher !== null && $matcher instanceof SelectorSyntaxMatcher) {
-            $blockedResult = new BlockedResult('', [], '');
+            $blockedResult = $matcher->createPlainResultFromMatch($match);
             $blockable = $matcher->getBlockable();
             // $blockable can be `null` when used with `addSelectorSyntaxMap`
             $useBlockables = $blockable === null ? null : [$blockable];
@@ -64,11 +63,11 @@ class MatchesUrl extends AbstractPlugin
             $matcher->iterateBlockablesInString($blockedResult, $value, \false, \false, null, $useBlockables);
             if (!$blockedResult->isBlocked() && $withHost) {
                 $matcher->iterateBlockablesInString($blockedResult, $value, \false, \false, $headlessContentBlocker->blockablesToHosts(\true, $useBlockables));
-                // When we are using the syntax within `addSelectorSyntaxMap`, the match will not be blocked
-                // as the blockable probably will not have the same rule; we need to force use the block result
-                if ($blockable === null && $blockedResult->isBlocked()) {
-                    $match->setForceResult($blockedResult);
-                }
+            }
+            // When we are using the syntax within `addSelectorSyntaxMap`, the match will not be blocked
+            // as the blockable probably will not have the same rule; we need to force use the block result
+            if ($blockable === null && $blockedResult->isBlocked()) {
+                $match->setData(SelectorSyntaxMatcher::DATA_FORCE_RESULT, $blockedResult);
             }
             return $blockedResult->isBlocked();
         }

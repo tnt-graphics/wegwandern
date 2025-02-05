@@ -71,8 +71,8 @@ $selected_type = '';
 	<?php } ?>
 
 	<div class="frm1 frm_form_field frm-inline-select">
-    	<a href="javascript:void(0)" class="frm_remove_tag frm_icon_font" data-removeid="frm_posttax_<?php echo esc_attr( $tax_meta ); ?>" data-showlast=".frm_add_posttax_row.button" data-hidelast="#frm_form_action_<?php echo esc_attr( $action_control->number ); ?> .frm_posttax_labels"></a>
-    	<a href="javascript:void(0)" class="frm_add_tag frm_icon_font frm_add_posttax_row"></a>
+    	<a href="javascript:void(0)" class="frm_remove_tag" data-removeid="frm_posttax_<?php echo esc_attr( $tax_meta ); ?>" data-showlast=".frm_add_posttax_row.button" data-hidelast="#frm_form_action_<?php echo esc_attr( $action_control->number ); ?> .frm_posttax_labels"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?></a>
+    	<a href="javascript:void(0)" class="frm_add_tag frm_add_posttax_row"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon' ); ?></a>
 	</div>
 
 <?php if ( $selected_type !== 'tag' ) { ?>

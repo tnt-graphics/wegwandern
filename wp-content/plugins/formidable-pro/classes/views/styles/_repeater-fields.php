@@ -6,7 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Color', 'formidable-pro' ); ?></label>
+		<label
+			for="frm_repeat_icon_color"
+			class="frm-style-item-heading"><?php esc_html_e( 'Icon Color', 'formidable-pro' ); ?></label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -22,7 +24,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Icon Color', 'formidable-pro' ); ?></label>
+		<label class="frm-style-item-heading"><?php esc_html_e( 'Icons', 'formidable-pro' ); ?></label>
 	</div>
 	<div class="frm7 frm_form_field"><?php FrmStylesHelper::bs_icon_select( $style, $frm_style, 'minus' ); ?></div>
 

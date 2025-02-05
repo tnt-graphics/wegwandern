@@ -1,17 +1,17 @@
-# Copyright (C) 2024 Strategy11
+# Copyright (C) 2025 Strategy11
 # This file is distributed under the same license as the Formidable Registration plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Formidable Registration 2.13\n"
+"Project-Id-Version: Formidable Registration 3.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/formidable-registration\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-04-04T15:55:49+00:00\n"
+"POT-Creation-Date: 2025-01-27T14:19:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WP-CLI 2.10.0\n"
+"X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: frmreg\n"
 
 #. Plugin Name of the plugin
@@ -43,43 +43,43 @@ msgstr ""
 msgid "Successful user registration"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:152
+#: controllers/FrmRegActionController.php:203
 msgid "User Email Notification"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:243
+#: controllers/FrmRegActionController.php:294
 msgid "Email Notification"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:449
+#: controllers/FrmRegActionController.php:500
 msgid "N/A"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:548
+#: controllers/FrmRegActionController.php:599
 msgid "Admin Email Notification"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:578
+#: controllers/FrmRegActionController.php:629
 msgid "Welcome to %s"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:593
+#: controllers/FrmRegActionController.php:644
 msgid "Thanks for creating an account on %s."
 msgstr ""
 
-#: controllers/FrmRegActionController.php:603
+#: controllers/FrmRegActionController.php:654
 msgid "Your username is %s."
 msgstr ""
 
-#: controllers/FrmRegActionController.php:611
+#: controllers/FrmRegActionController.php:662
 msgid "You may %1$slog in here%2$s with the username and password you have created."
 msgstr ""
 
-#: controllers/FrmRegActionController.php:631
+#: controllers/FrmRegActionController.php:682
 msgid "To set your password, please visit the following address:"
 msgstr ""
 
-#: controllers/FrmRegActionController.php:719
+#: controllers/FrmRegActionController.php:774
 msgid "User ID"
 msgstr ""
 
@@ -87,15 +87,15 @@ msgstr ""
 msgid "You are running an outdated version of Formidable. This plugin will not work correctly if you do not update Formidable."
 msgstr ""
 
-#: controllers/FrmRegModerationController.php:436
+#: controllers/FrmRegModerationController.php:445
 msgid "Your account is now active. Enjoy!"
 msgstr ""
 
-#: controllers/FrmRegModerationController.php:440
+#: controllers/FrmRegModerationController.php:449
 msgid "Your account has been activated. You may now log in."
 msgstr ""
 
-#: controllers/FrmRegModerationController.php:444
+#: controllers/FrmRegModerationController.php:453
 msgid "Your account has been activated. Please check your e-mail for a link to set your password."
 msgstr ""
 
@@ -104,10 +104,10 @@ msgid "Invalid request."
 msgstr ""
 
 #: controllers/FrmRegResetPasswordController.php:309
-#: models/FrmRegLoginForm.php:936
+#: models/FrmRegLoginForm.php:938
 #: models/FrmRegLoginWidget.php:18
 #: models/FrmRegLoginWidget.php:91
-#: views/_register_settings.php:51
+#: views/_register_settings.php:55
 msgid "Password"
 msgstr ""
 
@@ -194,35 +194,35 @@ msgstr ""
 msgid "default"
 msgstr ""
 
-#: helpers/FrmRegActionHelper.php:138
+#: helpers/FrmRegActionHelper.php:173
 msgid "Redirect URL"
 msgstr ""
 
-#: helpers/FrmRegActionHelper.php:167
+#: helpers/FrmRegActionHelper.php:202
 msgid "Open in new tab"
 msgstr ""
 
-#: helpers/FrmRegActionHelper.php:193
+#: helpers/FrmRegActionHelper.php:228
 msgid "Select a page"
 msgstr ""
 
-#: helpers/FrmRegActionHelper.php:200
+#: helpers/FrmRegActionHelper.php:235
 msgid "Select a Page"
 msgstr ""
 
-#: helpers/FrmRegAppHelper.php:244
+#: helpers/FrmRegAppHelper.php:270
 msgid "Require new users to confirm their e-mail address before they may log in."
 msgstr ""
 
-#: helpers/FrmRegAppHelper.php:245
+#: helpers/FrmRegAppHelper.php:271
 msgid "Require new users to be approved by an administrator before they may log in."
 msgstr ""
 
-#: helpers/FrmRegAppHelper.php:246
+#: helpers/FrmRegAppHelper.php:272
 msgid "Select the page where users will be redirected after clicking the activation link."
 msgstr ""
 
-#: helpers/FrmRegAppHelper.php:247
+#: helpers/FrmRegAppHelper.php:273
 msgid "Create a new subdomain or subdirectory when a user registers with this form."
 msgstr ""
 
@@ -242,11 +242,11 @@ msgstr ""
 msgid "Register User"
 msgstr ""
 
-#: models/FrmRegAction.php:35
+#: models/FrmRegAction.php:39
 msgid "Redirect to Page"
 msgstr ""
 
-#: models/FrmRegAction.php:40
+#: models/FrmRegAction.php:44
 msgid "Redirect to URL"
 msgstr ""
 
@@ -258,7 +258,7 @@ msgstr ""
 msgid "Thanks for registering at %s! To complete the activation of your account please click the following link: "
 msgstr ""
 
-#: models/FrmRegEntry.php:517
+#: models/FrmRegEntry.php:610
 msgid "The following words cannot be used as blog names: %s."
 msgstr ""
 
@@ -318,58 +318,58 @@ msgstr ""
 msgid "The selected registration page does not include a registration form. Please select a page that has a registration form that can be viewed when logged out."
 msgstr ""
 
-#: models/FrmRegLoginForm.php:805
+#: models/FrmRegLoginForm.php:807
 msgid "The username field is empty."
 msgstr ""
 
-#: models/FrmRegLoginForm.php:808
+#: models/FrmRegLoginForm.php:810
 msgid "The password field is empty."
 msgstr ""
 
-#: models/FrmRegLoginForm.php:811
+#: models/FrmRegLoginForm.php:813
 msgid "Invalid username or password. %1$sLost your password%2$s?"
 msgstr ""
 
-#: models/FrmRegLoginForm.php:827
+#: models/FrmRegLoginForm.php:829
 msgid "An error occurred. Please try again."
 msgstr ""
 
-#: models/FrmRegLoginForm.php:870
+#: models/FrmRegLoginForm.php:872
 msgid "A password reset email has been sent to the email address on file for your account, but may take several minutes to show up in your inbox."
 msgstr ""
 
-#: models/FrmRegLoginForm.php:874
+#: models/FrmRegLoginForm.php:876
 msgid "Your password has been reset."
 msgstr ""
 
-#: models/FrmRegLoginForm.php:935
+#: models/FrmRegLoginForm.php:937
 #: models/FrmRegLoginWidget.php:17
 #: models/FrmRegLoginWidget.php:90
-#: views/_register_settings.php:27
+#: views/_register_settings.php:30
 msgid "Username"
 msgstr ""
 
-#: models/FrmRegLoginForm.php:937
+#: models/FrmRegLoginForm.php:939
 #: models/FrmRegLoginWidget.php:19
 #: models/FrmRegLoginWidget.php:92
 msgid "Remember Me"
 msgstr ""
 
-#: models/FrmRegLoginForm.php:938
+#: models/FrmRegLoginForm.php:940
 msgid "Forgot your password?"
 msgstr ""
 
-#: models/FrmRegLoginForm.php:939
+#: models/FrmRegLoginForm.php:941
 #: models/FrmRegLoginWidget.php:20
 #: models/FrmRegLoginWidget.php:93
 msgid "Login"
 msgstr ""
 
-#: models/FrmRegLoginForm.php:940
+#: models/FrmRegLoginForm.php:942
 msgid "Logout"
 msgstr ""
 
-#: models/FrmRegLoginForm.php:941
+#: models/FrmRegLoginForm.php:943
 msgid "New user? Click here to register"
 msgstr ""
 
@@ -394,10 +394,15 @@ msgid "Your password reset link has expired. Please request a new link below."
 msgstr ""
 
 #: models/FrmRegLostPWForm.php:69
+msgid "The email could not be sent. Your site may not be correctly configured to send emails."
+msgstr ""
+
+#: models/FrmRegLostPWForm.php:72
 msgid "An unknown error occurred. Please try again later."
 msgstr ""
 
 #: models/FrmRegResetPWForm.php:76
+#: views/global_settings.php:178
 msgid "Reset Password"
 msgstr ""
 
@@ -437,79 +442,119 @@ msgstr ""
 msgid "Global Pages"
 msgstr ""
 
-#: views/global_settings.php:12
+#: views/global_settings.php:14
 msgid "Login/Logout Page"
 msgstr ""
 
-#: views/global_settings.php:13
+#: views/global_settings.php:15
 msgid "Prevent logged-out users from seeing the wp-admin page. Select a page where logged-out users will be redirected when they try to access the wp-admin page or just leave this option blank. Please note that you must have a login form on the selected page."
 msgstr ""
 
-#: views/global_settings.php:30
+#: views/global_settings.php:33
 msgid "Reset Password Page"
 msgstr ""
 
-#: views/global_settings.php:31
+#: views/global_settings.php:34
 msgid "Select the page where users can reset their password. Please note that you must have a reset password form on the selected page."
 msgstr ""
 
-#: views/global_settings.php:46
+#: views/global_settings.php:52
 msgid "Registration Page"
 msgstr ""
 
-#: views/global_settings.php:47
+#: views/global_settings.php:53
 msgid "Select a page where users can register for your site. Leave this option blank if you would like to allow users to register on the default WordPress registration page. Please note that you must have a registration form on the selected page."
 msgstr ""
 
-#: views/global_settings.php:64
+#: views/global_settings.php:71
 msgid "Default Messages"
 msgstr ""
 
-#: views/global_settings.php:65
+#: views/global_settings.php:72
 msgid "Override the default registration messages."
 msgstr ""
 
-#: views/global_settings.php:70
+#: views/global_settings.php:79
+msgid "Existing Email"
+msgstr ""
+
+#: views/global_settings.php:80
 msgid "The message displayed when an existing email is entered in a registration form."
 msgstr ""
 
-#: views/global_settings.php:77
+#: views/global_settings.php:89
+msgid "Existing Username"
+msgstr ""
+
+#: views/global_settings.php:90
 msgid "The message displayed when an existing username is entered in a registration form."
 msgstr ""
 
-#: views/global_settings.php:84
+#: views/global_settings.php:99
+msgid "Blank Password"
+msgstr ""
+
+#: views/global_settings.php:100
 msgid "The message displayed when a blank password is entered in a registration form."
 msgstr ""
 
-#: views/global_settings.php:91
+#: views/global_settings.php:109
+msgid "Blank Email"
+msgstr ""
+
+#: views/global_settings.php:110
 msgid "The message displayed when a blank email is entered in a registration form."
 msgstr ""
 
-#: views/global_settings.php:98
+#: views/global_settings.php:119
+msgid "Blank Username"
+msgstr ""
+
+#: views/global_settings.php:120
 msgid "The message displayed when a blank username is entered in a registration form."
 msgstr ""
 
-#: views/global_settings.php:105
+#: views/global_settings.php:129
+msgid "Illegal Username"
+msgstr ""
+
+#: views/global_settings.php:130
 msgid "The message displayed when an illegal username is entered in a registration form."
 msgstr ""
 
-#: views/global_settings.php:111
-msgid "The message displayed when an illegal password is entered in a registration form."
-msgstr ""
-
-#: views/global_settings.php:118
-msgid "The message displayed when an existing subsite is entered in a registration form."
-msgstr ""
-
-#: views/global_settings.php:125
-msgid "The message displayed when a logged-in user attempts to change their username."
-msgstr ""
-
-#: views/global_settings.php:132
-msgid "The text that appears at the top of the lost password form."
+#: views/global_settings.php:138
+msgid "Illegal Password"
 msgstr ""
 
 #: views/global_settings.php:139
+msgid "The message displayed when an illegal password is entered in a registration form."
+msgstr ""
+
+#: views/global_settings.php:148
+msgid "Existing Subsite"
+msgstr ""
+
+#: views/global_settings.php:149
+msgid "The message displayed when an existing subsite is entered in a registration form."
+msgstr ""
+
+#: views/global_settings.php:158
+msgid "Update Username"
+msgstr ""
+
+#: views/global_settings.php:159
+msgid "The message displayed when a logged-in user attempts to change their username."
+msgstr ""
+
+#: views/global_settings.php:168
+msgid "Lost Password"
+msgstr ""
+
+#: views/global_settings.php:169
+msgid "The text that appears at the top of the lost password form."
+msgstr ""
+
+#: views/global_settings.php:179
 msgid "The text that appears at the top of the reset password form."
 msgstr ""
 
@@ -553,24 +598,24 @@ msgstr ""
 msgid "Multisite"
 msgstr ""
 
-#: views/multisite_settings.php:7
+#: views/multisite_settings.php:8
 msgid "Create subsite when user registers"
 msgstr ""
 
-#: views/multisite_settings.php:13
+#: views/multisite_settings.php:14
 msgid "Blog title"
 msgstr ""
 
-#: views/multisite_settings.php:17
-#: views/multisite_settings.php:40
+#: views/multisite_settings.php:18
+#: views/multisite_settings.php:41
 msgid "Automatically generate from username"
 msgstr ""
 
-#: views/multisite_settings.php:35
+#: views/multisite_settings.php:36
 msgid "Subdirectory or subdomain"
 msgstr ""
 
-#: views/multisite_settings.php:39
+#: views/multisite_settings.php:40
 msgid "Automatically generate from blog title"
 msgstr ""
 
@@ -578,15 +623,15 @@ msgstr ""
 msgid "Permissions"
 msgstr ""
 
-#: views/permission_settings.php:8
+#: views/permission_settings.php:10
 msgid "Allow logged-in users to create new users with this form"
 msgstr ""
 
-#: views/permission_settings.php:9
+#: views/permission_settings.php:11
 msgid "Determine which roles can create new users with this form on the front-end of your site. The selected roles must submit entries on the back-end of your site in order to edit their own profile."
 msgstr ""
 
-#: views/permission_settings.php:17
+#: views/permission_settings.php:18
 msgid "Role required to create new users:"
 msgstr ""
 
@@ -603,12 +648,14 @@ msgid "Registration Form Details"
 msgstr ""
 
 #: views/show_usermeta.php:17
-#: views/user_meta_settings.php:13
+#: views/user_meta_settings.php:17
+#: views/_usermeta_row.php:19
 msgid "Name"
 msgstr ""
 
 #: views/show_usermeta.php:18
-#: views/user_meta_settings.php:16
+#: views/user_meta_settings.php:20
+#: views/_usermeta_row.php:26
 msgid "Value"
 msgstr ""
 
@@ -628,110 +675,110 @@ msgstr ""
 msgid "Formidable Registration requires that Formidable Pro version 2.0 or greater be installed. Until then, keep Formidable Registration activated only to continue enjoying this insightful message."
 msgstr ""
 
-#: views/user_meta_settings.php:1
+#: views/user_meta_settings.php:3
 msgid "User Meta"
 msgstr ""
 
-#: views/user_meta_settings.php:1
+#: views/user_meta_settings.php:4
 msgid "Add user meta to save submitted values to a user's profile. User meta can be retrieved with the [user_meta key=\"insert_name_here\"] shortcode."
 msgstr ""
 
-#: views/user_meta_settings.php:6
+#: views/user_meta_settings.php:10
 msgid "Add"
 msgstr ""
 
-#: views/_register_settings.php:3
+#: views/_register_settings.php:5
 msgid "User Email"
 msgstr ""
 
-#: views/_register_settings.php:4
+#: views/_register_settings.php:6
 msgid "Only Email fields will show here. An email field must be selected if you would like to register new users with this form."
 msgstr ""
 
-#: views/_register_settings.php:8
-#: views/_register_settings.php:75
-#: views/_register_settings.php:96
-#: views/_register_settings.php:144
-#: views/_register_settings.php:172
+#: views/_register_settings.php:11
+#: views/_register_settings.php:79
+#: views/_register_settings.php:108
+#: views/_register_settings.php:164
+#: views/_register_settings.php:195
 msgid "None"
 msgstr ""
 
-#: views/_register_settings.php:29
+#: views/_register_settings.php:32
 msgid "Automatically generate from email address"
 msgstr ""
 
-#: views/_register_settings.php:31
+#: views/_register_settings.php:34
 msgid "Use Full Email Address"
 msgstr ""
 
-#: views/_register_settings.php:53
+#: views/_register_settings.php:57
 msgid "Set with link in email notification"
 msgstr ""
 
-#: views/_register_settings.php:73
+#: views/_register_settings.php:77
 msgid "First Name"
 msgstr ""
 
-#: views/_register_settings.php:94
+#: views/_register_settings.php:106
 msgid "Last Name"
 msgstr ""
 
-#: views/_register_settings.php:115
+#: views/_register_settings.php:135
 msgid "Display Name"
 msgstr ""
 
-#: views/_register_settings.php:117
+#: views/_register_settings.php:137
 msgid "Same as Username"
 msgstr ""
 
-#: views/_register_settings.php:119
+#: views/_register_settings.php:139
 msgid "First Last"
 msgstr ""
 
-#: views/_register_settings.php:122
+#: views/_register_settings.php:142
 msgid "Last First"
 msgstr ""
 
-#: views/_register_settings.php:142
+#: views/_register_settings.php:162
 msgid "Website"
 msgstr ""
 
-#: views/_register_settings.php:163
+#: views/_register_settings.php:183
 msgid "User Role"
 msgstr ""
 
-#: views/_register_settings.php:168
+#: views/_register_settings.php:190
 msgid "Avatar"
 msgstr ""
 
-#: views/_register_settings.php:169
+#: views/_register_settings.php:191
 msgid "Only file upload fields will show here."
 msgstr ""
 
-#: views/_register_settings.php:193
+#: views/_register_settings.php:217
 msgid "Automatically log in users who submit this form"
 msgstr ""
 
-#: views/_register_settings.php:197
-msgid "Please note: the automatic login option will appear if you map the Password setting to a Password field in your form."
+#: views/_register_settings.php:221
+msgid "Please note: the automatic login option will appear if you map the Password setting to a Password field in your form and this action runs for the main entry."
 msgstr ""
 
-#: views/_register_settings.php:205
+#: views/_register_settings.php:229
 msgid "User Moderation"
 msgstr ""
 
-#: views/_register_settings.php:211
+#: views/_register_settings.php:236
 msgid "Email confirmation"
 msgstr ""
 
-#: views/_register_settings.php:260
+#: views/_register_settings.php:285
 msgid "Admin approval"
 msgstr ""
 
-#: views/_register_settings.php:267
+#: views/_register_settings.php:292
 msgid "Please note: the Email Confirmation option will appear if you map the Password setting to a Password field in your form."
 msgstr ""
 
-#: views/_usermeta_row.php:14
+#: views/_usermeta_row.php:29
 msgid "Select Field"
 msgstr ""

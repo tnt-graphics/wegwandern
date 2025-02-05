@@ -13,7 +13,6 @@ use DevOwl\RealCookieBanner\view\checklist\OperatorContact;
 use DevOwl\RealCookieBanner\view\checklist\PrivacyPolicyMentionUsage;
 use DevOwl\RealCookieBanner\view\customize\banner\individual\Texts as IndividualTexts;
 use DevOwl\RealCookieBanner\view\customize\banner\Texts;
-use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Utils;
 // @codeCoverageIgnoreStart
 \defined('ABSPATH') or die('No script kiddies please!');
 // Avoid direct file request
@@ -70,8 +69,8 @@ class DashboardTileMigrationMajor4 extends \DevOwl\RealCookieBanner\comp\migrati
         ), \sprintf(
             // translators:
             \__('All design templates have been revised by us with regard to accessibility. In addition, when <a href="%1$s" target="_blank">customizing the cookie banner design</a>, you will now find an accessibility score that evaluates how accessible your current design settings are. Customize your design now!', RCB_TD),
-            \add_query_arg(['autofocus[panel]' => BannerCustomize::PANEL_MAIN, 'customAutofocus[rcb-a11y-score]' => 1, 'returnEncoded' => Utils::getRawRefererEncodedForUrl()], \admin_url('customize.php'))
-        )]), ['linkText' => \__('Show revised design presets', RCB_TD), 'callback' => \add_query_arg(['autofocus[panel]' => BannerCustomize::PANEL_MAIN, 'customAutofocus[rcb-presets]' => 1, 'returnEncoded' => Utils::getRawRefererEncodedForUrl()], \admin_url('customize.php')), 'previewImage' => $core->getBaseAssetsUrl(\__('upgrade-wizard/v4/accessibility-score.png', RCB_TD))])->addAction('website-operator', \__('Provide details of the website operator for self-hosted services', RCB_TD), \join('<br /><br/ >', [\sprintf(
+            \add_query_arg(['autofocus[panel]' => BannerCustomize::PANEL_MAIN, 'customAutofocus[rcb-a11y-score]' => 1, 'return' => \wp_get_raw_referer()], \admin_url('customize.php'))
+        )]), ['linkText' => \__('Show revised design presets', RCB_TD), 'callback' => \add_query_arg(['autofocus[panel]' => BannerCustomize::PANEL_MAIN, 'customAutofocus[rcb-presets]' => 1, 'return' => \wp_get_raw_referer()], \admin_url('customize.php')), 'previewImage' => $core->getBaseAssetsUrl(\__('upgrade-wizard/v4/accessibility-score.png', RCB_TD))])->addAction('website-operator', \__('Provide details of the website operator for self-hosted services', RCB_TD), \join('<br /><br/ >', [\sprintf(
             // translators:
             \__('In services, you can provide contact details of the provider/data processor (postal address, email, phone, etc.) to fulfill your information obligations under <a href="%1$s" target="_blank">Art. 13 GDPR</a> in conjunction with <a href="%2$s" target="_blank">Art. 5 GDPR</a>. For self-hosted services, you are the data processor and should also provide this data in the cookie banner.', RCB_TD),
             \__('https://gdpr-text.com/read/article-13/', RCB_TD),
@@ -94,14 +93,14 @@ class DashboardTileMigrationMajor4 extends \DevOwl\RealCookieBanner\comp\migrati
         }
         $this->addAction('data-processing-in-unsafe-countries', \__('Consent to data processing in insecure third countries (instead of US data processing only)', RCB_TD), \join('<br /><br/ >', [\sprintf(
             // translators:
-            \__('Real Cookie Banner offered you so far to obtain special consent according to <a href="%1$s" target="_blank">Art. 49 (1) lit. a GDPR</a> for data processing in the USA. <a href="%2$s" target="_blank">The USA is again a secure third country under data protection law since July 2023</a>. However, data processing of many services takes place worldwide and thus in other insecure countries.', RCB_TD),
+            \__('Real Cookie Banner offered you so far to obtain special consent according to <a href="%1$s" target="_blank">Art. 49 (1) (a) GDPR</a> for data processing in the USA. <a href="%2$s" target="_blank">The USA is again a secure third country under data protection law since July 2023</a>. However, data processing of many services takes place worldwide and thus in other insecure countries.', RCB_TD),
             \__('https://gdpr-text.com/read/article-49/', RCB_TD),
             \__('https://devowl.io/2023/us-data-processing-tadpf/', RCB_TD)
         ), \sprintf(
             // translators:
             \__('You can now specify the countries of data processing in each service! We have already added this information in service templates. You can find a <a href="%1$s" target="_blank">list of secure third countries as defined by the EU in the settings</a>. This means that specific consents are now obtained for all unsecure third countries worldwide.', RCB_TD),
             $this->getConfigUrl('/settings/consent')
-        )]), ['linkText' => \__('Obtain consent for data processing in unsecure third countries', RCB_TD), 'linkDisabled' => 'performed', 'callback' => $this->getConfigUrl('/settings/consent'), 'performed' => Consent::getInstance()->isDataProcessingInUnsafeCountries(), 'performedLabel' => \__('Feature is enabled.', RCB_TD), 'previewImage' => $core->getBaseAssetsUrl(\__('upgrade-wizard/v4/service-special-treatments.png', RCB_TD)), 'info' => !empty($servicesWithoutDataProcessingCountries) ? \sprintf('<p>%s</p><ul>%s</ul>', \__('The following services should be reviewed:', RCB_TD), $servicesWithoutDataProcessingCountries) : null])->addAction('footer-links', \__('Specify additional links in the footer of the cookie banner', RCB_TD), \join('<br /><br/ >', [\__('You should link all legally relevant subpages of your website (e.g. privacy policy, legal notice/imprint, terms and conditions) in the cookie banner so that they are quickly accessible. On these pages, the cookie banner should also not be displayed, so as not to put a barrier in front of the pages.', RCB_TD), \__('So far, only privacy policy and legal notice could be linked. From now on you can link any other pages!', RCB_TD)]), ['linkText' => \__('Add more links to the cookie banner footer', RCB_TD), 'callback' => $this->getConfigUrl('/settings'), 'previewImage' => $core->getBaseAssetsUrl(\__('upgrade-wizard/v4/banner-footer-links.png', RCB_TD))]);
+        )]), ['linkText' => \__('Obtain consent for data processing in unsecure third countries', RCB_TD), 'linkDisabled' => 'performed', 'callback' => $this->getConfigUrl('/settings/consent'), 'performed' => Consent::getInstance()->isDataProcessingInUnsafeCountries(), 'performedLabel' => \__('Feature is enabled', RCB_TD), 'previewImage' => $core->getBaseAssetsUrl(\__('upgrade-wizard/v4/service-special-treatments.png', RCB_TD)), 'info' => !empty($servicesWithoutDataProcessingCountries) ? \sprintf('<p>%s</p><ul>%s</ul>', \__('The following services should be reviewed:', RCB_TD), $servicesWithoutDataProcessingCountries) : null])->addAction('footer-links', \__('Specify additional links in the footer of the cookie banner', RCB_TD), \join('<br /><br/ >', [\__('You should link all legally relevant subpages of your website (e.g. privacy policy, legal notice/imprint, terms and conditions) in the cookie banner so that they are quickly accessible. On these pages, the cookie banner should also not be displayed, so as not to put a barrier in front of the pages.', RCB_TD), \__('So far, only privacy policy and legal notice could be linked. From now on you can link any other pages!', RCB_TD)]), ['linkText' => \__('Add more links to the cookie banner footer', RCB_TD), 'callback' => $this->getConfigUrl('/settings'), 'previewImage' => $core->getBaseAssetsUrl(\__('upgrade-wizard/v4/banner-footer-links.png', RCB_TD))]);
     }
     /**
      * Enable to collect telemetry data.
@@ -139,7 +138,7 @@ class DashboardTileMigrationMajor4 extends \DevOwl\RealCookieBanner\comp\migrati
             $this->applyNewGroupTexts(self::DELETE_LANGUAGES);
             $result['success'] = \true;
             $result['deleted_options_texts'] = $deletedOptionsTexts;
-            $result['redirect'] = \add_query_arg(['autofocus[section]' => Texts::SECTION, 'returnEncoded' => Utils::getRawRefererEncodedForUrl()], \admin_url('customize.php'));
+            $result['redirect'] = \add_query_arg(['autofocus[section]' => Texts::SECTION, 'return' => \wp_get_raw_referer()], \admin_url('customize.php'));
         }
         return $result;
     }

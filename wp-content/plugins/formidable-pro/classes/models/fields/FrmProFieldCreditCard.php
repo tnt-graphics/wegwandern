@@ -133,7 +133,11 @@ class FrmProFieldCreditCard extends FrmFieldType {
 	}
 
 	public function front_field_input( $args, $shortcode_atts ) {
-		$pass_args = array( 'errors' => $args['errors'], 'html_id' => $args['html_id'], 'field_id' => $args['field_id'] );
+		$pass_args = array(
+			'errors'   => $args['errors'],
+			'html_id'  => $args['html_id'],
+			'field_id' => $args['field_id'],
+		);
 		$callback  = apply_filters( 'frm_pro_show_card_callback', 'FrmProCreditCardsController::show_in_form' );
 		ob_start();
 		call_user_func( $callback, $this->field, $args['field_name'], $pass_args );
@@ -174,7 +178,12 @@ class FrmProFieldCreditCard extends FrmFieldType {
 	}
 
 	private function empty_value_array() {
-		return array( 'cc' => '', 'month' => '', 'year' => '', 'cvc' => '' );
+		return array(
+			'cc'    => '',
+			'month' => '',
+			'year'  => '',
+			'cvc'   => '',
+		);
 	}
 
 	public function validate( $args ) {

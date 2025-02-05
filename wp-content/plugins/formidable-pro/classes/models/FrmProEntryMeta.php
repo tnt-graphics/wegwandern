@@ -57,7 +57,10 @@ class FrmProEntryMeta {
 			// set updated_at time
 			$wpdb->update(
 				$wpdb->prefix . 'frm_items',
-				array( 'updated_at' => current_time( 'mysql', 1 ), 'updated_by' => get_current_user_id() ),
+				array(
+					'updated_at' => current_time( 'mysql', 1 ),
+					'updated_by' => get_current_user_id(),
+				),
 				array( 'id' => $atts['entry_id'] )
 			);
 		}
@@ -563,16 +566,45 @@ class FrmProEntryMeta {
 
 	/**
 	 * Make sure the [auto_id] is still unique
+	 *
+	 * @param stdClass $field
+	 * @param string   $value
+	 * @return void
 	 */
 	public static function validate_auto_id( $field, &$value ) {
 		if ( empty( $field->default_value ) || is_array( $field->default_value ) || empty( $value ) || strpos( $field->default_value, '[auto_id' ) === false ) {
 			return;
 		}
 
-		//make sure we are not editing
-		if ( ( $_POST && ! isset( $_POST['id'] ) ) || ! is_numeric( $_POST['id'] ) ) {
+		if ( self::should_rerun_auto_id_before_unique_field_validation() ) {
 			$value = FrmProFieldsHelper::get_default_value( $field->default_value, $field );
 		}
+	}
+
+	/**
+	 * Make sure we are not editing so the auto ID doesn't constantly update on every change.
+	 *
+	 * @since 6.16
+	 *
+	 * @return bool
+	 */
+	private static function should_rerun_auto_id_before_unique_field_validation() {
+		$should_rerun = ( $_POST && ! isset( $_POST['id'] ) ) || ! is_numeric( $_POST['id'] );
+
+		$entry_id = isset( $_POST['id'] ) ? absint( $_POST['id'] ) : 0;
+		$entry    = $entry_id ? FrmEntry::getOne( $entry_id ) : null;
+
+		if ( ! $should_rerun && is_object( $entry ) && isset( $entry->is_draft ) && FrmEntriesHelper::DRAFT_ENTRY_STATUS === (int) $entry->is_draft ) {
+			$should_rerun = true;
+		}
+
+		/**
+		 * @since 6.16
+		 *
+		 * @param bool        $should_rerun
+		 * @param object|null $entry
+		 */
+		return (bool) apply_filters( 'frm_should_rerun_autoid_before_unique_field_validation', $should_rerun, $entry );
 	}
 
 	/**
@@ -729,7 +761,10 @@ class FrmProEntryMeta {
 
 			$get_field = 'terms.term_id';
 			$get_table = $wpdb->terms . ' AS terms INNER JOIN ' . $wpdb->term_taxonomy . '  AS tt ON tt.term_id = terms.term_id INNER JOIN ' . $wpdb->term_relationships . ' AS tr ON tr.term_taxonomy_id = tt.term_taxonomy_id';
-			$where     = array( 'tt.taxonomy' => $field->field_options['taxonomy'], 'tr.object_id' => $post_ids );
+			$where     = array(
+				'tt.taxonomy'  => $field->field_options['taxonomy'],
+				'tr.object_id' => $post_ids,
+			);
 
 			if ( $field->field_options['exclude_cat'] ) {
 				$where['terms.term_id NOT'] = $field->field_options['exclude_cat'];
@@ -1209,10 +1244,8 @@ class FrmProEntryMeta {
 			$child_entries = FrmProEntry::get_sub_entries( $entry->id, true );
 			$val           = FrmProEntryMetaHelper::get_sub_meta_values( $child_entries, $field );
 			if ( ! empty( $val ) ) {
-				//Flatten multi-dimensional arrays
-				if ( is_array( $val ) ) {
-					$val = FrmAppHelper::array_flatten( $val );
-				}
+				// Flatten multi-dimensional arrays.
+				$val                        = FrmAppHelper::array_flatten( $val );
 				$entry->metas[ $field->id ] = $val;
 			}
 		} else {

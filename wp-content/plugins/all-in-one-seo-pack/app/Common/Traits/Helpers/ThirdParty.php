@@ -17,10 +17,10 @@ trait ThirdParty {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return boolean Whether WooCommerce is active.
+	 * @return bool Whether WooCommerce is active.
 	 */
 	public function isWooCommerceActive() {
-		return class_exists( 'woocommerce' );
+		return class_exists( 'WooCommerce' );
 	}
 
 	/**
@@ -28,48 +28,42 @@ trait ThirdParty {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  int         $postId The post ID.
-	 * @return string|bool         The type of page or false if it isn't a WooCommerce page.
+	 * @param  int    $postId The post ID.
+	 * @return string         The type of page or an empty string if it isn't a WooCommerce page.
 	 */
 	public function isWooCommercePage( $postId = 0 ) {
+		$postId                  = $postId ? (int) $postId : get_the_ID();
+		$specialWooCommercePages = $this->getWooCommercePages();
+
+		if ( in_array( $postId, $specialWooCommercePages, true ) ) {
+			return array_search( $postId, $specialWooCommercePages, true );
+		}
+
+		return '';
+	}
+
+	/**
+	 * Returns the WooCommerce pages.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @return array An associative list of special WooCommerce pages.
+	 */
+	public function getWooCommercePages() {
 		if ( ! $this->isWooCommerceActive() ) {
-			return false;
+			$wooCommercePages = [];
+
+			return $wooCommercePages;
 		}
 
-		$postId = $postId ? $postId : get_the_ID();
+		$wooCommercePages = [
+			'cart'      => (int) get_option( 'woocommerce_cart_page_id' ),
+			'checkout'  => (int) get_option( 'woocommerce_checkout_page_id' ),
+			'myAccount' => (int) get_option( 'woocommerce_myaccount_page_id' ),
+			'terms'     => (int) get_option( 'woocommerce_terms_page_id' ),
+		];
 
-		static $cartPageId;
-		if ( ! $cartPageId ) {
-			$cartPageId = (int) get_option( 'woocommerce_cart_page_id' );
-		}
-
-		static $checkoutPageId;
-		if ( ! $checkoutPageId ) {
-			$checkoutPageId = (int) get_option( 'woocommerce_checkout_page_id' );
-		}
-
-		static $myAccountPageId;
-		if ( ! $myAccountPageId ) {
-			$myAccountPageId = (int) get_option( 'woocommerce_myaccount_page_id' );
-		}
-
-		static $termsPageId;
-		if ( ! $termsPageId ) {
-			$termsPageId = (int) get_option( 'woocommerce_terms_page_id' );
-		}
-
-		switch ( $postId ) {
-			case $cartPageId:
-				return 'cart';
-			case $checkoutPageId:
-				return 'checkout';
-			case $myAccountPageId:
-				return 'myAccount';
-			case $termsPageId:
-				return 'terms';
-			default:
-				return false;
-		}
+		return $wooCommercePages;
 	}
 
 	/**
@@ -271,6 +265,17 @@ trait ThirdParty {
 	}
 
 	/**
+	 * Checks if TranslatePress is active.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @return bool True if it is, false if not.
+	 */
+	public function isTranslatePressActive() {
+		return class_exists( 'TRP_Translate_Press' );
+	}
+
+	/**
 	 * Localizes a given URL.
 	 *
 	 * This is required for compatibility with WPML.
@@ -284,12 +289,12 @@ trait ThirdParty {
 		$url = apply_filters( 'wpml_home_url', home_url( '/' ) );
 
 		// Remove URL parameters.
-		preg_match_all( '/\?[\s\S]+/', $url, $matches );
+		preg_match_all( '/\?[\s\S]+/', (string) $url, $matches );
 
 		// Get the base URL.
-		$url  = preg_replace( '/\?[\s\S]+/', '', $url );
+		$url  = preg_replace( '/\?[\s\S]+/', '', (string) $url );
 		$url  = trailingslashit( $url );
-		$url .= preg_replace( '/\//', '', $path, 1 );
+		$url .= preg_replace( '/\//', '', (string) $path, 1 );
 
 		// Readd URL parameters.
 		if ( $matches && $matches[0] ) {
@@ -330,37 +335,30 @@ trait ThirdParty {
 	 * @return bool         If the page is a BuddyPress page or not.
 	 */
 	public function isBuddyPressPage( $postId = 0 ) {
-		$bpPages = get_option( 'bp-pages' );
+		$bpPageIds = $this->getBuddyPressPageIds();
 
-		if ( empty( $bpPages ) ) {
-			return false;
-		}
-
-		foreach ( $bpPages as $page ) {
-			if ( (int) $page === (int) $postId ) {
-				return true;
-			}
-		}
-
-		return false;
+		return in_array( $postId, $bpPageIds, true );
 	}
 
 	/**
-	 * Check if is a BBpress post type.
+	 * Returns the BuddyPress pages.
 	 *
-	 * @since 4.2.8
+	 * @since 4.7.3
 	 *
-	 * @param  string $postType The post type to check.
-	 * @return bool             Whether this is a bbPress post type.
+	 * @return array A list of BuddyPress page IDs.
 	 */
-	public function isBBPressPostType( $postType ) {
-		if ( ! class_exists( 'bbPress' ) ) {
-			return false;
+	public function getBuddyPressPageIds() {
+		if ( ! $this->isBuddyPressActive() ) {
+			return [];
 		}
 
-		$bbPressPostTypes = [ 'forum', 'topic', 'reply' ];
+		static $bpPageIds = null;
+		if ( null === $bpPageIds ) {
+			$bpPageIds = (array) get_option( 'bp-pages' );
+			$bpPageIds = array_map( 'intval', $bpPageIds );
+		}
 
-		return in_array( $postType, $bbPressPostTypes, true );
+		return $bpPageIds;
 	}
 
 	/**
@@ -607,6 +605,23 @@ trait ThirdParty {
 	}
 
 	/**
+	 * Returns the TranslatePress slugs code and slug.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @return array The slugs.
+	 */
+	public function getTranslatePressUrlSlugs() {
+		if ( ! $this->isTranslatePressActive() ) {
+			return [];
+		}
+
+		$settings = maybe_unserialize( get_option( 'trp_settings', [] ) );
+
+		return isset( $settings['url-slugs'] ) ? $settings['url-slugs'] : [];
+	}
+
+	/**
 	 * Checks whether the WooCommerce Follow Up Emails plugin is active.
 	 *
 	 * @since 4.2.2
@@ -701,10 +716,12 @@ trait ThirdParty {
 	 * @return int|false
 	 */
 	public function getLearnPressLesson() {
+		// phpcs:disable Squiz.NamingConventions.ValidVariableName
 		global $lp_course_item;
 		if ( $lp_course_item && method_exists( $lp_course_item, 'get_id' ) ) {
 			return $lp_course_item->get_id();
 		}
+		// phpcs:enable Squiz.NamingConventions.ValidVariableName
 
 		return false;
 	}
@@ -721,11 +738,12 @@ trait ThirdParty {
 		if ( ! defined( 'ET_BUILDER_VERSION' ) ) {
 			return null;
 		}
-
+		// phpcs:disable Squiz.NamingConventions.ValidVariableName
 		global $et_pb_rendering_column_content;
 
 		$originalValue                  = $et_pb_rendering_column_content;
 		$et_pb_rendering_column_content = $flag;
+		// phpcs:enable Squiz.NamingConventions.ValidVariableName
 
 		return $originalValue;
 	}
@@ -742,6 +760,26 @@ trait ThirdParty {
 			return false;
 		}
 
-		return preg_match( '#.*Yandex.*#', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) );
+		return preg_match( '#.*Yandex.*#', (string) sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) );
+	}
+
+	/**
+	 * Checks whether the taxonomy is a WooCommerce product attribute.
+	 *
+	 * @since 4.7.8
+	 *
+	 * @param  mixed $taxonomy The taxonomy.
+	 * @return bool            Whether the taxonomy is a WooCommerce product attribute.
+	 */
+	public function isWooCommerceProductAttribute( $taxonomy ) {
+		$name = is_object( $taxonomy )
+			? $taxonomy->name
+			: (
+				is_array( $taxonomy )
+					? $taxonomy['name']
+					: $taxonomy
+			);
+
+		return ! empty( $name ) && 'pa_' === substr( $name, 0, 3 );
 	}
 }

@@ -6,11 +6,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class FrmProEntryMetaHelper {
 
+	/**
+	 * @param array $entries
+	 * @param mixed $field
+	 * @param array $atts
+	 * @return array
+	 */
 	public static function get_sub_meta_values( $entries, $field, $atts = array() ) {
 		$values = array();
 		foreach ( $entries as $entry ) {
 			$sub_val       = self::get_post_or_meta_value( $entry, $field, $atts );
-			$include_blank = ( isset( $atts['include_blank'] ) && $atts['include_blank'] );
+			$include_blank = ! empty( $atts['include_blank'] );
 			if ( $sub_val != '' || $include_blank ) {
 				$values[ $entry->id ] = $sub_val;
 			}
@@ -252,7 +258,7 @@ class FrmProEntryMetaHelper {
 		}
 
 		// check for unique values in post fields
-		$entry_id = $_POST && isset( $_POST['id'] ) ? $_POST['id'] : false;
+		$entry_id = FrmAppHelper::get_post_param( 'id', false, 'absint' );
 		$post_id  = false;
 		if ( $entry_id ) {
 			global $wpdb;
@@ -326,7 +332,13 @@ class FrmProEntryMetaHelper {
 			}
 
 			if ( ! empty( $entry_ids ) ) {
-				$metas = FrmEntryMeta::getAll( array( 'item_id' => $entry_ids, 'field_id' => $selected_field->id ), ' ORDER BY meta_value' );
+				$metas = FrmEntryMeta::getAll(
+					array(
+						'item_id'  => $entry_ids,
+						'field_id' => $selected_field->id,
+					),
+					' ORDER BY meta_value' 
+				);
 			}
 		}
 	}
@@ -438,8 +450,33 @@ class FrmProEntryMetaHelper {
 			return $max;
 		}
 
-		$max = FrmDb::get_var( 'frm_item_metas', array( 'field_id' => $field->id ), 'meta_value', array( 'order_by' => 'item_id DESC' ) );
-		$max = self::get_increment_from_value( $max, $field );
+		// The most recent entry ID is not necessarily the highest because of draft statuses.
+		// So try to get the highest from the most recent few meta values.
+		global $wpdb;
+		$max_values = FrmDb::get_col(
+			$wpdb->prefix . 'frm_item_metas m JOIN ' . $wpdb->prefix . 'frm_items i ON i.id = m.item_id',
+			array(
+				'm.field_id' => $field->id,
+				'i.is_draft' => 0,
+			),
+			'm.meta_value',
+			array(
+				'order_by' => 'item_id DESC',
+			),
+			5
+		);
+		if ( ! $max_values ) {
+			$max = '0';
+		} else {
+			$max    = self::get_increment_from_value( $max_values[0], $field );
+			$length = count( $max_values );
+			for ( $i = 1; $i < $length; ++$i ) {
+				$max_value = self::get_increment_from_value( $max_values[ $i ], $field );
+				if ( $max_value > $max ) {
+					$max = $max_value;
+				}
+			}
+		}
 
 		if ( self::field_supports_post_autoid( $field ) ) {
 			$post_max = self::get_post_max_value( $field );

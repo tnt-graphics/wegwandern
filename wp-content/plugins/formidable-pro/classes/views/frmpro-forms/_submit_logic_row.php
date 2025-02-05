@@ -89,9 +89,9 @@ FrmFieldsHelper::display_field_value_selector( $selector_field_id, $selector_arg
 </span>
 </p>
 <p class="frm1 frm_form_field">
-	<a href="javascript:void(0)" class="frm_remove_tag frm_icon_font"
+	<a href="javascript:void(0)" class="frm_remove_tag"
 		data-removeid="frm_logic_submit_<?php echo esc_attr( $meta_name ); ?>" data-showlast="#logic_link_submit"
-		data-hidelast="#frm_submit_logic_rows"></a>
-	<a href="javascript:void(0)" class="frm_add_tag frm_icon_font frm_add_submit_logic"></a>
+		data-hidelast="#frm_submit_logic_rows"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?></a>
+	<a href="javascript:void(0)" class="frm_add_tag frm_add_submit_logic"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon' ); ?></a>
 </p>
 </div>

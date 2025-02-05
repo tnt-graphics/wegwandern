@@ -53,7 +53,7 @@ class Localization {
 		$elementId   = $entryId;
 		$elementType = 'post_' . $objectName;
 		if ( 'term' === $objectType ) {
-			$term        = get_term( $entryId, $objectName );
+			$term        = aioseo()->helpers->getTerm( $entryId, $objectName );
 			$elementId   = $term->term_taxonomy_id;
 			$elementType = 'tax_' . $objectName;
 		}
@@ -75,8 +75,11 @@ class Localization {
 				continue;
 			}
 
+			$currentLanguage = ! empty( self::$wpml['activeLanguages'][ $translation->language_code ] ) ? self::$wpml['activeLanguages'][ $translation->language_code ] : null;
+			$languageCode    = ! empty( $currentLanguage['tag'] ) ? $currentLanguage['tag'] : $translation->language_code;
+
 			if ( (int) $elementId === (int) $translation->element_id ) {
-				$entry['language'] = $translation->language_code;
+				$entry['language'] = $languageCode;
 				continue;
 			}
 
@@ -98,9 +101,6 @@ class Localization {
 			} else {
 				$permalink = get_term_link( $translatedObjectId, $objectName );
 			}
-
-			$currentLanguage = ! empty( self::$wpml['activeLanguages'][ $translation->language_code ] ) ? self::$wpml['activeLanguages'][ $translation->language_code ] : null;
-			$languageCode    = ! empty( $currentLanguage['tag'] ) ? $currentLanguage['tag'] : $translation->language_code;
 
 			if ( ! empty( $languageCode ) && ! empty( $permalink ) ) {
 				$entry['languages'][] = [
@@ -209,7 +209,7 @@ class Localization {
 		}
 
 		// Now, we must also check for noindex.
-		$term = get_term( $termId );
+		$term = aioseo()->helpers->getTerm( $termId );
 		if ( ! is_a( $term, 'WP_Term' ) ) {
 			return true;
 		}

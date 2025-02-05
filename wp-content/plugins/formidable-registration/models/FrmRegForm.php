@@ -14,10 +14,25 @@ class FrmRegForm {
 	protected $path = '';
 	protected $errors = array();
 
+	/**
+	 * @since 3.0.1
+	 *
+	 * @var array
+	 **/
+	protected $atts = array();
+
+	/**
+	 * @since 3.0.1
+	 *
+	 * @var string
+	 **/
+	protected $label_class = '';
+
 	public function __construct( $atts ) {
 		$this->init_form_number_and_id( $atts );
 		$this->init_class( $atts );
 		$this->init_errors();
+		$this->atts = $atts;
 	}
 
 	/**
@@ -138,6 +153,7 @@ class FrmRegForm {
 	*/
 	protected function get_view_content( $args = array() ) {
 		$form = $this;
+		$this->init_label_class();
 
 		ob_start();
 		include FrmRegAppHelper::path() . $this->path;
@@ -145,6 +161,16 @@ class FrmRegForm {
 		ob_end_clean();
 
 		return $content;
+	}
+
+	/**
+	 * Initializes the fields label position class.
+	 *
+	 * @since 3.0.1
+	 * @return void
+	 */
+	protected function init_label_class() {
+		$this->label_class = ' frm_' . FrmRegAppController::get_style_option( $this->atts, 'position', 'top' ) . '_container';
 	}
 
 	/**

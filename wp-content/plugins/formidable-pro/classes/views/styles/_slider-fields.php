@@ -6,7 +6,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Color', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_slider_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -22,7 +26,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Bar Color', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_slider_bar_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Bar Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -38,7 +46,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Font Size', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_slider_font_size"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Font Size', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -54,7 +66,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Track Height', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_slider_track_size"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Track Height', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -70,7 +86,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Circle Size', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_slider_circle_size"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Circle Size', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php

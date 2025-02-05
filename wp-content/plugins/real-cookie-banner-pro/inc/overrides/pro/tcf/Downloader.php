@@ -2,9 +2,12 @@
 
 namespace DevOwl\RealCookieBanner\lite\tcf;
 
+use DevOwl\RealCookieBanner\Vendor\JsonMachine\Items;
+use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Utils;
 use WP_Error;
 /**
- * Download the TCF list from a remote address.
+ * Download the TCF list from a remote address. It holds all the data of the downloaded GVL in a memory-efficient way
+ * with the help of `JsonMachine`.
  * @internal
  */
 class Downloader
@@ -12,6 +15,72 @@ class Downloader
     const FILENAME_VENDOR_LIST = 'v3/vendor-list.json';
     const FILENAME_PURPOSES_TRANSLATION = 'v3/purposes.json';
     const TCF_DEFAULT_LANGUAGE = 'en';
+    /**
+     * GVL specification version.
+     *
+     * @var int
+     */
+    private $gvlSpecificationVersion;
+    /**
+     * Vendor list version.
+     *
+     * @var int
+     */
+    private $vendorListVersion;
+    /**
+     * TCF policy version.
+     *
+     * @var int
+     */
+    private $tcfPolicyVersion;
+    /**
+     * Last updated timestamp.
+     *
+     * @var string
+     */
+    private $lastUpdated;
+    /**
+     * Purposes.
+     *
+     * @var array
+     */
+    private $purposes = [];
+    /**
+     * Special purposes.
+     *
+     * @var array
+     */
+    private $specialPurposes = [];
+    /**
+     * Features.
+     *
+     * @var array
+     */
+    private $features = [];
+    /**
+     * Special features.
+     *
+     * @var array
+     */
+    private $specialFeatures = [];
+    /**
+     * Data categories.
+     *
+     * @var array
+     */
+    private $dataCategories = [];
+    /**
+     * Stacks.
+     *
+     * @var array
+     */
+    private $stacks = [];
+    /**
+     * Vendors as stream.
+     *
+     * @var Items|array
+     */
+    private $vendors;
     /**
      * The normalizer.
      *
@@ -32,24 +101,18 @@ class Downloader
      *
      * @param string $url
      * @param array $queryArgs Additional query parameters, e.g. license key
-     * @return WP_Error|array
+     * @return WP_Error|true
      */
     public function fetchVendorList($url, $queryArgs = [])
     {
-        $response = \wp_remote_get(\add_query_arg($queryArgs, $url), ['timeout' => 12]);
-        if (\is_wp_error($response)) {
-            return $response;
+        $data = Utils::pullJson(\add_query_arg($queryArgs, $url), ['/gvlSpecificationVersion', '/vendorListVersion', '/tcfPolicyVersion', '/lastUpdated'], ['/purposes', '/specialPurposes', '/features', '/specialFeatures', '/dataCategories', '/stacks'], ['/vendors']);
+        if (\is_wp_error($data)) {
+            return $data;
         }
-        $code = \wp_remote_retrieve_response_code($response);
-        $codeIsOk = $code >= 200 && $code < 300;
-        if (!$codeIsOk) {
-            return new WP_Error('tcf_download_remote_failed', $response['response']['message'] ?? '');
+        foreach ($data as $key => $value) {
+            $this->{$key} = $value;
         }
-        $body = $this->requestToArray($response);
-        if (\is_wp_error($body)) {
-            return $body;
-        }
-        return \json_decode($body, ARRAY_A);
+        return \true;
     }
     /**
      * Fetch the `purpose-{language}.json` from an external URL.
@@ -81,6 +144,83 @@ class Downloader
             return $request;
         }
         return \wp_remote_retrieve_body($request);
+    }
+    /**
+     * Getter.
+     */
+    public function getGvlSpecificationVersion()
+    {
+        return $this->gvlSpecificationVersion;
+    }
+    /**
+     * Getter.
+     */
+    public function getVendorListVersion()
+    {
+        return $this->vendorListVersion;
+    }
+    /**
+     * Getter.
+     */
+    public function getTcfPolicyVersion()
+    {
+        return $this->tcfPolicyVersion;
+    }
+    /**
+     * Getter.
+     */
+    public function getLastUpdated()
+    {
+        return $this->lastUpdated;
+    }
+    /**
+     * Getter.
+     */
+    public function getPurposes()
+    {
+        return $this->purposes;
+    }
+    /**
+     * Getter.
+     */
+    public function getSpecialPurposes()
+    {
+        return $this->specialPurposes;
+    }
+    /**
+     * Getter.
+     */
+    public function getFeatures()
+    {
+        return $this->features;
+    }
+    /**
+     * Getter.
+     */
+    public function getSpecialFeatures()
+    {
+        return $this->specialFeatures;
+    }
+    /**
+     * Getter.
+     */
+    public function getDataCategories()
+    {
+        return $this->dataCategories;
+    }
+    /**
+     * Getter.
+     */
+    public function getStacks()
+    {
+        return $this->stacks;
+    }
+    /**
+     * Getter.
+     */
+    public function getVendors()
+    {
+        return $this->vendors;
     }
     /**
      * Getter.

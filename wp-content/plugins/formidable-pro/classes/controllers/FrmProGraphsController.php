@@ -738,7 +738,14 @@ class FrmProGraphsController {
 			self::add_axis_options( $atts, $options );
 		}
 
-		$options = apply_filters( 'frm_google_chart', $options, array( 'atts' => $atts, 'type' => $type ) );
+		$options = apply_filters(
+			'frm_google_chart',
+			$options,
+			array(
+				'atts' => $atts,
+				'type' => $type,
+			) 
+		);
 
 		return $options;
 	}

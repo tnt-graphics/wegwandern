@@ -132,7 +132,11 @@ class FrmProXMLController {
 	}
 
 	public static function export_formats( $formats ) {
-		$formats['csv']            = array( 'name' => 'CSV', 'support' => 'items', 'count' => 'single' );
+		$formats['csv']            = array(
+			'name'    => 'CSV',
+			'support' => 'items',
+			'count'   => 'single',
+		);
 		$formats['xml']['support'] = 'forms|items|posts|styles';
 
 		return $formats;
@@ -158,7 +162,13 @@ class FrmProXMLController {
 			return;
 		}
 
-		$comments = FrmEntryMeta::getAll( array( 'item_id' => (int) $atts['entry']->id, 'field_id' => 0 ), ' ORDER BY it.created_at ASC' );
+		$comments = FrmEntryMeta::getAll(
+			array(
+				'item_id'  => (int) $atts['entry']->id,
+				'field_id' => 0,
+			),
+			' ORDER BY it.created_at ASC' 
+		);
 
 		$i = 0;
 		if ( $comments ) {
@@ -258,8 +268,10 @@ class FrmProXMLController {
 		setlocale( LC_ALL, get_locale() );
 		$f = fopen( $filename, 'r' );
 		if ( $f !== false ) {
-			$row = 0;
-			while ( ( $data = fgetcsv( $f, 100000, $csv_del ) ) !== false ) {
+			$row       = 0;
+			$enclosure = '"';
+			$escape    = '\\';
+			while ( ( $data = fgetcsv( $f, 100000, $csv_del, $enclosure, $escape ) ) !== false ) {
 				++$row;
 				if ( $row === 1 ) {
 					$headers = $data;
@@ -340,7 +352,10 @@ class FrmProXMLController {
 
 		$imported = FrmProXMLHelper::import_csv( $current_path, $vars['form_id'], $vars['data_array'], 0, $start_row + 1, $vars['csv_del'], $vars['max'] );
 
-		$opts[ $file_id ] = array( 'row' => $vars['row'], 'imported' => $imported );
+		$opts[ $file_id ] = array(
+			'row'      => $vars['row'],
+			'imported' => $imported,
+		);
 		$remaining        = (int) $vars['row'] - (int) $imported;
 		echo esc_html( $remaining );
 

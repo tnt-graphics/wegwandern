@@ -33,10 +33,6 @@ class FrmProCronController {
 		$events = self::get_events();
 
 		foreach ( $events as $event => $recurrence ) {
-			if ( 'frm_pro_delete_temp_files_event' === $event && ! intval( FrmDb::get_var( 'frm_fields', array( 'type' => 'file' ), 'COUNT(*)' ) ) ) {
-				continue;
-			}
-
 			if ( ! wp_next_scheduled( $event ) ) {
 				wp_schedule_event( time(), $recurrence, $event );
 			}

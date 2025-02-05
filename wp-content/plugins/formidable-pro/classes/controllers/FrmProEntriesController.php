@@ -6,6 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class FrmProEntriesController {
 
+	/**
+	 * Used to decide whether we should show entry deleted message since we don't
+	 * want to show it when the user is not deleting entry.
+	 *
+	 * @since 6.17
+	 *
+	 * @var bool|null
+	 */
+	private static $delete_link_created;
+
 	public static function remove_fullscreen( $init ) {
 		if ( isset( $init['plugins'] ) ) {
 			$init['plugins'] = str_replace( 'wpfullscreen,', '', $init['plugins'] );
@@ -29,7 +39,15 @@ class FrmProEntriesController {
 			//send email notifications
 		}
 
-		$comments    = FrmEntryMeta::getAll( array( 'item_id' => $id, 'field_id' => 0 ), ' ORDER BY it.created_at ASC', '', true );
+		$comments    = FrmEntryMeta::getAll(
+            array(
+				'item_id'  => $id,
+				'field_id' => 0,
+            ),
+            ' ORDER BY it.created_at ASC',
+            '',
+            true 
+        );
 		$date_format = get_option( 'date_format' );
 		$time_format = get_option( 'time_format' );
 
@@ -170,7 +188,7 @@ class FrmProEntriesController {
 	}
 
 	/**
-	 * If a field default value matches [auto_id] patterns, evaluate the shortcode again ad assign it to the new entry.
+	 * If a field default value matches [auto_id] patterns, evaluate the shortcode again and assign it to the new entry.
 	 *
 	 * @since 5.4.4
 	 *
@@ -450,7 +468,13 @@ class FrmProEntriesController {
 		add_action( 'frm_after_create_entry', 'FrmProFormActionsController::trigger_draft_actions', 10, 2 );
 
 		// trigger after draft save hook
-		do_action( 'frm_after_draft_entry_processed', array( 'entry_id' => $entry_id, 'form' => $entry->form_id ) );
+		do_action(
+            'frm_after_draft_entry_processed',
+            array(
+				'entry_id' => $entry_id,
+				'form'     => $entry->form_id,
+            ) 
+        );
 	}
 
 	/**
@@ -498,7 +522,13 @@ class FrmProEntriesController {
 			//update, but don't check for confirmation if saving draft
 			if ( FrmProFormsHelper::saving_draft() ) {
 				FrmEntry::update( $params['id'], $_POST );
-				do_action( 'frm_after_draft_entry_processed', array( 'entry_id' => $params['id'], 'form' => $form ) );
+				do_action(
+                    'frm_after_draft_entry_processed',
+                    array(
+						'entry_id' => $params['id'],
+						'form'     => $form,
+                    ) 
+                );
 				return;
 			}
 
@@ -509,7 +539,10 @@ class FrmProEntriesController {
 
 			FrmEntry::update( $params['id'], $_POST );
 
-			$success_args = array( 'action' => $params['action'], 'id' => $params['id'] );
+			$success_args = array(
+				'action' => $params['action'],
+				'id'     => $params['id'],
+			);
 			if ( $params['action'] !== 'create' && FrmProEntriesHelper::is_new_entry( $params['id'] ) ) {
 				$success_args['action'] = 'create';
 			}
@@ -561,7 +594,12 @@ class FrmProEntriesController {
 			return;
 		}
 
-		$drafts_allowed = FrmForm::get_option( array( 'form' => $form, 'option' => 'save_draft' ) );
+		$drafts_allowed = FrmForm::get_option(
+            array(
+				'form'   => $form,
+				'option' => 'save_draft',
+            ) 
+        );
 		if ( $drafts_allowed ) {
 			self::autosave_on_page_turn( $form );
 		}
@@ -989,8 +1027,8 @@ class FrmProEntriesController {
 	 *     'submit_text', and 'show_form'
 	 */
 	private static function update_global_vars_for_entry_editing( &$args ) {
-		if ( isset( $args['form']->options['show_form'] ) && $args['form']->options['show_form'] ) {
-			//Do nothing because JavaScript is already loaded
+		if ( ! empty( $args['form']->options['show_form'] ) ) {
+			// Do nothing because JavaScript is already loaded
 			// Make sure Formidable CSS is loaded
 			global $frm_vars;
 			if ( $args['values']['custom_style'] ) {
@@ -1174,33 +1212,7 @@ class FrmProEntriesController {
 		$on_submit_args['action']      = $success_args['action'];
 		$on_submit_args['conf_method'] = $conf_method;
 
-		if ( is_callable( 'FrmFormsController::run_on_submit_actions' ) ) {
-			FrmFormsController::run_on_submit_actions( $on_submit_args );
-			return;
-		}
-
-		// After this point is deprecated as of v6.01.01.
-		if ( 'update' === $success_args['action'] && is_array( $conf_method ) ) {
-			if ( 1 === count( $conf_method ) ) {
-				FrmFormsController::run_single_on_submit_action( $on_submit_args, reset( $conf_method ) );
-			} else {
-				FrmFormsController::run_multi_on_submit_actions( $on_submit_args );
-			}
-			return;
-		}
-
-		if ( $conf_method === 'message' ) {
-			$args['conf_message'] = self::confirmation( 'message', $args['form'], $args['form']->options, $entry->id, $success_args );
-			$args['show_form']    = self::is_form_displayed_after_edit( $args['form'] );
-			self::show_front_end_form_with_entry( $entry, $args );
-		} else {
-			FrmFormsController::run_success_action(
-				$args + $success_args + array(
-					'conf_method' => $conf_method,
-					'entry_id'    => $entry->id,
-				)
-			);
-		}
+		FrmFormsController::run_on_submit_actions( $on_submit_args );
 	}
 
 	/**
@@ -1539,7 +1551,12 @@ class FrmProEntriesController {
 			$wpdb->insert( $wpdb->prefix . 'frm_item_metas', $new_values );
 		}
 
-		$display = FrmProDisplay::get_auto_custom_display( array( 'form_id' => $id, 'entry_id' => $entry_id ) );
+		$display = FrmProDisplay::get_auto_custom_display(
+            array(
+				'form_id'  => $id,
+				'entry_id' => $entry_id,
+            ) 
+        );
 		if ( $display ) {
 			update_post_meta( $post->ID, 'frm_display_id', $display->ID );
 		}
@@ -1899,7 +1916,11 @@ class FrmProEntriesController {
 	}
 
 	private static function set_display_atts( $field, &$atts ) {
-		$defaults = array( 'html' => 0, 'type' => $field->type, 'keepjs' => 0 );
+		$defaults = array(
+			'html'   => 0,
+			'type'   => $field->type,
+			'keepjs' => 0,
+		);
 		$atts     = array_merge( $defaults, $atts );
 
 		if ( FrmField::is_image( $field ) ) {
@@ -2397,11 +2418,19 @@ class FrmProEntriesController {
 			}
 
 			if ( $atts['edit_link'] && FrmProEntriesHelper::user_can_edit( $entry, $atts['form'] ) ) {
-				$this_entry['editLink'] = esc_url_raw( add_query_arg( array( 'frm_action' => 'edit', 'entry' => $entry->id ), $atts['permalink'] ) ) . $atts['anchor'];
+				$this_entry['editLink'] = esc_url_raw(
+                    add_query_arg(
+                        array(
+							'frm_action' => 'edit',
+							'entry'      => $entry->id,
+                        ),
+                        $atts['permalink'] 
+                    ) 
+                ) . $atts['anchor'];
 			}
 
 			if ( $atts['delete_link'] && FrmProEntriesHelper::user_can_delete( $entry ) ) {
-				$this_entry['deleteLink'] = esc_url_raw( wp_nonce_url( add_query_arg( array( 'frm_action' => 'destroy', 'entry' => $entry->id ) ) ) );
+				$this_entry['deleteLink'] = esc_url_raw( self::create_delete_link( $entry->id ) );
 			}
 			$graph_vals['entries'][] = $this_entry;
 
@@ -2418,6 +2447,21 @@ class FrmProEntriesController {
 		}
 
 		$frm_vars['google_graphs']['table'][] = $graph_vals;
+	}
+
+	/**
+	 * @since 6.17
+	 *
+	 * @param int        $entry_id
+	 * @param int|string $post_id
+	 * @return string
+	 */
+	public static function create_delete_link( $entry_id, $post_id = '' ) {
+		self::$delete_link_created = true;
+		if ( ! $post_id ) {
+			$post_id = get_the_ID();
+		}
+		return wp_nonce_url( admin_url( 'admin-ajax.php?action=frm_entries_destroy&entry=' . $entry_id . '&redirect=' . $post_id ), 'frm_ajax', 'nonce' );
 	}
 
 	/**
@@ -2591,9 +2635,25 @@ class FrmProEntriesController {
 		$s = FrmAppHelper::get_param( 'frm_search', false, 'get', 'sanitize_text_field' );
 
 		if ( $s ) {
-			$entry_ids = FrmProEntriesHelper::get_search_ids( $s, $atts['id'], array( 'is_draft' => $atts['drafts'], 'user_id' => $atts['user_id'] ) );
+			$entry_ids = FrmProEntriesHelper::get_search_ids(
+                $s,
+                $atts['id'],
+                array(
+					'is_draft' => $atts['drafts'],
+					'user_id'  => $atts['user_id'],
+                ) 
+            );
 		} else {
-			$entry_ids = FrmEntryMeta::getEntryIds( array( 'fi.form_id' => (int) $atts['id'] ), '', '', true, array( 'is_draft' => $atts['drafts'], 'user_id' => $atts['user_id'] ) );
+			$entry_ids = FrmEntryMeta::getEntryIds(
+                array( 'fi.form_id' => (int) $atts['id'] ),
+                '',
+                '',
+                true,
+                array(
+					'is_draft' => $atts['drafts'],
+					'user_id'  => $atts['user_id'],
+                ) 
+            );
 		}
 
 		if ( empty( $entry_ids ) ) {
@@ -2639,7 +2699,10 @@ class FrmProEntriesController {
 			// If the current user is an administrator or the creator of the entry, don't remove private, draft, or pending posts
 		} elseif ( ! empty( $post_status_check ) ) {
 			global $wpdb;
-			$query          = array( 'post_status !' => 'publish', 'ID' => array_keys( $post_status_check ) );
+			$query          = array(
+				'post_status !' => 'publish',
+				'ID'            => array_keys( $post_status_check ),
+			);
 			$remove_entries = FrmDb::get_col( $wpdb->posts, $query, 'ID' );
 			unset( $query );
 
@@ -2666,7 +2729,15 @@ class FrmProEntriesController {
 
 			$content[] = '<li><a href="' . esc_url( $link ) . '">' . $value . '</a>';
 			if ( ! empty( $atts['show_delete'] ) && FrmProEntriesHelper::user_can_delete( $entry ) ) {
-				$content[] = ' <a href="' . esc_url( add_query_arg( array( 'frm_action' => 'destroy', 'entry' => $entry->id ), $atts['permalink'] ) ) . '" class="frm_delete_list" data-frmconfirm="' . esc_attr( $atts['confirm'] ) . '">' . $atts['show_delete'] . '</a>' . "\n";
+				$content[] = ' <a href="' . esc_url(
+                    add_query_arg(
+                        array(
+							'frm_action' => 'destroy',
+							'entry'      => $entry->id,
+                        ),
+                        $atts['permalink'] 
+                    ) 
+                ) . '" class="frm_delete_list" data-frmconfirm="' . esc_attr( $atts['confirm'] ) . '">' . $atts['show_delete'] . '</a>' . "\n";
 			}
 			$content[] = "</li>\n";
 		}
@@ -2731,7 +2802,15 @@ class FrmProEntriesController {
 			$content[] = '<li><a href="' . esc_url( $link ) . '">' . $value . '</a>';
 
 			if ( $atts['show_delete'] && FrmProEntriesHelper::user_can_delete( $entry ) ) {
-				$content[] = ' <a href="' . esc_url( add_query_arg( array( 'frm_action' => 'destroy', 'entry' => $entry->id ), $atts['permalink'] ) ) . '" class="frm_delete_list" data-frmconfirm="' . esc_attr( $atts['confirm'] ) . '">' . $atts['show_delete'] . '</a>' . "\n";
+				$content[] = ' <a href="' . esc_url(
+                    add_query_arg(
+                        array(
+							'frm_action' => 'destroy',
+							'entry'      => $entry->id,
+                        ),
+                        $atts['permalink'] 
+                    ) 
+                ) . '" class="frm_delete_list" data-frmconfirm="' . esc_attr( $atts['confirm'] ) . '">' . $atts['show_delete'] . '</a>' . "\n";
 			}
 			$content[] = "</li>\n";
 			$year      = $new_year;
@@ -2767,7 +2846,15 @@ class FrmProEntriesController {
 
 		$content[] = "</select>\n";
 		if ( $atts['show_delete'] && $entry_param ) {
-			$content[] = " <a href='" . esc_url( add_query_arg( array( 'frm_action' => 'destroy', 'entry' => $entry_param ), $atts['permalink'] ) ) . "' class='frm_delete_list' data-frmconfirm='" . esc_attr( $atts['confirm'] ) . "'>" . $atts['show_delete'] . "</a>\n";
+			$content[] = " <a href='" . esc_url(
+                add_query_arg(
+                    array(
+						'frm_action' => 'destroy',
+						'entry'      => $entry_param,
+                    ),
+                    $atts['permalink'] 
+                ) 
+            ) . "' class='frm_delete_list' data-frmconfirm='" . esc_attr( $atts['confirm'] ) . "'>" . $atts['show_delete'] . "</a>\n";
 		}
 	}
 
@@ -2891,7 +2978,13 @@ class FrmProEntriesController {
 		}
 
 		if ( empty( $atts['prefix'] ) ) {
-			$link = add_query_arg( array( 'frm_action' => 'edit', 'entry' => $entry_id ), get_permalink( $atts['page_id'] ) );
+			$link = add_query_arg(
+                array(
+					'frm_action' => 'edit',
+					'entry'      => $entry_id,
+                ),
+                get_permalink( $atts['page_id'] ) 
+            );
 
 			if ( $atts['label'] ) {
 				$link = '<a href="' . esc_url( $link ) . '" class="' . esc_attr( $atts['class'] ) . '">' . $atts['label'] . '</a>';
@@ -2909,7 +3002,14 @@ class FrmProEntriesController {
 			$errors = isset( $frm_vars['created_entries'][ $atts['form_id'] ] ) && isset( $frm_vars['created_entries'][ $atts['form_id'] ]['errors'] ) ? $frm_vars['created_entries'][ $atts['form_id'] ]['errors'] : array();
 
 			if ( ! empty( $errors ) ) {
-				return FrmFormsController::get_form_shortcode( array( 'id' => $atts['form_id'], 'entry_id' => $entry_id, 'fields' => $atts['fields'], 'exclude_fields' => $atts['exclude_fields'] ) );
+				return FrmFormsController::get_form_shortcode(
+                    array(
+						'id'             => $atts['form_id'],
+						'entry_id'       => $entry_id,
+						'fields'         => $atts['fields'],
+						'exclude_fields' => $atts['exclude_fields'],
+                    ) 
+                );
 			}
 
 			$link .= "<script type='text/javascript'>document.addEventListener('DOMContentLoaded',function(){frmFrontForm.scrollToID('" . esc_js( $atts['prefix'] . $entry_id ) . "');});</script>";
@@ -3112,7 +3212,7 @@ class FrmProEntriesController {
 						return;
 					}
 
-					if ( $link === __( 'Your entry was successfully deleted', 'formidable-pro' ) ) {
+					if ( $link === self::entry_delete_message() ) {
 						return $new_link;
 					}
 
@@ -3127,14 +3227,15 @@ class FrmProEntriesController {
 		if ( empty( $atts['page_id'] ) ) {
 			$atts['page_id'] = url_to_postid( FrmAppHelper::get_server_value( 'HTTP_REFERER' ) );
 		}
+		$delete_link = self::create_delete_link( $entry_id, $atts['page_id'] );
 
-		$delete_link = wp_nonce_url( admin_url( 'admin-ajax.php?action=frm_entries_destroy&entry=' . $entry_id . '&redirect=' . $atts['page_id'] ), 'frm_ajax', 'nonce' );
 		if ( empty( $atts['label'] ) ) {
 			$link .= $delete_link;
 		} else {
 			if ( empty( $atts['title'] ) ) {
 				$atts['title'] = $atts['label'];
 			}
+
 			$link .= '<a href="' . esc_url( $delete_link ) . '" class="' . esc_attr( $atts['class'] ) . '" data-frmconfirm="' . esc_attr( $atts['confirm'] ) . '" title="' . esc_attr( $atts['title'] ) . '">' . $atts['label'] . '</a>' . "\n";
 		}
 
@@ -3311,7 +3412,11 @@ class FrmProEntriesController {
 			}
 
 			if ( is_numeric( $atts['entry'] ) ) {
-				$query[] = array( 'or' => 1, 'id' => $atts['entry'], 'parent_item_id' => $atts['entry'] );
+				$query[] = array(
+					'or'             => 1,
+					'id'             => $atts['entry'],
+					'parent_item_id' => $atts['entry'],
+				);
 			} else {
 				$query[] = array( 'item_key' => $atts['entry'] );
 			}
@@ -3399,18 +3504,39 @@ class FrmProEntriesController {
 
 		$echo = true;
 		if ( isset( $_REQUEST['redirect'] ) ) {
-			// don't echo if redirecting
+			// Don't echo if redirecting.
 			$echo = false;
 		}
-		self::ajax_destroy( false, true, $echo );
 
+		$message = self::ajax_destroy( false, true, $echo );
 		if ( ! $echo ) {
 			// redirect instead of loading a blank page
-			wp_redirect( esc_url_raw( get_permalink( FrmAppHelper::get_param( 'redirect', '', 'request', 'sanitize_text_field' ) ) ) );
+			$redirect_url = esc_url_raw( get_permalink( FrmAppHelper::get_param( 'redirect', '', 'request', 'sanitize_text_field' ) ) );
+			if ( $message === '' ) {
+				$redirect_url = add_query_arg( array( 'frm_entry_delete_message' => 'success' ), $redirect_url );
+			}
+			wp_redirect( $redirect_url );
 			die();
 		}
 
 		wp_die();
+	}
+
+	/**
+	 * @since 6.17
+	 *
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	public static function maybe_add_entry_delete_message( $content ) {
+		if ( ! self::$delete_link_created || 'success' !== FrmAppHelper::simple_get( 'frm_entry_delete_message' ) ) {
+			return $content;
+		}
+
+		$message = '<div class="' . esc_attr( FrmFormsHelper::get_form_style_class() ) . '"><div class="frm_message">' . self::entry_delete_message() . '</div></div>';
+
+		return $message . $content;
 	}
 
 	/**
@@ -3464,7 +3590,7 @@ class FrmProEntriesController {
 			$message = 'success';
 			echo 'success';
 		} elseif ( ! $ajax ) {
-			$message = apply_filters( 'frm_delete_message', esc_html__( 'Your entry was successfully deleted', 'formidable-pro' ), $entry );
+			$message = apply_filters( 'frm_delete_message', self::entry_delete_message(), $entry );
 
 			if ( $echo ) {
 				echo '<div class="frm_message">' . esc_html( $message ) . '</div>';
@@ -3474,6 +3600,18 @@ class FrmProEntriesController {
 		}
 
 		return $message;
+	}
+
+	/**
+	 * Returns entry delete message from settings.
+	 *
+	 * @since 6.17
+	 *
+	 * @return string
+	 */
+	private static function entry_delete_message() {
+		$frmpro_settings = FrmProAppHelper::get_settings();
+		return $frmpro_settings->entry_delete_message;
 	}
 
 	public static function maybe_delete_entry( $entry ) {

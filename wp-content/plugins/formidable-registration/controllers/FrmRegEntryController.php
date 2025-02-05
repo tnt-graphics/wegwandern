@@ -26,21 +26,26 @@ class FrmRegEntryController {
 	 * @param object $form
 	 */
 	public function insert_hidden_fields( $form ) {
-		$settings = FrmRegActionHelper::get_registration_settings_for_form( $form );
-		if ( empty( $settings ) ) {
+		$actions = FrmFormAction::get_action_for_form( $form->id, 'register' );
+		if ( ! $actions ) {
 			return;
 		}
 
 		$hidden_fields = array( 'email', 'username', 'password' );
+		foreach ( $actions as $action ) {
+			$form_id = ! empty( $action->post_content['child_form'] ) ? $action->post_content['child_form'] : $form->id;
 
-		foreach ( $hidden_fields as $setting ) {
-			if ( isset( $settings[ 'reg_' . $setting ] ) ) {
-				$value = $settings[ 'reg_' . $setting ];
-				include FrmRegAppHelper::path() . '/views/hidden_input.php';
+			$settings = FrmRegActionHelper::get_registration_settings_for_form( $form_id, $action );
+
+			foreach ( $hidden_fields as $setting ) {
+				if ( isset( $settings[ 'reg_' . $setting ] ) ) {
+					$value = $settings[ 'reg_' . $setting ];
+					include FrmRegAppHelper::path() . '/views/hidden_input.php';
+				}
 			}
-		}
 
-		$this->insert_hidden_subsite_fields( $settings );
+			$this->insert_hidden_subsite_fields( $settings );
+		}
 	}
 
 	/**

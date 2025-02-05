@@ -61,6 +61,10 @@ class FrmProSubmitHelper {
 			return $values;
 		}
 
+		if ( ! array_key_exists( 'show_hide', $values['field_options'] ) ) {
+			return $values;
+		}
+
 		$field = FrmField::getOne( $field_id );
 		if ( $field ) {
 			$form = FrmForm::getOne( $field->form_id );

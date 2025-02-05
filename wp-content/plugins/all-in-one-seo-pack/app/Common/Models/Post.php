@@ -85,6 +85,17 @@ class Post extends Model {
 	];
 
 	/**
+	 * Fields that should be float values.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @var array
+	 */
+	protected $floatFields = [
+		'priority'
+	];
+
+	/**
 	 * Returns a Post with a given ID.
 	 *
 	 * @since 4.0.0
@@ -235,7 +246,7 @@ class Post extends Model {
 			// If the graph has an old rating value, we need to migrate it to the review.
 			if (
 				property_exists( $graph, 'id' ) &&
-				preg_match( '/(movie|software-application)/', $graph->id ) &&
+				preg_match( '/(movie|software-application)/', (string) $graph->id ) &&
 				property_exists( $graph->properties, 'rating' ) &&
 				property_exists( $graph->properties->rating, 'value' )
 			) {
@@ -324,8 +335,8 @@ class Post extends Model {
 	 * @return array          The data.
 	 */
 	private static function checkForDefaultFormat( $postId, $thePost, $data ) {
-		$data['title']       = trim( $data['title'] );
-		$data['description'] = trim( $data['description'] );
+		$data['title']       = trim( (string) $data['title'] );
+		$data['description'] = trim( (string) $data['description'] );
 
 		$post                     = aioseo()->helpers->getPost( $postId );
 		$defaultTitleFormat       = trim( aioseo()->meta->title->getPostTypeTitle( $post->post_type ) );
@@ -427,7 +438,7 @@ class Post extends Model {
 		$thePost->post_id                     = $postId;
 		$thePost->title                       = ! empty( $data['title'] ) ? sanitize_text_field( $data['title'] ) : null;
 		$thePost->description                 = ! empty( $data['description'] ) ? sanitize_text_field( $data['description'] ) : null;
-		$thePost->canonical_url               = ! empty( $data['canonicalUrl'] ) ? esc_url_raw( $data['canonicalUrl'] ) : null;
+		$thePost->canonical_url               = ! empty( $data['canonicalUrl'] ) ? sanitize_text_field( $data['canonicalUrl'] ) : null;
 		$thePost->keywords                    = ! empty( $data['keywords'] ) ? aioseo()->helpers->sanitize( $data['keywords'] ) : null;
 		$thePost->pillar_content              = isset( $data['pillar_content'] ) ? rest_sanitize_boolean( $data['pillar_content'] ) : 0;
 		// TruSEO

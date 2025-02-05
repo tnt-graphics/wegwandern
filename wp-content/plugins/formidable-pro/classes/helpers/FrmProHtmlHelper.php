@@ -36,10 +36,7 @@ class FrmProHtmlHelper {
 	 * @return string|void
 	 */
 	public static function admin_toggle( $id, $name, $args ) {
-		if ( is_callable( 'FrmHtmlHelper::toggle' ) ) {
-			return FrmHtmlHelper::toggle( $id, $name, $args );
-		}
-		return self::toggle( $id, $name, $args );
+		return FrmHtmlHelper::toggle( $id, $name, $args );
 	}
 
 	/**

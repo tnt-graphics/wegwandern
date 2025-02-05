@@ -89,6 +89,7 @@ class FrmRegUserHelper {
 	 */
 	public static function should_log_user_in( $settings ) {
 		return ( isset( $settings['login'] ) && $settings['login']
-				 && isset( $settings['reg_password'] ) && is_numeric( $settings['reg_password'] ) );
+				 && isset( $settings['reg_password'] ) && is_numeric( $settings['reg_password'] )
+				 && empty( $settings['child_form'] ) );
 	}
 }

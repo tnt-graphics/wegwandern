@@ -84,7 +84,7 @@ trait Strings {
 			if ( 65535 < $length ) {
 				$string = substr( $string, 0, 65534 );
 			}
-			$string = preg_replace( "#[^\pZ\pP]*.{{$excessLength}}$#", '', $string );
+			$string = preg_replace( "#[^\pZ\pP]*.{{$excessLength}}$#", '', (string) $string );
 			if ( $shouldHaveEllipsis ) {
 				$string = $string . ' ...';
 			}
@@ -107,7 +107,7 @@ trait Strings {
 		if ( isset( $escapeRegex[ $string ] ) ) {
 			return $escapeRegex[ $string ];
 		}
-		$escapeRegex[ $string ] = preg_quote( $string, $delimiter );
+		$escapeRegex[ $string ] = preg_quote( (string) $string, $delimiter );
 
 		return $escapeRegex[ $string ];
 	}
@@ -159,7 +159,7 @@ trait Strings {
 		// The caveat is that we'd need to first trim off slash delimiters and add them back later - otherwise they'd be escaped as well.
 
 		$replacement         = $this->escapeRegexReplacement( $replacement );
-		$pregReplace[ $key ] = preg_replace( $pattern, $replacement, $subject );
+		$pregReplace[ $key ] = preg_replace( $pattern, $replacement, (string) $subject );
 
 		return $pregReplace[ $key ];
 	}
@@ -264,11 +264,11 @@ trait Strings {
 		}
 
 		$string = aioseo()->helpers->decodeHtmlEntities( $string );
-		$string = preg_replace( "/{$characterRegexPattern}[\p{P}\d+]/u", '', $string );
+		$string = preg_replace( "/{$characterRegexPattern}[\p{P}\d+]/u", '', (string) $string );
 		$string = aioseo()->helpers->encodeOutputHtml( $string );
 
 		// Trim both internal and external whitespace.
-		return preg_replace( '/\s\s+/u', ' ', trim( $string ) );
+		return preg_replace( '/\s\s+/u', ' ', (string) trim( $string ) );
 	}
 
 	/**
@@ -280,6 +280,10 @@ trait Strings {
 	 * @return string         The encoded string.
 	 */
 	public function encodeOutputHtml( $string ) {
+		if ( ! is_string( $string ) ) {
+			return '';
+		}
+
 		return htmlspecialchars( $string, ENT_COMPAT | ENT_HTML401, $this->getCharset(), false );
 	}
 
@@ -471,7 +475,7 @@ trait Strings {
 	 */
 	public function isValidRegex( $pattern ) {
 		// Set a custom error handler to prevent throwing errors on a bad Regular Expression.
-		set_error_handler( function() {}, E_WARNING );
+		set_error_handler( function() {}, E_WARNING ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler
 
 		$isValid = true;
 
@@ -579,7 +583,7 @@ trait Strings {
 	 * @return string         The converted string.
 	 */
 	public function toSentenceCase( $string ) {
-		$phrases = preg_split( '/([.?!]+)/', $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
+		$phrases = preg_split( '/([.?!]+)/', (string) $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
 
 		$convertedString = '';
 		foreach ( $phrases as $index => $sentence ) {
@@ -601,5 +605,46 @@ trait Strings {
 	 */
 	public function substring( $string, $startIndex, $length ) {
 		return function_exists( 'mb_substr' ) ? mb_substr( $string, $startIndex, $length, $this->getCharset() ) : substr( $string, $startIndex, $length );
+	}
+
+	/**
+	 * Strips emoji characters from a given string.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @param  string $string The string.
+	 * @return string         The string without emoji characters.
+	 */
+	public function stripEmoji( $string ) {
+		// First, decode HTML entities to convert them to actual Unicode characters.
+		$string = $this->decodeHtmlEntities( $string );
+
+		// Pattern to match emoji characters.
+		$emojiPattern = '/[\x{1F600}-\x{1F64F}' . // Emoticons
+						'\x{1F300}-\x{1F5FF}' . // Misc Symbols and Pictographs
+						'\x{1F680}-\x{1F6FF}' . // Transport and Map Symbols
+						'\x{1F1E0}-\x{1F1FF}' . // Flags (iOS)
+						'\x{2600}-\x{26FF}' . // Misc symbols
+						'\x{2700}-\x{27BF}' . // Dingbats
+						'\x{FE00}-\x{FE0F}' . // Variation Selectors
+						'\x{1F900}-\x{1F9FF}' . // Supplemental Symbols and Pictographs
+						']/u';
+
+		$filteredString = preg_replace( $emojiPattern, '', (string) $string );
+
+		// Re-encode special characters to HTML entities.
+		return $this->encodeOutputHtml( $filteredString );
+	}
+
+	/**
+	 * Creates a sha1 hash from the given arguments.
+	 *
+	 * @since 4.7.8
+	 *
+	 * @param  mixed  ...$args The arguments to create a sha1 hash from.
+	 * @return string          The sha1 hash.
+	 */
+	public function createHash( ...$args ) {
+		return sha1( wp_json_encode( $args ) );
 	}
 }

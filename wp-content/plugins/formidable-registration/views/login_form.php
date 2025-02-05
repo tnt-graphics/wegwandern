@@ -14,7 +14,7 @@
 			<a href="#"><?php echo esc_html( $login_form->get_submit_label() ); ?> &rarr;</a>
 		</span>
 	<?php } ?>
-	<form method="post" action="<?php echo esc_url( site_url( 'wp-login.php', 'login_post' ) ); ?>" >
+	<form method="post" action="<?php echo esc_url( $login_form->get_form_action_url() ); ?>" >
 
 		<?php if ( $showing_error_messages ) { ?>
 			<!-- Errors -->

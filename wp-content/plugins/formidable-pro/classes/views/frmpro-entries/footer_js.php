@@ -12,13 +12,14 @@ if ( isset( $frm_vars['tinymce_loaded'] ) && $frm_vars['tinymce_loaded'] === tru
 
 if ( ! empty( $frm_vars['rules'] ) ) {
 ?>var frmrules=<?php echo json_encode( $frm_vars['rules'] ); ?>;
-if(typeof __FRMRULES == 'undefined'){__FRMRULES=frmrules;}
+if(typeof __FRMRULES === 'undefined'){__FRMRULES=frmrules;}
 else{__FRMRULES=jQuery.extend({},__FRMRULES,frmrules);}<?php
 }
 
 if ( ! empty( $frm_vars['lookup_fields'] ) ) {
-?>
-	__FRMLOOKUP=<?php echo json_encode( $frm_vars['lookup_fields'] ); ?>;<?php
+?>var frmlookup=<?php echo json_encode( $frm_vars['lookup_fields'] ); ?>;
+if(typeof __FRMLOOKUP === 'undefined'){__FRMLOOKUP=frmlookup;}
+else{__FRMLOOKUP=jQuery.extend({},__FRMLOOKUP,frmlookup);}<?php
 }
 
 if ( ! empty( $frm_vars['google_graphs'] ) ) {

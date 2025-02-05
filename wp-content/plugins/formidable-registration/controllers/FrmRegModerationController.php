@@ -6,6 +6,13 @@
 class FrmRegModerationController {
 
 	/**
+	 * @since 3.0
+	 *
+	 * @var bool
+	 */
+	private static $has_printed_activation_message = false;
+
+	/**
 	 * Check if settings have any user moderation selected
 	 *
 	 * @since 2.0
@@ -418,9 +425,11 @@ class FrmRegModerationController {
 	 * @return string
 	 */
 	public static function print_activation_messages( $content ) {
-		if ( ! is_singular() && is_main_query() ) {
+		if ( self::$has_printed_activation_message || ( ! is_singular() && is_main_query() ) ) {
 			return $content;
 		}
+
+		self::$has_printed_activation_message = true;
 
 		if ( isset( $_GET['frm_message'] ) && $_GET['frm_message'] == 'complete'
 			 && isset( $_GET['user'] ) && is_numeric( $_GET['user'] ) ) {

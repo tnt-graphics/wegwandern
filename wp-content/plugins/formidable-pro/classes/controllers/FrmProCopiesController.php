@@ -74,7 +74,13 @@ class FrmProCopiesController {
 
 	public static function destroy_copied_form( $id ) {
 		global $blog_id;
-		$copies = FrmProCopy::getAll( array( 'blog_id' => $blog_id, 'form_id' => $id, 'type' => 'form' ) );
+		$copies = FrmProCopy::getAll(
+			array(
+				'blog_id' => $blog_id,
+				'form_id' => $id,
+				'type'    => 'form',
+			) 
+		);
 		foreach ( $copies as $copy ) {
 			FrmProCopy::destroy( $copy->id );
 		}

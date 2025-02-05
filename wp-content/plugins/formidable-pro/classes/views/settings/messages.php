@@ -43,3 +43,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 			class="frm_with_left_label"
 			value="<?php echo esc_attr( $frmpro_settings->repeater_row_delete_confirmation ); ?>"/>
 </p>
+
+<p>
+	<label for="frm_entry_delete_message" class="frm_left_label"><?php esc_html_e( 'Deleted entry success message', 'formidable-pro' ); ?>
+		<?php FrmProAppHelper::tooltip_icon( __( 'The message displayed when entry is deleted successfully.', 'formidable-pro' ) ); ?>
+	</label>
+		<input type="text" id="frm_entry_delete_message" name="frm_entry_delete_message"
+			class="frm_with_left_label"
+			value="<?php echo esc_attr( $frmpro_settings->entry_delete_message ); ?>"/>
+</p>

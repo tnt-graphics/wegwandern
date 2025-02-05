@@ -59,8 +59,8 @@ trait WpMultisite {
 		}
 
 		return (object) [
-			'domain' => $this->getSiteDomain(),
-			'path'   => $this->getHomePath()
+			'domain' => $this->getSiteDomain( true ),
+			'path'   => $this->getHomePath( true )
 		];
 	}
 
@@ -308,5 +308,18 @@ trait WpMultisite {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Returns the current site domain.
+	 *
+	 * @since 4.7.7
+	 *
+	 * @return string The site domain.
+	 */
+	public function getMultiSiteDomain() {
+		$site = aioseo()->helpers->getSite();
+
+		return $site->domain . $site->path;
 	}
 }

@@ -365,7 +365,7 @@ class FrmProStylesController extends FrmStylesController {
 	public static function include_front_css( $args ) {
 		$defaults  = $args['defaults'];
 		$important = self::is_important( $defaults );
-		$vars      = self::css_vars();
+		$vars      = array();
 
 		include FrmProAppHelper::plugin_path() . '/css/pro_fields.css.php';
 
@@ -484,9 +484,10 @@ class FrmProStylesController extends FrmStylesController {
 		$defaults  = self::get_default_style();
 		$important = self::is_important( $defaults );
 
-		$vars = self::css_vars();
 		if ( is_callable( 'FrmStylesHelper::get_css_vars' ) ) {
 			$vars = FrmStylesHelper::get_css_vars( array_keys( $defaults ) );
+		} else {
+			$vars = array();
 		}
 
 		include FrmProAppHelper::plugin_path() . '/css/pro_fields.css.php';
@@ -505,7 +506,7 @@ class FrmProStylesController extends FrmStylesController {
 		$pad_unit   = preg_replace( '/[0-9]+/', '', $top_pad ); //px, em, rem...
 		$top_margin = (int) str_replace( $pad_unit, '', $top_pad ) / 2;
 		$defaults   = self::get_default_style();
-		$vars       = self::css_vars();
+		$vars       = array();
 
 		list( $bg_image_url, $bg_image_opacity ) = self::get_bg_image_vars( $settings );
 
@@ -577,22 +578,6 @@ class FrmProStylesController extends FrmStylesController {
 			$_POST['action'] = '';
 		}
 		return FrmStylesHelper::get_settings_for_output( $default_style );
-	}
-
-	/**
-	 * This is here for version mismatch. It can be removed later.
-	 *
-	 * @since 4.05
-	 *
-	 * @return array
-	 */
-	private static function css_vars() {
-		if ( is_callable( 'FrmStylesHelper::get_css_vars' ) ) {
-			return array();
-		}
-
-		$vars = array( 'progress_color', 'progress_bg_color', 'progress_active_bg_color', 'progress_border_size', 'border_color', 'border_radius', 'field_border_width', 'field_border_style', 'field_font_size', 'field_margin', 'text_color', 'field_pad', 'bg_color', 'submit_text_color', 'submit_font_size', 'border_color_error', 'text_color_error', 'bg_color_error', 'description_color', 'slider_font_size', 'slider_bar_color', 'section_border_width', 'section_border_style', 'section_border_color', 'section_font_size', 'section_bg_color', 'section_color', 'section_weight', 'toggle_off_color', 'toggle_on_color', 'toggle_font_size', 'check_weight', 'check_label_color' );
-		return array_unique( $vars );
 	}
 
 	/**
@@ -1165,14 +1150,6 @@ class FrmProStylesController extends FrmStylesController {
 			return;
 		}
 		include FrmProAppHelper::plugin_path() . '/css/views-calendar-old-style.css.php';
-	}
-
-	/**
-	 * @deprecated 4.0
-	 */
-	public static function style_switcher( $style, $styles ) {
-		_deprecated_function( __METHOD__, '4.0', 'FrmProStylesController::add_new_button' );
-		self::add_new_button( $style );
 	}
 
 	/**

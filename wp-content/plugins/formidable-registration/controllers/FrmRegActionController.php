@@ -107,15 +107,66 @@ class FrmRegActionController {
 
 			foreach ( $values['frm_register_action'] as $register_action ) {
 
-				if ( isset( $register_action['post_content'] ) ) {
+				// Do not process if form action isn't opened.
+				if ( ! isset( $register_action['post_content'] ) ) {
+					continue;
+				}
 
+				// Add a User ID field to the repeater if repeater actions is enabled, add to the main form otherwise.
+				if ( ! empty( $register_action['post_content']['child_form'] ) ) {
+					$child_form_id = $register_action['post_content']['child_form'];
+					$repeater_id   = self::get_repeater_id_from_child_form_id( $child_form_id, $values['id'] );
+					if ( $repeater_id ) {
+						self::add_user_id_field_if_missing( $child_form_id, array( 'in_section' => $repeater_id ) );
+					}
+				} else {
 					self::add_user_id_field_if_missing( $values['id'] );
-					break;
 				}
 			}
 		}
 
 		return $options;
+	}
+
+	/**
+	 * Gets repeater field ID from given child form ID and parent form ID.
+	 *
+	 * @since 3.0
+	 *
+	 * @param int $form_id        Child form ID.
+	 * @param int $parent_form_id Parent form ID.
+	 *
+	 * @return int Return the Repeater field ID, or `0` if not found.
+	 */
+	private static function get_repeater_id_from_child_form_id( $form_id, $parent_form_id ) {
+		$where = array(
+			'type'    => 'divider',
+			'form_id' => $parent_form_id,
+			array(
+				'or' => 1,
+				array(
+					'field_options LIKE' => 's:11:"form_select";s:' . strlen( (string) $form_id ) . ':"' . $form_id . '";',
+				),
+				array(
+					'field_options LIKE' => 's:11:"form_select";i:' . $form_id . ';',
+				),
+			),
+		);
+
+		$fields = FrmDb::get_results( 'frm_fields', $where, 'id,form_id,field_options' );
+		if ( ! $fields || ! is_array( $fields ) ) {
+			return 0;
+		}
+
+		foreach ( $fields as $field ) {
+			FrmAppHelper::unserialize_or_decode( $field->field_options );
+
+			if ( is_array( $field->field_options ) && isset( $field->field_options['form_select'] ) && (int) $form_id === (int) $field->field_options['form_select'] ) {
+				return $field->id;
+			}
+		}
+
+		return 0;
 	}
 
 	/**
@@ -143,7 +194,7 @@ class FrmRegActionController {
 
 		} else if ( $email_type == 'user' ) {
 
-			$register_action = FrmFormAction::get_action_for_form( $form_id, 'register', 1 );
+			$register_action = FrmRegActionHelper::get_action_for_form( $form_id );
 
 			if ( ! $register_action ) {
 				return $email_action;
@@ -214,7 +265,7 @@ class FrmRegActionController {
 	 * @param object $form
 	 */
 	public static function migrate_registration_actions_to_2( $form ) {
-		$register_action = FrmFormAction::get_action_for_form( $form->id, 'register', 1 );
+		$register_action = FrmRegActionHelper::get_action_for_form( $form->id );
 
 		if ( $register_action ) {
 			self::create_user_email_action( $form, $register_action );
@@ -694,31 +745,75 @@ class FrmRegActionController {
 	 * @return array $fields
 	 */
 	public static function get_user_meta_fields( $form_id ) {
-		$where    = array(
-			'fi.form_id'  => $form_id,
-			'fi.type not' => FrmField::no_save_fields(),
+		$fields = FrmField::get_all_for_form( $form_id, '', 'include' );
+		return array_filter(
+			$fields,
+			/**
+			 * @param object $field
+			 * @return bool
+			 */
+			function ( $field ) {
+				return ! FrmField::is_no_save_field( $field->type );
+			}
 		);
-		$order_by = 'field_order';
-
-		$fields = FrmField::getAll( $where, $order_by );
-
-		return $fields;
 	}
 
 	/**
 	 * Make sure the form includes a userID field
 	 *
 	 * @since 2.0
+	 * @since 3.0 The second parameter is added.
 	 *
-	 * @param int $form_id
+	 * @param int   $form_id       Form ID.
+	 * @param array $field_options Field options.
 	 */
-	private static function add_user_id_field_if_missing( $form_id ) {
+	private static function add_user_id_field_if_missing( $form_id, $field_options = array() ) {
 		$user_field = FrmField::get_all_types_in_form( $form_id, 'user_id', 1 );
 		if ( ! $user_field ) {
 			$new_values = FrmFieldsHelper::setup_new_vars( 'user_id', $form_id );
 			$new_values['name'] = __( 'User ID', 'frmreg' );
+
+			if ( $field_options ) {
+				$new_values['field_options'] = $field_options + $new_values['field_options'];
+			}
+
+			// If add to a repeater, swap the field order of this field and end_divider.
+			if ( ! empty( $new_values['field_options']['in_section'] ) ) {
+				$end_divider = self::get_end_divider_field( $form_id, $new_values['field_order'] - 1 );
+				if ( $end_divider ) {
+					FrmField::update( $end_divider->id, $new_values['field_order'] );
+					$new_values['field_order']--;
+				}
+			}
+
 			FrmField::create( $new_values );
 		}
+	}
+
+	/**
+	 * Gets end divider field.
+	 *
+	 * @param int $form_id     Form ID.
+	 * @param int $field_order Field order.
+	 *
+	 * @return mixed
+	 */
+	private static function get_end_divider_field( $form_id, $field_order ) {
+		return FrmDb::get_row( 'frm_fields', compact( 'form_id', 'field_order' ), 'id' );
+	}
+
+	/**
+	 * Adds repeater actions support.
+	 *
+	 * @since 3.0
+	 *
+	 * @param array $actions Supported actions.
+	 *
+	 * @return array
+	 */
+	public static function add_repeater_actions_support( $actions ) {
+		$actions[] = 'register';
+		return $actions;
 	}
 
 	/**

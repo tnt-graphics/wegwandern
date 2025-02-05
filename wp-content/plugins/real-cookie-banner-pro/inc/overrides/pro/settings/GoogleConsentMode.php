@@ -41,7 +41,7 @@ trait GoogleConsentMode
     public function localize($arr, $context)
     {
         $isEnabled = $this->isEnabled();
-        $isFrontend = $context === Constants::ASSETS_TYPE_FRONTEND || \is_customize_preview();
+        $isFrontend = \in_array($context, [Constants::ASSETS_TYPE_FRONTEND, Constants::ASSETS_TYPE_LOGIN], \true) || \is_customize_preview();
         $banner = GcmBanner::getInstance();
         if ($isFrontend && $isEnabled || $context === Constants::ASSETS_TYPE_ADMIN) {
             $arr['bannerI18n'] = \array_merge($arr['bannerI18n'], $banner->localizeTexts());

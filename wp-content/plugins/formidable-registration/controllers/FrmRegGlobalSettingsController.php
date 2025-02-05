@@ -127,7 +127,39 @@ class FrmRegGlobalSettingsController {
 			$this->checked = true;
 		}
 
+		$this->validate_current_pages();
 		return $errors;
+	}
+
+	/**
+	 * Validates current global pages.
+	 *
+	 * @since 3.0
+	 *
+	 * @return void
+	 */
+	private function validate_current_pages() {
+		if ( empty( $this->errors ) ) {
+			return;
+		}
+
+		$errors = array();
+		foreach ( array_keys( $this->errors ) as $page_key ) {
+			$page_id = $this->settings->get_global_page( $page_key );
+			if ( empty( $page_id ) ) {
+				continue;
+			}
+			$this->settings->check_page_content( $page_id, $page_key, $errors );
+		}
+
+		if ( empty( $errors ) ) {
+			return;
+		}
+
+		foreach ( array_keys( $errors ) as $page_key ) {
+			$_POST['frm_reg_global_pages'][ $page_key ] = '';
+		}
+		$this->settings->update( $_POST );
 	}
 
 	/**

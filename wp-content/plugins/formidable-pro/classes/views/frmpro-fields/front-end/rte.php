@@ -56,7 +56,9 @@ if ( FrmAppHelper::is_admin() ) { ?>
 		}
 	}
 
+	add_filter( 'format_for_editor', 'FrmProFieldRte::encode_all_quote_types' );
 	wp_editor( FrmAppHelper::esc_textarea( $field['value'], true ), $html_id, $e_args );
+	remove_filter( 'format_for_editor', 'FrmProFieldRte::encode_all_quote_types' );
 
 	// If submitting with Ajax or on preview page and tinymce is not loaded yet, load it now
 

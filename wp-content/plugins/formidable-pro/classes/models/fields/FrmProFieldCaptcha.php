@@ -9,6 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FrmProFieldCaptcha extends FrmFieldCaptcha {
 
+	/**
+	 * The nonce value for the captcha nonce field (used to prevent multiple
+	 * challenges and bugs where the CAPTCHA field is on another page).
+	 *
+	 * @var string|null
+	 */
 	private static $checked;
 
 	protected function field_settings_for_type() {
@@ -55,7 +61,11 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 			}
 
 			$this->maybe_set_captcha_score_in_form_state();
-			self::$checked = wp_create_nonce( 'frm_captcha' );
+
+			if ( self::should_include_captcha_nonce_field() ) {
+				self::$checked = wp_create_nonce( 'frm_captcha' );
+			}
+
 			return array();
 		}
 
@@ -113,10 +123,17 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	}
 
 	/**
+	 * Check the catpcha nonce.
+	 *
 	 * @since 4.07
-	 * @return mixed
+	 *
+	 * @return false|string A nonce string on successful validation. False otherwise.
 	 */
 	private static function validate_checked() {
+		if ( ! self::should_include_captcha_nonce_field() ) {
+			return false;
+		}
+
 		if ( isset( $_POST['recaptcha_checked'] ) ) {
 			$nonce = FrmAppHelper::get_param( 'recaptcha_checked', '', 'post', 'sanitize_text_field' );
 			if ( wp_verify_nonce( $nonce, 'frm_captcha' ) ) {
@@ -130,7 +147,7 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 
 	/**
 	 * @since 4.07
-	 * @return mixed
+	 * @return false|string
 	 */
 	public static function checked() {
 		if ( isset( self::$checked ) ) {
@@ -143,15 +160,20 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	}
 
 	/**
+	 * Check if CAPTCHA data is being sent in the POST request.
+	 *
 	 * @since 4.07
 	 *
 	 * @return bool
 	 */
 	public static function posting_captcha_data() {
-		if ( ! empty( $_POST['recaptcha_checked'] ) ) {
+		// First check the nonce field (if it is enabled).
+		if ( ! empty( $_POST['recaptcha_checked'] ) && self::should_include_captcha_nonce_field() ) {
 			return true;
 		}
 
+		// Check for the CAPTCHA token.
+		// This function was added in v6.8.4 (released Mar 27, 2024).
 		if ( is_callable( self::class . '::post_data_includes_token' ) ) {
 			return self::post_data_includes_token();
 		}
@@ -160,9 +182,21 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	}
 
 	/**
+	 * Maybe render a hidden input with a nonce value.
+	 * This is checked instead of the captcha token when it is submitted.
+	 * The nonce is generated after the user successfully validates a CAPTCHA.
+	 *
 	 * @since 4.07
+	 * @since 6.17 It is now possible to opt-out of this using the frm_should_include_captcha_nonce_field filter.
+	 *
+	 * @return void
 	 */
 	public static function render_checked_response() {
+		if ( ! self::should_include_captcha_nonce_field() ) {
+			// The nonce field is disabled, so we never want to render the input.
+			return;
+		}
+
 		global $frm_vars;
 		$is_in_place_edit = ! empty( $frm_vars['inplace_edit'] );
 		if ( $is_in_place_edit ) {
@@ -176,5 +210,23 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 				<?php
 			}
 		}
+	}
+
+	/**
+	 * Check if the user has opted out fo the captcha nonce field.
+	 * The CAPTCHA nonce field is added to prevent multiple challenges.
+	 * But it also means that the nonce can be reused to prevent CAPTCHA validation.
+	 *
+	 * @since 6.17
+	 *
+	 * @return bool
+	 */
+	private static function should_include_captcha_nonce_field() {
+		/**
+		 * @since 6.17
+		 *
+		 * @param bool $should_include True by default. Set to false to prevent the captcha nonce field from being included.
+		 */
+		return (bool) apply_filters( 'frm_should_include_captcha_nonce_field', true );
 	}
 }

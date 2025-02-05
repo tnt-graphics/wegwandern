@@ -92,9 +92,9 @@ class TemplateConsumers
             $serviceConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\PersistTranslationsMiddlewareImpl($serviceConsumer));
             $serviceConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\TranslationsMiddlewareImpl($serviceConsumer));
             $blockerConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\ConsumerMiddleware($blockerConsumer));
-            $blockerConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\RecommendedHooksMiddleware($blockerConsumer));
             $blockerConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\PersistTranslationsMiddlewareImpl($blockerConsumer));
             $blockerConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\TranslationsMiddlewareImpl($blockerConsumer));
+            $blockerConsumer->addMiddleware(new \DevOwl\RealCookieBanner\templates\ServiceCloudConsumerExternalUrlNotifierMiddlewareImpl($blockerConsumer));
             // Data sources
             $serviceConsumer->addDataSource(new \DevOwl\RealCookieBanner\templates\ServiceLocalDataSource($serviceConsumer));
             $serviceConsumer->addDataSource(new \DevOwl\RealCookieBanner\templates\CloudDataSource($serviceConsumer));
@@ -251,6 +251,25 @@ class TemplateConsumers
             },
             'i18n.TcfMiddleware.disabled' => \__('TCF required', RCB_TD),
             'i18n.TcfMiddleware.disabledTooltip' => \__('This template requires the integration of TCF, as the provider of this template uses this standard. Please activate this in the settings to be able to block this service.', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.introduction' => \__('%s is a network of globally distributed servers that cache content and deliver it to your website visitors faster based on their location, reducing website load times and improving performance. This technology is also known as a content delivery network (CDN). {{strong}}Servers may also be located in countries that are considered unsafe in terms of data protection law.{{/strong}}', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.introductionNoScc' => \__('In order to use the service in a way that complies with data protection regulations, the only practical option would be to conclude standard contractual clauses (SCCs) with %1$s that guarantee the safe processing of personal data of your website visitors (in particular IP addresses). Unfortunately, %1$s does not offer the option of concluding standard contractual clauses to our knowledge. Therefore, in our legal opinion, {{strong}}it is not possible to use this service in a legally compliant manner.{{/strong}}', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.introductionNotEssential' => \__('%s unfortunately sets cookies that are not technically essential according to our knowledge, for which consent would be required. At the same time, the CDN cannot be blocked with a content blocker until the website visitors have given their consent, as otherwise parts of your website may malfunction. Therefore, in our legal opinion, {{strong}}it is not possible to use this service in a legally compliant manner.{{/strong}}', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.introductionSccAndEmbedsOnlyExternalResources1' => \__('In order to use the service in a way that complies with data protection regulations, the only practical option would be to conclude standard contractual clauses (SCCs) with %s that guarantee the safe processing of personal data of your website visitors (in particular IP addresses).', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.introductionSccAndEmbedsOnlyExternalResources2' => \__('{{strong}}Please make sure that you have concluded standard contract clauses with %1$s, which can be done on their website!{{/strong}} Since %1$s does not set cookies to our knowledge, we do not recommend creating a service in your cookie banner for it. However, you must mention the use of %1$s in your privacy policy.', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.introductionRemoveService' => \__('Please remove %s from your website!', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.moreInfoTitle' => \__('Why is %s integrated into my website at all?', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.moreInfoDescription' => \__('If you do not consciously integrate %1$s, it is most likely that a plugin or theme you are using uses this CDN to load external scripts, fonts or media such as images. The best way to find out who is integrating the CDN is to disable the individual plugins or themes and scan again. Once you have found out where the integration is coming from, contact the developer of the plugin or theme to see if it can be used without %1$s or replace this plugin/theme!', RCB_TD),
+            // translators:
+            'i18n.CdnMiddleware.sccConclusionInstructionsNoticeTitle' => \__('How do I conclude standard contractual clauses with %s?', RCB_TD),
+            'i18n.CdnMiddleware.buttonLabel' => \__('Acknowledged', RCB_TD),
         ];
         foreach ($variables as $key => $value) {
             $resolver->add($key, $value);
@@ -313,14 +332,15 @@ class TemplateConsumers
         return $result;
     }
     /**
-     * Create a WordPress post from a given template.
+     * Create or update a WordPress post from a given template.
      *
      * @param ServiceTemplate|BlockerTemplate $template
      * @param int[] $assignToTerm The key of the array needs to be the taxonomy name
      * @param int $updatePostId
-     * @return false|WP_Error|WP_Post
+     * @param string[] $metaKeys
+     * @param boolean $updateVersion
      */
-    public function createFromTemplate($template, $assignToTerm = null, $updatePostId = null)
+    public function createFromTemplate($template, $assignToTerm = null, $updatePostId = null, $metaKeys = null, $updateVersion = \true)
     {
         $metaInput = [];
         $postType = '';
@@ -330,24 +350,47 @@ class TemplateConsumers
             $use = $template->use();
             $postContent = $use->purpose;
             $postType = Cookie::CPT_NAME;
-            foreach (Cookie::META_KEYS as $metaKey) {
-                if (\property_exists($use, $metaKey)) {
-                    $metaInput[$metaKey] = $use->{$metaKey};
-                } else {
-                    switch ($metaKey) {
-                        case Cookie::META_NAME_UNIQUE_NAME:
-                        case Cookie::META_NAME_CODE_DYNAMICS:
-                            // Skip
-                            break;
-                        default:
-                            break;
-                    }
+            if ($metaKeys === null) {
+                $metaKeys = Cookie::META_KEYS;
+            }
+            foreach ($metaKeys as $metaKey) {
+                switch ($metaKey) {
+                    case Blocker::META_NAME_PRESET_ID:
+                    case Blocker::META_NAME_PRESET_VERSION:
+                    case Cookie::META_NAME_UNIQUE_NAME:
+                    case Cookie::META_NAME_CODE_DYNAMICS:
+                        // Skip
+                        break;
+                    default:
+                        if (\property_exists($use, $metaKey)) {
+                            $metaInput[$metaKey] = $use->{$metaKey};
+                        }
+                        break;
                 }
             }
         } elseif ($template instanceof BlockerTemplate) {
-            // TODO: implement this, but currently there is no need for this
+            $use = $template->use();
+            $postContent = $use->description;
+            $postType = Blocker::CPT_NAME;
+            if ($metaKeys === null) {
+                $metaKeys = Blocker::META_KEYS;
+            }
+            foreach ($metaKeys as $metaKey) {
+                switch ($metaKey) {
+                    case Blocker::META_NAME_PRESET_ID:
+                    case Blocker::META_NAME_PRESET_VERSION:
+                    case Blocker::META_NAME_VISUAL_DOWNLOAD_THUMBNAIL:
+                        // Skip
+                        break;
+                    default:
+                        if (\property_exists($use, $metaKey)) {
+                            $metaInput[$metaKey] = $use->{$metaKey};
+                        }
+                        break;
+                }
+            }
         }
-        if (\count($metaInput) > 0) {
+        if (\count($metaInput) > 0 || !empty($postContent) || !empty($postTitle)) {
             // `null` values or empty strings should not be persisted to database as they are handled through default-value
             foreach ($metaInput as $key => $value) {
                 if ($value === null || $value === '') {
@@ -356,8 +399,10 @@ class TemplateConsumers
                     $metaInput[$key] = \wp_slash(\json_encode($value));
                 }
             }
-            $metaInput[Blocker::META_NAME_PRESET_ID] = $template->identifier;
-            $metaInput[Blocker::META_NAME_PRESET_VERSION] = $template->version;
+            if ($updateVersion) {
+                $metaInput[Blocker::META_NAME_PRESET_ID] = $template->identifier;
+                $metaInput[Blocker::META_NAME_PRESET_VERSION] = $template->version;
+            }
             $postData = ['post_title' => $postTitle, 'post_content' => $postContent, 'meta_input' => $metaInput];
             if ($updatePostId !== null) {
                 $post = \get_post($updatePostId);
@@ -373,10 +418,10 @@ class TemplateConsumers
             }
             if (\is_array($assignToTerm)) {
                 foreach ($assignToTerm as $taxonomy => $termId) {
-                    $res = \wp_set_object_terms($result, $termId, $taxonomy);
+                    \wp_set_object_terms($result, $termId, $taxonomy);
                 }
             }
-            return \is_int($result) ? \get_post($result) : $result;
+            return \is_int($result) ? $postData : $result;
         }
         return \false;
     }

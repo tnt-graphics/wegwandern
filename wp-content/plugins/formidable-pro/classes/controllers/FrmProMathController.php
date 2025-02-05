@@ -74,6 +74,11 @@ class FrmProMathController {
 	 */
 	private static function clear_expression_of_extra_characters( $expression, $atts ) {
 		if ( ! empty( $atts['clean'] ) ) {
+			// Strip tags first.
+			// The other regex replaces do not strip the numbers or hyphens used in HTML open tags.
+			// Without this the calculations include unexpected invisible numbers and too many minus symbols.
+			$expression = strip_tags( $expression );
+
 			//remove /> and </ so HTML tags can be fully removed
 			$expression = preg_replace( '/\/>|<\/|&lt;\/|\/&gt;/', '', $expression );
 			return preg_replace( '/[^\+\-\/\*0-9\.\(\)\%]/', '', $expression );

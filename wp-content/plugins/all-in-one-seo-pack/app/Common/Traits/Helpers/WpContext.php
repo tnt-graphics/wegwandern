@@ -215,6 +215,7 @@ trait WpContext {
 		$postId = apply_filters( 'aioseo_get_post_id', $postId );
 
 		// We need to check these conditions and cannot always return get_post() because we'll return the first post on archive pages (dynamic homepage, term pages, etc.).
+		// https://github.com/awesomemotive/aioseo/issues/2419
 		if (
 			$this->isScreenBase( 'post' ) ||
 			$postId ||
@@ -224,6 +225,33 @@ trait WpContext {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the term object for the given ID or the one from the main query.
+	 *
+	 * @since 4.7.8
+	 *
+	 * @param  int    $termId   The term ID.
+	 * @param  string $taxonomy The taxonomy.
+	 * @return \WP_Term         The term object.
+	 */
+	public function getTerm( $termId = 0, $taxonomy = '' ) {
+		$term = null;
+		if ( $termId ) {
+			$term = get_term( $termId, $taxonomy );
+		} else {
+			$term = get_queried_object();
+		}
+
+		// If the term is a Product Attribute, set its parent taxonomy to our fake
+		// "product_attributes" taxonomy so we can use the default settings.
+		if ( is_a( $term, 'WP_Term' ) && $this->isWooCommerceProductAttribute( $term->taxonomy ) ) {
+			$term           = clone $term;
+			$term->taxonomy = 'product_attributes';
+		}
+
+		return $term;
 	}
 
 	/**
@@ -315,8 +343,8 @@ trait WpContext {
 
 		// Because do_blocks() and do_shortcodes() can trigger conflicts, we need to clone these objects and restore them afterwards.
 		// We need to clone deep to sever pointers/references because these have nested object properties.
-		global $wp_query, $post;
-		$this->originalQuery = $this->deepClone( $wp_query );
+		global $wp_query, $post; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		$this->originalQuery = $this->deepClone( $wp_query ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 		$this->originalPost  = is_a( $post, 'WP_Post' ) ? $this->deepClone( $post ) : null;
 
 		// The order of the function calls below is intentional and should NOT change.
@@ -350,13 +378,13 @@ trait WpContext {
 			return $content[ $post->ID ];
 		}
 
-		$postContent = (string) $this->getPostContent( $post );
+		$postContent = $this->getPostContent( $post );
 
 		// Strip images, captions and WP oembed wrappers (e.g. YouTube URLs) from the post content.
-		$postContent          = preg_replace( '/(<figure.*?\/figure>|<img.*?\/>|<div.*?class="wp-block-embed__wrapper".*?>.*?<\/div>)/s', '', $postContent );
-		$postContent          = str_replace( ']]>', ']]&gt;', $postContent );
-		$postContent          = trim( wp_strip_all_tags( strip_shortcodes( $postContent ) ) );
-		$content[ $post->ID ] = wp_trim_words( $postContent, 55, '' );
+		$postContent          = preg_replace( '/(<figure.*?\/figure>|<img.*?\/>|<div.*?class="wp-block-embed__wrapper".*?>.*?<\/div>)/s', '', (string) $postContent );
+		$postContent          = str_replace( ']]>', ']]&gt;', (string) $postContent );
+		$postContent          = trim( wp_strip_all_tags( strip_shortcodes( (string) $postContent ) ) );
+		$content[ $post->ID ] = wp_trim_words( (string) $postContent, 55, '' );
 
 		return $content[ $post->ID ];
 	}
@@ -402,71 +430,118 @@ trait WpContext {
 	 * @return bool         If the page is special or not.
 	 */
 	public function isSpecialPage( $postId = 0 ) {
-		if (
-			(int) get_option( 'page_for_posts' ) === (int) $postId ||
-			(int) get_option( 'wp_page_for_privacy_policy' ) === (int) $postId ||
-			$this->isBuddyPressPage( $postId ) ||
-			$this->isWooCommercePage( $postId )
-		) {
-			return true;
-		}
+		$specialPages = $this->getSpecialPageIds();
 
-		return false;
+		return in_array( (int) $postId, $specialPages, true );
 	}
 
 	/**
-	 * Returns whether a post is eligible for being analyzed by TruSeo.
+	 * Returns the ID of all special pages (e.g. homepage, blog page, WooCommerce, BuddyPress, etc.).
+	 * This cannot be cached because the plugins need to be loaded first.
 	 *
-	 * @since 4.6.1
+	 * @since 4.7.3
+	 *
+	 * @return array The IDs of all special pages.
+	 */
+	public function getSpecialPageIds() {
+		$pageForPostsId         = (int) get_option( 'page_for_posts' );
+		$pageForPrivacyPolicyId = (int) get_option( 'wp_page_for_privacy_policy' );
+		$buddyPressPageIds      = $this->getBuddyPressPageIds();
+		$wooCommercePageIds     = array_values( $this->getWooCommercePages() );
+
+		$specialPageIds = array_merge(
+			[
+				$pageForPostsId,
+				$pageForPrivacyPolicyId,
+			],
+			$buddyPressPageIds,
+			$wooCommercePageIds
+		);
+
+		// Ensure all values are integers.
+		$specialPageIds = array_map( 'intval', $specialPageIds );
+
+		return $specialPageIds;
+	}
+
+	/**
+	 * Returns whether a post is eligible for being analyzed by TruSEO.
+	 *
+	 * @since   4.6.1
+	 * @version 4.7.3 Renamed from "isPageAnalysisEligible" to "isTruSeoEligible" to make it more clear.
 	 *
 	 * @param  int  $postId Post ID.
-	 * @return bool         Whether a post is eligible for being analyzed by TruSeo.
+	 * @return bool         Whether a post is eligible for being analyzed by TruSEO.
 	 */
-	public function isPageAnalysisEligible( $postId ) {
-		if ( ! aioseo()->options->advanced->truSeo ) {
+	public function isTruSeoEligible( $postId ) {
+		static $isTruSeoEnabled = null;
+		if ( null === $isTruSeoEnabled ) {
+			$isTruSeoEnabled = aioseo()->options->advanced->truSeo;
+		}
+
+		if ( ! $isTruSeoEnabled ) {
 			return false;
 		}
 
-		static $eligible = [];
-		if ( isset( $eligible[ $postId ] ) ) {
-			return $eligible[ $postId ];
+		static $isPostEligible = [];
+		if ( isset( $isPostEligible[ $postId ] ) ) {
+			return $isPostEligible[ $postId ];
 		}
+
+		// Set the default to true.
+		$isPostEligible[ $postId ] = true;
 
 		$wpPost = $this->getPost( $postId );
-		if ( ! $wpPost ) {
-			$eligible[ $postId ] = false;
+		if ( ! is_a( $wpPost, 'WP_Post' ) ) {
+			$isPostEligible[ $postId ] = false;
 
 			return false;
 		}
 
-		$postType       = get_post_type_object( $wpPost->post_type );
-		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
-		$showMetabox    = $dynamicOptions->searchAppearance->postTypes->has( $wpPost->post_type, false ) && $dynamicOptions->{$wpPost->post_type}->advanced->showMetaBox;
+		$eligiblePostTypes = $this->getTruSeoEligiblePostTypes();
 		if (
-			! $showMetabox ||
-			empty( $postType->public ) ||
+			! in_array( $wpPost->post_type, $eligiblePostTypes, true ) ||
 			$this->isSpecialPage( $wpPost->ID )
 		) {
-			$eligible[ $postId ] = false;
-
-			return false;
+			$isPostEligible[ $postId ] = false;
 		}
 
-		$allowPostTypes = [];
-		foreach ( aioseo()->helpers->getPublicPostTypes() as $pt ) {
-			$excludedPostTypes = [ 'attachment', 'aioseo-location' ];
-			if ( class_exists( 'bbPress' ) ) {
-				$excludedPostTypes = array_merge( $excludedPostTypes, [ 'forum', 'topic', 'reply' ] );
+		return $isPostEligible[ $postId ];
+	}
+
+	/**
+	 * Returns the post types that are eligible for TruSEO analysis.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @return array The post types that are eligible for TruSEO analysis.
+	 */
+	public function getTruSeoEligiblePostTypes() {
+		$allowedPostTypes  = aioseo()->helpers->getPublicPostTypes( true );
+		$excludedPostTypes = [ 'attachment', 'aioseo-location', 'web-story' ];
+		if ( class_exists( 'bbPress' ) ) {
+			$excludedPostTypes = array_merge( $excludedPostTypes, [ 'forum', 'topic', 'reply' ] );
+		}
+
+		// Remove the excluded post types from the allowed ones.
+		$allowedPostTypes = array_diff( $allowedPostTypes, $excludedPostTypes );
+
+		// Now, check if the metabox is enabled and that the post type is public for each of these.
+		foreach ( $allowedPostTypes as $postType ) {
+			$postObjectType = get_post_type_object( $postType );
+			if ( is_a( $postObjectType, 'WP_Post_Type' ) && ! $postObjectType->public ) {
+				unset( $allowedPostTypes[ $postType ] );
 			}
 
-			if ( ! in_array( $pt['name'], $excludedPostTypes, true ) ) {
-				$allowPostTypes[] = $pt['name'];
+			$dynamicOptions = aioseo()->dynamicOptions->noConflict();
+			if ( ! $dynamicOptions->searchAppearance->postTypes->has( $postType, false ) || ! $dynamicOptions->{$postType}->advanced->showMetaBox ) {
+				// If not, unset it.
+				unset( $allowedPostTypes[ $postType ] );
 			}
 		}
 
-		$eligible[ $postId ] = in_array( $wpPost->post_type, $allowPostTypes, true );
-
-		return $eligible[ $postId ];
+		// Considering post types get registered during various stages of the WP load process, we should not cache this.
+		return $allowedPostTypes;
 	}
 
 	/**
@@ -501,11 +576,11 @@ trait WpContext {
 	public function getCommentPageNumber() {
 		$cpage = get_query_var( 'cpage', null );
 		if ( $this->isBlockTheme() ) {
-			global $wp_query;
+			global $wp_query; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 
 			// For block themes we can't rely on `get_query_var()` because of {@see build_comment_query_vars_from_block()},
 			// so we need to check the query directly.
-			$cpage = $wp_query->query['cpage'] ?? null;
+			$cpage = $wp_query->query['cpage'] ?? null; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 		}
 
 		return isset( $cpage ) ? (int) $cpage : false;
@@ -564,7 +639,7 @@ trait WpContext {
 	public function isValidAttachment( $url ) {
 		$uploadDirUrl = aioseo()->helpers->escapeRegex( $this->getWpContentUrl() );
 
-		return preg_match( "/$uploadDirUrl.*/", $url );
+		return preg_match( "/$uploadDirUrl.*/", (string) $url );
 	}
 
 	/**
@@ -638,9 +713,9 @@ trait WpContext {
 			return true;
 		}
 
-		global $wp_rewrite;
+		global $wp_rewrite; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 
-		if ( empty( $wp_rewrite ) ) {
+		if ( empty( $wp_rewrite ) ) { // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 			return false;
 		}
 
@@ -661,7 +736,7 @@ trait WpContext {
 	 *
 	 * @since 4.1.3
 	 *
-	 * @return bool Wether the request is an AJAX, CRON or REST request.
+	 * @return bool Whether the request is an AJAX, CRON or REST request.
 	 */
 	public function isAjaxCronRestRequest() {
 		return wp_doing_ajax() || wp_doing_cron() || $this->isRestApiRequest();
@@ -806,7 +881,7 @@ trait WpContext {
 	public function isWpLoginPage() {
 		// We can't sanitize the filename using sanitize_file_name() here because it will cause issues with custom login pages and certain plugins/themes where this function is not defined.
 		$self = ! empty( $_SERVER['PHP_SELF'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PHP_SELF'] ) ) : ''; // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( preg_match( '/wp-login\.php$|wp-register\.php$/', $self ) ) {
+		if ( preg_match( '/wp-login\.php$|wp-register\.php$/', (string) $self ) ) {
 			return true;
 		}
 
@@ -871,7 +946,7 @@ trait WpContext {
 	 */
 	public function setWpQueryPost( $wpPost ) {
 		$wpPost = is_a( $wpPost, 'WP_Post' ) ? $wpPost : get_post( $wpPost );
-
+		// phpcs:disable Squiz.NamingConventions.ValidVariableName
 		global $wp_query, $post;
 		$this->originalQuery = $this->deepClone( $wp_query );
 		$this->originalPost  = is_a( $post, 'WP_Post' ) ? $this->deepClone( $post ) : null;
@@ -887,6 +962,7 @@ trait WpContext {
 		if ( 'page' === $wpPost->post_type ) {
 			$wp_query->is_page = true;
 		}
+		// phpcs:enable Squiz.NamingConventions.ValidVariableName
 
 		$post = $wpPost;
 	}
@@ -899,13 +975,13 @@ trait WpContext {
 	 * @return void
 	 */
 	public function restoreWpQuery() {
-		global $wp_query, $post;
+		global $wp_query, $post; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 		if ( is_a( $this->originalQuery, 'WP_Query' ) ) {
 			// Loop over all properties and replace the ones that have changed.
 			// We want to avoid replacing the entire object because it can cause issues with other plugins.
 			foreach ( $this->originalQuery as $key => $value ) {
-				if ( $value !== $wp_query->{$key} ) {
-					$wp_query->{$key} = $value;
+				if ( $value !== $wp_query->{$key} ) { // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+					$wp_query->{$key} = $value; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 				}
 			}
 		}
@@ -930,9 +1006,9 @@ trait WpContext {
 	 * @return array List of theme features.
 	 */
 	public function getThemeFeatures() {
-		global $_wp_theme_features;
+		global $_wp_theme_features; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 
-		return isset( $_wp_theme_features ) && is_array( $_wp_theme_features ) ? $_wp_theme_features : [];
+		return isset( $_wp_theme_features ) && is_array( $_wp_theme_features ) ? $_wp_theme_features : []; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 	}
 
 	/**

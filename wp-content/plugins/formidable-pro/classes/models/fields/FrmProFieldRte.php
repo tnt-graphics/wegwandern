@@ -118,6 +118,20 @@ class FrmProFieldRte extends FrmFieldType {
 		$e_args['quicktags']           = false;
 	}
 
+	/**
+	 * Encodes both double and single quotes in content.
+	 *
+	 * @since 6.16
+	 *
+	 * @param string $content
+	 *
+	 * @return string
+	 */
+	public static function encode_all_quote_types( $content ) {
+		$content = htmlspecialchars_decode( $content, ENT_NOQUOTES );
+		return htmlspecialchars( $content, ENT_QUOTES, get_option( 'blog_charset' ), false );
+	}
+
 	protected function include_front_form_file() {
 		return FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/front-end/rte.php';
 	}
@@ -150,7 +164,14 @@ class FrmProFieldRte extends FrmFieldType {
 		$forms_loaded = array_filter( $frm_vars['forms_loaded'], 'is_object' );
 
 		$forms_loaded = array_unique( wp_list_pluck( $forms_loaded, 'id' ) );
-		$rte_fields   = FrmDb::get_var( 'frm_fields', array( 'form_id' => $forms_loaded, 'type' => 'rte' ), 'id' );
+		$rte_fields   = FrmDb::get_var(
+			'frm_fields',
+			array(
+				'form_id' => $forms_loaded,
+				'type'    => 'rte',
+			),
+			'id' 
+		);
 		if ( ! $rte_fields ) {
 			return;
 		}

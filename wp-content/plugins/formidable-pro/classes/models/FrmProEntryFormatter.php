@@ -515,7 +515,24 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 			}
 			$errors = array();
 			FrmProEntryMeta::validate_no_input_fields( $errors, $field );
+
+			$unset_item_meta = false;
+			if ( ! isset( $_POST['item_meta'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				/**
+				 * Set $_POST using the data from entry.
+				 * FrmProEntryMeta::is_field_conditionally_hidden checks $_POST data.
+				 * But in some cases, like after a Stripe link payment redirect, the $_POST data is not set.
+				 */
+				$_POST['item_meta'] = $field_value->get_entry()->metas;
+				$unset_item_meta    = true;
+			}
+
 			$included = ! FrmProEntryMeta::is_field_conditionally_hidden( $field );
+
+			if ( $unset_item_meta ) {
+				// Revert $_POST meta to previous state.
+				unset( $_POST['item_meta'] );
+			}
 		}
 
 		return $included;

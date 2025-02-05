@@ -19,7 +19,7 @@ class FrmProDisplaysHelper {
 
 		$form_id            = (int) $form_id;
 		$field_ids_and_keys = self::get_field_ids_and_keys_for_form( $form_id );
-		$tagregexp          = array( 'deletelink', 'detaillink', 'evenodd', 'get', 'entry_count', 'event_date', 'is[-|_]draft' );
+		$tagregexp          = array( 'deletelink', 'detaillink', 'evenodd', 'get', 'entry_count', 'event_date', 'end_event_date', 'is[-|_]draft' );
 
 		if ( count( $field_ids_and_keys ) > 200 ) {
 			$field_ids_and_keys = FrmProFieldsHelper::filter_keys_for_regex( $content, $field_ids_and_keys );

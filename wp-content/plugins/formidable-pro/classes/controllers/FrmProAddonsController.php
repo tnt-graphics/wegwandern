@@ -301,13 +301,6 @@ class FrmProAddonsController extends FrmAddonsController {
 	 * @return string|void
 	 */
 	public static function message_text_for_license_status( $echo = false, $status = false ) {
-		if ( ! is_callable( 'FrmAppHelper::clip' ) ) {
-			if ( $echo ) {
-				return;
-			}
-			return '';
-		}
-
 		if ( false === $status ) {
 			$status = self::get_license_status();
 		}
@@ -506,7 +499,7 @@ class FrmProAddonsController extends FrmAddonsController {
 		global $hook_suffix;
 		set_current_screen();
 
-		$free_plugin_supports_current_plugin_var = is_callable( 'self::get_current_plugin' );
+		$free_plugin_supports_current_plugin_var = is_callable( __CLASS__ . '::get_current_plugin' );
 
 		$download_urls = explode( ',', FrmAppHelper::get_param( 'plugin', '', 'post' ) );
 		FrmAppHelper::sanitize_value( 'esc_url_raw', $download_urls );

@@ -34,6 +34,7 @@ class FrmMlcmpHooksController {
 		add_action( 'wp_ajax_frm_mlcmp_get_group_values', 'FrmMlcmpSettingsController::get_group_values' );
 		add_action( 'wp_ajax_frm_mlcmp_get_gdpr_values', 'FrmMlcmpSettingsController::get_gdpr_values' );
 		add_action( 'wp_ajax_frm_mlcmp_check_apikey', 'FrmMlcmpSettingsController::check_apikey' );
+		add_action( 'wp_ajax_frm_clear_mailchimp_lists_field_cache', 'FrmMlcmpAppController::clear_mailchimp_lists_field_cache' );
 
 		// Importing
 		add_action( 'frm_after_import_form', 'FrmMlcmpActionController::migrate_settings_to_action_after_import', 10, 2 );

@@ -6,6 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use AIOSEO\Plugin\Common\Integrations\BuddyPress as BuddyPressIntegration;
+
 /**
  * Contains all WordPress related URL, URI, path, slug, etc. related helper methods.
  *
@@ -17,10 +19,11 @@ trait WpUri {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return string The site's domain.
+	 * @param  bool   $unfiltered Whether to get the unfiltered value.
+	 * @return string             The site's domain.
 	 */
-	public function getSiteDomain() {
-		return wp_parse_url( home_url(), PHP_URL_HOST );
+	public function getSiteDomain( $unfiltered = false ) {
+		return wp_parse_url( $this->getHomeUrl( $unfiltered ), PHP_URL_HOST );
 	}
 
 	/**
@@ -30,10 +33,13 @@ trait WpUri {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return string The site's domain.
+	 * @param  bool   $unfiltered Whether to get the unfiltered value.
+	 * @return string             The site's domain.
 	 */
-	public function getSiteUrl() {
-		return wp_parse_url( home_url(), PHP_URL_SCHEME ) . '://' . wp_parse_url( home_url(), PHP_URL_HOST );
+	public function getSiteUrl( $unfiltered = false ) {
+		$homeUrl = $this->getHomeUrl( $unfiltered );
+
+		return wp_parse_url( $homeUrl, PHP_URL_SCHEME ) . '://' . wp_parse_url( $homeUrl, PHP_URL_HOST );
 	}
 
 	/**
@@ -64,12 +70,12 @@ trait WpUri {
 			return $url;
 		}
 
-		global $wp, $wp_rewrite;
+		global $wp, $wp_rewrite; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 		// Permalink url without the query string.
 		$url = user_trailingslashit( home_url( $wp->request ) );
 
 		// If permalinks are not being used we need to append the query string to the home url.
-		if ( ! $wp_rewrite->using_permalinks() ) {
+		if ( ! $wp_rewrite->using_permalinks() ) { // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 			$url = home_url( ! empty( $wp->query_string ) ? '?' . $wp->query_string : '' );
 		}
 
@@ -84,7 +90,7 @@ trait WpUri {
 	 * @return string $url The canonical URL.
 	 */
 	public function canonicalUrl() {
-		$queriedObject = get_queried_object();
+		$queriedObject = get_queried_object(); // Don't use our getTerm helper here.
 		$hash          = md5( wp_json_encode( $queriedObject ?? [] ) );
 
 		static $url = [];
@@ -107,12 +113,22 @@ trait WpUri {
 		if ( is_category() || is_tag() || is_tax() ) {
 			$metaData     = aioseo()->meta->metaData->getMetaData( $queriedObject );
 			$url[ $hash ] = get_term_link( $queriedObject, $queriedObject->taxonomy ?? '' );
+
+			// Add pagination to the URL. We need to do this here because get_term_link() doesn't handle pagination.
+			// We'll strip it further down if no pagination for canonical is enabled.
+			if ( $this->getPageNumber() > 1 ) {
+				$url[ $hash ] = user_trailingslashit( $url[ $hash ] . 'page/' . $this->getPageNumber() );
+			}
 		}
 
 		if ( $metaData && ! empty( $metaData->canonical_url ) ) {
 			$url[ $hash ] = apply_filters( 'aioseo_canonical_url', $this->makeUrlAbsolute( $metaData->canonical_url ) );
 
 			return $url[ $hash ];
+		}
+
+		if ( BuddyPressIntegration::isComponentPage() ) {
+			$url[ $hash ] = aioseo()->standalone->buddyPress->component->getMeta( 'canonical' );
 		}
 
 		if ( empty( $url[ $hash ] ) || is_wp_error( $url[ $hash ] ) ) {
@@ -124,13 +140,13 @@ trait WpUri {
 			in_array( 'noPaginationForCanonical', aioseo()->internalOptions->deprecatedOptions, true ) &&
 			aioseo()->options->deprecated->searchAppearance->advanced->noPaginationForCanonical
 		) {
-			global $wp_rewrite;
+			global $wp_rewrite; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 			if ( 1 < $pageNumber ) {
-				if ( $wp_rewrite->using_permalinks() ) {
+				if ( $wp_rewrite->using_permalinks() ) { // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 					// Replace /page/3 and /page/3/.
-					$url[ $hash ] = preg_replace( "@(?<=/)page/$pageNumber(/|)$@", '', $url[ $hash ] );
+					$url[ $hash ] = preg_replace( "@(?<=/)page/$pageNumber(/|)$@", '', (string) $url[ $hash ] );
 					// Replace /3 and /3/.
-					$url[ $hash ] = preg_replace( "@(?<=/)$pageNumber(/|)$@", '', $url[ $hash ] );
+					$url[ $hash ] = preg_replace( "@(?<=/)$pageNumber(/|)$@", '', (string) $url[ $hash ] );
 				} else {
 					// Replace /?page_id=457&paged=1 and /?page_id=457&page=1.
 					$url[ $hash ] = aioseo()->helpers->urlRemoveQueryParameter( $url[ $hash ], [ 'page', 'paged' ] );
@@ -138,7 +154,7 @@ trait WpUri {
 			}
 
 			// Comment pages.
-			$url[ $hash ] = preg_replace( '/(?<=\/)comment-page-\d+\/*(#comments)*$/', '', $url[ $hash ] );
+			$url[ $hash ] = preg_replace( '/(?<=\/)comment-page-\d+\/*(#comments)*$/', '', (string) $url[ $hash ] );
 		}
 
 		$url[ $hash ] = $this->maybeRemoveTrailingSlash( $url[ $hash ] );
@@ -148,8 +164,8 @@ trait WpUri {
 			aioseo()->helpers->isAmpPage() &&
 			! apply_filters( 'aioseo_disable_canonical_url_amp', false )
 		) {
-			$url[ $hash ] = preg_replace( '/\/amp$/', '', $url[ $hash ] );
-			$url[ $hash ] = preg_replace( '/\/amp\/$/', '/', $url[ $hash ] );
+			$url[ $hash ] = preg_replace( '/\/amp$/', '', (string) $url[ $hash ] );
+			$url[ $hash ] = preg_replace( '/\/amp\/$/', '/', (string) $url[ $hash ] );
 		}
 
 		$url[ $hash ] = apply_filters( 'aioseo_canonical_url', $url[ $hash ] );
@@ -167,7 +183,11 @@ trait WpUri {
 	 */
 	public function makeUrlAbsolute( $url ) {
 		if ( 0 !== strpos( $url, 'http' ) && '/' !== $url ) {
-			if ( 0 === strpos( $url, '//' ) ) {
+			$url = $this->sanitizeDomain( $url );
+			if ( $this->isDomainWithPaths( $url ) ) {
+				$scheme = wp_parse_url( home_url(), PHP_URL_SCHEME );
+				$url    = $scheme . '://' . $url;
+			} elseif ( 0 === strpos( $url, '//' ) ) {
 				$scheme = wp_parse_url( home_url(), PHP_URL_SCHEME );
 				$url    = $scheme . ':' . $url;
 			} else {
@@ -233,7 +253,7 @@ trait WpUri {
 	 * @return string      The formatted image URL.
 	 */
 	public function removeImageDimensions( $url ) {
-		return $this->isValidAttachment( $url ) ? preg_replace( '#(-[0-9]*x[0-9]*|-scaled)#', '', $url ) : $url;
+		return $this->isValidAttachment( $url ) ? preg_replace( '#(-[0-9]*x[0-9]*|-scaled)#', '', (string) $url ) : $url;
 	}
 
 	/**
@@ -382,7 +402,11 @@ trait WpUri {
 	 * @return string            The path without the home_url().
 	 */
 	public function getPermalinkPath( $permalink ) {
-		return $this->leadingSlashIt( str_replace( get_home_url(), '', $permalink ) );
+		// We want to get this value straight from the DB to prevent plugins like WPML from filtering it.
+		// This will otherwise mess with things like license activation requests and redirects.
+		$homeUrl = $this->getHomeUrl( true );
+
+		return $this->leadingSlashIt( str_replace( $homeUrl, '', $permalink ) );
 	}
 
 	/**
@@ -410,12 +434,32 @@ trait WpUri {
 	 *
 	 * @since 4.2.3
 	 *
-	 * @return string The home path.
+	 * @param  bool   $unfiltered Whether to get the unfiltered value.
+	 * @return string              The home path.
 	 */
-	public function getHomePath() {
-		$path = wp_parse_url( get_home_url(), PHP_URL_PATH );
+	public function getHomePath( $unfiltered = false ) {
+		$path = wp_parse_url( $this->getHomeUrl( $unfiltered ), PHP_URL_PATH );
 
 		return $path ? trailingslashit( $path ) : '/';
+	}
+
+	/**
+	 * Returns the home URL.
+	 *
+	 * @since 4.7.3
+	 *
+	 * @param  bool   $unfiltered Whether to get the unfiltered value.
+	 * @return string             The home URL.
+	 */
+	private function getHomeUrl( $unfiltered = false ) {
+		$homeUrl = home_url();
+		if ( $unfiltered ) {
+			// We want to get this value straight from the DB to prevent plugins like WPML from filtering it.
+			// This will otherwise mess with things like license activation requests and redirects.
+			$homeUrl = get_option( 'home' );
+		}
+
+		return $homeUrl;
 	}
 
 	/**
@@ -476,7 +520,7 @@ trait WpUri {
 	 * @return string       The path without WP's home path.
 	 */
 	public function excludeHomePath( $path ) {
-		return preg_replace( '@^' . $this->getHomePath() . '@', '/', $path );
+		return preg_replace( '@^' . $this->getHomePath() . '@', '/', (string) $path );
 	}
 
 	/**
@@ -501,25 +545,25 @@ trait WpUri {
 			return false;
 		}
 
-		$canonical_url = get_permalink( $post );
+		$canonical_url = get_permalink( $post ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 
 		// If a canonical is being generated for the current page, make sure it has pagination if needed.
 		if ( get_queried_object_id() === $post->ID ) {
 			$page = get_query_var( 'page', 0 );
 			if ( $page >= 2 ) {
 				if ( ! get_option( 'permalink_structure' ) ) {
-					$canonical_url = add_query_arg( 'page', $page, $canonical_url );
+					$canonical_url = add_query_arg( 'page', $page, $canonical_url ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 				} else {
-					$canonical_url = trailingslashit( $canonical_url ) . user_trailingslashit( $page, 'single_paged' );
+					$canonical_url = trailingslashit( $canonical_url ) . user_trailingslashit( $page, 'single_paged' ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 				}
 			}
 
 			$cpage = aioseo()->helpers->getCommentPageNumber(); // We're calling our own function here to get the correct cpage number.
 			if ( $cpage ) {
-				$canonical_url = get_comments_pagenum_link( $cpage );
+				$canonical_url = get_comments_pagenum_link( $cpage ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 			}
 		}
 
-		return apply_filters( 'get_canonical_url', $canonical_url, $post );
+		return apply_filters( 'get_canonical_url', $canonical_url, $post ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 	}
 }

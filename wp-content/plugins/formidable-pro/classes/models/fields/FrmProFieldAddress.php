@@ -135,7 +135,11 @@ class FrmProFieldAddress extends FrmFieldType {
 	}
 
 	public function front_field_input( $args, $shortcode_atts ) {
-		$pass_args = array( 'errors' => $args['errors'], 'html_id' => $args['html_id'], 'field_id' => $args['field_id'] );
+		$pass_args = array(
+			'errors'   => $args['errors'],
+			'html_id'  => $args['html_id'],
+			'field_id' => $args['field_id'],
+		);
 		ob_start();
 		FrmProAddressesController::show_in_form( $this->field, $args['field_name'], $pass_args );
 		$input_html = ob_get_contents();
@@ -336,26 +340,39 @@ class FrmProFieldAddress extends FrmFieldType {
 
 	/**
 	 * @param array $errors
+	 * @param array $args
+	 * @return void
 	 */
 	private function validate_required_fields( &$errors, $args ) {
-		if ( $this->field->required ) {
+		if ( ! $this->field->required ) {
+			return;
+		}
 
-			if ( FrmProEntryMeta::skip_required_validation( $this->field ) ) {
-				return;
+		if ( FrmProEntryMeta::skip_required_validation( $this->field ) ) {
+			return;
+		}
+
+		$values = $args['value'];
+		if ( $values == '' ) {
+			$values = FrmProAddressesController::empty_value_array();
+		}
+
+		$blank_msg  = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
+
+		$field_array          = (array) $this->field;
+		$field_array['value'] = $this->field->default_value;
+		$field_array          = array_merge( (array) $this->field->field_options, $field_array );
+		$sub_fields           = FrmProAddressesController::get_sub_fields( $field_array );
+
+		foreach ( $values as $key => $value ) {
+			if ( $value ) {
+				continue;
 			}
 
-			$values = $args['value'];
-			if ( $values == '' ) {
-				$values = FrmProAddressesController::empty_value_array();
-			}
-
-			$blank_msg = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
-
-			foreach ( $values as $key => $value ) {
-				if ( empty( $value ) && $key != 'line2' ) {
-					$errors[ 'field' . $args['id'] . '-' . $key ] = '';
-					$errors[ 'field' . $args['id'] ]              = $blank_msg;
-				}
+			$subfield_is_required = ! array_key_exists( $key, $sub_fields ) || empty( $sub_fields[ $key ]['optional'] );
+			if ( $subfield_is_required ) {
+				$errors[ 'field' . $args['id'] . '-' . $key ] = '';
+				$errors[ 'field' . $args['id'] ]              = $blank_msg;
 			}
 		}
 	}

@@ -52,6 +52,49 @@ class FrmProApplicationsController {
 	}
 
 	/**
+	 * Return the count of applications using a view or page.
+	 *
+	 * @since 6.17
+	 *
+	 * @param int $id
+	 *
+	 * @return int
+	 */
+	private static function get_applications_count_for_view_or_page( $id ) {
+		if ( ! is_callable( 'FrmViewsAppHelper::get_application_ids_for_view' ) ) {
+			return 0;
+		}
+		return count( FrmViewsAppHelper::get_application_ids_for_view( $id ) );
+	}
+
+	/**
+	 * Delete related items when an application is deleted.
+	 *
+	 * @since 6.17
+	 *
+	 * @param int $term_id
+	 * @return void
+	 */
+	public static function delete_child_items( $term_id ) {
+		$posts = FrmProApplication::get_posts_for_application( $term_id );
+		foreach ( $posts as $post ) {
+			$count_of_applications = self::get_applications_count_for_view_or_page( $post->ID );
+			if ( $count_of_applications === 1 ) {
+				// This is the only application using this view or page. Delete the view.
+				wp_delete_post( $post->ID, true );
+			}
+		}
+		$forms = FrmProApplication::get_forms_for_application( $term_id );
+		foreach ( $forms as $form ) {
+			$count_of_applications = count( FrmProApplicationsHelper::get_application_ids_for_form( $form->id ) );
+			if ( $count_of_applications === 1 ) {
+				// This is the only application using this form. Delete the form.
+				FrmForm::destroy( $form->id );
+			}
+		}
+	}
+
+	/**
 	 * @return false|string
 	 */
 	private static function get_views_install_url() {
@@ -455,7 +498,7 @@ class FrmProApplicationsController {
 			die( 0 );
 		}
 
-		if ( is_callable( 'FrmAppHelper::validate_url_is_in_s3_bucket' ) && ! FrmAppHelper::validate_url_is_in_s3_bucket( $url, 'xml' ) ) {
+		if ( ! FrmAppHelper::validate_url_is_in_s3_bucket( $url, 'xml' ) ) {
 			die( esc_html__( 'The template you are trying to install could not be validated.', 'formidable-pro' ) );
 		}
 

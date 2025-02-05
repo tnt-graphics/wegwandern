@@ -45,9 +45,10 @@ if ( $field['data_type'] === 'select' ) {
     <input type="hidden" value="<?php echo esc_attr( $value ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
 <?php
 } elseif ( $field['data_type'] === 'data' && is_numeric( $field['hide_field'] ) && is_numeric( $field['form_select'] ) ) {
-	$get_id = FrmAppHelper::simple_get( 'id' );
-	if ( $_POST && isset( $_POST['item_meta'] ) ) {
-		$observed_field_val = $_POST['item_meta'][ $field['hide_field'] ];
+	$get_id    = FrmAppHelper::simple_get( 'id' );
+	$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+	if ( $item_meta ) {
+		$observed_field_val = $item_meta[ $field['hide_field'] ];
 	} elseif ( $get_id ) {
 		$observed_field_val = FrmEntryMeta::get_entry_meta_by_field( $get_id, $field['hide_field'] );
 	}
@@ -65,9 +66,10 @@ if ( $field['data_type'] === 'select' ) {
 <input type="hidden" value="<?php echo esc_attr( $field['value'] ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
 <?php
 } elseif ( $field['data_type'] === 'text' && is_numeric( $field['form_select'] ) ) {
-	$get_id = FrmAppHelper::simple_get( 'id' );
-	if ( $_POST && isset( $_POST['item_meta'] ) ) {
-		$observed_field_val = $_POST['item_meta'][ $field['hide_field'] ];
+	$get_id    = FrmAppHelper::simple_get( 'id' );
+	$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+	if ( $item_meta ) {
+		$observed_field_val = $item_meta[ $field['hide_field'] ];
 	} elseif ( $get_id ) {
 		$observed_field_val = FrmEntryMeta::get_entry_meta_by_field( $get_id, $field['hide_field'] );
 	}

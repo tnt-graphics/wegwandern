@@ -60,7 +60,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <script>
 	jQuery( function() {
-		jQuery('.frm_date').datepicker({changeMonth:true,changeYear:true,dateFormat:'yy-mm-dd',onSelect: function(val){
+		jQuery('.frm_date').datepicker({changeMonth:true,changeYear:true,dateFormat:'yy-mm-dd',
+			beforeShow: function() {
+				document.getElementById( 'ui-datepicker-div' )?.classList.add( 'frm-datepicker' );
+			},
+			onSelect: function(val){
 			var d = new Date();
 
 			var h = d.getHours();

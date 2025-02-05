@@ -4,7 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 // TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
-	<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'BG Color', 'formidable-pro' ); ?></label></div>
+	<div class="frm5 frm_form_field">
+		<label
+			for="frm_progress_bg_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'BG Color', 'formidable-pro' ); ?>
+		</label>
+	</div>
 	<div class="frm7 frm_form_field">
 		<?php
 		new FrmColorpickerStyleComponent(
@@ -18,7 +24,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		?>
 	</div>
 
-	<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Font Color', 'formidable-pro' ); ?></label></div>
+	<div class="frm5 frm_form_field">
+		<label
+			for="frm_progress_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Font Color', 'formidable-pro' ); ?>
+		</label>
+	</div>
 	<div class="frm7 frm_form_field">
 		<?php
 		new FrmColorpickerStyleComponent(
@@ -32,7 +44,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		?>
 	</div>
 
-	<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Active BG', 'formidable-pro' ); ?></label></div>
+	<div class="frm5 frm_form_field">
+		<label
+			for="frm_progress_active_bg_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Active BG', 'formidable-pro' ); ?>
+		</label>
+	</div>
 	<div class="frm7 frm_form_field">
 		<?php
 		new FrmColorpickerStyleComponent(
@@ -46,7 +64,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		?>
 	</div>
 
-	<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Active Font', 'formidable-pro' ); ?></label></div>
+	<div class="frm5 frm_form_field">
+		<label
+			for="frm_progress_active_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Active Font', 'formidable-pro' ); ?>
+		</label>
+	</div>
 	<div class="frm7 frm_form_field">
 		<?php
 		new FrmColorpickerStyleComponent(
@@ -61,7 +85,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Border Width', 'formidable-pro' ); ?></label>
+		<label
+			for="frm_progress_border_size"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Border Width', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -76,7 +104,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		?>
 	</div>
 
-	<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Border Color', 'formidable-pro' ); ?></label></div>
+	<div class="frm5 frm_form_field">
+		<label
+			for="frm_progress_border_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Border Color', 'formidable-pro' ); ?>
+		</label>
+	</div>
 	<div class="frm7 frm_form_field">
 		<?php
 		new FrmColorpickerStyleComponent(
@@ -91,7 +125,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Circle Size', 'formidable-pro' ); ?></label>
+		<label
+			for="frm_progress_size"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Circle Size', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php 

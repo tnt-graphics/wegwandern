@@ -307,12 +307,24 @@ class Tags {
 	];
 
 	/**
-	 * Class Contructor.
+	 * Class constructor.
 	 *
 	 * @since 4.0.0
 	 */
 	public function __construct() {
-		$this->tags = [
+		// Tags need to be registered on wp_loaded instead of init to ensure these are available during block rendering.
+		add_action( 'wp_loaded', [ $this, 'registerTags' ] );
+	}
+
+	/**
+	 * Register the tags.
+	 *
+	 * @since 4.7.6
+	 *
+	 * @return void
+	 */
+	public function registerTags() {
+		$this->tags = array_merge( $this->tags, [
 			[
 				'id'          => 'alt_tag',
 				'name'        => __( 'Image Alt Tag', 'all-in-one-seo-pack' ),
@@ -585,7 +597,7 @@ class Tags {
 				'name'        => sprintf( __( '%1$s Title', 'all-in-one-seo-pack' ), 'Category' ),
 				'description' => __( 'The title of the primary term, first assigned term or the current term.', 'all-in-one-seo-pack' )
 			]
-		];
+		] );
 	}
 
 	/**
@@ -599,7 +611,9 @@ class Tags {
 	public function all( $sampleData = false ) {
 		$tags = $this->tags;
 		foreach ( $tags as $key => $tag ) {
-			$tags[ $key ]['value'] = $this->getTagValue( $tag, null, $sampleData );
+			$tags[ $key ]['value'] = ( $tag['instance'] ?? null )
+				? $tag['instance']->getTagValue( $tag, null, $sampleData )
+				: $this->getTagValue( $tag, null, $sampleData );
 		}
 
 		usort( $tags, function ( $a, $b ) {
@@ -626,7 +640,10 @@ class Tags {
 
 		// Post types including CPT's.
 		foreach ( aioseo()->helpers->getPublicPostTypes() as $postType ) {
-			if ( 'post' === $postType['name'] ) {
+			if (
+				'post' === $postType['name'] ||
+				! empty( $postType['buddyPress'] )
+			) {
 				continue;
 			}
 
@@ -639,7 +656,7 @@ class Tags {
 			$context[ $postType['name'] . 'Description' ] = $context['postDescription'];
 
 			// Check if the post type has an excerpt.
-			if ( empty( $postType['hasExcerpt'] ) ) {
+			if ( empty( $postType['supports']['excerpt'] ) ) {
 				$phpTitleKey = array_search( 'post_excerpt', $context[ $postType['name'] . 'Title' ], true );
 				if ( false !== $phpTitleKey ) {
 					unset( $context[ $postType['name'] . 'Title' ][ $phpTitleKey ] );
@@ -794,7 +811,7 @@ class Tags {
 	 * @return string         The string with tags replaced.
 	 */
 	public function replaceTags( $string, $id = 0 ) {
-		if ( ! $string || ! preg_match( '/#/', $string ) ) {
+		if ( ! $string || ! preg_match( '/' . $this->denotationChar . '/', (string) $string ) ) {
 			return $string;
 		}
 
@@ -808,18 +825,18 @@ class Tags {
 			// This allows us to have tags like: #post_link and #post_link_alt
 			// and it will always replace the correct one.
 			$pattern = "/$tagId(?![a-zA-Z0-9_])/im";
-			if ( preg_match( $pattern, $string ) ) {
+			if ( preg_match( $pattern, (string) $string ) ) {
 				$tagValue = $this->getTagValue( $tag, $id );
-				$string   = preg_replace( $pattern, '%|%' . aioseo()->helpers->escapeRegexReplacement( $tagValue ), $string );
+				$string   = preg_replace( $pattern, '%|%' . aioseo()->helpers->escapeRegexReplacement( $tagValue ), (string) $string );
 			}
 		}
 
 		$string = $this->parseTaxonomyNames( $string, $id );
 
 		// Custom fields are parsed separately.
-		$string = $this->parseCustomFields( $string );
+		$string = $this->parseCustomFields( $string, $id );
 
-		return preg_replace( '/%\|%/im', '', $string );
+		return preg_replace( '/%\|%/im', '', (string) $string );
 	}
 
 	/**
@@ -827,10 +844,10 @@ class Tags {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  string $tag        The tag to look for.
-	 * @param  int    $id         The post ID.
-	 * @param  bool   $sampleData Whether or not to fill empty values with sample data.
-	 * @return mixed              The value of the tag.
+	 * @param  array    $tag        The tag to look for.
+	 * @param  int|null $id         The post ID.
+	 * @param  bool     $sampleData Whether or not to fill empty values with sample data.
+	 * @return mixed                The value of the tag.
 	 */
 	public function getTagValue( $tag, $id, $sampleData = false ) {
 		$author   = new \WP_User();
@@ -1010,9 +1027,27 @@ class Tags {
 			case 'tax_name':
 				return $sampleData ? __( 'Sample Taxonomy Name Value', 'all-in-one-seo-pack' ) : '';
 			case 'tax_parent_name':
-				$termObject       = get_term( $id );
-				$parentTermObject = ! empty( $termObject->parent ) ? get_term( $termObject->parent ) : '';
-				$name             = is_a( $parentTermObject, 'WP_Term' ) && ! empty( $parentTermObject->name ) ? $parentTermObject->name : '';
+				$termObject       = get_term( $id ); // Don't use the getTerm() helper here. We need the actual Product Attribute tax.
+				$parentTermObject = ! empty( $termObject->parent ) ? aioseo()->helpers->getTerm( $termObject->parent ) : '';
+				$name             = $parentTermObject->name ?? '';
+
+				if (
+					is_a( $termObject, 'WP_Term' ) &&
+					empty( $parentTermObject ) &&
+					aioseo()->helpers->isWooCommerceProductAttribute( $termObject->taxonomy )
+				) {
+					$wcAttributeTaxonomiesTable = aioseo()->core->db->prefix . 'woocommerce_attribute_taxonomies';
+					$attributeName              = str_replace( 'pa_', '', $termObject->taxonomy );
+
+					$result = aioseo()->core->db->db->get_row(
+						aioseo()->core->db->db->prepare(
+							"SELECT attribute_label FROM $wcAttributeTaxonomiesTable WHERE attribute_name = %s",
+							$attributeName
+						)
+					);
+
+					return $result->attribute_label ?? '';
+				}
 
 				return $sampleData ? __( 'Sample Parent Term Name', 'all-in-one-seo-pack' ) : $name;
 			case 'taxonomy_description':
@@ -1077,7 +1112,7 @@ class Tags {
 				$taxonomySlug = $isProduct ? 'product_cat' : $taxonomySlug;
 				$primaryTerm  = aioseo()->standalone->primaryTerm->getPrimaryTerm( $postId, $taxonomySlug );
 				if ( $primaryTerm ) {
-					$postTerms[] = get_term( $primaryTerm, $taxonomySlug );
+					$postTerms[] = aioseo()->helpers->getTerm( $primaryTerm, $taxonomySlug );
 					break;
 				}
 
@@ -1135,7 +1170,7 @@ class Tags {
 		$string  = preg_replace_callback( $pattern, [ $this, 'replaceTaxonomyName' ], $string );
 		$pattern = '/' . $this->denotationChar . 'tax_name(?![a-zA-Z0-9_-])/im';
 
-		return preg_replace( $pattern, '', $string );
+		return preg_replace( $pattern, '', (string) $string );
 	}
 
 	/**
@@ -1145,14 +1180,18 @@ class Tags {
 	 * @since 4.0.0
 	 *
 	 * @param  string $string The string to parse customs fields out of.
+	 * @param  int    $postId The page or post ID.
 	 * @return mixed          The new title.
 	 */
-	public function parseCustomFields( $string ) {
+	public function parseCustomFields( $string, $postId = 0 ) {
 		$pattern = '/' . $this->denotationChar . 'custom_field-([a-zA-Z0-9_-]+)/im';
-		$string  = preg_replace_callback( $pattern, [ $this, 'replaceCustomField' ], $string );
+		$matches = [];
+		preg_match_all( $pattern, (string) $string, $matches, PREG_SET_ORDER );
+
+		$string  = $this->replaceCustomField( $string, $matches, $postId );
 		$pattern = '/' . $this->denotationChar . 'custom_field(?![a-zA-Z0-9_-])/im';
 
-		return preg_replace( $pattern, '', $string );
+		return preg_replace( $pattern, '', (string) $string );
 	}
 
 	/**
@@ -1217,29 +1256,38 @@ class Tags {
 	 *
 	 * @since 4.0.0
 	 *
+	 * @param  string      $string  The string to parse customs fields out of.
 	 * @param  array       $matches Array of matched values.
+	 * @param  int         $postId  The page or post ID.
 	 * @return bool|string          New title/text.
 	 */
-	private function replaceCustomField( $matches ) {
-		$result = '';
-		if ( ! empty( $matches ) ) {
-			if ( ! empty( $matches[1] ) ) {
+	private function replaceCustomField( $string, $matches, $postId ) {
+		if ( empty( $matches ) ) {
+			return $string;
+		}
+
+		foreach ( $matches as $match ) {
+			$str = '';
+			if ( ! empty( $match[1] ) ) {
 				if ( function_exists( 'get_field' ) ) {
-					$result = get_field( $matches[1], get_queried_object() );
+					$str = get_field( $match[1], get_queried_object() ?? $postId );
 				}
-				if ( empty( $result ) ) {
+
+				if ( empty( $str ) ) {
 					global $post;
 					if ( ! empty( $post ) ) {
-						$result = get_post_meta( $post->ID, $matches[1], true );
+						$str = get_post_meta( $post->ID, $match[1], true );
 					}
 				}
 			} else {
-				$result = $matches[0];
+				$str = $match[0];
 			}
-		}
-		$result = wp_strip_all_tags( $result );
 
-		return '%|%' . $result;
+			$str = wp_strip_all_tags( $str );
+			$string = str_replace( $match[0], '%|%' . $str, $string );
+		}
+
+		return $string;
 	}
 
 	/**

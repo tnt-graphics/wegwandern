@@ -62,12 +62,13 @@ class FrmRegActionHelper {
 	 * Get the registration settings for a given form
 	 *
 	 * @since 2.0
+	 * @since 3.0 Added the second parameter.
 	 *
-	 * @param object|int|boolean $form
-	 *
+	 * @param object|int|boolean $form   Form ID or object.
+	 * @param object|null        $action Form action.
 	 * @return array
 	 */
-	public static function get_registration_settings_for_form( $form ) {
+	public static function get_registration_settings_for_form( $form, $action = null ) {
 		if ( is_numeric( $form ) ) {
 			$form_id = $form;
 		} else if ( is_object( $form ) ) {
@@ -86,7 +87,10 @@ class FrmRegActionHelper {
 		}
 
 		// check for registration action
-		$action = FrmFormAction::get_action_for_form( $form_id, 'register', 1 );
+		if ( ! $action ) {
+			$action = self::get_action_for_form( $form_id );
+		}
+
 		if ( $action && 'publish' == $action->post_status ) {
 			$frm_vars['reg_settings'][ $form_id ] = $settings = $action->post_content;
 		} else {
@@ -94,6 +98,37 @@ class FrmRegActionHelper {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Gets registration action for a form (with repeater actions check).
+	 *
+	 * @since 3.0
+	 *
+	 * @param int $form_id Form ID.
+	 *
+	 * @return object|false
+	 */
+	public static function get_action_for_form( $form_id ) {
+		$actions          = FrmFormAction::get_action_for_form( $form_id, 'register' );
+		$repeater_form_id = 0;
+
+		// If no actions found, this might be a repeater form, we need to get actions from parent form then get the one with this repeater form.
+		if ( ! $actions ) {
+			$parent_form_id = FrmDb::get_var( 'frm_forms', array( 'id' => $form_id ), 'parent_form_id' );
+			if ( $parent_form_id ) {
+				$actions = FrmFormAction::get_action_for_form( $parent_form_id, 'register' );
+				$repeater_form_id = intval( $form_id );
+			}
+		}
+
+		foreach ( $actions as $action ) {
+			$child_form = isset( $action->post_content['child_form'] ) ? intval( $action->post_content['child_form'] ) : 0;
+			if ( $child_form === $repeater_form_id ) {
+				return $action;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -218,7 +253,7 @@ class FrmRegActionHelper {
 		$settings = $register_action->post_content;
 		$password_option = isset( $settings['reg_password'] ) ? $settings['reg_password'] : 'nothing';
 
-		if ( $password_option === '' || $password_option === 'nothing' ) {
+		if ( $password_option === '' || $password_option === 'nothing' || ! empty( $settings['child_form'] ) ) {
 			$show_auto_login = false;
 		} else {
 			$show_auto_login = true;

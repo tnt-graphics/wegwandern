@@ -279,7 +279,7 @@ class FrmRegGlobalSettings {
 		}
 
 		if ( strpos( $content, $check_content ) === false ) {
-			$errors[] = $this->content_error_message( $page_key );
+			$errors[ $page_key ] = $this->content_error_message( $page_key );
 		}
 	}
 
@@ -446,7 +446,7 @@ class FrmRegGlobalSettings {
 	 * @since 2.0
 	 */
 	private function update_global_pages() {
-		update_option( $this->global_pages_key, $this->global_pages );
+		update_option( $this->global_pages_key, $this->global_pages, false );
 	}
 
 	/**
@@ -455,7 +455,7 @@ class FrmRegGlobalSettings {
 	 * @since 2.0
 	 */
 	private function update_global_messages() {
-		update_option( $this->global_messages_key, $this->global_messages );
+		update_option( $this->global_messages_key, $this->global_messages, false );
 	}
 
 	/**

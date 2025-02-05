@@ -65,6 +65,9 @@ class FrmRegLostPWForm extends FrmRegForm {
 			case 'expiredkey':
 				$message = __( 'Your password reset link has expired. Please request a new link below.', 'frmreg' );
 				break;
+			case 'retrieve_password_email_failure':
+				$message = __( 'The email could not be sent. Your site may not be correctly configured to send emails.', 'frmreg' );
+				break;
 			default:
 				$message = __( 'An unknown error occurred. Please try again later.', 'frmreg' );
 		}

@@ -19,7 +19,6 @@ class TagAttributeFinder extends AbstractRegexFinder
      * @param string[] $tags
      * @param string[] $attributes If you rely on the regular expression match of the link attribute it is highly recommend
      *                             to pass only one attribute and create multiple instances of `TagAttributeFinder`.
-     * @codeCoverageIgnore
      */
     public function __construct($tags, $attributes)
     {
@@ -39,11 +38,12 @@ class TagAttributeFinder extends AbstractRegexFinder
      */
     public function createMatch($m)
     {
-        list($tag, $attributes) = self::extractAttributesFromMatch($m);
-        list($linkAttribute, $link) = $this->getRegexpAttributesInMatch($attributes);
+        list($tag, $attributes, $linkAttribute, $link) = $this->extractAttributesFromMatch($m);
+        // @codeCoverageIgnoreStart
         if ($linkAttribute === null) {
             return \false;
         }
+        // @codeCoverageIgnoreEnd
         if ($this->isLinkEscaped($link) && Utils::isJson($link) === \false) {
             return \false;
         }
@@ -88,8 +88,6 @@ class TagAttributeFinder extends AbstractRegexFinder
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getRegexpAttributes()
     {
@@ -100,19 +98,21 @@ class TagAttributeFinder extends AbstractRegexFinder
      *
      * @param array $m
      */
-    public static function extractAttributesFromMatch($m)
+    public function extractAttributesFromMatch($m)
     {
         $tag = $m[2];
         $attributesString = \preg_split(\sprintf('/%s\\s/', $tag), $m[0], 2)[1];
         $attributesString = \preg_replace('/[\\/]?>$/', '', $attributesString);
         $attributes = Utils::parseHtmlAttributes($attributesString);
-        return [$tag, $attributes];
+        list($linkAttribute, $link) = $this->getRegexpAttributesInMatch($attributes);
+        return [$tag, $attributes, $linkAttribute, $link];
     }
     /**
      * Prepare the result match of a `createRegexp` regexp.
      *
      * @param array $m
      * @deprecated Use `extractAttributesFromMatch` instead!
+     * @codeCoverageIgnore
      */
     public static function prepareMatch($m)
     {
@@ -160,6 +160,6 @@ class TagAttributeFinder extends AbstractRegexFinder
      */
     public static function createRegexp($searchTags, $searchAttributes)
     {
-        return \sprintf('/(<(%s)(?:\\s[^>]*?[\\s"\']|\\s))(?<=[\\s"\'])(?:(%s)(?!\\s*?=\\s*?[\\\\]?(?:&quot|&#039)\\b))(?:\\s*?=\\s*?([\\"\']??)([^\\4]*?)(\\4[^>]*?>)|((?=\\s+?|>)[^>]*?>))/si', \count($searchTags) > 0 ? \join('|', $searchTags) : '[A-Za-z_-]+', \join('|', $searchAttributes));
+        return \sprintf('/(<(%s)(?:\\s[^>]*?[\\s"\']|\\s))(?<=[\\s"\'])(?:(%s)(?!\\s*?=\\s*?[\\\\]?(?:&quot|&#039)\\b))(?:\\s*?=\\s*?([\\"\']??)([^\\4]*?)(\\4[^>]*?>)|((?=\\s+?|>)[^>]*?>))/si', \count($searchTags) > 0 && !\in_array('*', $searchTags, \true) ? \join('|', $searchTags) : '[A-Za-z_-]+', \join('|', $searchAttributes));
     }
 }

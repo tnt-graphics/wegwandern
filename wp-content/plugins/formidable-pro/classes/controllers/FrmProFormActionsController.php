@@ -99,6 +99,11 @@ class FrmProFormActionsController {
 	 * @return bool
 	 */
 	public static function action_conditions_met( $action, $entry ) {
+		if ( empty( $entry->parent_entry ) && self::has_repeater_actions_support( $action->post_excerpt ) && self::get_child_form_from_action( $action ) ) {
+			// Skip this check if the action is a repeater action. We will check later before running trigger hook.
+			return false;
+		}
+
 		$notification = $action->post_content;
 		$stop         = false;
 		$met          = array();
@@ -156,6 +161,8 @@ class FrmProFormActionsController {
 		if ( $logic_value === 'current_user' ) {
 			$logic_value = get_current_user_id();
 		}
+
+		FrmProFieldsHelper::replace_non_standard_formidable_shortcodes( array(), $logic_value );
 
 		$logic_value = apply_filters( 'frm_content', $logic_value, $entry->form_id, $entry );
 
@@ -241,7 +248,10 @@ class FrmProFormActionsController {
 		$key       = FrmAppHelper::get_param( 'email_id', '', 'get', 'sanitize_title' );
 		$type      = FrmAppHelper::get_param( 'type', '', 'get', 'sanitize_title' );
 
-		$condition = array( 'hide_field_cond' => '==', 'hide_field' => '' );
+		$condition = array(
+			'hide_field_cond' => '==',
+			'hide_field'      => '',
+		);
 
 		self::include_action_logic_row( $form_id, $meta_name, $key, $type, $condition );
 		wp_die();
@@ -422,7 +432,13 @@ class FrmProFormActionsController {
 		$form_id = FrmAppHelper::get_param( 'form_id', '', 'post', 'absint' );
 
         if ( $form_id ) {
-			$values['fields'] = FrmField::getAll( array( 'fi.form_id' => $form_id, 'fi.type not' => FrmField::no_save_fields() ), 'field_order' );
+			$values['fields'] = FrmField::getAll(
+                array(
+					'fi.form_id'  => $form_id,
+					'fi.type not' => FrmField::no_save_fields(),
+                ),
+                'field_order'
+            );
         }
         $echo = false;
 
@@ -492,7 +508,12 @@ class FrmProFormActionsController {
                 'exclude_cat'  => $show_exclude ? '-1' : 0,
             );
         } else {
-            $field_vars = array( 'meta_name' => '', 'field_id' => '', 'show_exclude' => 0, 'exclude_cat' => 0 );
+            $field_vars = array(
+				'meta_name'    => '',
+				'field_id'     => '',
+				'show_exclude' => 0,
+				'exclude_cat'  => 0,
+			);
         }
 
         $tax_meta       = FrmAppHelper::get_post_param( 'tax_key', '', 'sanitize_text_field' );
@@ -510,7 +531,13 @@ class FrmProFormActionsController {
 		$form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
 
         if ( $form_id ) {
-			$values['fields'] = FrmField::getAll( array( 'fi.form_id' => $form_id, 'fi.type' => array( 'checkbox', 'radio', 'select', 'tag', 'data' ) ), 'field_order' );
+			$values['fields'] = FrmField::getAll(
+                array(
+					'fi.form_id' => $form_id,
+					'fi.type'    => array( 'checkbox', 'radio', 'select', 'tag', 'data' ),
+                ),
+                'field_order'
+            );
             $values['id']     = $form_id;
         }
 
@@ -853,11 +880,11 @@ class FrmProFormActionsController {
 	 *
 	 * @since 6.10.1
 	 *
-	 * @param bool   $skip        Skip default trigger.
-	 * @param object $form_action Form action object.
-	 * @param object $entry       Entry object.
-	 * @param object $form        Form object.
-	 * @param string $event       Event ('create' or 'update').
+	 * @param bool    $skip        Skip default trigger.
+	 * @param WP_Post $form_action Form action object.
+	 * @param object  $entry       Entry object.
+	 * @param object  $form        Form object.
+	 * @param string  $event       Event ('create' or 'update').
 	 * @return bool
 	 */
 	public static function custom_trigger( $skip, $form_action, $entry, $form, $event ) {
@@ -879,6 +906,11 @@ class FrmProFormActionsController {
 
 			$sub_entry->metas       += $entry->metas;
 			$sub_entry->parent_entry = $entry;
+
+			$stop = self::action_conditions_met( $form_action, $sub_entry );
+			if ( $stop ) {
+				continue;
+			}
 
 			do_action( 'frm_trigger_' . $form_action->post_excerpt . '_action', $form_action, $sub_entry, $form, $event );
 			do_action( 'frm_trigger_' . $form_action->post_excerpt . '_' . $event . '_action', $form_action, $sub_entry, $form );

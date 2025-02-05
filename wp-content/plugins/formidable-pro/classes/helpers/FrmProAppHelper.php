@@ -210,7 +210,10 @@ class FrmProAppHelper {
 	 * @return string
 	 */
 	public static function get_time( $atts = array() ) {
-		$defaults     = array( 'format' => 'H:i:s', 'round' => 0 );
+		$defaults     = array(
+			'format' => 'H:i:s',
+			'round'  => 0,
+		);
 		$atts         = array_merge( $defaults, (array) $atts );
 		$current_time = strtotime( current_time( 'mysql' ) );
 		if ( ! empty( $atts['round'] ) ) {
@@ -338,11 +341,7 @@ class FrmProAppHelper {
 	 * @return void
 	 */
 	public static function unserialize_or_decode( &$value ) {
-		if ( is_callable( 'FrmAppHelper::unserialize_or_decode' ) ) {
-			FrmAppHelper::unserialize_or_decode( $value );
-		} else {
-			$value = maybe_unserialize( $value );
-		}
+		FrmAppHelper::unserialize_or_decode( $value );
 	}
 
 	/**
@@ -470,7 +469,10 @@ class FrmProAppHelper {
 		ksort( $custom_posts );
 
 		// keep post and page first
-		$first_types  = array( 'post' => $custom_posts['post'], 'page' => $custom_posts['page'] );
+		$first_types  = array(
+			'post' => $custom_posts['post'],
+			'page' => $custom_posts['page'],
+		);
 		$custom_posts = $first_types + $custom_posts;
 
 		return $custom_posts;

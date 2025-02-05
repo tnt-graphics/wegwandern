@@ -157,14 +157,6 @@ class FrmProFieldDate extends FrmFieldType {
 		parent::show_primary_options( $args );
 	}
 
-	/**
-	 * @todo remove this function since it's the same as parent
-	 */
-	public function prepare_front_field( $values, $atts ) {
-		$values['value'] = $this->prepare_field_value( $values['value'], $atts );
-		return $values;
-	}
-
 	public function prepare_field_value( $value, $atts ) {
 		return FrmProAppHelper::maybe_convert_from_db_date( $value );
 	}

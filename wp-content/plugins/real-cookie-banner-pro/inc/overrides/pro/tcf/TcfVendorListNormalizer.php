@@ -5,7 +5,6 @@ namespace DevOwl\RealCookieBanner\lite\tcf;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\settings\AbstractTcf;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\tcf\StackCalculator;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\Multilingual\AbstractLanguagePlugin;
-use DevOwl\RealCookieBanner\Vendor\DevOwl\Multilingual\None;
 use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Activator;
 use WP_Error;
 /**
@@ -18,18 +17,6 @@ class TcfVendorListNormalizer
     private $dbPrefix;
     private $endpoint;
     private $fetchQueryArgs;
-    /**
-     * Downloader.
-     *
-     * @var Downloader
-     */
-    private $downloader;
-    /**
-     * Persist instance.
-     *
-     * @var Persist
-     */
-    private $persist;
     /**
      * Query instance.
      *
@@ -63,8 +50,6 @@ class TcfVendorListNormalizer
      */
     protected function init()
     {
-        $this->downloader = new \DevOwl\RealCookieBanner\lite\tcf\Downloader($this);
-        $this->persist = new \DevOwl\RealCookieBanner\lite\tcf\Persist($this);
         $this->query = new \DevOwl\RealCookieBanner\lite\tcf\Query($this);
     }
     /**
@@ -75,8 +60,8 @@ class TcfVendorListNormalizer
     public function update()
     {
         // Download the complete vendor list
-        $downloader = $this->getDownloader();
-        $persist = $this->getPersist();
+        $downloader = new \DevOwl\RealCookieBanner\lite\tcf\Downloader($this);
+        $persist = new \DevOwl\RealCookieBanner\lite\tcf\Persist($this, $downloader);
         $endpoint = \trailingslashit($this->getEndpoint());
         $fetchQueryArgs = $this->getFetchQueryArgs();
         $compLanguage = $this->getCompLanguage();
@@ -85,21 +70,20 @@ class TcfVendorListNormalizer
             return $vendorList;
         }
         // Download the translations
-        if ($compLanguage !== null && !$compLanguage instanceof None) {
+        if ($compLanguage !== null && $compLanguage->isActive()) {
             // Download multiple languages (e.g. WPML, PolyLang)
-            $compLanguage->iterateAllLanguagesContext(function ($locale) use(&$vendorList) {
-                $this->updateLanguage($locale, $vendorList);
+            $compLanguage->iterateAllLanguagesContext(function ($locale) use(&$vendorList, $downloader, $persist) {
+                $this->updateLanguage($locale, $persist);
             });
         } else {
             // Download only the current blog language and default TCF language
-            $this->updateLanguage(\get_locale(), $vendorList);
+            $this->updateLanguage(\get_locale(), $persist);
         }
         // Persist the main language
-        $translations = [];
-        $persist->normalizeDeclarations(\DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE, $vendorList, $translations);
-        $persist->normalizeStacks(\DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE, $vendorList, $translations);
+        $persist->normalizeDeclarations(\DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE, []);
+        $persist->normalizeStacks(\DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE, []);
         // Persist the vendors (not language-depending)
-        $persist->normalizeVendors($vendorList);
+        $persist->normalizeVendors($downloader);
         $this->getQuery()->invalidateCaches();
         return \true;
     }
@@ -107,19 +91,19 @@ class TcfVendorListNormalizer
      * Update a specific language (skips default TCF language). Do not use this, use `update` instead.
      *
      * @param string $locale
-     * @param array $vendorList
+     * @param Persist $persist
      */
-    protected function updateLanguage($locale, &$vendorList)
+    protected function updateLanguage($locale, $persist)
     {
         $language = AbstractTcf::fourLetterLanguageCodeToTwoLetterCode($locale);
         if ($language !== \DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE) {
-            $translations = $this->getDownloader()->fetchTranslation($this->getEndpoint() . \DevOwl\RealCookieBanner\lite\tcf\Downloader::FILENAME_PURPOSES_TRANSLATION, $language, $this->getFetchQueryArgs());
+            $translations = $persist->getDownloader()->fetchTranslation($this->getEndpoint() . \DevOwl\RealCookieBanner\lite\tcf\Downloader::FILENAME_PURPOSES_TRANSLATION, $language, $this->getFetchQueryArgs());
             // If translation does not exist, fallback to default language
             if (\is_wp_error($translations)) {
                 $translations = [];
             }
-            $this->getPersist()->normalizeDeclarations($language, $vendorList, $translations);
-            $this->getPersist()->normalizeStacks($language, $vendorList, $translations);
+            $persist->normalizeDeclarations($language, $translations);
+            $persist->normalizeStacks($language, $translations);
             return \true;
         }
         return \false;
@@ -153,6 +137,20 @@ class TcfVendorListNormalizer
         \dbDelta($sql);
         // GVL v2
         $activator->removeColumnsFromTable($table_name, ['policyUrl']);
+    }
+    /**
+     * Clear all the database tables.
+     */
+    public function clear()
+    {
+        global $wpdb;
+        $tables = \array_merge(StackCalculator::DECLARATION_TYPES, [\DevOwl\RealCookieBanner\lite\tcf\Persist::TABLE_NAME_VENDORS]);
+        foreach ($tables as $table) {
+            $table_name = $this->getTableName($table);
+            // phpcs:disable WordPress.DB.PreparedSQL
+            $wpdb->query("DELETE FROM {$table_name}");
+            // phpcs:enable WordPress.DB.PreparedSQL
+        }
     }
     /**
      * Getter.
@@ -191,24 +189,6 @@ class TcfVendorListNormalizer
     public function getFetchQueryArgs()
     {
         return $this->fetchQueryArgs;
-    }
-    /**
-     * Getter.
-     *
-     * @codeCoverageIgnore
-     */
-    public function getDownloader()
-    {
-        return $this->downloader;
-    }
-    /**
-     * Getter.
-     *
-     * @codeCoverageIgnore
-     */
-    public function getPersist()
-    {
-        return $this->persist;
     }
     /**
      * Getter.

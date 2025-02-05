@@ -3,7 +3,9 @@
 namespace DevOwl\RealCookieBanner\comp;
 
 use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\settings\BannerLink as SettingsBannerLink;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\Multilingual\AbstractSyncPlugin;
 use DevOwl\RealCookieBanner\base\UtilsProvider;
+use DevOwl\RealCookieBanner\comp\migration\DbConsentV2;
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\lite\settings\TcfVendorConfiguration;
 use DevOwl\RealCookieBanner\scanner\Persist;
@@ -11,6 +13,7 @@ use DevOwl\RealCookieBanner\settings\BannerLink;
 use DevOwl\RealCookieBanner\settings\Blocker;
 use DevOwl\RealCookieBanner\settings\Consent;
 use DevOwl\RealCookieBanner\settings\Cookie;
+use DevOwl\RealCookieBanner\settings\CookieGroup;
 use DevOwl\RealCookieBanner\settings\CountryBypass;
 use DevOwl\RealCookieBanner\settings\General;
 use DevOwl\RealCookieBanner\settings\Revision;
@@ -25,6 +28,7 @@ use DevOwl\RealCookieBanner\view\checklist\PrivacyPolicyMentionUsage;
 use DevOwl\RealCookieBanner\view\customize\banner\BasicLayout;
 use DevOwl\RealCookieBanner\view\customize\banner\BodyDesign;
 use DevOwl\RealCookieBanner\view\customize\banner\Decision;
+use DevOwl\RealCookieBanner\view\customize\banner\individual\Group;
 use DevOwl\RealCookieBanner\view\customize\banner\individual\SaveButton;
 use DevOwl\RealCookieBanner\view\customize\banner\Texts;
 use DevOwl\RealCookieBanner\view\Notices;
@@ -84,7 +88,32 @@ class DatabaseUpgrades
         $result[] = $this->migration_apv5uu();
         $result[] = $this->migration_86940n0a0();
         $result[] = $this->migration_86951yt9g();
-        //error_log('---> ' . json_encode($result));
+        $result[] = $this->migration_22wkegu();
+        // This should always be the last migration
+        $result[] = $this->updateRealCookieBannerTechnicalDefinitions();
+        (new DbConsentV2())->probablyCreateJob();
+    }
+    /**
+     * Update the technical definitions of the Real Cookie Banner service for some version updates.
+     *
+     * @see https://app.clickup.com/2088/v/dc/218-357/218-14272?block=block-6bdbdc5a-026f-435b-a87a-69b621614a8e
+     */
+    protected function updateRealCookieBannerTechnicalDefinitions()
+    {
+        if (Core::versionCompareOlderThan($this->installed, '4.8.4', ['4.8.5', '4.9.0', '5.0.0'])) {
+            // Lazy it, to be compatible with other plugins like WPML or PolyLang...
+            \add_action('init', function () {
+                $realCookieBannerService = Cookie::getInstance()->getServiceByIdentifier('real-cookie-banner');
+                if ($realCookieBannerService !== null) {
+                    $template = TemplateConsumers::getCurrentServiceConsumer()->retrieveBy('identifier', 'real-cookie-banner', \true);
+                    if (\count($template) > 0) {
+                        TemplateConsumers::getInstance()->createFromTemplate($template[0], null, $realCookieBannerService->ID, [Cookie::META_NAME_TECHNICAL_DEFINITIONS], \false);
+                    }
+                }
+            }, 20);
+            return \true;
+        }
+        return \false;
     }
     /**
      * Delete the already known, randomly selected powered-by text and regenerate it.
@@ -242,7 +271,7 @@ class DatabaseUpgrades
         global $wpdb;
         $table_name_stats_buttons_clicked = $this->getTableName(Stats::TABLE_NAME_BUTTONS_CLICKED);
         $table_name_stats_custom_bypass = $this->getTableName(Stats::TABLE_NAME_CUSTOM_BYPASS);
-        $table_name_consent = $this->getTableName(UserConsent::TABLE_NAME);
+        $table_name_consent = $this->getTableName(UserConsent::TABLE_NAME_DEPRECATED);
         if (Core::versionCompareOlderThan($this->installed, '3.4.13', ['3.4.14', '3.5.0'], function () use($wpdb, $table_name_stats_buttons_clicked) {
             // phpcs:disable WordPress.DB.PreparedSQL
             $exists = $wpdb->get_var("SHOW TABLES LIKE '{$table_name_stats_buttons_clicked}'") === $table_name_stats_buttons_clicked;
@@ -319,7 +348,7 @@ class DatabaseUpgrades
     protected function migration_2undj42()
     {
         global $wpdb;
-        $table_name = $this->getTableName(UserConsent::TABLE_NAME);
+        $table_name = $this->getTableName(UserConsent::TABLE_NAME_DEPRECATED);
         if (Core::versionCompareOlderThan($this->installed, '3.4.13', ['3.4.14', '3.5.0'])) {
             // phpcs:disable WordPress.DB
             $wpdb->query("UPDATE {$table_name} SET ui_view = 'initial' WHERE dnt = 0 AND custom_bypass IS NULL");
@@ -406,7 +435,7 @@ class DatabaseUpgrades
         global $wpdb;
         if (Core::versionCompareOlderThan($this->installed, '3.11.5', ['3.12.0', '3.11.6'])) {
             // phpcs:disable WordPress.DB
-            $sql = \sprintf("UPDATE {$wpdb->options}\n                SET option_value = REPLACE(REPLACE(option_value, 'Art. 49 Abs. 1 lit. a DSGVO', '{{legalBasis}}'), 'Art. 49 (1) lit. a GDPR', '{{legalBasis}}')\n                WHERE `option_name` LIKE '%s%%'", Texts::SETTING_DATA_PROCESSING_IN_UNSAFE_COUNTRIES);
+            $sql = \sprintf("UPDATE {$wpdb->options}\n                SET option_value = REPLACE(REPLACE(option_value, 'Art. 49 Abs. 1 (a) DSGVO', '{{legalBasis}}'), 'Art. 49 (1) (a) GDPR', '{{legalBasis}}')\n                WHERE `option_name` LIKE '%s%%'", Texts::SETTING_DATA_PROCESSING_IN_UNSAFE_COUNTRIES);
             $count = $wpdb->query($sql);
             // phpcs:enable WordPress.DB
             if ($count > 0) {
@@ -584,13 +613,61 @@ class DatabaseUpgrades
     protected function migration_86951yt9g()
     {
         global $wpdb;
-        $table_name = Core::getInstance()->getTableName(UserConsent::TABLE_NAME);
+        $table_name = Core::getInstance()->getTableName(UserConsent::TABLE_NAME_DEPRECATED);
         $table_name_revision = Core::getInstance()->getTableName(Revision::TABLE_NAME);
         if (Core::versionCompareOlderThan($this->installed, '4.7.11', ['4.7.12', '4.8.0'])) {
             // phpcs:disable WordPress.DB
             $sql = "UPDATE {$table_name} c\nINNER JOIN {$table_name_revision} r\nON c.revision = r.hash\nSET c.button_clicked = CASE\n        WHEN r.json_revision LIKE '%\"isCountryBypass\":true%' AND r.json_revision LIKE '%\"countryBypassType\":\"all\"%' THEN 'implicit_all'\n        WHEN r.json_revision LIKE '%\"isCountryBypass\":true%' AND r.json_revision NOT LIKE '%\"countryBypassType\":\"all\"%' THEN 'implicit_essential'\n        ELSE 'none'\n    END\nWHERE c.custom_bypass = 'geolocation'\nAND c.button_clicked NOT LIKE 'implicit%'";
             $wpdb->query($sql);
             // phpcs:enable WordPress.DB
+        }
+        return \false;
+    }
+    /**
+     * Create a `isDefault` meta key for all service groups (terms) so they can be differentiated in the cookie policy editor.
+     *
+     * Additionally, add the revision hash to the option which holds the current revision hash.
+     *
+     * Reset "Hide less relevant service details" default to `false` as it should not be activated automatically for already existing users.
+     *
+     * @see https://app.clickup.com/t/22wkegu
+     * @see https://app.clickup.com/t/8694wynf7
+     */
+    public function migration_22wkegu()
+    {
+        global $wpdb;
+        if (Core::versionCompareOlderThan($this->installed, '4.7.15', ['4.7.16', '4.8.0'])) {
+            $fnMigrate = function () {
+                $defaultSlugs = \array_map('sanitize_title', \array_keys(CookieGroup::getInstance()->getDefaultDescriptions(\true)));
+                foreach (CookieGroup::getInstance()->getOrdered(\true, \true) as $term) {
+                    $isDefault = \false;
+                    foreach ($defaultSlugs as $defaultSlug) {
+                        if (Utils::startsWith($term->slug, $defaultSlug)) {
+                            $isDefault = \true;
+                            break;
+                        }
+                    }
+                    \update_term_meta($term->term_id, CookieGroup::META_NAME_IS_DEFAULT, $isDefault);
+                }
+            };
+            // Lazy it, to be compatible with other plugins like WPML or PolyLang...
+            \add_action('init', function () use($fnMigrate) {
+                $compLanguage = Core::getInstance()->getCompLanguage();
+                if ($compLanguage instanceof AbstractSyncPlugin) {
+                    $compLanguage->iterateAllLanguagesContext($fnMigrate);
+                } else {
+                    $fnMigrate();
+                }
+            }, 20);
+            $table_name = $this->getTableName(Revision::TABLE_NAME);
+            // phpcs:disable WordPress.DB
+            $sql = \sprintf("UPDATE {$wpdb->options} wpo\n                INNER JOIN {$table_name} r ON wpo.option_value = r.hash\n                SET wpo.option_value = CONCAT(wpo.option_value, ':', UNIX_TIMESTAMP(r.created))\n                WHERE wpo.option_name LIKE '%s%%' AND wpo.option_value NOT LIKE '%%:%%'", Revision::OPTION_NAME_CURRENT_HASH_PREFIX);
+            $count = $wpdb->query($sql);
+            // phpcs:enable WordPress.DB
+            \update_option(Group::SETTING_DETIALS_HIDE_LESS_RELEVANT, \false);
+            if ($count > 0) {
+                \wp_cache_delete('alloptions', 'options');
+            }
         }
         return \false;
     }

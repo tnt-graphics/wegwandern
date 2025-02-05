@@ -95,7 +95,7 @@ class FrmProFieldBreak extends FrmFieldType {
 	 * @since 3.06.01
 	 */
 	public function translatable_strings() {
-		return array( 'name' );
+		return array( 'name', 'prev_label' );
 	}
 
 	public function prepare_field_html( $args ) {

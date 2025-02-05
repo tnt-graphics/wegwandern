@@ -26,7 +26,13 @@ class FrmProField {
 			case 'divider':
 				if ( ! empty( $field_data['field_options']['repeat'] ) ) {
 					// Create the repeatable form.
-					$field_data['field_options']['form_select'] = self::create_repeat_form( 0, array( 'parent_form_id' => $field_data['form_id'], 'field_name' => $field_data['name'] ) );
+					$field_data['field_options']['form_select'] = self::create_repeat_form(
+						0,
+						array(
+							'parent_form_id' => $field_data['form_id'],
+							'field_name'     => $field_data['name'],
+						) 
+					);
 				}
 				break;
 			case 'file':
@@ -338,6 +344,7 @@ class FrmProField {
 
 		// delete the form this repeating field created
 		self::delete_repeat_field( $field );
+		self::reset_form_transition_if_no_break_field( $field );
 
 		//TODO: before delete do something with entries with data field meta_value = field_id
 	}
@@ -350,6 +357,49 @@ class FrmProField {
 		if ( isset( $field->field_options['form_select'] ) && is_numeric( $field->field_options['form_select'] ) && $field->field_options['form_select'] != $field->form_id ) {
 			FrmForm::destroy( $field->field_options['form_select'] );
 		}
+	}
+
+	/**
+	 * Reset the form transition if there are no more break fields.
+	 *
+	 * @param object $field Field object.
+	 *
+	 * @return void
+	 */
+	private static function reset_form_transition_if_no_break_field( $field ) {
+		if ( 'break' !== FrmField::get_field_type( $field ) ) {
+			return;
+		}
+
+		$remaining_break_fields = FrmDb::get_count(
+			'frm_fields',
+			array(
+				'form_id' => $field->form_id,
+				'type'    => 'break',
+				'id !'    => $field->id,
+			)
+		);
+
+		if ( $remaining_break_fields > 0 ) {
+			return;
+		}
+
+		$form = FrmForm::getOne( $field->form_id );
+		if ( ! $form ) {
+			return;
+		}
+
+		global $wpdb;
+		$form->options['transition'] = '';
+
+		// Use custom query instead of FrmForm::update() to prevent duplicate code runs.
+		$wpdb->update(
+			$wpdb->prefix . 'frm_forms',
+			array( 'options' => serialize( $form->options ) ),
+			array( 'id' => $field->form_id )
+		);
+
+		FrmForm::clear_form_cache();
 	}
 
 	/**
@@ -420,7 +470,11 @@ class FrmProField {
 		$child_where['field_order>'] = $min_field_order;
 
 		// Get maximum field order for children
-		$where             = array( 'form_id' => $field['form_id'], 'type' => array( 'end_divider', 'divider', 'break' ), 'field_order>' => $min_field_order );
+		$where             = array(
+			'form_id'      => $field['form_id'],
+			'type'         => array( 'end_divider', 'divider', 'break' ),
+			'field_order>' => $min_field_order,
+		);
 		$end_divider_order = FrmDb::get_var( 'frm_fields', $where, 'field_order', array( 'order_by' => 'field_order ASC' ), 1 );
 		if ( $end_divider_order ) {
 			$max_field_order             = $end_divider_order - 1;

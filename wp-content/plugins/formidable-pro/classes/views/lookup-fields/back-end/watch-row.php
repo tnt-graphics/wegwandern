@@ -20,5 +20,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 	    ?></option>
 	    <?php } ?>
 	</select>
-	<a href="javascript:void(0)" class="frm_remove_tag frm_icon_font frm-inline-select" data-removeid="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" data-fieldid="<?php echo esc_attr( $field_id ); ?>"></a>
+	<a href="javascript:void(0)" class="frm_remove_tag frm-inline-select" data-removeid="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" data-fieldid="<?php echo esc_attr( $field_id ); ?>"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?></a>
 </p>

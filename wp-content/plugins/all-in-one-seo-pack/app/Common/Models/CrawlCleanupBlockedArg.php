@@ -38,7 +38,7 @@ class CrawlCleanupBlockedArg extends CommonModels\Model {
 	 *
 	 * @var array
 	 */
-	protected $numericFields = [ 'id', 'hits' ];
+	protected $integerFields = [ 'id', 'hits' ];
 
 	/**
 	 * Field to count hits.
@@ -146,7 +146,7 @@ class CrawlCleanupBlockedArg extends CommonModels\Model {
 
 		foreach ( $regexBlockedArgs as $regexQueryArg ) {
 			$escapedRegex = str_replace( '@', '\@', $regexQueryArg->regex );
-			if ( preg_match( "@{$escapedRegex}@", $keyValue ) ) {
+			if ( preg_match( "@{$escapedRegex}@", (string) $keyValue ) ) {
 				return new CrawlCleanupBlockedArg( $regexQueryArg->id );
 			}
 		}

@@ -27,7 +27,15 @@ class FrmProCopy {
 
 		$id = false;
 
-		$exists = self::getAll( array( 'blog_id' => $blog_id, 'form_id' => $new_values['form_id'], 'type' => $new_values['type'] ), '', ' LIMIT 1' );
+		$exists = self::getAll(
+			array(
+				'blog_id' => $blog_id,
+				'form_id' => $new_values['form_id'],
+				'type'    => $new_values['type'],
+			),
+			'',
+			' LIMIT 1' 
+		);
 		if ( ! $exists ) {
 			$query_results = $wpdb->insert( self::table_name(), $new_values );
 

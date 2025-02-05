@@ -20,7 +20,7 @@ td .frm_on_email_confirmation_type input + label {
     position: absolute;
     z-index: -1;
 }
-#reg_user_moderation_section td {
+.frm_reg_user_moderation_section td {
     vertical-align:middle;
 }
 .frm_single_register_settings .frm_form_field {

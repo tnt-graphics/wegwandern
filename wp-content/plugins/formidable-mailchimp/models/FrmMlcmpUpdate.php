@@ -5,7 +5,7 @@ class FrmMlcmpUpdate extends FrmAddon {
 	public $plugin_file;
 	public $plugin_name = 'Mailchimp';
 	public $download_id = 170655;
-	public $version = '2.08';
+	public $version = '2.09';
 
 	public function __construct() {
 		$this->plugin_file = dirname( __DIR__ ) . '/formidable-mailchimp.php';

@@ -150,7 +150,14 @@ class FrmProDynamicFieldsController {
 			}
 
 			if ( ! empty( $entry_ids ) ) {
-				$metas = FrmEntryMeta::getAll( array( 'it.item_id' => $entry_ids, 'field_id' => (int) $values['form_select'] ), ' ORDER BY meta_value', '' );
+				$metas = FrmEntryMeta::getAll(
+					array(
+						'it.item_id' => $entry_ids,
+						'field_id'   => (int) $values['form_select'],
+					),
+					' ORDER BY meta_value',
+					'' 
+				);
 			}
 		} else {
 			$limit     = '';
@@ -167,8 +174,20 @@ class FrmProDynamicFieldsController {
 
 		if ( $linked_posts && ! empty( $post_ids ) ) {
 			foreach ( $post_ids as $entry ) {
-				$meta_value = FrmProEntryMetaHelper::get_post_value( $entry->post_id, $selected_field->field_options['post_field'], $selected_field->field_options['custom_field'], array( 'type' => $selected_field->type, 'form_id' => $selected_field->form_id, 'field' => $selected_field ) );
-				$metas[]    = array( 'meta_value' => $meta_value, 'item_id' => $entry->id );
+				$meta_value = FrmProEntryMetaHelper::get_post_value(
+					$entry->post_id,
+					$selected_field->field_options['post_field'],
+					$selected_field->field_options['custom_field'],
+					array(
+						'type'    => $selected_field->type,
+						'form_id' => $selected_field->form_id,
+						'field'   => $selected_field,
+					) 
+				);
+				$metas[]    = array(
+					'meta_value' => $meta_value,
+					'item_id'    => $entry->id,
+				);
 			}
 		}
 
@@ -183,7 +202,15 @@ class FrmProDynamicFieldsController {
 				continue;
 			}
 
-			$new_value = FrmEntriesHelper::display_value( $meta['meta_value'], $selected_field, array( 'type' => $selected_field->type, 'show_icon' => true, 'show_filename' => false ) );
+			$new_value = FrmEntriesHelper::display_value(
+				$meta['meta_value'],
+				$selected_field,
+				array(
+					'type'          => $selected_field->type,
+					'show_icon'     => true,
+					'show_filename' => false,
+				) 
+			);
 			if ( $should_strip_tags ) {
 				$new_value = strip_tags( $new_value );
 			}
@@ -193,7 +220,15 @@ class FrmProDynamicFieldsController {
 			unset( $meta );
 		}
 
-		$options = apply_filters( 'frm_data_sort', $options, array( 'metas' => $metas, 'field' => $selected_field, 'dynamic_field' => $values ) );
+		$options = apply_filters(
+			'frm_data_sort',
+			$options,
+			array(
+				'metas'         => $metas,
+				'field'         => $selected_field,
+				'dynamic_field' => $values,
+			) 
+		);
 
 		unset( $metas );
 

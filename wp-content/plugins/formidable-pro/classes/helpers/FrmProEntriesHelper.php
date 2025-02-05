@@ -81,7 +81,10 @@ class FrmProEntriesHelper {
 	 * @return array|false
 	 */
 	public static function check_for_user_entry( $user_ID, $form, $is_draft ) {
-		$query = array( 'user_id' => $user_ID, 'form_id' => $form->id );
+		$query = array(
+			'user_id' => $user_ID,
+			'form_id' => $form->id,
+		);
 		if ( $is_draft ) {
 			$query['is_draft'] = 1;
 		}
@@ -310,18 +313,6 @@ class FrmProEntriesHelper {
 		$link .= __( 'Add New', 'formidable-pro' ) . '</a>';
 
 		return $link;
-	}
-
-	/**
-	 * @codeCoverageIgnore
-	 */
-	public static function duplicate_link( $entry ) {
-		if ( current_user_can( 'frm_create_entries' ) ) {
-			_deprecated_function( __METHOD__, '3.0' );
-			return '<a href="' . esc_url( '?page=formidable-entries&frm_action=duplicate&form=' . $entry->form_id . '&id=' . $entry->id ) . '" class="button-secondary">' .
-				esc_html__( 'Duplicate', 'formidable-pro' ) .
-				'</a>';
-		}
 	}
 
 	/**
@@ -569,7 +560,11 @@ class FrmProEntriesHelper {
 	}
 
 	private static function insert_download_csv_button( $form_id ) {
-		$page_params = array( 'frm_action' => 0, 'action' => 'frm_entries_csv', 'form' => $form_id );
+		$page_params = array(
+			'frm_action' => 0,
+			'action'     => 'frm_entries_csv',
+			'form'       => $form_id,
+		);
 
 		$s = FrmAppHelper::get_param( 's', '', 'request', 'sanitize_text_field' );
 		if ( $s ) {
@@ -804,7 +799,16 @@ class FrmProEntriesHelper {
 
 		$linked_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $linked_field_ids ), 'form_id' );
 		if ( $linked_form_ids ) {
-			$linked_entry_ids = FrmEntryMeta::getEntryIds( array( 'fi.form_id' => $linked_form_ids, 'meta_value LIKE' => $search_param ), '', '', true, array( 'is_draft' => 'both' ) );
+			$linked_entry_ids = FrmEntryMeta::getEntryIds(
+				array(
+					'fi.form_id'      => $linked_form_ids,
+					'meta_value LIKE' => $search_param,
+				),
+				'',
+				'',
+				true,
+				array( 'is_draft' => 'both' ) 
+			);
 
 			if ( ! empty( $linked_entry_ids ) ) {
 				if ( count( $linked_entry_ids ) == 1 ) {
@@ -852,7 +856,13 @@ class FrmProEntriesHelper {
 
 		// If there are any posts matching the query, retrieve entry IDs for those posts
 		if ( $matching_posts ) {
-			$entry_ids = FrmDb::get_col( 'frm_items', array( 'post_id' => $matching_posts, 'form_id' => $form_id ) );
+			$entry_ids = FrmDb::get_col(
+				'frm_items',
+				array(
+					'post_id' => $matching_posts,
+					'form_id' => $form_id,
+				) 
+			);
 			if ( $entry_ids ) {
 				$where['it.id'] = array_merge( $where['it.id'], $entry_ids );
 			}
@@ -882,7 +892,10 @@ class FrmProEntriesHelper {
 	 * @return array
 	 */
 	private static function get_where_arguments_for_specific_field_query( $fid, $search_param ) {
-		$args = array( 'comparison_type' => 'like', 'is_draft' => 'both' );
+		$args = array(
+			'comparison_type' => 'like',
+			'is_draft'        => 'both',
+		);
 
 		if ( $fid === 0 || $fid === '0' ) {
 			$field = 0;
@@ -939,7 +952,16 @@ class FrmProEntriesHelper {
 
 			$split    = explode( '-', $search_param );
 			$timezone = wp_timezone();
-			$datetime = new DateTime( $search_param, $timezone );
+
+			try {
+				$datetime = new DateTime( $search_param, $timezone );
+			} catch ( Exception $e ) {
+				// If $search_param is an invalid date, return no results.
+				return array(
+					'it.' . $fid => '0000-00-00 00:00:00',
+				);
+			}
+
 			$datetime->setTimezone( new DateTimeZone( 'UTC' ) );
 
 			$offset = $timezone->getOffset( $datetime ) / ( 60 * 60 ) * -1;
@@ -1166,7 +1188,10 @@ class FrmProEntriesHelper {
 			}
 		}
 
-		$p_ids = array( $search, 'or' => 1 );
+		$p_ids = array(
+			$search,
+			'or' => 1,
+		);
 		self::search_form_posts( $form_id, $p_search, $pmeta_search, $p_ids );
 
 		// track the entry ids from posts search to include in search results.
@@ -1340,23 +1365,6 @@ class FrmProEntriesHelper {
 			),
 			'item_id'
 		);
-	}
-
-	/**
-	 * @since 4.0
-	 */
-	public static function edit_button( $entry = array() ) {
-		_deprecated_function( __METHOD__, '4.0' );
-		if ( ! current_user_can( 'frm_edit_entries' ) ) {
-			return;
-		}
-		?>
-		<div id="publishing-action">
-			<a href="<?php echo esc_url( add_query_arg( 'frm_action', 'edit' ) ); ?>" class="button-primary">
-				<?php esc_html_e( 'Edit', 'formidable-pro' ); ?>
-			</a>
-		</div>
-		<?php
 	}
 
 	/**

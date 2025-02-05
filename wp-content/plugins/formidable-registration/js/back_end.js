@@ -1,5 +1,7 @@
 function frmRegBackEnd(){
 
+	const hookNamespace = 'frm_reg';
+
 	/**
 	 * Create an admin email, on click
 	 *
@@ -83,7 +85,7 @@ function frmRegBackEnd(){
 	 */
 	function addUserMetaRow(){
 		var formId = document.getElementById('form_id').value;
-		var actionKey = jQuery('.frm_single_register_settings').data('actionkey');
+		var actionKey = this.closest( '.frm_single_register_settings' ).dataset.actionkey;
 
 		var rowNumber = 0;
 		var userMetaRows = document.querySelectorAll( '#frm_user_meta_rows .frm_user_meta_row' );
@@ -124,21 +126,24 @@ function frmRegBackEnd(){
 
 	/**
 	 * Hide and show the auto login option in Register User action
-	 * if password is set to automatically generate
+	 * if password is set to automatically generate or repeater entry is selected.
 	 *
 	 * @since 2.0
 	 */
 	function hideAutoLoginOption() {
-		var autoLoginRow = document.getElementById( 'reg_auto_login_row' );
+		const formAction = this.closest( '.frm_form_action_settings' );
+		const childForm  = formAction.querySelector( 'select[id^="child_form_"]' ).value;
+		const password   = formAction.querySelector( '.frm_reg_password' ).value;
+		const autoLoginRow = formAction.querySelector( '.frm_reg_auto_login_row' );
 
-		if ( this !== null && this.value === '' ) {
+		if ( childForm || ! password ) {
 			autoLoginRow.style.display = 'none';
-			uncheckAutoLogin();
-			showHideAutoLoginWarning( 'table-row' );
+			uncheckAutoLogin( formAction );
+			showHideAutoLoginWarning( formAction, 'table-row' );
 
 		} else {
 			autoLoginRow.style.display = 'table-row';
-			showHideAutoLoginWarning( 'none' );
+			showHideAutoLoginWarning( formAction, 'none' );
 		}
 	}
 
@@ -146,9 +151,10 @@ function frmRegBackEnd(){
 	 * Uncheck the auto login option
 	 *
 	 * @since 2.0
+	 * @since 3.0.1 Added `formAction` param.
 	 */
-	function uncheckAutoLogin() {
-		var autoLoginCheckbox = document.getElementById( 'reg_auto_login' );
+	function uncheckAutoLogin( formAction ) {
+		const autoLoginCheckbox = formAction.querySelector( '.frm_reg_auto_login' );
 
 		if ( autoLoginCheckbox !== null && autoLoginCheckbox.checked ) {
 			autoLoginCheckbox.checked = false;
@@ -159,9 +165,10 @@ function frmRegBackEnd(){
 	 * Show the auto login warning
 	 *
 	 * @since 2.0
+	 * @since 3.0.1 Added `formAction` as the first param, moved `display` param to the second position.
 	 */
-	function showHideAutoLoginWarning( display ) {
-		var autoLoginWarning = document.getElementById( 'reg_auto_login_msg' );
+	function showHideAutoLoginWarning( formAction, display ) {
+		const autoLoginWarning = formAction.querySelector( '.frm_reg_auto_login_msg' );
 
 		if ( autoLoginWarning !== null ) {
 			autoLoginWarning.style.display = display;
@@ -175,26 +182,28 @@ function frmRegBackEnd(){
 	 * @since 2.02
 	 */
 	function hideUserModerationSection() {
-		const userModerationSection = document.getElementById( 'reg_user_moderation_section' );
+		const formAction = this.closest( '.frm_form_action_settings' );
+		const userModerationSection = formAction.querySelector( '.frm_reg_user_moderation_section' );
 
 		if ( this !== null && this.value === '' ) {
 			userModerationSection.style.display = 'none';
-			uncheckEmailConfirmation();
-			showHideUserModerationWarning( 'block' );
+			uncheckEmailConfirmation( formAction );
+			showHideUserModerationWarning( formAction, 'block' );
 			return;
 		}
 
 		userModerationSection.style.display = 'table';
-		showHideUserModerationWarning( 'none' );
+		showHideUserModerationWarning( formAction, 'none' );
 	}
 
 	/**
 	 * Show or hide the user moderation warning
 	 *
 	 * @since 2.02
+	 * @since 3.0.1 Added `formAction` as the first param, moved `display` param to the second position.
 	 */
-	function showHideUserModerationWarning( display ) {
-		var userModerationWarning = document.getElementById( 'reg_user_moderation_msg' );
+	function showHideUserModerationWarning( formAction, display ) {
+		const userModerationWarning = formAction.querySelector( '.frm_reg_user_moderation_msg' );
 
 		if ( userModerationWarning !== null ) {
 			userModerationWarning.style.display = display;
@@ -205,9 +214,10 @@ function frmRegBackEnd(){
 	 * Uncheck the email confirmation option
 	 *
 	 * @since 2.02
+	 * @since 3.0.1 Added `formAction` param.
 	 */
-	function uncheckEmailConfirmation() {
-		var emailConfirmationCheckbox = document.getElementById( 'reg_moderate_email' );
+	function uncheckEmailConfirmation( formAction ) {
+		var emailConfirmationCheckbox = formAction.querySelector( '.frm_reg_moderate_email' );
 
 		if ( emailConfirmationCheckbox !== null && emailConfirmationCheckbox.checked ) {
 			emailConfirmationCheckbox.checked = false;
@@ -223,7 +233,7 @@ function frmRegBackEnd(){
 	function displayMultiSiteOptions() {
 		var i;
 		var l;
-		var multiSiteOptions = document.getElementsByClassName( 'reg_multisite_options' );
+		var multiSiteOptions = this.closest( '.frm_form_action_settings' ).querySelector( '.reg_multisite_options' );
 
 		if ( this.checked ) {
 			for ( i = 0, l = multiSiteOptions.length; i < l; i++ ) {
@@ -271,6 +281,285 @@ function frmRegBackEnd(){
 		frmDom.util.documentOn( 'change', '.frm_on_email_confirmation_type input[type="radio"]', onChangeType );
 	}
 
+	function handleRepeaterActions() {
+
+		/**
+		 * RepeaterActionsCount class.
+		 *
+		 * @constructor
+		 */
+		const RepeaterActionsCount = () => {
+			/**
+			 * Counts data.
+			 *
+			 * @type {Object} Object with keys are repeater ID or `main`, values are action count.
+			 */
+			const counts = {};
+
+			/**
+			 * Maybe add default count when it doesn't exist.
+			 *
+			 * @param {String} key Count key.
+			 */
+			const maybeAddDefault = key => {
+				if ( 'undefined' === typeof counts[ key ] ) {
+					counts[ key ] = 0;
+				}
+			};
+
+			/**
+			 * Parses count key.
+			 *
+			 * @param {String} key Repeater ID or empty.
+			 * @return {string} Count key.
+			 */
+			const parseKey = key => {
+				return key || 'main';
+			};
+
+			return {
+				/**
+				 * Gets all counts.
+				 *
+				 * @return {Object}
+				 */
+				getAll: function() {
+					return counts;
+				},
+
+				/**
+				 * Gets count for a key.
+				 *
+				 * @param {String} key Count key.
+				 * @return {Number}
+				 */
+				getCount: function( key ) {
+					key = parseKey( key );
+					return 'undefined' === typeof counts[ key ] ? 0 : counts[ key ];
+				},
+
+				/**
+				 * Plus one.
+				 *
+				 * @param {String} key Count key.
+				 */
+				plus: function( key ) {
+					key = parseKey( key );
+					maybeAddDefault( key );
+					counts[ key ]++;
+				},
+
+				/**
+				 * Minus one.
+				 *
+				 * @param {String} key Count key.
+				 */
+				minus: function( key ) {
+					key = parseKey( key );
+					maybeAddDefault( key );
+					counts[ key ]--;
+					if ( counts[ key ] <= 0 ) {
+						delete counts[ key ];
+					}
+				},
+
+				/**
+				 * Gets number of repeaters in count data.
+				 *
+				 * @return {Number}
+				 */
+				getRepeaterCount: function() {
+					return Object.keys( counts ).length;
+				},
+
+				/**
+				 * Checks if action is at limit.
+				 *
+				 * @param {Number} limit Limit number.
+				 * @return {Boolean}
+				 */
+				atLimit: function( limit ) {
+					if ( this.getRepeaterCount() < frmRegGlobal.repeaters.length + 1 ) {
+						return false;
+					}
+					const countValues = Object.values( counts );
+					for ( let i = 0; i < countValues; i++ ) {
+						if ( countValues[ i ] < limit ) {
+							return false;
+						}
+					}
+
+					return true;
+				}
+			};
+		};
+
+		const limit = 1; // TODO: maybe get this from PHP.
+
+		/**
+		 * Gets current action count.
+		 *
+		 * @param {String} excludeId ID of form action that is excluded from the counts.
+		 * @return {Object}
+		 */
+		const getCurrentActionsCount = excludeId => {
+			const counts    = RepeaterActionsCount();
+			const actionEls = document.querySelectorAll( '.frm_single_register_settings' );
+
+			actionEls.forEach( actionEl => {
+				if ( actionEl.querySelector( 'input[id^="action_post_title_"]' ) ) {
+					if ( ! excludeId || actionEl.id !== excludeId ) {
+						updateCountFromFilledAction( counts, actionEl );
+					}
+				} else {
+					updateCountFromActionsData( counts );
+				}
+			});
+
+			return counts;
+		};
+
+		/**
+		 * Checks active action.
+		 */
+		const checkActiveAction = () => {
+			const counts = getCurrentActionsCount();
+			const actionLinks = document.querySelectorAll( '.frm_actions_list .frm_register_action' );
+			const atLimit     = counts.atLimit( limit );
+
+			actionLinks.forEach( actionLink => {
+				actionLink.classList.toggle( 'frm_inactive_action', atLimit );
+				actionLink.classList.toggle( 'frm_already_used', atLimit );
+			});
+		};
+
+		/**
+		 * Updates count data from a filled action.
+		 *
+		 * @param {object}      counts   Count object.
+		 * @param {HTMLElement} actionEl Form action element.
+		 */
+		const updateCountFromFilledAction = ( counts, actionEl ) => {
+			const selectEl = actionEl.querySelector( 'select[id^="child_form_"]' );
+			if ( ! selectEl ) {
+				// Do nothing if there is no Repeater Actions dropdown.
+				return;
+			}
+
+			counts.plus( selectEl.value );
+		};
+
+		/**
+		 * Updates count data from form action data.
+		 *
+		 * @param {object} counts Count object.
+		 */
+		const updateCountFromActionsData = counts => {
+			const formActions = frmRegGlobal.formActions;
+
+			formActions.forEach( formAction => {
+				counts.plus( formAction.post_content.child_form );
+			});
+		};
+
+		/**
+		 * Filters at limit value.
+		 *
+		 * @param {Boolean} atLimit Is true if at limit.
+		 * @param {Object}  args    Filter args.
+		 * @return {Boolean}
+		 */
+		const filterAtLimit = ( atLimit, args ) => {
+			if ( ! atLimit || 'register' !== args.type ) {
+				// Do nothing if the action limitation isn't reached.
+				return atLimit;
+			}
+
+			const counts = getCurrentActionsCount();
+
+			return counts.atLimit( 1 );
+		};
+
+		/**
+		 * Maybe remove Repeater Actions options based on the form action limitation.
+		 *
+		 * @param {HTMLElement} actionEl     Form action element.
+		 * @param {Boolean}     keepSelected Keep the selected option.
+		 */
+		const maybeDisableOptions = ( actionEl, keepSelected ) => {
+			if ( 'register' !== actionEl.querySelector( '.frm_action_name' ).value ) {
+				// Do nothing if this isn't User Registration action.
+				return;
+			}
+
+			const selectEl = actionEl.querySelector( 'select[id^="child_form_"]' );
+			if ( ! selectEl ) {
+				// Do nothing if there is no Repeater Actions dropdown.
+				return;
+			}
+
+			const counts = getCurrentActionsCount( actionEl.id );
+
+			// Disable options that reach the limitation.
+			selectEl.querySelectorAll( 'option' ).forEach( option => {
+				if ( option.selected && keepSelected ) {
+					return;
+				}
+
+				if ( counts.getCount( option.value ) >= limit ) {
+					option.setAttribute( 'disabled', true );
+					option.selected = false;
+				} else {
+					option.removeAttribute( 'disabled' );
+				}
+			});
+		};
+
+		const onFilledFormAction = inside => {
+			maybeDisableOptions( inside[0], true );
+		};
+
+		const onAddedFormAction = newAction => {
+			maybeDisableOptions( newAction );
+			checkActiveAction();
+		};
+
+		const setBeforeChangeValue = event => {
+			event.target.setAttribute( 'data-before-value', event.target.value );
+		};
+
+		const onChangeRepeaterActions = event => {
+			swapDisabledRepeaterActionsOptions( event.target.getAttribute( 'data-before-value' ), event.target.value, event.target );
+			setBeforeChangeValue( event );
+		};
+
+		const swapDisabledRepeaterActionsOptions = ( oldValue, newValue, currentTarget ) => {
+			const selectEls = document.querySelectorAll( '.frm_single_register_settings select[id^="child_form_"]' );
+			selectEls.forEach( selectEl => {
+				if ( selectEl.id === currentTarget.id ) {
+					// Do not update the current select.
+					return;
+				}
+
+				const oldOption = selectEl.querySelector( 'option[value="' + oldValue + '"]' );
+				if ( oldOption ) {
+					oldOption.disabled = false;
+				}
+				const newOption = selectEl.querySelector( 'option[value="' + newValue + '"]' );
+				if ( newOption ) {
+					newOption.disabled = true;
+					newOption.selected = false;
+				}
+			});
+		};
+
+		wp.hooks.addFilter( 'frm_action_at_limit', hookNamespace, filterAtLimit );
+		wp.hooks.addAction( 'frm_filled_form_action', hookNamespace, onFilledFormAction );
+		wp.hooks.addAction( 'frm_added_form_action', hookNamespace, onAddedFormAction );
+		frmDom.util.documentOn( 'focusin', '.frm_single_register_settings select[id^="child_form_"]', setBeforeChangeValue );
+		frmDom.util.documentOn( 'change', '.frm_single_register_settings select[id^="child_form_"]', onChangeRepeaterActions );
+	}
+
 	return{
 		init: function(){
 			if ( document.getElementById('frm_notification_settings') !== null ) {
@@ -287,12 +576,18 @@ function frmRegBackEnd(){
 			$formActions.on( 'click', '.frmreg_user_email', createUserEmail );
 			$formActions.on( 'click', '.reg_user_meta_add_button', addUserMetaRow );
 			$formActions.on( 'click', '.reg_add_user_meta_row', addUserMetaRow );
-			$formActions.on( 'change', '#reg_moderate_email', displayRedirectOption );
-			$formActions.on( 'change', '#reg_password', hideAutoLoginOption );
-			$formActions.on( 'change', '#reg_password', hideUserModerationSection );
-			$formActions.on( 'change', '#reg_create_subsite', displayMultiSiteOptions );
-			$formActions.on( 'change', '#reg_create_users', displayPermissionOptions );
+			$formActions.on( 'change', '.frm_reg_moderate_email', displayRedirectOption );
+			frmDom.util.documentOn( 'change', 'select[id^="child_form_"]', hideAutoLoginOption );
+			$formActions.on( 'change', '.frm_reg_password', hideAutoLoginOption );
+			$formActions.on( 'change', '.frm_reg_password', hideUserModerationSection );
+			$formActions.on( 'change', '.frm_reg_create_subsite', displayMultiSiteOptions );
+			$formActions.on( 'change', '.frm_reg_create_users', displayPermissionOptions );
+
 			initOnSubmitAction();
+
+			if ( Array.isArray( frmRegGlobal.repeaters ) && frmRegGlobal.repeaters.length ) {
+				handleRepeaterActions();
+			}
 		}
 	};
 }

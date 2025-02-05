@@ -70,7 +70,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
 		<td><?php
 			if ( FrmProEntriesHelper::user_can_delete( $entry ) ) {
-        ?><a href="<?php echo esc_url( wp_nonce_url( add_query_arg( array( 'frm_action' => 'destroy', 'entry' => $entry->id ) ) ) ); ?>" class="frm_delete_link" data-frmconfirm="'<?php echo esc_attr( $atts['confirm'] ); ?>"><?php echo $atts['delete_link']; ?></a><?php
+				$delete_link = FrmProEntriesController::create_delete_link( $entry->id );
+        ?><a href="<?php echo esc_url( $delete_link ); ?>" class="frm_delete_link" data-frmconfirm="<?php echo esc_attr( $atts['confirm'] ); ?>"><?php echo $atts['delete_link']; ?></a><?php
 			}
 		?></td>
 <?php

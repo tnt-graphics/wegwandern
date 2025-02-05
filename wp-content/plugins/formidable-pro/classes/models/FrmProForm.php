@@ -36,9 +36,7 @@ class FrmProForm {
 			$options['edit_value'] = sanitize_text_field( $options['edit_value'] );
 		}
 
-		if ( is_callable( 'FrmAppHelper::maybe_filter_array' ) ) {
-			$options = FrmAppHelper::maybe_filter_array( $options, array( 'edit_msg', 'draft_msg' ) );
-		}
+		$options = FrmAppHelper::maybe_filter_array( $options, array( 'edit_msg', 'draft_msg' ) );
 
 		$options['single_entry'] = isset( $values['options']['single_entry'] ) ? $values['options']['single_entry'] : 0;
 		if ( $options['single_entry'] ) {
@@ -178,7 +176,13 @@ class FrmProForm {
 	private static function get_all_file_ids_for_form( $form_id ) {
 		$child_form_ids = self::get_child_form_ids( $form_id );
 		$all_form_ids   = array_merge( array( $form_id ), $child_form_ids );
-		$file_field_ids = FrmDb::get_col( 'frm_fields', array( 'form_id' => $all_form_ids, 'type' => 'file' ) );
+		$file_field_ids = FrmDb::get_col(
+			'frm_fields',
+			array(
+				'form_id' => $all_form_ids,
+				'type'    => 'file',
+			) 
+		);
 
 		if ( ! $file_field_ids ) {
 			return array();
@@ -221,7 +225,12 @@ class FrmProForm {
 	 * @return void
 	 */
 	private static function create_folder_if_it_does_not_already_exist( $folder_name ) {
-		new FrmCreateFile( array( 'folder_name' => $folder_name, 'file_name' => '' ) );
+		new FrmCreateFile(
+			array(
+				'folder_name' => $folder_name,
+				'file_name'   => '',
+			) 
+		);
 	}
 
 	/**
@@ -574,7 +583,13 @@ class FrmProForm {
 
 	public static function has_fields_with_conditional_logic( $form ) {
 		$has_no_logic = '"hide_field";a:0:{}';
-		$sub_fields   = FrmDb::get_var( 'frm_fields', array( 'field_options not like' => $has_no_logic, 'form_id' => $form->id ) );
+		$sub_fields   = FrmDb::get_var(
+			'frm_fields',
+			array(
+				'field_options not like' => $has_no_logic,
+				'form_id'                => $form->id,
+			) 
+		);
 		return ! empty( $sub_fields );
 	}
 

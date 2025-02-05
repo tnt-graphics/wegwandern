@@ -3,7 +3,7 @@
 class FrmRegEntry {
 
 	/**
-	 * Current form ID
+	 * Current processing form ID
 	 *
 	 * @since 2.0
 	 *
@@ -12,6 +12,17 @@ class FrmRegEntry {
 	private $form_id = 0;
 
 	/**
+	 * Main form ID.
+	 *
+	 * @since 3.0
+	 *
+	 * @var int
+	 */
+	private $main_form_id = 0;
+
+	/**
+	 * Current processing registration action.
+	 *
 	 * @since 2.0
 	 *
 	 * @var object
@@ -19,30 +30,68 @@ class FrmRegEntry {
 	private $registration_action = null;
 
 	/**
+	 * Main registration form action.
+	 *
+	 * @since 3.0
+	 *
+	 * @var object
+	 */
+	private $main_registration_action = null;
+
+	/**
+	 * All registration actions.
+	 *
+	 * @since 3.0
+	 *
+	 * @var object[]
+	 */
+	private $registration_actions = array();
+
+	/**
+	 * Form action (create or update).
+	 *
 	 * @var string
 	 */
 	private $form_action = '';
 
 	/**
+	 * Is action triggered?
+	 *
 	 * @var bool
 	 */
 	private $is_action_triggered = false;
 
 	/**
+	 * Current processing selected user.
+	 *
 	 * @var WP_User
 	 */
 	private $selected_user = null;
 
 	/**
+	 * Main selected user.
+	 *
+	 * @since 3.0
+	 *
+	 * @var WP_User
+	 */
+	private $main_selected_user = null;
+
+	/**
+	 * Global messages object.
+	 *
 	 * @var array
 	 */
 	private $global_messages = null;
 
+	/**
+	 * Constructor.
+	 */
 	public function __construct() {
 		$this->init_form_id();
 
-		$this->init_registration_action();
-		if ( $this->registration_action === null ) {
+		$this->init_registration_actions();
+		if ( ! $this->registration_actions ) {
 			return;
 		}
 
@@ -51,39 +100,64 @@ class FrmRegEntry {
 
 		if ( $this->is_action_triggered ) {
 			$this->set_selected_user();
+			$this->main_selected_user = $this->selected_user;
+
 			$this->add_validation_filter();
 			$this->init_global_messages();
 		}
 	}
 
+	private function set_properties_to_repeater_field( $field ) {
+		$this->form_id = (int) $field->form_id;
+
+		list( $field_id, $repeater_id, $repeater_entry_key ) = explode( '-', $field->temp_id );
+		if ( isset( $this->registration_actions[ $this->form_id ] ) ) {
+			$this->registration_action = $this->registration_actions[ $this->form_id ];
+		}
+
+		$this->set_selected_user( $repeater_id, $repeater_entry_key );
+	}
+
+	private function set_properties_to_main_form() {
+		$this->form_id             = $this->main_form_id;
+		$this->registration_action = $this->main_registration_action;
+		$this->selected_user       = $this->main_selected_user;
+	}
+
 	/**
-	 * Set the form ID property
+	 * Set the form ID property.
 	 *
 	 * @since 2.0
 	 */
 	private function init_form_id() {
 		if ( isset( $_POST['form_id'] ) ) {
-			$this->form_id = FrmAppHelper::get_post_param( 'form_id', '', 'absint' );
+			$this->form_id      = FrmAppHelper::get_post_param( 'form_id', '', 'absint' );
+			$this->main_form_id = $this->form_id;
 		}
 	}
 
 	/**
-	 * Set the registration_action property
+	 * Sets the array of registration actions and the main registration action.
 	 *
-	 * @since 2.0
+	 * @since 3.0
 	 */
-	private function init_registration_action() {
-		if ( $this->form_id !== 0 ) {
-			$register_action = FrmFormAction::get_action_for_form( $this->form_id, 'register', 1 );
-
-			if ( is_object( $register_action ) ) {
-				$this->registration_action = $register_action;
+	private function init_registration_actions() {
+		$actions = FrmFormAction::get_action_for_form( $this->main_form_id, 'register', array( 'post_status' => 'publish' ) );
+		foreach ( $actions as $action ) {
+			if ( ! empty( $action->post_content['child_form'] ) ) {
+				$form_id = intval( $action->post_content['child_form'] );
+			} else {
+				$form_id                        = $this->main_form_id;
+				$this->main_registration_action = $action;
+				$this->registration_action      = $this->main_registration_action;
 			}
+
+			$this->registration_actions[ $form_id ] = $action;
 		}
 	}
 
 	/**
-	 * Set the form_action property
+	 * Set the form_action property.
 	 *
 	 * @since 2.0
 	 */
@@ -101,18 +175,27 @@ class FrmRegEntry {
 	}
 
 	/**
-	 * Set the is_action_triggered property
+	 * Set the is_action_triggered property.
 	 *
 	 * @since 2.0
 	 */
 	private function init_is_action_triggered() {
-		if ( $this->is_form_action_a_registration_trigger() && $this->is_action_logic_met() ) {
-			$this->is_action_triggered = true;
+		$prev_reg_action = $this->registration_action;
+
+		// Loop through all form actions, if one of them is triggered, set is_action_triggered property.
+		foreach ( $this->registration_actions as $action ) {
+			$this->registration_action = $action;
+			if ( $this->is_form_action_a_registration_trigger() && $this->is_action_logic_met() ) {
+				$this->is_action_triggered = true;
+				break;
+			}
 		}
+
+		$this->registration_action = $prev_reg_action;
 	}
 
 	/**
-	 * Set the global messages property
+	 * Set the global messages property.
 	 *
 	 * @since 2.0
 	 */
@@ -122,13 +205,13 @@ class FrmRegEntry {
 	}
 
 	/**
-	 * Check if the current form action will trigger the registration action
+	 * Check if the current form action will trigger the registration action.
 	 *
 	 * @since 2.0
 	 * @return bool
 	 */
 	private function is_form_action_a_registration_trigger() {
-		return ( in_array( $this->form_action, $this->registration_action->post_content['event'] ) );
+		return $this->registration_action && in_array( $this->form_action, $this->registration_action->post_content['event'] );
 	}
 
 	/**
@@ -139,12 +222,16 @@ class FrmRegEntry {
 	 * @return bool
 	 */
 	private function is_action_logic_met() {
+		if ( ! $this->registration_action ) {
+			return false;
+		}
+
 		/**
 		 * @var array $settings
 		 */
 		$settings = $this->registration_action->post_content;
 
-		if ( ! isset( $settings['conditions'] ) || empty( $settings['conditions'] ) || count( $settings['conditions'] ) <= 2 ) {
+		if ( empty( $settings['conditions'] ) || count( $settings['conditions'] ) <= 2 ) {
 			return true;
 		}
 
@@ -154,26 +241,31 @@ class FrmRegEntry {
 	}
 
 	/**
-	 * Set the selected_user property
+	 * Set the selected_user property.
 	 *
 	 * @since 2.0
+	 * @since 3.0 Added the first and second parameters.
+	 *
+	 * @param int    $repeater_id        Repeater field ID.
+	 * @param string $repeater_entry_key The key of repeater entry in the repeater values.
 	 */
-	private function set_selected_user() {
-		$user_id = FrmRegEntryHelper::get_posted_user_id( $this->form_id );
-		if ( $user_id ) {
+	private function set_selected_user( $repeater_id = 0, $repeater_entry_key = '' ) {
+		$user_id = FrmRegEntryHelper::get_posted_user_id( $this->form_id, $repeater_id, $repeater_entry_key );
+		// We must check the registration action to prevent a wrong user is set when there is a normal user ID field in form.
+		if ( $user_id && $this->registration_action ) {
 			$this->selected_user = get_userdata( $user_id );
 		}
 	}
 
 	/**
-	 * Add the validation filter
+	 * Add the validation filter.
 	 */
 	private function add_validation_filter() {
 		add_filter( 'frm_validate_field_entry', array( $this, 'validate_field' ), 20, 3 );
 	}
 
 	/**
-	 * Validate a registration field
+	 * Validate a registration field.
 	 *
 	 * @since 2.0
 	 *
@@ -184,8 +276,13 @@ class FrmRegEntry {
 	 * @return array
 	 */
 	public function validate_field( $errors, $field, $value ) {
-		if ( ! $this->is_registration_field( $field->id ) || $this->is_field_hidden( $field ) ) {
+		if ( ! $this->is_registration_field( $field->id ) || FrmProEntryMeta::is_field_conditionally_hidden( $field ) ) {
 			return $errors;
+		}
+
+		$is_repeater_entry = ! empty( $field->temp_id ) && ! is_numeric( $field->temp_id );
+		if ( $is_repeater_entry ) {
+			$this->set_properties_to_repeater_field( $field );
 		}
 
 		if ( $this->form_action === 'update' ) {
@@ -194,11 +291,15 @@ class FrmRegEntry {
 			$this->validate_entry_creation( $field, $value, $errors );
 		}
 
+		if ( $is_repeater_entry ) {
+			$this->set_properties_to_main_form();
+		}
+
 		return $errors;
 	}
 
 	/**
-	 * Check if registration entry validation is needed
+	 * Check if registration entry validation is needed.
 	 *
 	 * @since 2.0
 	 *
@@ -210,20 +311,7 @@ class FrmRegEntry {
 	}
 
 	/**
-	 * Check if a field is conditionally hidden
-	 *
-	 * @since 2.0
-	 *
-	 * @param stdClass $field
-	 *
-	 * @return bool
-	 */
-	private function is_field_hidden( $field ) {
-		return ( is_callable( 'FrmProFieldsHelper::is_field_hidden' ) && FrmProFieldsHelper::is_field_hidden( $field, $_POST ) );
-	}
-
-	/**
-	 * Validate registration fields when a new entry is created
+	 * Validate registration fields when a new entry is created.
 	 *
 	 * @since 2.0
 	 *
@@ -259,8 +347,7 @@ class FrmRegEntry {
 			if ( is_object( $this->selected_user ) ) {
 				$this->validate_profile_update( $field, $value, $errors );
 			} elseif ( FrmRegAppHelper::current_user_can_create_users( $this->registration_action ) ) {
-
-					$this->validate_profile_creation( $field, $value, $errors );
+				$this->validate_profile_creation( $field, $value, $errors );
 			} else {
 				$this->validate_profile_update( $field, $value, $errors );
 			}
@@ -314,13 +401,15 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_password_on_profile_creation( $field, $password, &$errors ) {
-		if ( ! $this->field_needs_validation( $field->id, 'password', $errors ) ) {
+		if ( ! $this->field_needs_validation( $field, 'password', $errors ) ) {
 			return;
 		}
 
+		$validation_id = $this->get_field_validation_id( $field );
+
 		if ( empty( $password ) ) {
 			// If user is being created and the password field is empty
-			$errors[ 'field' . $field->id ] = $this->global_messages['blank_password'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['blank_password'];
 
 		} else {
 			$errors = $this->check_for_invalid_password( $password, $field, $errors );
@@ -337,17 +426,18 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_email_on_profile_creation( $field, $value, &$errors ) {
-		if ( ! $this->field_needs_validation( $field->id, 'email', $errors ) ) {
+		if ( ! $this->field_needs_validation( $field, 'email', $errors ) ) {
 			return;
 		}
 
+		$validation_id = $this->get_field_validation_id( $field );
 		if ( empty( $value ) ) {
 			// If user is being created and the email field is empty
-			$errors[ 'field' . $field->id ] = $this->global_messages['blank_email'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['blank_email'];
 
 		} else if ( $this->email_exists( $value ) ) {
 			// If a new email address was entered, but it already exists
-			$errors[ 'field' . $field->id ] = $this->global_messages['existing_email'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['existing_email'];
 		}
 	}
 
@@ -361,21 +451,22 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_username_on_profile_creation( $field, $username, &$errors ) {
-		if ( ! $this->field_needs_validation( $field->id, 'username', $errors ) ) {
+		if ( ! $this->field_needs_validation( $field, 'username', $errors ) ) {
 			return;
 		}
 
+		$validation_id = $this->get_field_validation_id( $field );
 		if ( empty( $username ) ) {
 			// If user is being created and the username field is empty
-			$errors[ 'field' . $field->id ] = $this->global_messages['blank_username'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['blank_username'];
 
 		} else if ( FrmRegAppHelper::username_exists( $username ) ) {
 			// Check if username already exists
-			$errors[ 'field' . $field->id ] = $this->global_messages['existing_username'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['existing_username'];
 
 		} else if ( ! validate_username( $username ) ) {
 			// Check for invalid characters in new username
-			$errors[ 'field' . $field->id ] = $this->global_messages['illegal_username'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['illegal_username'];
 
 		}
 	}
@@ -390,13 +481,14 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_subsite_title_on_profile_creation( $field, $value, &$errors ) {
-		if ( ! $this->field_needs_validation( $field->id, 'subsite_title', $errors ) ) {
+		if ( ! $this->field_needs_validation( $field, 'subsite_title', $errors ) ) {
 			return;
 		}
 
+		$validation_id = $this->get_field_validation_id( $field );
 		if ( empty( $value ) ) {
 			// If user is being created and the subsite title field is empty
-			$errors[ 'field' . $field->id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
+			$errors[ 'field' . $validation_id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
 		}
 	}
 
@@ -410,7 +502,7 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_subsite_domain_on_profile_creation( $field, $value, &$errors ) {
-		if ( $this->field_needs_validation( $field->id, 'subsite_domain', $errors ) ) {
+		if ( $this->field_needs_validation( $field, 'subsite_domain', $errors ) ) {
 
 			$this->validate_subdomain_field( $field, $value, $errors );
 
@@ -430,12 +522,13 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_subdomain_field( $field, $value, &$errors ) {
+		$validation_id = $this->get_field_validation_id( $field );
 		if ( empty( $value ) ) {
 			// If subsite is being created and the subsite domain field is empty
-			$errors[ 'field' . $field->id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
+			$errors[ 'field' . $validation_id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
 		} else if ( $this->subsite_exists( $value ) ) {
 			// If subsite is being created, but the full path already exists
-			$errors[ 'field' . $field->id ] = $this->global_messages['existing_subsite'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['existing_subsite'];
 
 		} else {
 			$this->check_for_reserved_names( $field, $value, $errors );
@@ -460,8 +553,8 @@ class FrmRegEntry {
 
 			$subdomain_mapping = sanitize_text_field( wp_unslash( $_POST['frm_register']['subsite_domain'] ) );
 
-			if ( ( $subdomain_mapping === 'blog_title' && $this->field_needs_validation( $field->id, 'subsite_title', $errors ) ) ||
-				 ( $subdomain_mapping === 'username' && $this->field_needs_validation( $field->id, 'username', $errors ) ) ) {
+			if ( ( $subdomain_mapping === 'blog_title' && $this->field_needs_validation( $field, 'subsite_title', $errors ) ) ||
+				 ( $subdomain_mapping === 'username' && $this->field_needs_validation( $field, 'username', $errors ) ) ) {
 
 				$is_mapped = true;
 			}
@@ -513,7 +606,7 @@ class FrmRegEntry {
 		if ( $this->is_reserved_name_used_in_subdirectory( $subdomain ) ) {
 
 			$reserved_names = implode( ', ', get_subdirectory_reserved_names() );
-			$errors[ 'field' . $field->id ] = sprintf(
+			$errors[ 'field' . $this->get_field_validation_id( $field ) ] = sprintf(
 				__( 'The following words cannot be used as blog names: %s.', 'frmreg' ),
 				$reserved_names
 			);
@@ -550,15 +643,33 @@ class FrmRegEntry {
 			return;
 		}
 
-		if ( $this->errors_already_set( $password_field->id, $errors ) ) {
+		$validation_id = $this->get_field_validation_id( $password_field );
+		if ( $this->errors_already_set( $validation_id, $errors ) ) {
 
 			// Do not require password on update
 			if ( empty( $new_password ) ) {
-				unset( $errors[ 'field' . $password_field->id ] );
+				unset( $errors[ 'field' . $validation_id ] );
 			}
 		} else if ( ! empty( $new_password ) ) {
 			$errors = $this->check_for_invalid_password( $new_password, $password_field, $errors );
 		}
+	}
+
+	/**
+	 * Gets field validation ID.
+	 *
+	 * @since 3.0
+	 *
+	 * @param object $field Field object.
+	 *
+	 * @return int|string Return field ID, or string that includes repeater index data.
+	 */
+	private function get_field_validation_id( $field ) {
+		if ( ! empty( $field->temp_id ) ) {
+			return $field->temp_id;
+		}
+
+		return $field->id;
 	}
 
 	/**
@@ -571,19 +682,20 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_email_on_profile_update( $email_field, $new_email, &$errors ) {
-		if ( ! $this->field_needs_validation( $email_field->id, 'email', $errors ) ) {
+		if ( ! $this->field_needs_validation( $email_field, 'email', $errors ) ) {
 			return;
 		}
 
+		$validation_id = $this->get_field_validation_id( $email_field );
 		$current_email = $this->selected_user->data->user_email;
 
 		if ( empty( $new_email ) ) {
 			// Make sure a blank email isn't entered
-			$errors[ 'field' . $email_field->id ] = $this->global_messages['blank_email'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['blank_email'];
 
 		} else if ( self::new_value_entered( $new_email, $current_email ) && $this->email_exists( $new_email ) ) {
 			// If a new email address was entered, but it already exists
-			$errors[ 'field' . $email_field->id ] = $this->global_messages['existing_email'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['existing_email'];
 		}
 	}
 
@@ -597,18 +709,19 @@ class FrmRegEntry {
 	 * @param array $errors
 	 */
 	private function validate_username_on_profile_update( $field, $new_username, &$errors ) {
-		if ( ! $this->field_needs_validation( $field->id, 'username', $errors ) ) {
+		if ( ! $this->field_needs_validation( $field, 'username', $errors ) ) {
 			return;
 		}
 
+		$validation_id    = $this->get_field_validation_id( $field );
 		$current_username = $this->selected_user->data->user_login;
 
 		if ( empty( $new_username ) ) {
 			// If user is being edited and the username field is empty
-			$errors[ 'field' . $field->id ] = $this->global_messages['blank_username'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['blank_username'];
 
 		} else if ( self::new_value_entered( $new_username, $current_username ) ) {
-			$errors[ 'field' . $field->id ] = $this->global_messages['update_username'];
+			$errors[ 'field' . $validation_id ] = $this->global_messages['update_username'];
 			// TODO: Allow people to change their username
 		}
 	}
@@ -617,15 +730,23 @@ class FrmRegEntry {
 	 * Check if a field needs validation
 	 *
 	 * @since 2.0
+	 * @since 3.0 Accept field object as the first parameter.
 	 *
-	 * @param int|string $field_id
+	 * @param int|string|object $field
 	 * @param string $setting
 	 * @param array $errors
 	 *
 	 * @return bool
 	 */
-	private function field_needs_validation( $field_id, $setting, $errors ) {
-		return $this->is_field_mapped_to_setting( (int) $field_id, $setting ) && ! $this->errors_already_set( $field_id, $errors );
+	private function field_needs_validation( $field, $setting, $errors ) {
+		if ( is_object( $field ) ) {
+			$field_id      = $field->id;
+			$validation_id = $this->get_field_validation_id( $field );
+		} else {
+			$field_id      = $field;
+			$validation_id = $field_id;
+		}
+		return $this->is_field_mapped_to_setting( (int) $field_id, $setting ) && ! $this->errors_already_set( $validation_id, $errors );
 	}
 
 	/**
@@ -665,7 +786,7 @@ class FrmRegEntry {
 	 */
 	private function check_for_invalid_password( $password, $field, $errors ) {
 		if ( false !== strpos( wp_unslash( $password ), "\\" ) ) {
-			$errors[ 'field' . $field->id ] = $this->global_messages['illegal_password'];
+			$errors[ 'field' . $this->get_field_validation_id( $field ) ] = $this->global_messages['illegal_password'];
 		}
 
 		return $errors;
@@ -758,13 +879,13 @@ class FrmRegEntry {
 	/**
 	 * Check if a field has errors on it
 	 *
-	 * @param int $id
-	 * @param array $errors
+	 * @param string $id     Field validation ID.
+	 * @param array  $errors Validation errors.
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	private function errors_already_set( $id, $errors ) {
-		return isset( $errors[ 'field' . $id ] ) && ! empty( $errors[ 'field' . $id ] );
+		return ! empty( $errors[ 'field' . $id ] );
 	}
 
 	/**
@@ -886,7 +1007,7 @@ class FrmRegEntry {
 			return false;
 		}
 
-		$register_action = FrmFormAction::get_action_for_form( $form_id, 'register', 1 );
+		$register_action = FrmRegActionHelper::get_action_for_form( $form_id );
 
 		return ( is_object( $register_action ) && FrmRegAppHelper::current_user_can_create_users( $register_action ) );
 	}
@@ -1083,9 +1204,19 @@ class FrmRegEntry {
 	 */
 	public static function get_entry_for_user( $profile_user ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'frm_item_metas m INNER JOIN ' . $wpdb->prefix . 'frm_fields f ON m.field_id = f.id';
+		$table = "
+			{$wpdb->prefix}frm_item_metas m INNER JOIN {$wpdb->prefix}frm_fields f ON m.field_id = f.id
+			INNER JOIN {$wpdb->prefix}frm_items i ON m.item_id = i.id
+		";
 		$where = array( 'm.meta_value' => $profile_user->ID, 'f.type' => 'user_id' );
-		return FrmDb::get_var( $table, $where, 'm.item_id' );
+		$row   = FrmDb::get_row( $table, $where, 'm.item_id, i.parent_item_id' );
+
+		// If this user is created from a repeater entry, return the parent entry ID.
+		if ( ! empty( $row->parent_item_id ) ) {
+			return $row->parent_item_id;
+		}
+
+		return $row->item_id;
 	}
 
 	/**
@@ -1169,6 +1300,29 @@ class FrmRegEntry {
 	}
 
 	/**
+	 * Maybe update the user_id of a repeater entry after it's updated with the user_id of parent entry.
+	 *
+	 * @since 3.0
+	 *
+	 * @param int $entry_id Entry ID.
+	 * @return void
+	 */
+	public static function maybe_update_entry_user_id( $entry_id ) {
+		$entry = FrmEntry::getOne( $entry_id, true );
+
+		// Only do this with a repeater entry.
+		if ( ! $entry || ! $entry->parent_item_id ) {
+			return;
+		}
+
+		// If this form has registration action and user ID field has value in the entry meta, update user_id of that entry.
+		$user_id_field = FrmRegEntryHelper::get_user_id_field_for_form( $entry->form_id );
+		if ( ! empty( $entry->metas[ $user_id_field ] ) ) {
+			self::update_user_id_for_entry( $entry->form_id, $entry, $entry->metas[ $user_id_field ] );
+		}
+	}
+
+	/**
 	 * Returns the id of the user reg password field for a form or false, if there isn't one.
 	 *
 	 * @since 2.03
@@ -1178,13 +1332,10 @@ class FrmRegEntry {
 	 * @return int|bool Id of user reg password field or false.
 	 */
 	private static function get_user_reg_password_field_id( $form_id ) {
-		$actions = FrmFormAction::get_action_for_form( $form_id, 'register' );
-
-		if ( ! $actions ) {
+		$action = FrmRegActionHelper::get_action_for_form( $form_id );
+		if ( ! $action ) {
 			return false;
 		}
-
-		$action = reset( $actions );
 
 		return ! empty( $action->post_content ) && ! empty( $action->post_content['reg_password'] ) ? $action->post_content['reg_password'] : false;
 	}

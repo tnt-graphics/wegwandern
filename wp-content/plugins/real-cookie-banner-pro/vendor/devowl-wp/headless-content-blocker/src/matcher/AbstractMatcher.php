@@ -9,6 +9,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\BlockedResult;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\Constants;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\finder\match\MatchPluginCallbacks;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\HeadlessContentBlocker;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\Markup;
 /**
  * A matcher describes a class which gets a match from the `FastHtmlTag` and will
  * modify the tag as needed.
@@ -17,11 +18,11 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\HeadlessContent
 abstract class AbstractMatcher
 {
     private $headlessContentBlocker;
+    private $currentlyInIterateBlockablesInString = \false;
     /**
      * C'tor.
      *
      * @param HeadlessContentBlocker $headlessContentBlocker
-     * @codeCoverageIgnore
      */
     public function __construct($headlessContentBlocker)
     {
@@ -49,7 +50,7 @@ abstract class AbstractMatcher
      */
     public function createPlainResultFromMatch($match)
     {
-        return new BlockedResult($match->getTag(), $match->getAttributes(), $match->getOriginalMatch());
+        return new BlockedResult($match->getTag(), $match->getAttributes(), Markup::persist($match->getOriginalMatch(), $this->getHeadlessContentBlocker()));
     }
     /**
      * Disable blocked result if it has the skipped-attribute.
@@ -75,7 +76,6 @@ abstract class AbstractMatcher
      */
     public function iterateBlockablesInString($result, $string, $useContainsRegularExpression = \false, $multilineRegexp = \false, $useRegularExpressionFromMap = null, $useBlockables = null)
     {
-        $expressionStrposCache = [];
         $cb = $this->getHeadlessContentBlocker();
         $allowMultiple = $cb->isAllowMultipleBlockerResults();
         $string = $this->prepareChunksFromString($string);
@@ -87,26 +87,25 @@ abstract class AbstractMatcher
                 if (!$useRegex) {
                     continue;
                 }
-                // Performance-boost: Extract the searchable strings for this expression, so we can first check for simple `contains` pattern
-                // Currently, the only supported wildcard is `*`, for which we can extract the words between asterisks.
-                if (!isset($expressionStrposCache[$expression]) && $useRegularExpressionFromMap === null) {
-                    if (\preg_match_all('/([^\\*]{1,})/m', $expression, $expressionStrposMatch, \PREG_SET_ORDER, 0) && \count($expressionStrposMatch) > 0) {
-                        $expressionStrposCache[$expression] = \array_column($expressionStrposMatch, 1);
-                    } else {
-                        $expressionStrposCache[$expression] = \false;
-                    }
-                }
                 foreach ($string as $chunkString) {
                     // Before doing an expensive regular expression match, check if the string generally exists in our chunk
-                    $expressionStrpos = $expressionStrposCache[$expression] ?? \false;
-                    if ($expressionStrpos) {
-                        foreach ($expressionStrpos as $expressionStrposSingle) {
-                            if (\strpos($chunkString, $expressionStrposSingle) === \false) {
-                                continue 2;
-                            }
-                        }
+                    // Do not create the cache for custom maps as they can differ from expression -> regular expression mapping (e.g. `blockablesToHosts`)
+                    // This could lead to wrong `strpos` assertions in the inner `foreach`
+                    if ($useRegularExpressionFromMap === null && !$blockable->matchesExpressionLoose($expression, $chunkString)) {
+                        continue;
                     }
                     if (\preg_match($useRegex . ($multilineRegexp ? 'm' : ''), $chunkString)) {
+                        $pluginResult = \true;
+                        if (!$this->currentlyInIterateBlockablesInString) {
+                            $this->currentlyInIterateBlockablesInString = \true;
+                            $pluginResult = $this->getHeadlessContentBlocker()->runBeforeSetBlockedInResultCallback($result, $blockable, $expression, $this);
+                            $this->currentlyInIterateBlockablesInString = \false;
+                        }
+                        // @codeCoverageIgnoreStart
+                        if ($pluginResult === \false) {
+                            continue;
+                        }
+                        // @codeCoverageIgnoreEnd
                         // This link is definitely blocked by configuration
                         if (!$result->isBlocked()) {
                             $result->setBlocked([$blockable]);
@@ -115,7 +114,7 @@ abstract class AbstractMatcher
                         if ($allowMultiple) {
                             $result->addBlocked($blockable);
                             $result->addBlockedExpression($expression);
-                            break 2;
+                            continue 2;
                         } else {
                             break 3;
                         }
@@ -145,6 +144,7 @@ abstract class AbstractMatcher
             if ($chunkIdx > 0) {
                 $siblingChunkString = $string[$chunkIdx - 1] ?? '';
                 $siblingChunkString = \strlen($siblingChunkString) >= $copySiblingChunkStringLength ? \substr($siblingChunkString, $copySiblingChunkStringLength * -1) : $siblingChunkString;
+                // @codeCoverageIgnoreEnd
                 $chunkString = $siblingChunkString . $chunkString;
             }
             // Next sibling
@@ -226,7 +226,9 @@ abstract class AbstractMatcher
             }
             return \true;
         }
+        // @codeCoverageIgnoreStart
         return \false;
+        // @codeCoverageIgnoreEnd
     }
     /**
      * Prepare the new transformed link attribute.
@@ -304,7 +306,7 @@ abstract class AbstractMatcher
         }
         $useVisualParent = $this->getHeadlessContentBlocker()->runVisualParentCallback($useVisualParent, $this, $match);
         if ($useVisualParent !== \false) {
-            $match->setAttribute(Constants::HTML_ATTRIBUTE_VISUAL_PARENT, $useVisualParent);
+            $match->setAttribute(Constants::HTML_ATTRIBUTE_VISUAL_PARENT, $useVisualParent === \true ? 'true' : $useVisualParent);
         }
     }
     /**
@@ -315,12 +317,42 @@ abstract class AbstractMatcher
      */
     protected function applyCheckResultHooks($result, $match)
     {
-        return $this->getHeadlessContentBlocker()->runCheckResultCallback($result, $this, $match);
+        $result = $this->getHeadlessContentBlocker()->runCheckResultCallback($result, $this, $match);
+        // Is the match also covered by another selector syntax?
+        $attributes = $match->getAttributes();
+        $matchCallbacks = MatchPluginCallbacks::getFromMatch($match);
+        foreach ($this->getHeadlessContentBlocker()->findPotentialSelectorSyntaxFindersForMatch($match->getTag(), \array_keys($attributes)) as $finder) {
+            $matcher = $this->getHeadlessContentBlocker()->getFinderToMatcher()[$finder] ?? null;
+            // @codeCoverageIgnoreStart
+            if ($matcher === null) {
+                continue;
+            }
+            // @codeCoverageIgnoreEnd
+            $matchCallbacks->startTransaction();
+            $matchesAttributes = $finder->matchesAttributes($attributes, $match);
+            if ($matchesAttributes) {
+                $matchCallbacks->commit();
+                $applyAttributes = [];
+                foreach ($finder->getAttributes() as $attr) {
+                    $applyAttributes[$attr->getAttribute()] = $attributes[$attr->getAttribute()];
+                }
+                if ($matcher instanceof SelectorSyntaxMatcher && $matcher->getBlockable() !== null) {
+                    $result->addBlocked($matcher->getBlockable());
+                    $result->addBlockedExpression($finder->getExpression());
+                }
+                $matchCallbacks->addBlockedMatchCallback(function ($result) use($match, $applyAttributes) {
+                    foreach ($applyAttributes as $attribute => $value) {
+                        $this->applyNewLinkElement($match, $attribute, $value);
+                    }
+                });
+            } else {
+                $matchCallbacks->rollback();
+            }
+        }
+        return $result;
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getHeadlessContentBlocker()
     {
@@ -330,6 +362,7 @@ abstract class AbstractMatcher
      * Getter.
      *
      * @return AbstractBlockable[]
+     * @codeCoverageIgnore
      */
     public function getBlockables()
     {

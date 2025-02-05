@@ -1,7 +1,13 @@
 <?php
+/**
+ * @deprecated 6.16.3
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+
+_deprecated_file( __FILE__, '6.16.3' );
 
 $start_over = isset( $values['start_over'] ) ? $values['start_over'] : '';
 
@@ -89,10 +95,18 @@ if ( ! FrmProSubmitHelper::is_available() ) {
 	<?php endif; ?>
 	<?php
 } else {
-	FrmProFormsHelper::array_to_hidden_inputs(
-		array(
-			'submit_conditions' => $submit_conditions,
-		),
-		'options'
-	);
+	?>
+	<tr>
+		<td colspan="2">
+			<?php
+			FrmProFormsHelper::array_to_hidden_inputs(
+				array(
+					'submit_conditions' => $submit_conditions,
+				),
+				'options'
+			);
+			?>
+		</td>
+	</tr>
+	<?php
 }

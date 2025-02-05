@@ -3,8 +3,9 @@
 <table class="form-table">
 	<tr>
 		<td colspan="2">
-			<label <?php FrmRegAppHelper::add_tooltip( 'create_subsite' ); ?>>
-				<input type="checkbox" id="reg_create_subsite" name="<?php echo esc_attr( $this->get_field_name( 'create_subsite' ) ); ?>" value="1" <?php checked( $form_action->post_content['create_subsite'], 1 ); ?> /> <?php esc_html_e( 'Create subsite when user registers', 'frmreg' ); ?>
+			<?php $id_attr = $this->get_field_id( 'reg_create_subsite' ); ?>
+			<label for="<?php echo esc_attr( $id_attr ); ?>" <?php FrmRegAppHelper::add_tooltip( 'create_subsite' ); ?>>
+				<input type="checkbox" id="<?php echo esc_attr( $id_attr ); ?>" class="frm_reg_create_subsite" name="<?php echo esc_attr( $this->get_field_name( 'create_subsite' ) ); ?>" value="1" <?php checked( $form_action->post_content['create_subsite'], 1 ); ?> /> <?php esc_html_e( 'Create subsite when user registers', 'frmreg' ); ?>
 			</label>
 		</td>
 	</tr>

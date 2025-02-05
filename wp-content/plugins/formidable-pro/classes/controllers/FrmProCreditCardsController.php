@@ -117,7 +117,12 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 	}
 
 	private static function empty_value_array() {
-		return array( 'cc' => '', 'month' => '', 'year' => '', 'cvc' => '' );
+		return array(
+			'cc'    => '',
+			'month' => '',
+			'year'  => '',
+			'cvc'   => '',
+		);
 	}
 
 	private static function default_labels() {

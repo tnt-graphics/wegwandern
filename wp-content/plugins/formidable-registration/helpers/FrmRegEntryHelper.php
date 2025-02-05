@@ -17,17 +17,26 @@ class FrmRegEntryHelper {
 	 * Get the posted userID value
 	 *
 	 * @since 2.0
-	 * @param int $form_id
+	 * @param int    $form_id            Form ID.
+	 * @param int    $repeater_id        Repeater field ID.
+	 * @param string $repeater_entry_key Repeater entry key in the item meta.
 	 *
 	 * @return int
 	 */
-	public static function get_posted_user_id( $form_id ) {
+	public static function get_posted_user_id( $form_id, $repeater_id = 0, $repeater_entry_key = '' ) {
 		$user_id_field = self::get_user_id_field_for_form( $form_id );
-		$user_id = 0;
-		if ( $user_id_field && isset( $_POST['item_meta'][ $user_id_field ] ) ) {
-			$user_id = FrmAppHelper::get_post_param( 'item_meta' )[ $user_id_field ];
-			$user_id = (int) $user_id;
+		if ( ! $user_id_field ) {
+			return 0;
 		}
+
+		$user_id   = 0;
+		$item_meta = FrmAppHelper::get_post_param( 'item_meta' );
+		if ( isset( $item_meta[ $user_id_field ] ) ) {
+			$user_id = (int) $item_meta[ $user_id_field ];
+		} elseif ( $repeater_id && $repeater_entry_key && isset( $item_meta[ $repeater_id ][ $repeater_entry_key ][ $user_id_field ] ) ) {
+			$user_id = (int) $item_meta[ $repeater_id ][ $repeater_entry_key ][ $user_id_field ];
+		}
+
 		return $user_id;
 	}
 

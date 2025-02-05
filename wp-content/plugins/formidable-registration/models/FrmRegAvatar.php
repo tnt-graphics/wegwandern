@@ -133,8 +133,6 @@ class FrmRegAvatar {
 		$field_obj = FrmFieldFactory::get_field_type( 'file' );
 		if ( is_callable( array( $field_obj, 'get_displayed_file_html' ) ) ) {
 			$this->url = $field_obj->get_displayed_file_html( (array) $this->avatar_id, $this->get_size_parameter() );
-		} elseif ( is_callable( 'FrmProFieldsHelper::get_displayed_file_html' ) && 'FrmFieldDefault' !== get_class( $field_obj ) ) {
-			$this->url = FrmProFieldsHelper::get_displayed_file_html( (array) $this->avatar_id, $this->get_size_parameter() );
 		} else {
 			$this->url = '';
 		}

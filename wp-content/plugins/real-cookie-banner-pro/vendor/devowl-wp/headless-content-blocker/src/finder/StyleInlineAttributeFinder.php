@@ -12,8 +12,6 @@ class StyleInlineAttributeFinder extends TagAttributeFinder
 {
     /**
      * C'tor.
-     *
-     * @codeCoverageIgnore
      */
     public function __construct()
     {
@@ -26,8 +24,7 @@ class StyleInlineAttributeFinder extends TagAttributeFinder
      */
     public function createMatch($m)
     {
-        list($tag, $attributes) = self::extractAttributesFromMatch($m);
-        list($linkAttribute, $link) = $this->getRegexpAttributesInMatch($attributes);
+        list($tag, $attributes, $linkAttribute, $link) = $this->extractAttributesFromMatch($m);
         if ($link === null) {
             return \false;
         }

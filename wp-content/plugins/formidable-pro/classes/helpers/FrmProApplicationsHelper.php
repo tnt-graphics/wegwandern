@@ -330,9 +330,15 @@ class FrmProApplicationsHelper {
 	public static function handle_shortcode( $shortcode_found, $id_found ) {
 		switch ( $shortcode_found ) {
 			case 'formidable':
-				return array( 'type' => 'form', 'objectId' => $id_found );
+				return array(
+					'type'     => 'form',
+					'objectId' => $id_found,
+				);
 			case 'display-frm-data':
-				return array( 'type' => 'view', 'objectId' => $id_found );
+				return array(
+					'type'     => 'view',
+					'objectId' => $id_found,
+				);
 		}
 		return false;
 	}

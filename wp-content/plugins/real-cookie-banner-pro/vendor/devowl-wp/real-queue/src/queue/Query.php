@@ -6,6 +6,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\RealQueue\Core;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\RealQueue\rest\Queue;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\RealQueue\UtilsProvider;
 use WP_Error;
+use WP_User;
 /**
  * Query jobs and transform them to a proper `Job` instance.
  * @internal
@@ -29,13 +30,19 @@ class Query
      *
      * Arguments:
      * - `[limit]`
-     * - `[type=all|pending|failure]`
+     * - `[type=all|pending|failure|pending-all]`
+     *      - `all` reads all jobs
+     *      - `pending` reads all pending jobs and respects the locking
+     *      - `failure` reads all failed jobs
+     *      - `pending-all` reads all pending jobs, even if they are locked
      * - `[jobType]`
      * - `[dataContains]` Allows you in a very basic way to check if a job exists by `data LIKE '%YOUR_STRING%'`
      * - `[ids]` An array of Job ids which should be read
      * - `[omitClientData=false]` If `true`, `data` will be omitted for `server` workers
      * - `[after]` Read all job ids after that one
      * - `[lockUntil=0]` Add this seconds to UNIX-timestamp and mark the read jobs as locked_until
+     * - `[respectCapability=true]` If `false`, the capability check is omitted
+     * - `[groupBy=false]` Pass `string` to group jobs by a custom column (currently only `type` is supported)
      *
      * @param array $args
      * @return Job[]
@@ -44,7 +51,7 @@ class Query
     {
         global $wpdb;
         $this->core->getPersist()->clearJobTable();
-        $args = \wp_parse_args($args, ['limit' => Queue::MAX_BATCH_CLIENT_SIZE, 'type' => 'pending', 'jobType' => null, 'dataContains' => '', 'ids' => null, 'omitClientData' => \false, 'after' => null, 'lockUntil' => 0]);
+        $args = \wp_parse_args($args, ['limit' => Queue::MAX_BATCH_CLIENT_SIZE, 'type' => 'pending', 'jobType' => null, 'dataContains' => '', 'ids' => null, 'omitClientData' => \false, 'after' => null, 'lockUntil' => 0, 'respectCapability' => \true, 'groupBy' => \false]);
         $table_name = $this->getTableName();
         $type = $args['type'];
         $jobType = $args['jobType'];
@@ -53,6 +60,11 @@ class Query
         $after = $args['after'];
         $lockUntil = $args['lockUntil'];
         $limit = $args['limit'];
+        $respectCapability = $args['respectCapability'];
+        $groupBy = $args['groupBy'];
+        if (!\in_array($groupBy, ['type'], \true)) {
+            $groupBy = \false;
+        }
         $where = '1=1';
         if ($ids !== null) {
             if (\count($ids) > 0) {
@@ -66,7 +78,11 @@ class Query
         } else {
             switch ($type) {
                 case 'pending':
-                    $where .= ' AND process < process_total AND runs < (retries + 1) AND CURRENT_TIMESTAMP >= lock_until';
+                case 'pending-all':
+                    $where .= ' AND process < process_total AND runs < (retries + 1)';
+                    if ($type === 'pending') {
+                        $where .= ' AND CURRENT_TIMESTAMP >= lock_until';
+                    }
                     break;
                 case 'failure':
                     $where .= ' AND process < process_total AND runs > retries';
@@ -84,9 +100,25 @@ class Query
         if (!empty($dataContains)) {
             $where .= $wpdb->prepare(' AND data LIKE %s', '%' . $wpdb->esc_like($dataContains) . '%');
         }
-        // phpcs:disable WordPress.DB.PreparedSQL
-        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_name} WHERE {$where} LIMIT 0, %d", $limit), ARRAY_A);
-        // phpcs:enable WordPress.DB.PreparedSQL
+        if ($respectCapability) {
+            $user = \function_exists('wp_get_current_user') ? \wp_get_current_user() : null;
+            if ($user instanceof WP_User && $user->ID > 0) {
+                // All my capabilities in format `[capability][capability]` so `LIKE` works as expected
+                $myCapabilities = \join('', \array_map(function ($capability) {
+                    return \sprintf('[%s]', $capability);
+                }, \array_keys(\array_filter($user->allcaps, function ($capability) {
+                    return $capability === \true;
+                }))));
+                // phpcs:disable WordPress.DB
+                $where .= $wpdb->prepare(" AND (capability IS NULL OR %s LIKE CONCAT('%%[', capability, ']%%'))", $myCapabilities);
+                // phpcs:enable WordPress.DB
+            } else {
+                $where .= ' AND (1=0 || capability IS NULL)';
+            }
+        }
+        // phpcs:disable WordPress.DB
+        $rows = $wpdb->get_results($wpdb->prepare(\sprintf("SELECT * FROM {$table_name} WHERE {$where} %s ORDER BY priority ASC, id ASC LIMIT 0, %%d", \is_string($groupBy) ? \sprintf('GROUP BY %s', $groupBy) : ''), $limit), ARRAY_A);
+        // phpcs:enable WordPress.DB
         $this->castRows($rows);
         $ids = [];
         foreach ($rows as $row) {
@@ -109,12 +141,8 @@ class Query
     public function fetchById($id)
     {
         global $wpdb;
-        $table_name = $this->getTableName();
-        // phpcs:disable WordPress.DB.PreparedSQL
-        $rows = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_name} WHERE id = %d", $id), ARRAY_A);
-        // phpcs:enable WordPress.DB.PreparedSQL
-        $this->castRows($rows);
-        return \count($rows) > 0 ? $rows[0] : null;
+        $jobs = $this->read(['ids' => [$id], 'type' => 'all', 'omitClientData' => \true]);
+        return \count($jobs) > 0 ? $jobs[0] : null;
     }
     /**
      * Lock a set of jobs by a given time of seconds.
@@ -151,11 +179,12 @@ class Query
             $job->process_total = \intval($row['process_total']);
             $job->duration_ms = \intval($row['duration_ms']);
             $job->created = \mysql2date('c', $row['created'], \false);
-            $job->data = \json_decode($row['data'], ARRAY_A);
+            $job->data = \json_decode($row['data']);
             $job->runs = \intval($row['runs']);
             $job->retries = \intval($row['retries']);
             $job->delay_ms = \intval($row['delay_ms']);
-            $job->lock_until = \strtotime($row['lock_until']);
+            $job->priority = \intval($row['priority']);
+            $job->lock_until = \mysql2date('c', $row['lock_until'], \false);
             $job->locked = $row['locked'] > 0;
             if (isset($row['callable'])) {
                 $job->callable = \json_decode($row['callable'], ARRAY_A);
@@ -193,20 +222,10 @@ class Query
      */
     public function readCurrentJobs($omitClientData = \false)
     {
-        global $wpdb;
-        $table_name = $this->getTableName();
+        $jobs = $this->read(['type' => 'pending-all', 'omitClientData' => $omitClientData, 'groupBy' => 'type']);
         $result = [];
-        // phpcs:disable WordPress.DB.PreparedSQL
-        $rows = $wpdb->get_results("SELECT * FROM {$table_name} WHERE process < process_total AND runs < retries + 1 GROUP BY type", ARRAY_A);
-        // phpcs:enable WordPress.DB.PreparedSQL
-        foreach ($rows as $row) {
-            $castRows = [$row];
-            $this->castRows($castRows);
-            $job = $castRows[0];
-            if ($omitClientData) {
-                $job->omitClientData();
-            }
-            $result[$row['type']] = $job;
+        foreach ($jobs as $job) {
+            $result[$job->type] = $job;
         }
         return $result;
     }

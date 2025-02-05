@@ -19,7 +19,7 @@ class FrmInbox extends FrmFormApi {
 	 */
 	private static $banner_messages;
 
-	public function __construct( $for_parent = null ) {
+	public function __construct() {
 		$this->set_cache_key();
 
 		if ( false === self::$messages ) {
@@ -205,16 +205,12 @@ class FrmInbox extends FrmFormApi {
 	 * @return bool
 	 */
 	private function is_for_user( $message ) {
-		if ( ! isset( $message['who'] ) || $message['who'] === 'all' ) {
+		if ( FrmApiHelper::is_for_user( $message ) ) {
 			return true;
 		}
+
 		$who = (array) $message['who'];
-		if ( in_array( 'all', $who, true ) || in_array( 'everyone', $who, true ) ) {
-			return true;
-		}
-		if ( in_array( $this->get_user_type(), $who, true ) ) {
-			return true;
-		}
+
 		/**
 		 * Allow for other special inbox cases in other add-ons.
 		 *
@@ -225,14 +221,6 @@ class FrmInbox extends FrmFormApi {
 		 * @param array $message
 		 */
 		return (bool) apply_filters( 'frm_inbox_message_is_for_user', false, $who, $message );
-	}
-
-	private function get_user_type() {
-		if ( ! FrmAppHelper::pro_is_installed() ) {
-			return 'free';
-		}
-
-		return FrmAddonsController::license_type();
 	}
 
 	/**
@@ -516,5 +504,16 @@ class FrmInbox extends FrmFormApi {
 			},
 			array()
 		);
+	}
+
+	/**
+	 * Clear the inbox cache by deleting the associated option from the database.
+	 *
+	 * @since 6.17
+	 *
+	 * @return void
+	 */
+	public static function clear_cache() {
+		delete_option( 'frm_inbox' );
 	}
 }

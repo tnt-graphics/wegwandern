@@ -41,7 +41,13 @@ class FrmProPageField {
 			'above_submit' => 'frm_before_submit_btn',
 		);
 
-		$atts = shortcode_atts( array( 'id' => false, 'form' => false ), $atts );
+		$atts = shortcode_atts(
+			array(
+				'id'   => false,
+				'form' => false,
+			),
+			$atts 
+		);
 		$form = $atts['form'];
 
 		if ( FrmAppHelper::is_admin_page( 'formidable-entries' ) ) {
@@ -59,7 +65,13 @@ class FrmProPageField {
 			return;
 		}
 
-		$show_progress = FrmForm::get_option( array( 'form' => $form, 'option' => 'rootline', 'default' => '' ) );
+		$show_progress = FrmForm::get_option(
+			array(
+				'form'    => $form,
+				'option'  => 'rootline',
+				'default' => '',
+			) 
+		);
 		if ( empty( $show_progress ) ) {
 			return;
 		}
@@ -142,10 +154,34 @@ class FrmProPageField {
 	 * @return void
 	 */
 	private static function show_progress( $args ) {
-		$hide_lines   = FrmForm::get_option( array( 'form' => $args['form'], 'option' => 'rootline_lines_off', 'default' => 0 ) );
-		$show_titles  = FrmForm::get_option( array( 'form' => $args['form'], 'option' => 'rootline_titles_on', 'default' => 0 ) );
-		$hide_numbers = FrmForm::get_option( array( 'form' => $args['form'], 'option' => 'rootline_numbers_off', 'default' => 0 ) );
-		$type         = FrmForm::get_option( array( 'form' => $args['form'], 'option' => 'rootline', 'default' => '' ) );
+		$hide_lines   = FrmForm::get_option(
+			array(
+				'form'    => $args['form'],
+				'option'  => 'rootline_lines_off',
+				'default' => 0,
+			) 
+		);
+		$show_titles  = FrmForm::get_option(
+			array(
+				'form'    => $args['form'],
+				'option'  => 'rootline_titles_on',
+				'default' => 0,
+			) 
+		);
+		$hide_numbers = FrmForm::get_option(
+			array(
+				'form'    => $args['form'],
+				'option'  => 'rootline_numbers_off',
+				'default' => 0,
+			) 
+		);
+		$type         = FrmForm::get_option(
+			array(
+				'form'    => $args['form'],
+				'option'  => 'rootline',
+				'default' => '',
+			) 
+		);
 
 		$title_atts = compact( 'show_titles', 'type' );
 

@@ -11,7 +11,7 @@ class FrmProDb {
 	/**
 	 * @since 3.0.02
 	 */
-	public static $plug_version = '6.14.1';
+	public static $plug_version = '6.17.2';
 
 	/**
 	 * @since 2.3
@@ -481,7 +481,14 @@ class FrmProDb {
 		if ( ! $times ) {
 			return;
 		}
-		$values = FrmDb::get_results( 'frm_item_metas', array( 'field_id' => $times, 'meta_value LIKE' => array( ' AM', ' PM' ) ), 'meta_value, id' );
+		$values = FrmDb::get_results(
+			'frm_item_metas',
+			array(
+				'field_id'        => $times,
+				'meta_value LIKE' => array( ' AM', ' PM' ),
+			),
+			'meta_value, id' 
+		);
 
 		global $wpdb;
 		foreach ( $values as $value ) {
@@ -553,13 +560,27 @@ class FrmProDb {
 		$child_form_id = $section_field->field_options['form_select'];
 
 		foreach ( $check_parents as $parent_id ) {
-			$all_child_ids = FrmDb::get_col( 'frm_items', array( 'form_id' => $child_form_id, 'parent_item_id' => $parent_id ), 'id' );
+			$all_child_ids = FrmDb::get_col(
+				'frm_items',
+				array(
+					'form_id'        => $child_form_id,
+					'parent_item_id' => $parent_id,
+				),
+				'id' 
+			);
 
 			if ( ! $all_child_ids ) {
 				continue;
 			}
 
-			$keep_child_ids = FrmDb::get_var( 'frm_item_metas', array( 'field_id' => $section_field->id, 'item_id' => $parent_id ), 'meta_value' );
+			$keep_child_ids = FrmDb::get_var(
+				'frm_item_metas',
+				array(
+					'field_id' => $section_field->id,
+					'item_id'  => $parent_id,
+				),
+				'meta_value' 
+			);
 			FrmProAppHelper::unserialize_or_decode( $keep_child_ids );
 
 			if ( ! is_array( $keep_child_ids ) ) {
@@ -737,7 +758,10 @@ class FrmProDb {
 			$shortcode = '[display-frm-data id=' . absint( $view->ID ) . ' filter=1]';
 			$post      = get_post( $post_id );
 			if ( $post ) {
-				$updated_post = array( 'ID' => $post_id, 'post_content' => $post->post_content );
+				$updated_post = array(
+					'ID'           => $post_id,
+					'post_content' => $post->post_content,
+				);
 				if ( $location === 'before' ) {
 					$updated_post['post_content'] = $shortcode . $updated_post['post_content'];
 				} else {
@@ -789,7 +813,13 @@ class FrmProDb {
 			$form_id  = $d->field_options['form_select'];
 			$new_name = $d->name;
 			if ( $form_id && is_numeric( $form_id ) ) {
-				FrmForm::update( $form_id, array( 'name' => $new_name, 'status' => 'published' ) );
+				FrmForm::update(
+					$form_id,
+					array(
+						'name'   => $new_name,
+						'status' => 'published',
+					) 
+				);
 			}
 		}
 	}
@@ -965,7 +995,13 @@ class FrmProDb {
 			if ( isset( $form_display[ $ep->form_id ] ) ) {
 				$display_posts[ $ep->post_id ] = $form_display[ $ep->form_id ];
 			} else {
-				$d                             = FrmProDisplay::get_auto_custom_display( array( 'post_id' => $ep->post_id, 'form_id' => $ep->form_id, 'entry_id' => $ep->id ) );
+				$d                             = FrmProDisplay::get_auto_custom_display(
+					array(
+						'post_id'  => $ep->post_id,
+						'form_id'  => $ep->form_id,
+						'entry_id' => $ep->id,
+					) 
+				);
 				$display_posts[ $ep->post_id ] = $d ? $d->ID : 0;
 				$form_display[ $ep->form_id ]  = $display_posts[ $ep->post_id ];
 				unset( $d );

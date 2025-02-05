@@ -72,7 +72,7 @@ class FrmProComboFieldsController {
 			$atts['sub_field']['atts']['disabled'] = 'disabled';
 		}
 
-		if ( isset( $atts['sub_field']['optional'] ) && $atts['sub_field']['optional'] ) {
+		if ( ! empty( $atts['sub_field']['optional'] ) ) {
 			add_filter( 'frm_field_classes', 'FrmProAddressesController::add_optional_class', 20, 2 );
 			do_action( 'frm_field_input_html', $atts['field'] );
 			remove_filter( 'frm_field_classes', 'FrmProAddressesController::add_optional_class', 20 );

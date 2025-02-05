@@ -172,6 +172,9 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 					$this->addCrumbs( $this->getPostParentCrumbs( $reference ) );
 					$this->addCrumbs( $this->getPostCrumb( $reference ) );
 					break;
+				case 'buddypress':
+					$this->addCrumbs( aioseo()->standalone->buddyPress->component->getCrumbs() );
+					break;
 			}
 
 			// Paged crumb.
@@ -363,7 +366,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 			$termHierarchy = $this->getTermHierarchy( $term->term_id, $term->taxonomy );
 			if ( ! empty( $termHierarchy ) ) {
 				foreach ( $termHierarchy as $parentTermId ) {
-					$parentTerm = get_term( $parentTermId, $term->taxonomy );
+					$parentTerm = aioseo()->helpers->getTerm( $parentTermId, $term->taxonomy );
 					$crumbs[]   = $this->getTermTaxonomyCrumb( $parentTerm, 'parent' );
 				}
 			}
@@ -429,7 +432,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 			$termHierarchy = $this->getPostTaxTermHierarchy( $post, $taxonomy );
 			if ( ! empty( $termHierarchy['terms'] ) ) {
 				foreach ( $termHierarchy['terms'] as $termId ) {
-					$term     = get_term( $termId, $termHierarchy['taxonomy'] );
+					$term     = aioseo()->helpers->getTerm( $termId, $termHierarchy['taxonomy'] );
 					$crumbs[] = $this->makeCrumb( $term->name, get_term_link( $term, $termHierarchy['taxonomy'] ), 'taxonomy', $term, 'parent' );
 				}
 			}
@@ -570,7 +573,10 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		public function getWooCommerceShopCrumb() {
 			$crumb = [];
 
-			if ( ! function_exists( 'wc_get_page_id' ) ) {
+			if (
+				! function_exists( 'wc_get_page_id' ) ||
+				apply_filters( 'aioseo_woocommerce_breadcrumb_hide_shop', false )
+			) {
 				return $crumb;
 			}
 

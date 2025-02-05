@@ -206,6 +206,15 @@ class FrmRegUserController {
 		$reg_action = FrmFormAction::get_action_for_form( $field->form_id, 'register' );
 		foreach ( $reg_action as $action ) {
 			$reg_usermeta = $action->post_content['reg_usermeta'];
+			if ( ! $reg_usermeta ) {
+				continue;
+			}
+
+			$child_form_id = isset( $action->post_content['child_form'] ) ? intval( $action->post_content['child_form'] ) : 0;
+			if ( $child_form_id !== intval( $field->form_id ) ) {
+				continue;
+			}
+
 			foreach ( $reg_usermeta as $usermeta ) {
 				if ( empty( $usermeta['meta_name'] ) || empty( $usermeta['field_id'] ) || $usermeta['field_id'] !== $field->id ) {
 					continue;

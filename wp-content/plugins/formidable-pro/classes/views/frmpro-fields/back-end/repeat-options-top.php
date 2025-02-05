@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <p>
+	<?php include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/collapsible-option.php'; ?>
 	<label for="field_options_format_<?php echo absint( $field['id'] ); ?>">
 		<?php esc_html_e( 'Repeat Layout', 'formidable-pro' ); ?>
 	</label>

@@ -106,4 +106,75 @@ class FrmRegAppController {
 		}
 		wp_enqueue_style( 'frm_reg_admin', FrmRegAppHelper::plugin_url() . '/css/frm-reg-admin.css', array(), FrmRegAppHelper::plugin_version() );
 	}
+
+	/**
+	 * Get class name to use from style used in the reg shortcode.
+	 *
+	 * @since 3.0.1
+	 *
+	 * @param array  $atts    The shortcode attributes.
+	 * @param string $key     The style option key.
+	 * @param string $default The default value.
+	 *
+	 * @return string
+	 */
+	public static function get_style_option( $atts, $key, $default ) {
+		if ( empty( $atts['class'] ) || false === strpos( $atts['class'], 'frm_style_' ) ) {
+			return $default;
+		}
+		$classes = explode( ' ', $atts['class'] );
+		foreach ( $classes as $class ) {
+			if ( false === strpos( $class, 'frm_style_' ) ) {
+				continue;
+			}
+			$style_name = str_replace( 'frm_style_', '', $class );
+			$style      = get_page_by_path( $style_name, OBJECT, 'frm_styles' );
+			if ( $style ) {
+				break;
+			}
+		}
+		if ( empty( $style ) ) {
+			return $default;
+		}
+		$style->post_content = FrmAppHelper::maybe_json_decode( $style->post_content );
+
+		$style_object        = new FrmStyle();
+		$style->post_content = $style_object->override_defaults( $style->post_content );
+		/**
+		 * @psalm-suppress InvalidPropertyAssignmentValue
+		 */
+		$style->post_content = wp_parse_args( $style->post_content, $style_object->get_defaults() );
+
+		if ( empty( $style->post_content[ $key ] ) ) {
+			return $default;
+		}
+		$style_value = $style->post_content[ $key ];
+		if ( 'position' !== $key ) {
+			return $style_value;
+		}
+
+		if ( 'none' === $style_value || 'inside' === $style_value ) {
+			$style_value = 'top';
+		} elseif ( 'no_label' === $style_value ) {
+			$style_value = 'none';
+		}
+		return $style_value;
+	}
+
+	/**
+	* Show a tooltip icon with the message passed.
+	*
+	* @since 3.0.1
+	*
+	* @param string $message The message to be displayed in the tooltip.
+	* @param array  $atts    The attributes to be added to the tooltip.
+	*
+	* @return void
+	*/
+	public static function show_svg_tooltip( $message, $atts = array() ) {
+		if ( ! is_callable( 'FrmAppHelper::tooltip_icon' ) ) {
+			return;
+		}
+		FrmAppHelper::tooltip_icon( $message, $atts );
+	}
 }

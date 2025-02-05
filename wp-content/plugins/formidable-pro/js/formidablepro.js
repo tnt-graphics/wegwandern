@@ -7,14 +7,16 @@ function frmProFormJS() {
 	/* globals frmCheckboxI18n */
 
 	'use strict';
-	var currentlyAddingRow = false;
-	var action = '';
-	var processesRunning = 0;
-	var lookupQueues = {};
-	var hiddenSubmitButtons = [];
-	var pendingDynamicFieldAjax = [];
-	var listWrappersOriginal = {};
-	var intlPhoneInputs = {};
+	let currentlyAddingRow = false;
+	let action = '';
+	let processesRunning = 0;
+	let lookupQueues = {};
+	let hiddenSubmitButtons = [];
+	let pendingDynamicFieldAjax = [];
+	let pendingLookupFieldAjax = [];
+	let listWrappersOriginal = {};
+	let intlPhoneInputs = {};
+	let autoId = 0;
 
 	function setNextPage( e ) {
 		var closestButton;
@@ -1937,6 +1939,23 @@ function frmProFormJS() {
 	}
 
 	/**
+	 * Changes dropdown placeholder option color.
+	 *
+	 * @since 6.16.1
+	 *
+	 * @param {HTMLElement} select
+	 *
+	 * @returns {Void}
+	 */
+	function changeSelectColor( select ) {
+		if ( select.options[select.selectedIndex]?.classList.contains( 'frm-select-placeholder' ) ) {
+			const styleElement = select.closest( '.with_frm_style' );
+			const textColorDisabled = styleElement ? getComputedStyle( styleElement ).getPropertyValue( '--text-color-disabled' ).trim() : '';
+			select.style.setProperty( 'color', textColorDisabled, 'important' );
+		}
+	}
+
+	/**
 	 * Clears value of field inputs.
 	 *
 	 * @since 5.4 Added the third param.
@@ -1988,6 +2007,13 @@ function frmProFormJS() {
 				if ( isSlimSelect( input ) ) {
 					setSlimValue( input, reset ? defaultVal : '' );
 				} else {
+					if ( ! reset && resetToDefault && input.getAttribute( 'data-placeholder' ) ) {
+						// When a dropdown has no default value, a placeholder option is added.
+						// We want to reset to that, as it works the same as an empty default value.
+						reset      = true;
+						defaultVal = '';
+					}
+
 					if ( ! reset ) {
 						blankSelect = input.selectedIndex === 0 && input.options[ 0 ].text.trim() === '';
 						if ( blankSelect || ( input.selectedIndex === -1 ) ) {
@@ -1999,8 +2025,8 @@ function frmProFormJS() {
 						valueChanged = resetSelectInputToValue( input, defaultVal );
 					}
 
-					var chosenId = input.id.replace( /[^\w]/g, '_' ); // match what the script is doing
-					var autocomplete = document.getElementById( chosenId + '_chosen' );
+					const chosenId     = input.id.replace( /[^\w]/g, '_' ); // Match what the script is doing.
+					const autocomplete = document.getElementById( chosenId + '_chosen' );
 					if ( autocomplete !== null ) {
 						jQuery( input ).trigger( 'chosen:updated' );
 					}
@@ -2347,10 +2373,25 @@ function frmProFormJS() {
 					}
 
 					if ( isSlimSelect( input ) ) {
+						// This is true even when no placeholder or default is set when autocomplete is enabled.
+						// So we need to check if the default value is an empty string and remove the hidden placeholder.
+						if ( '' === defaultValue ) {
+							maybeRemoveHiddenPlaceholder( input );
+						}
+
 						input.slim.setSelected( defaultValue );
+					} else if ( input.classList.contains( 'frm_chzn' ) ) {
+						if ( '' === defaultValue ) {
+							maybeRemoveHiddenPlaceholder( input );
+						}
+
+						jQuery( input ).val( defaultValue ).trigger( 'chosen:updated' );
 					} else {
 						input.value = defaultValue;
 					}
+				}
+				if ( 'SELECT' === input.tagName ) {
+					changeSelectColor( input );
 				}
 			}
 
@@ -2362,7 +2403,25 @@ function frmProFormJS() {
 			}
 
 			triggerChange( $input );
+		} else if ( 'SELECT' === input.tagName ) {
+			maybeRemoveHiddenPlaceholder( input );
 		}
+	}
+
+	/**
+	 * @since 6.16.2
+	 *
+	 * @param {HTMLElement} input A select element.
+	 * @return {boolean} True if the hidden placeholder is detected and removed.
+	 */
+	function maybeRemoveHiddenPlaceholder( input ) {
+		const hiddenPlaceholder = input.querySelector( 'option[value=""].frm_hidden.frm_hidden_placeholder' );
+		if ( ! hiddenPlaceholder ) {
+			return false;
+		}
+
+		hiddenPlaceholder.remove();
+		return true;
 	}
 
 	function isSlimSelect( input ) {
@@ -2559,6 +2618,81 @@ function frmProFormJS() {
 			addRepeatRow( childFieldArgs, childFieldElements[ i ].id );
 			updateSingleLookupField( childFieldArgs, childFieldElements[ i ]);
 		}
+
+		processPendingLookups();
+	}
+
+	/**
+	 * Go through the list of pending look ups and process them all.
+	 * These are done in batches of 20 at a time.
+	 *
+	 * @since 6.15
+	 *
+	 * @return {void}
+	 */
+	function processPendingLookups() {
+		const unprocessedPendingLookups = getUnprocessedPendingLookups();
+
+		if ( ! unprocessedPendingLookups.length ) {
+			return;
+		}
+
+		const formId = unprocessedPendingLookups[0].childFieldArgs.formId;
+
+		// We want to allow duplicate form ids (inside repeaters) here because the number of calls
+		// to enableFormAfterLookup matters for handling the processesRunning variable.
+		let allFormIds = [];
+
+		const batchSize = 20;
+		const batches   = Math.ceil( unprocessedPendingLookups.length / batchSize );
+		for ( let batchNumber = 0; batchNumber < batches; ++batchNumber ) {
+			const start = batchNumber * batchSize;
+			const end   = start + batchSize;
+
+			const currentBatch = unprocessedPendingLookups.slice( start, end );
+
+			currentBatch.forEach(
+				function( pendingLookup ) {
+					pendingLookup.pending = false;
+					allFormIds.push( pendingLookup.childFieldArgs.formId );
+				}
+			);
+
+			postToAjaxUrl(
+				getFormById( formId ),
+				{
+					action: 'frm_replace_lookup_field_options_arr',
+					postData: currentBatch.map( pendingLookup => pendingLookup.childFieldArgs ),
+					nonce: frm_js.nonce
+				},
+				function( newOptionsByFieldId ) {
+					allFormIds.forEach( enableFormAfterLookup );
+	
+					Object.entries( newOptionsByFieldId ).forEach( entry => {
+						const key        = entry[0];
+						const newOptions = entry[1];
+						unprocessedPendingLookups.forEach(
+							function( pendingLookup ) {
+								if ( pendingLookup.childFieldArgs.unique === parseInt( key ) ) {
+									pendingLookup.callback( newOptions );
+								}
+							}
+						);
+					});
+				},
+				false,
+				{
+					dataType: 'json'
+				}
+			);
+		}
+	}
+
+	/**
+	 * @return {Array}
+	 */
+	function getUnprocessedPendingLookups() {
+		return pendingLookupFieldAjax.filter( pendingLookup => pendingLookup.pending );
 	}
 
 	/**
@@ -3162,25 +3296,19 @@ function frmProFormJS() {
 	function getLookupValues( childFieldArgs, callback ) {
 		disableFormPreLookup( childFieldArgs.formId );
 
+		const pendingLookupArgs = {
+			formId: childFieldArgs.formId,
+			fieldId: childFieldArgs.fieldId,
+			parents: childFieldArgs.parents,
+			parentVals: childFieldArgs.parentVals,
+			unique: getAutoId()
+		};
 
-		postToAjaxUrl(
-			getFormById( childFieldArgs.formId ),
-			{
-				action: 'frm_replace_lookup_field_options',
-				parent_fields: childFieldArgs.parents,
-				parent_vals: childFieldArgs.parentVals,
-				field_id: childFieldArgs.fieldId,
-				nonce: frm_js.nonce
-			},
-			function( newOptions ) {
-				enableFormAfterLookup( childFieldArgs.formId );
-				callback( newOptions );
-			},
-			false,
-			{
-				dataType: 'json'
-			}
-		);
+		pendingLookupFieldAjax.push({ childFieldArgs: pendingLookupArgs, callback, pending: true });
+	}
+
+	function getAutoId() {
+		return autoId++;
 	}
 
 	/**
@@ -3999,15 +4127,20 @@ function frmProFormJS() {
 	}
 
 	function doSingleCalculation( allCalcs, fieldKey, vals, triggerField ) {
-		var currency, total, dec, updatedTotal,
+		var currency, total, dec, updatedTotal, totalField,
 			thisCalc = allCalcs.calc[ fieldKey ],
 			thisFullCalc = thisCalc.calc,
-			totalField = jQuery( document.getElementById( 'field_' + fieldKey ) ),
 			fieldInfo = {
 				triggerField: triggerField,
 				inSection: false,
 				thisFieldCall: 'input[id^="field_' + fieldKey + '-"]'
 			};
+
+		if ( typeof triggerField !== 'undefined' && triggerField && triggerField.length ) {
+			totalField = triggerField.closest( 'form' ).find( '#field_' + fieldKey );
+		} else {
+			totalField = jQuery( document.getElementById( 'field_' + fieldKey ) );
+		}
 
 		// exit early for sliders as there is no calculation for such types and avoid errors that might rise due to formatting the value
 		if ( totalField.attr( 'type' ) === 'range' ) {
@@ -4106,7 +4239,7 @@ function frmProFormJS() {
 		});
 
 		if ( triggerField === null || typeof triggerField === 'undefined' || totalField.attr( 'name' ) != triggerField.attr( 'name' ) ) {
-			triggerChange( totalField, fieldKey );
+			totalField.trigger({ type: 'change', selfTriggered: true, frmTriggered: fieldKey });
 		}
 
 		setDisplayedTotal( totalField, total, currency );
@@ -4536,7 +4669,11 @@ function frmProFormJS() {
 				return getOffScreenFieldForName( field );
 			}
 
-			calcField = jQuery( field.thisFieldCall );
+			if ( 'undefined' !== typeof field.triggerField && field.triggerField && field.triggerField.length ) {
+				calcField = field.triggerField.closest( 'form' ).find( field.thisFieldCall );
+			} else {
+				calcField = jQuery( field.thisFieldCall );
+			}
 			if ( ! calcField.length && -1 !== [ 'date', 'data' ].indexOf( field.thisField.type ) ) {
 				calcField = jQuery( field.thisField.key );
 				if ( ! calcField.length && 'data' === field.thisField.type ) {
@@ -5120,6 +5257,10 @@ function frmProFormJS() {
 			formId = jQuery( this ).closest( 'form' ).find( 'input[name="form_id"]' ).val();
 
 		thisRow.fadeOut( 'slow', function() {
+			const repeaterRow = thisRow[0].closest( '.frm_section_heading');
+			if ( repeaterRow.querySelectorAll( '.frm_repeat_sec, .frm_repeat_inline, .frm_repeat_grid' )?.length === 1 ) {
+				repeaterRow.querySelector( '.frm_hidden_container.frm_repeat_buttons.frm_hidden' ).style.display = 'inline-block';
+			}
 			thisRow.remove();
 
 			fields.each( function() {
@@ -5337,7 +5478,18 @@ function frmProFormJS() {
 			if ( r.html ) {
 				html = r.html;
 				item = jQuery( html ).addClass( 'frm-fade-in' );
-				thisBtn.parents( '.frm_section_heading' ).append( item );
+				const repeaterSection = thisBtn[0].closest( '.frm_section_heading' );
+				const toggleContainer = repeaterSection.querySelector( '.frm_toggle_container.frm_grid_container' );
+				if ( toggleContainer ) {
+					toggleContainer.append( item[0] );
+				} else {
+					repeaterSection.append( item[0] );
+				}
+				const repeatButtons = repeaterSection.querySelector( '.frm_hidden_container.frm_repeat_buttons.frm_hidden' );
+				if ( repeatButtons ) {
+					repeatButtons.style.display = 'none';
+				}
+
 				inputRanges = item[0].querySelectorAll( 'input[type=range]' );
 				for ( j = 0; j < inputRanges.length; j++ ) {
 					handleSliderEvent.call( inputRanges[j]);
@@ -5845,7 +5997,7 @@ function frmProFormJS() {
 
 				autocompleteInput.style.color = '';
 				new SlimSelect({
-					select: '#' + autocompleteInput.id,
+					select: autocompleteInput,
 					settings: {
 						placeholderText: '',
 						searchText: frm_js.no_results,
@@ -6014,18 +6166,36 @@ function frmProFormJS() {
 		}
 	}
 
+	function isPreviousSelectedStar( input ) {
+		return null !== input.getAttribute( 'data-frm-star-selected' );
+	}
+
 	function loadStars() {
+		if ( isPreviousSelectedStar( this ) ) {
+			clearStars( this.parentElement, false );
+			return;
+		}
 		/*jshint validthis:true */
-		updateStars( this );
+		updateStars( this, true );
 	}
 
 	function hoverStars() {
 		/*jshint validthis:true */
 		var input = this.previousSibling;
-		updateStars( input );
+		if ( input.checked || isPreviousSelectedStar( this ) ) {
+			// Do not need to update stars when hovering on the current checked star.
+			return;
+		}
+		updateStars( input, false );
 	}
 
-	function updateStars( hovered ) {
+	/**
+	 * Updates star rating.
+	 *
+	 * @param {HTMLElement} hovered Hovered or clicked input.
+	 * @param {Boolean}     onClick Is true if this update is on click, false if is on hover.
+	 */
+	function updateStars( hovered, onClick ) {
 		var starGroup = hovered.parentElement,
 			stars = starGroup.children,
 			current = parseInt( hovered.value ),
@@ -6043,7 +6213,17 @@ function frmProFormJS() {
 				}
 			} else {
 				selectLabel = ( parseInt( stars[ i ].value ) <= current );
+
+				if ( onClick ) {
+					// Remove selected attribute from all star inputs.
+					stars[ i ].removeAttribute( 'data-frm-star-selected' );
+				}
 			}
+		}
+
+		if ( onClick ) {
+			// Add selected class to clicked star input.
+			hovered.setAttribute( 'data-frm-star-selected', '' );
 		}
 	}
 
@@ -6092,6 +6272,7 @@ function frmProFormJS() {
 			input = starGroup.querySelector( 'input[type="radio"]:checked' );
 			if ( input ) {
 				input.checked = false;
+				input.removeAttribute( 'data-frm-star-selected' );
 			}
 		}
 	}
@@ -6194,7 +6375,12 @@ function frmProFormJS() {
 	}
 
 	function showForm() {
-		jQuery( '.frm_pro_form' ).fadeIn( 'slow' );
+		document.querySelectorAll( '.frm_pro_form' ).forEach(
+			form => {
+				jQuery( form ).fadeIn( 'slow' );
+				triggerEvent( form, 'frmProAfterFormFadeIn' );
+			}
+		);
 	}
 
 	function checkDynamicFields( event ) {
@@ -6366,15 +6552,31 @@ function frmProFormJS() {
 		}
 	}
 
+	/**
+	 * Set up 'Add Row' buttons that will show up when all repeated fields have been removed.
+	 * Do it this way while we await CSS4 selectors that can do sth like .frm_repeat_sec:first-of-class.
+	 *
+	 * @since 4.02.01
+	 * @return {void}
+	 */
 	function addTopAddRowBtnForRepeater() {
-		// Set up 'Add Row' buttons that will show up when all repeated fields have been removed.
-		// Do it this way while we await CSS4 selectors that can do sth like .frm_repeat_sec:first-of-class
 		jQuery( '.frm_section_heading:has(div[class*="frm_repeat_"])' ).each( function() {
-			var firstRepeatedSection = jQuery( this ).find( 'div[class*="frm_repeat_"]' ).first()[0];
-			var addButtonWrapper = document.createElement( 'div' );
+			const firstRepeatedSection = jQuery( this ).find( 'div[class*="frm_repeat_"]' ).first()[0];
+			const addButtonWrapper     = document.createElement( 'div' );
+
 			addButtonWrapper.classList.add( 'frm_form_field', 'frm_hidden_container', 'frm_repeat_buttons', 'frm_hidden' );
-			addButtonWrapper.append( firstRepeatedSection.querySelector( '.frm_add_form_row' ).cloneNode( true ) );
-			firstRepeatedSection.parentNode.insertBefore( addButtonWrapper, firstRepeatedSection );
+
+			const addButton = firstRepeatedSection.querySelector( '.frm_add_form_row' );
+			if ( addButton ) {
+				addButtonWrapper.append( addButton.cloneNode( true ) );
+			}
+
+			const buttonContainer = firstRepeatedSection.closest( '.frm_toggle_container.frm_grid_container' );
+			if ( buttonContainer ) {
+				buttonContainer.prepend( addButtonWrapper );
+			} else {
+				firstRepeatedSection.parentNode.insertBefore( addButtonWrapper, firstRepeatedSection )
+			}
 		});
 	}
 
@@ -6858,10 +7060,7 @@ function frmProFormJS() {
 				callback();
 				element.addEventListener( 'input', callback );
 
-				const isAndroid = 'userAgent' in navigator && navigator.userAgent.toLowerCase().indexOf( 'android' ) > -1;
-				// Avoid this resize callback on Android devices because it causes shaking issues.
-				// See issue #5349 for more information.
-				if ( ! isAndroid ) {
+				if ( shouldCallResizeCallback() ) {
 					window.addEventListener( 'resize', callback );
 				}
 
@@ -6869,6 +7068,23 @@ function frmProFormJS() {
 				element.setAttribute( 'frm-autogrow', 1 );
 			}
 		);
+	}
+
+	/**
+	 * Returns true if window resize callback should be called.
+	 *
+	 * Avoid this resize callback on Android and iPhone devices because it causes shaking issues. See issue #5349 for more information.
+	 *
+	 * @since 6.16.1
+	 *
+	 * @return {Boolean}
+	 */
+	function shouldCallResizeCallback() {
+		if ( ! ( 'userAgent' in navigator ) ) {
+			return true;
+		}
+		const userAgent = navigator.userAgent.toLowerCase();
+		return userAgent.indexOf( 'android' ) === -1 && userAgent.indexOf( 'iphone' ) === -1;
 	}
 
 	function getElementHeight( element ) {
@@ -6951,25 +7167,9 @@ function frmProFormJS() {
 	 * @param {Object}      data      Data to add to the event.
 	 */
 	function triggerEvent( element, eventType, data ) {
-		var event;
-
 		if ( 'function' === typeof frmFrontForm.triggerCustomEvent ) {
 			frmFrontForm.triggerCustomEvent( element, eventType, data );
-			return;
 		}
-
-		if ( typeof window.CustomEvent === 'function' ) {
-			event = new CustomEvent( eventType );
-		} else if ( document.createEvent ) {
-			event = document.createEvent( 'HTMLEvents' );
-			event.initEvent( eventType, false, true );
-		} else {
-			return;
-		}
-
-		event.frmData = data;
-
-		element.dispatchEvent( event );
 	}
 
 	/**
@@ -7015,6 +7215,8 @@ function frmProFormJS() {
 					items.forEach( function( item, index ) {
 						if ( index ) {
 							item.parentElement.removeChild( item );
+						} else {
+							item.querySelector( '.frm_add_form_row' ).classList.remove( 'frm_hide_add_button' );
 						}
 					});
 				}
@@ -7589,6 +7791,7 @@ function frmProFormJS() {
 			var intlTelInputInstance = window.intlTelInput( phoneInput, {
 				initialCountry: 'auto',
 				formatOnDisplay: false,
+				dropdownContainer: phoneInput.closest( '.frm_form_field' ),
 				geoIpLookup: function( callback ) {
 					if ( 'function' === typeof window.fetch ) {
 						fetch( 'https://ipapi.co/json' )
@@ -7945,6 +8148,27 @@ function frmProFormJS() {
 	};
 }
 var frmProForm = frmProFormJS();
+
+document.addEventListener(
+	'frmMaybeDelayFocus',
+	function( event ) {
+		if ( 'object' !== typeof event.frmData || 'undefined' === typeof event.frmData.input ) {
+			return;
+		}
+
+		const input = event.frmData.input;
+
+		// Possibly delay focus.
+		const form = input.closest( 'form' );
+		if ( form ) {
+			const focusHandler = () => {
+				input.focus();
+				form.removeEventListener( 'frmProAfterFormFadeIn', focusHandler );
+			};
+			form.addEventListener( 'frmProAfterFormFadeIn', focusHandler );
+		}
+	}
+);
 
 jQuery( document ).ready( function() {
 	frmProForm.init();

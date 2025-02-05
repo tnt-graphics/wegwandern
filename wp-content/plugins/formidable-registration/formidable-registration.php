@@ -5,7 +5,7 @@ Plugin URI: https://formidableforms.com/knowledgebase/user-registration/
 Description: Register users through a Formidable form
 Author: Strategy11
 Author URI: https://formidableforms.com/
-Version: 2.13
+Version: 3.0.1
 Text Domain: frmreg
 */
 
@@ -39,4 +39,4 @@ function frmreg_forms_autoloader( $class_name ) {
 spl_autoload_register( 'frmreg_forms_autoloader' );
 
 add_action( 'plugins_loaded', 'FrmRegHooksController::load_hooks' );
-add_action( 'plugins_loaded', 'FrmRegAppController::load_lang' );
+add_action( 'init', 'FrmRegAppController::load_lang', 0 );

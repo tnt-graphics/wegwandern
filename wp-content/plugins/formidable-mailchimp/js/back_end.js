@@ -95,6 +95,24 @@ function frmMlcmpBackEnd(){
         });
     }
 
+    function handleClickEvent( event ) {
+        if ( event.target.classList.contains( 'frm_clear_mailchimp_cache' ) ) {
+            event.preventDefault();
+            clearMailChimpCache( event.target );
+        }
+
+        function clearMailChimpCache( clearCacheButton ) {
+            const spinner = clearCacheButton.parentNode.querySelector( '.frm_clear_mailchimp_cache_spinner' );
+            spinner.style.visibility = 'visible';
+            const formData  = new FormData();
+            formData.append( '_ajax_nonce', frmMlcmpGlobal.nonce );
+            frmDom.ajax.doJsonPost( 'clear_mailchimp_lists_field_cache', formData )
+            .then( () => {
+                location.reload();
+            });
+        }
+    }
+
     return{
         init: function(){
             if ( document.getElementById('frm_notification_settings') !== null ) {
@@ -111,6 +129,7 @@ function frmMlcmpBackEnd(){
             $formActions.on('change', '.frm_single_mailchimp_settings select[name$="[list_id]"]', frmMlcmpFields);
             $formActions.on('change', 'select.frm_mlcmp_group', frmMlcmpGetFieldGrpValues);
 			$formActions.on( 'change', 'select.frm_mlcmp_gdpr', getGdprValues );
+            document.addEventListener( 'click', handleClickEvent );
         }
     };
 }

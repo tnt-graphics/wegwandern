@@ -5,7 +5,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 // TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'On Color', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_toggle_on_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'On Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -21,7 +25,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Off Color', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_toggle_off_color"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Off Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -37,7 +45,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Font Size', 'formidable-pro' ); ?></label>
+		<label 
+			for="frm_toggle_font_size"
+			class="frm-style-item-heading">
+			<?php esc_html_e( 'Font Size', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php

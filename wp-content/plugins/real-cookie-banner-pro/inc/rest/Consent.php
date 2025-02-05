@@ -7,6 +7,7 @@ use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Service;
 use DevOwl\RealCookieBanner\base\UtilsProvider;
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\Clear;
+use DevOwl\RealCookieBanner\comp\migration\DbConsentV2;
 use DevOwl\RealCookieBanner\IpHandler;
 use DevOwl\RealCookieBanner\MyConsent;
 use DevOwl\RealCookieBanner\UserConsent;
@@ -42,12 +43,12 @@ class Consent
             return empty($param) ? \true : \strtotime($param) > 0;
         }], 'to' => ['type' => 'string', 'validate_callback' => function ($param) {
             return empty($param) ? \true : \strtotime($param) > 0;
-        }], 'context' => ['type' => 'string', 'default' => '']]]);
+        }], 'context' => ['type' => 'string', 'default' => ''], 'migration' => ['type' => 'string']]]);
         \register_rest_route($namespace, '/consent/referer', ['methods' => 'GET', 'callback' => [$this, 'routeGetAllReferer'], 'permission_callback' => [$this, 'permission_callback']]);
         \register_rest_route($namespace, '/consent/all', ['methods' => 'DELETE', 'callback' => [$this, 'routeDeleteAll'], 'permission_callback' => [$this, 'permission_callback']]);
         \register_rest_route($namespace, '/consent/clear', ['methods' => 'DELETE', 'callback' => [$this, 'routeDeleteClear'], 'permission_callback' => '__return_true', 'args' => ['cookies' => ['type' => 'string', 'required' => \true]]]);
         \register_rest_route($namespace, '/consent', ['methods' => 'GET', 'callback' => [$this, 'routeGet'], 'permission_callback' => '__return_true']);
-        \register_rest_route($namespace, '/consent/dynamic-predecision', ['methods' => 'POST', 'callback' => [$this, 'routePostDynamicPredecision'], 'args' => ['viewPortWidth' => ['type' => 'number', 'default' => 0], 'viewPortHeight' => ['type' => 'number', 'default' => 0], 'referer' => ['type' => 'string']], 'permission_callback' => '__return_true']);
+        \register_rest_route($namespace, '/consent/dynamic-predecision', ['methods' => 'POST', 'callback' => [$this, 'routePostDynamicPredecision'], 'args' => ['viewPortWidth' => ['type' => 'number', 'default' => 0], 'viewPortHeight' => ['type' => 'number', 'default' => 0], 'referer' => ['type' => 'string'], 'tcfStringImplicitEssentials' => ['type' => 'string']], 'permission_callback' => '__return_true']);
         \register_rest_route($namespace, '/consent', ['methods' => 'POST', 'callback' => [$this, 'routePost'], 'permission_callback' => '__return_true', 'args' => [
             'dummy' => ['type' => 'boolean', 'default' => \false],
             'markAsDoNotTrack' => ['type' => 'boolean', 'default' => \false],
@@ -90,6 +91,7 @@ class Consent
      * @apiParam {string} [from] From date in format YYYY-MM-DD
      * @apiParam {string} [to] From date in format YYYY-MM-DD
      * @apiParam {string} [context]
+     * @apiParam {string} [migration] Allows to start a migration process (e.g. when switching from RCB v4 to v5)
      * @apiName GetAll
      * @apiGroup Consent
      * @apiVersion 1.0.0
@@ -108,6 +110,10 @@ class Consent
         $from = $request->get_param('from');
         $to = $request->get_param('to');
         $context = $request->get_param('context');
+        $migration = $request->get_param('migration');
+        if ($migration === DbConsentV2::REAL_QUEUE_TYPE) {
+            (new DbConsentV2())->probablyCreateJob();
+        }
         $args = ['offset' => $limitOffset, 'perPage' => $perPage, 'uuid' => $uuid, 'ip' => $ip, 'pure_referer' => $referer, 'context' => $context];
         if (!empty($from)) {
             $args['from'] = $from . ' 00:00:00';
@@ -197,6 +203,7 @@ class Consent
      * @api {post} /real-cookie-banner/v1/consent/dynamic-predecision Calculate a dynamic predecision for the current page request
      * @apiParam {number} [viewPortWidth=0]
      * @apiParam {number} [viewPortHeight=0]
+     * @apiParam {string} [tcfStringImplicitEssentials]
      * @apiName CalculateDynamicPredecision
      * @apiGroup Consent
      * @apiVersion 1.0.0

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Formidable Mailchimp
 Description: Add new Mailchimp contacts from your Formidable forms
-Version: 2.08
+Version: 2.09
 Plugin URI: https://formidableforms.com/
 Author URI: https://formidableforms.com/
 Author: Strategy11

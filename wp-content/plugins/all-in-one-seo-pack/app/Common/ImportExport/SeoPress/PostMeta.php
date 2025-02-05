@@ -76,6 +76,7 @@ class PostMeta {
 			->whereRaw( "pm.meta_key LIKE '_seopress_%'" )
 			->whereRaw( "( p.post_type IN ( '$publicPostTypes' ) )" )
 			->whereRaw( "( ap.post_id IS NULL OR ap.updated < '$timeStarted' )" )
+			->groupBy( 'p.ID' )
 			->orderBy( 'p.ID DESC' )
 			->limit( $postsPerAction )
 			->run()
@@ -136,7 +137,19 @@ class PostMeta {
 	 * @return array           The meta data.
 	 */
 	public function getMetaData( $postMeta, $postId ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
-		$meta = [];
+		$meta = [
+			'robots_default'      => true,
+			'robots_noarchive'    => false,
+			'canonical_url'       => '',
+			'robots_nofollow'     => false,
+			'robots_noimageindex' => false,
+			'robots_noindex'      => false,
+			'robots_noodp'        => false,
+			'robots_nosnippet'    => false,
+			'twitter_use_og'      => aioseo()->options->social->twitter->general->useOgData,
+			'twitter_title'       => '',
+			'twitter_description' => ''
+		];
 		foreach ( $postMeta as $record ) {
 			$name  = $record->meta_key;
 			$value = $record->meta_value;
@@ -166,17 +179,22 @@ class PostMeta {
 				case '_seopress_robots_follow':
 				case '_seopress_robots_index':
 					if ( 'yes' === $value ) {
-						$meta['robots_default']       = false;
+						$meta['robots_default']             = false;
 						$meta[ $this->mappedMeta[ $name ] ] = true;
 					}
 					break;
 				case '_seopress_social_twitter_img':
-					$meta['twitter_use_og']       = false;
-					$meta['twitter_image_type']   = 'custom_image';
+					$meta['twitter_use_og']             = false;
+					$meta['twitter_image_type']         = 'custom_image';
 					$meta[ $this->mappedMeta[ $name ] ] = esc_url( $value );
 					break;
+				case '_seopress_social_twitter_desc':
+				case '_seopress_social_twitter_title':
+					$meta['twitter_use_og']             = false;
+					$meta[ $this->mappedMeta[ $name ] ] = esc_html( wp_strip_all_tags( strval( $value ) ) );
+					break;
 				case '_seopress_social_fb_img':
-					$meta['og_image_type']        = 'custom_image';
+					$meta['og_image_type']              = 'custom_image';
 					$meta[ $this->mappedMeta[ $name ] ] = esc_url( $value );
 					break;
 				case '_seopress_robots_primary_cat':

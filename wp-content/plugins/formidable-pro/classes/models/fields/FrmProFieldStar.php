@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FrmProFieldStar extends FrmFieldType {
 
+	const MAX_STARS = 10;
+
 	/**
 	 * @var string
 	 * @since 3.0
@@ -161,6 +163,19 @@ class FrmProFieldStar extends FrmFieldType {
 			$max = false !== $max_setting ? $max_setting : 5;
 		}
 
+		/**
+		 * Filter the maximum number of stars that can be displayed.
+		 *
+		 * @since 6.17
+		 *
+		 * @param int   $max_stars The maximum number of stars.
+		 * @param int   $max       The maximum number of stars based on the field options.
+		 * @param array $field     The field array.
+		 */
+		$max_limit = apply_filters( 'frm_pro_max_star_rating', static::MAX_STARS, $max, $this->field );
+		if ( $max > $max_limit ) {
+			return $max_limit;
+		}
 		return $max;
 	}
 

@@ -6,6 +6,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\CookieConsentM
 use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\frontend\Frontend;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\services\Service;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\Utils;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\templates\ServiceTemplate;
 /**
  * A consent holds all information of a single given consent. In other words, it allows
  * to parse the current consent which is written in the current cookie and additionally,
@@ -107,7 +108,7 @@ class Consent
         $settings = $this->getCookieConsentManagement()->getSettings();
         $general = $settings->getGeneral();
         if (!$general->isBannerActive()) {
-            return ['cookie' => null, 'consentGiven' => \false, 'cookieOptIn' => \true];
+            return ['cookie' => null, 'consentGiven' => \true, 'cookieOptIn' => \true];
         }
         // Find matching cookie
         $found = [];
@@ -123,6 +124,10 @@ class Consent
         foreach ($allServices as $service) {
             if (\is_int($typeOrId)) {
                 if ($service->getId() === $typeOrId) {
+                    $found[] = ['cookie' => $service, 'relevance' => 10];
+                }
+            } elseif (\is_string($typeOrId) && $name === null && $host === null) {
+                if ($service->getUniqueName() === $typeOrId) {
                     $found[] = ['cookie' => $service, 'relevance' => 10];
                 }
             } else {
@@ -160,7 +165,7 @@ class Consent
                 return ['cookie' => $relevantCookie, 'consentGiven' => \false, 'cookieOptIn' => \false];
             }
         } else {
-            return ['cookie' => null, 'consentGiven' => !$hasConsent, 'cookieOptIn' => \true];
+            return ['cookie' => null, 'consentGiven' => $hasConsent, 'cookieOptIn' => \true];
         }
     }
     /**
@@ -313,7 +318,7 @@ class Consent
     /**
      * Validate a passed decision or create a decision.
      *
-     * @param array|string $consent A decision array, `all` or `essentials` which creates a decision array of all available services
+     * @param array|string $consent A decision array, `all`, `essentials`, `legitimateInterest` which creates a decision array of all available services
      * @return array
      */
     public function sanitizeDecision($consent)
@@ -338,9 +343,12 @@ class Consent
                 if ($consent === 'essentials' && !$group->isEssential()) {
                     continue;
                 }
-                $result[$group->getId()] = \array_map(function ($service) {
+                $result[$group->getId()] = \array_values(\array_filter(\array_map(function ($service) use($consent, $group) {
+                    if ($consent === 'legitimateInterest') {
+                        return $service->getLegalBasis() !== ServiceTemplate::LEGAL_BASIS_CONSENT || $group->isEssential() ? $service->getId() : null;
+                    }
                     return $service->getId();
-                }, $group->getItems());
+                }, $group->getItems())));
             }
             return $result;
         }

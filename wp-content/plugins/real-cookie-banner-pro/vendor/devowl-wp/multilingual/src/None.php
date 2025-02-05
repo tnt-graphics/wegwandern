@@ -30,7 +30,10 @@ class None extends AbstractLanguagePlugin
     // Documented in AbstractLanguagePlugin
     public function getTranslatedName($locale)
     {
-        return $locale;
+        require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+        $translations = \wp_get_available_translations();
+        $activeTranslation = $translations[$locale] ?? null;
+        return $locale === 'en_US' ? 'English (United States)' : ($activeTranslation === null ? $locale : $activeTranslation['native_name']);
     }
     // Documented in AbstractLanguagePlugin
     public function getCountryFlag($locale)
@@ -98,7 +101,7 @@ class None extends AbstractLanguagePlugin
         // Silence is golden.
     }
     // Documented in AbstractOutputBufferPlugin
-    public function maybePersistTranslation($sourceContent, $content, $source, $locale)
+    public function maybePersistTranslation($sourceContent, $content, $source, $locale, $force = \false)
     {
         // Silence is golden.
     }
@@ -111,5 +114,10 @@ class None extends AbstractLanguagePlugin
     public function translateStrings(&$content, $locale, $context = null)
     {
         return $content;
+    }
+    // Documented in AbstractLanguagePlugin
+    public function translatableStrings($content)
+    {
+        return [];
     }
 }

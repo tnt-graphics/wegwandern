@@ -103,7 +103,7 @@ class FrmAddon {
 	}
 
 	/**
-	 * Updates information on the "View version x.x details" page with custom data.
+	 * Updates information on the "View version 6.15 details" page with custom data.
 	 *
 	 * @uses api_request()
 	 *
@@ -329,6 +329,9 @@ class FrmAddon {
 		$api->reset_cached();
 
 		$api = new FrmApplicationApi( $this->license );
+		$api->reset_cached();
+
+		$api = new FrmSalesApi();
 		$api->reset_cached();
 	}
 
@@ -608,6 +611,8 @@ class FrmAddon {
 		$plugin_slug = FrmAppHelper::get_param( 'plugin', '', 'post', 'sanitize_text_field' );
 		$response    = self::activate_license_for_plugin( $license, $plugin_slug );
 
+		FrmInbox::clear_cache();
+
 		wp_send_json( $response );
 	}
 
@@ -760,6 +765,7 @@ class FrmAddon {
 		}
 
 		$this_plugin->clear_license();
+		FrmInbox::clear_cache();
 
 		wp_send_json( $response );
 	}

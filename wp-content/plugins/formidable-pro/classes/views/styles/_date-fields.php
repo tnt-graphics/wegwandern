@@ -48,7 +48,11 @@ if ( ! $is_default ) {
 if ( class_exists( 'FrmStyleComponent' ) ) :
 	?>
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Head Color', 'formidable-pro' ); ?></label>
+		<label
+			class="frm-style-item-heading"
+			for="frm_date_head_bg_color">
+			<?php esc_html_e( 'Head Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -64,7 +68,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) :
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Font Color', 'formidable-pro' ); ?></label>
+		<label
+			class="frm-style-item-heading"
+			for="frm_date_head_color">
+			<?php esc_html_e( 'Font Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php
@@ -80,7 +88,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) :
 	</div>
 
 	<div class="frm5 frm_form_field">
-		<label class="frm-style-item-heading"><?php esc_html_e( 'Band Color', 'formidable-pro' ); ?></label>
+		<label
+			class="frm-style-item-heading"
+			for="frm_date_band_color">
+			<?php esc_html_e( 'Band Color', 'formidable-pro' ); ?>
+		</label>
 	</div>
 	<div class="frm7 frm_form_field">
 		<?php

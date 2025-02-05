@@ -24,7 +24,7 @@
 					<p><?php echo FrmAppHelper::kses( $form->get_description(), 'all' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 				</div>
 
-				<div class="frm_form_field form-field frm_top_container">
+				<div class="frm_form_field form-field <?php echo esc_attr( $this->label_class ); ?>">
 					<label for="<?php echo esc_attr( $form->get_field_id() ); ?>" class="frm_primary_label"><?php esc_html_e( 'Username or Email Address', 'frmreg' ); ?>
 						<span class="frm_required">*</span>
 					</label>

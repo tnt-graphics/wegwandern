@@ -29,17 +29,36 @@ class NegatePlugin extends AbstractPlugin
     {
         if ($result->isBlocked()) {
             $headlessContentBlocker = $this->getHeadlessContentBlocker();
-            $negateRules = $headlessContentBlocker->getBlockableRulesStartingWith(self::PREFIX, \true, $result->getBlocked());
-            if (\count($negateRules) > 0) {
-                // Simulate a negate blockable and search for results in the processed original match
-                $contentBlocker = new HeadlessContentBlocker();
-                $contentBlocker->setBlockables([new NegateBlockable($contentBlocker, $negateRules)]);
-                $contentBlocker->setup();
-                $processed = $contentBlocker->modifyHtml($match->getOriginalMatch());
-                if (\strpos($processed, \sprintf('%s="%s"', Constants::HTML_ATTRIBUTE_BY, NegateBlockable::CRITERIA)) !== \false) {
-                    $result->disableBlocking();
-                    $result->setData(BlockableScanner::BLOCKED_RESULT_DATA_KEY_IGNORE_IN_SCANNER, \true);
-                    $match->setAttribute(Constants::HTML_ATTRIBUTE_NEGATE, \true);
+            // Get all selector syntax map strings starting with `!`
+            $negateSelectorSyntaxMap = \array_values(\array_filter($headlessContentBlocker->getSelectorSyntaxMap(), function ($item) {
+                return Utils::startsWith($item, '!');
+            }));
+            $negateSelectorSyntaxMap = \array_map(function ($item) {
+                return new NegateBlockable($this->getHeadlessContentBlocker(), [\substr($item, 1)]);
+            }, $negateSelectorSyntaxMap);
+            foreach ($result->getBlocked() as $blocked) {
+                $negateRules = $headlessContentBlocker->getBlockableRulesStartingWith(self::PREFIX, \true, [$blocked]);
+                if (\count($negateRules) > 0 || \count($negateSelectorSyntaxMap) > 0) {
+                    // Simulate a negate blockable and search for results in the processed original match
+                    $contentBlocker = new HeadlessContentBlocker();
+                    if (\count($negateRules) > 0) {
+                        $contentBlocker->addBlockables([new NegateBlockable($contentBlocker, $negateRules)]);
+                    }
+                    if (\count($negateSelectorSyntaxMap) > 0) {
+                        $contentBlocker->addBlockables($negateSelectorSyntaxMap);
+                    }
+                    $contentBlocker->setup();
+                    $processed = $contentBlocker->modifyHtml($match->getOriginalMatch());
+                    if (\strpos($processed, \sprintf('%s="%s"', Constants::HTML_ATTRIBUTE_BY, NegateBlockable::CRITERIA)) !== \false) {
+                        $diff = \array_values(\array_filter($result->getBlocked(), function ($item) use($blocked) {
+                            return $item !== $blocked;
+                        }));
+                        $result->setBlocked($diff);
+                        if (!$result->isBlocked()) {
+                            $result->setData(BlockableScanner::BLOCKED_RESULT_DATA_KEY_IGNORE_IN_SCANNER, \true);
+                        }
+                        $match->setAttribute(Constants::HTML_ATTRIBUTE_NEGATE, \true);
+                    }
                 }
             }
         }

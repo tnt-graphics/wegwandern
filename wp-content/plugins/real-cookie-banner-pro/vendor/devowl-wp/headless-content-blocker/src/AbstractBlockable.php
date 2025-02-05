@@ -3,6 +3,7 @@
 namespace DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker;
 
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\AbstractMatch;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\SelectorSyntaxMatch;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\SelectorSyntaxAttributeFunctionVariableResolver;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\SelectorSyntaxFinder;
 /**
@@ -17,6 +18,7 @@ abstract class AbstractBlockable implements SelectorSyntaxAttributeFunctionVaria
      * @var SelectorSyntaxFinder[]
      */
     private $selectorSyntaxFinder = [];
+    private $expressionToStrposCache = null;
     private $regexp = ['wildcard' => [], 'contains' => []];
     private $headlessContentBlocker;
     /**
@@ -48,9 +50,11 @@ abstract class AbstractBlockable implements SelectorSyntaxAttributeFunctionVaria
      */
     public function appendFromStringArray($blockers)
     {
+        // @codeCoverageIgnoreStart
         if (!\is_array($blockers)) {
             return;
         }
+        // @codeCoverageIgnoreEnd
         // Filter out custom element expressions and variables
         foreach ($blockers as $idx => &$line) {
             $line = $this->headlessContentBlocker->runBlockableStringExpressionCallback($line, $this);
@@ -81,6 +85,38 @@ abstract class AbstractBlockable implements SelectorSyntaxAttributeFunctionVaria
         foreach ($blockers as $host) {
             $this->regexp['contains'][$host] = Utils::createRegexpPatternFromWildcardName('*' . $host . '*');
         }
+        $this->expressionToStrposCache = null;
+    }
+    /**
+     * It is a performance-boost to extract the searchable strings for this expression, so we can first check for simple `contains` pattern
+     * with `strpos` instead of expensive `preg_match`.
+     *
+     * @param string $expression
+     * @param string $str
+     */
+    public function matchesExpressionLoose($expression, $str)
+    {
+        if ($this->expressionToStrposCache === null) {
+            $this->expressionToStrposCache = [];
+            foreach (\array_keys($this->regexp['wildcard']) as $originalExpression) {
+                if (\preg_match_all('/([^\\*]{1,})/m', $originalExpression, $expressionStrposMatch, \PREG_SET_ORDER, 0) && \count($expressionStrposMatch) > 0) {
+                    $this->expressionToStrposCache[$originalExpression] = \array_column($expressionStrposMatch, 1);
+                } else {
+                    // @codeCoverageIgnoreStart
+                    $this->expressionToStrposCache[$originalExpression] = \false;
+                    // @codeCoverageIgnoreEnd
+                }
+            }
+        }
+        $expressionStrpos = $this->expressionToStrposCache[$expression] ?? \false;
+        if ($expressionStrpos) {
+            foreach ($expressionStrpos as $expressionStrposSingle) {
+                if (\strpos($str, $expressionStrposSingle) === \false) {
+                    return \false;
+                }
+            }
+        }
+        return \true;
     }
     /**
      * Find a `SyntaxSelectorFinder` for a given `AbstractMatch`.
@@ -90,10 +126,26 @@ abstract class AbstractBlockable implements SelectorSyntaxAttributeFunctionVaria
     public function findSelectorSyntaxFinderForMatch($match)
     {
         foreach ($this->getSelectorSyntaxFinder() as $selectorSyntaxFinder) {
-            if ($selectorSyntaxFinder->getTag() === $match->getTag()) {
-                if ($selectorSyntaxFinder->matchesAttributes($selectorSyntaxFinder->getAttributes(), $match)) {
-                    return $selectorSyntaxFinder;
-                }
+            /**
+             * The match to use
+             *
+             * @var SelectorSyntaxMatch
+             */
+            $useMatch = null;
+            // With the introduction of `findPotentialSelectorSyntaxFindersForMatch`, we have no test covering this
+            // case but we need it for backward compatibility.
+            // @codeCoverageIgnoreStart
+            if ($match instanceof SelectorSyntaxMatch) {
+                $useMatch = $match;
+            } elseif (\count($match->getAttributes()) > 0) {
+                $useMatch = new SelectorSyntaxMatch($selectorSyntaxFinder, $match->getOriginalMatch(), $match->getTag(), $match->getAttributes(), \array_keys($match->getAttributes())[0]);
+            } else {
+                // It can never `matchesAttributes` as we do not have any attribute
+                return null;
+            }
+            // @codeCoverageIgnoreEnd
+            if ($selectorSyntaxFinder->matchesAttributesLoose($useMatch->getOriginalMatch()) && $selectorSyntaxFinder->matchesAttributes($useMatch->getAttributes(), $useMatch)) {
+                return $selectorSyntaxFinder;
             }
         }
         return null;
@@ -102,7 +154,7 @@ abstract class AbstractBlockable implements SelectorSyntaxAttributeFunctionVaria
      * Get the blocker ID. This is added as a custom HTML attribute to the blocked
      * element so your frontend can e.g. add a visual content blocker.
      *
-     * @return int|null
+     * @return int|string|null
      */
     public abstract function getBlockerId();
     /**
@@ -165,10 +217,12 @@ abstract class AbstractBlockable implements SelectorSyntaxAttributeFunctionVaria
         return $this->originalExpressions;
     }
     // Documented in SelectorSyntaxAttributeFunctionVariableResolver
+    // @codeCoverageIgnoreStart
     public function getVariables()
     {
         return $this->variables;
     }
+    // @codeCoverageIgnoreEnd
     // Documented in SelectorSyntaxAttributeFunctionVariableResolver
     public function getVariable($variableName, $default = '')
     {

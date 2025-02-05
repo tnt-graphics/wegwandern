@@ -221,6 +221,17 @@
 				);
 				details.appendChild( getBasicList( data.found.page ) );
 			}
+
+			// Recenter modal.
+			jQuery( document.getElementById( 'frm_view_application_modal' ) ).dialog(
+				'option',
+				'position',
+				{
+					my: 'center',
+					at: 'center',
+					of: window
+				}
+			);
 		}
 	}
 
@@ -437,7 +448,7 @@
 		if ( frmProApplicationsVars.canAddApplications ) {
 			const deleteTrigger = card.querySelector( '.frm-delete-application-trigger' );
 			// If the card is clicked, and it isn't the delete trigger, trigger the link in the title to view the application.
-			card.addEventListener( 'click', event => event.target !== deleteTrigger && card.querySelector( 'h4 a' ).click() );
+			card.addEventListener( 'click', event => event.target !== deleteTrigger && card.querySelector( 'h3 a' ).click() );
 
 			deleteTrigger.addEventListener( 'mouseenter', removeCardHighlight );
 			deleteTrigger.addEventListener( 'mouseleave', highlightCard );

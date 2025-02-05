@@ -98,7 +98,14 @@ class FrmProPost {
 		$dyn_content = '';
 		self::post_value_overrides( $post, $new_post, $editing, $form, $entry, $dyn_content );
 
-		$post = apply_filters( 'frm_before_create_post', $post, array( 'form' => $form, 'entry' => $entry ) );
+		$post = apply_filters(
+			'frm_before_create_post',
+			$post,
+			array(
+				'form'  => $form,
+				'entry' => $entry,
+			) 
+		);
 
 		$post_ID = wp_insert_post( $post );
 
@@ -512,7 +519,10 @@ class FrmProPost {
 				if ( is_array( $media_id ) ) {
 					$attach_string = array_filter( $media_id );
 					if ( ! empty( $attach_string ) ) {
-						$where = array( 'post_type' => 'attachment', 'ID' => $attach_string );
+						$where = array(
+							'post_type' => 'attachment',
+							'ID'        => $attach_string,
+						);
 						FrmDb::get_where_clause_and_values( $where );
 						array_unshift( $where['values'], $post_ID );
 
@@ -526,7 +536,14 @@ class FrmProPost {
 						}
 					}
 				} else {
-					$wpdb->update( $wpdb->posts, array( 'post_parent' => $post_ID ), array( 'ID' => $media_id, 'post_type' => 'attachment' ) );
+					$wpdb->update(
+						$wpdb->posts,
+						array( 'post_parent' => $post_ID ),
+						array(
+							'ID'        => $media_id,
+							'post_type' => 'attachment',
+						) 
+					);
 					delete_post_meta( $media_id, '_frm_file' );
 					clean_attachment_cache( $media_id );
 				}
@@ -710,7 +727,10 @@ class FrmProPost {
 		self::get_post_field_ids_from_settings( $filtered_settings, $field_ids );
 
 		if ( ! empty( $field_ids ) ) {
-			$where = array( 'item_id' => $entry->id, 'field_id' => $field_ids );
+			$where = array(
+				'item_id'  => $entry->id,
+				'field_id' => $field_ids,
+			);
 			FrmDb::get_where_clause_and_values( $where );
 
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared

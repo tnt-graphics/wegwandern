@@ -10,7 +10,14 @@ $item_form_id = 0;
 
 // fetch 20 posts at a time rather than loading the entire table into memory
 while ( $next_set = array_splice( $item_ids, 0, 20 ) ) {
-$entries = FrmDb::get_results( 'frm_items', array( 'or' => 1, 'id' => $next_set, 'parent_item_id' => $next_set ) );
+$entries = FrmDb::get_results(
+	'frm_items',
+    array(
+		'or'             => 1,
+		'id'             => $next_set,
+		'parent_item_id' => $next_set,
+	)
+);
 
 // Begin Loop
 foreach ( $entries as $entry ) {

@@ -19,9 +19,9 @@ class FrmRegAvatarController {
 	 * @return string
 	 */
 	public static function get_avatar( $avatar, $id_or_email, $size = '96', $default = '', $alt = false, $args = array() ) {
-		// Don't override the default, and stop here if Pro is not installed
-		if ( ( isset( $args['force_default'] ) && $args['force_default'] ) ||
-			 ! is_callable( 'FrmProFieldsHelper::get_displayed_file_html' ) ) {
+		$field_obj = FrmFieldFactory::get_field_type( 'file' );
+		// Don't override the default, and stop here if Pro is not installed.
+		if ( ! empty( $args['force_default'] ) || ! is_callable( array( $field_obj, 'get_displayed_file_html' ) ) ) {
 			return $avatar;
 		}
 

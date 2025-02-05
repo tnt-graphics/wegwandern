@@ -412,7 +412,46 @@ class FrmProFieldFile extends FrmFieldType {
 		if ( ! FrmProFileField::user_has_permission( $id ) ) {
 			$html = $this->get_display_html_for_inaccessible_file( $id, $atts );
 		} else {
+			remove_filter( 'wp_get_attachment_url', 'FrmProFileField::filter_attachment_url' );
+			remove_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src' );
+			remove_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta' );
+
 			$html = $atts['show_image'] ? wp_get_attachment_image( $id, $atts['size'], ! $is_image ) : '';
+
+			$image_src = wp_get_attachment_image_src( $id, $atts['size'], ! $is_image );
+
+			if ( strpos( $image_src[0], '/images/media/document.png' ) !== false || strpos( $image_src[0], '/images/media/document.svg' ) !== false ) {
+				$file      = get_attached_file( $id );
+				$file_type = wp_check_filetype( $file );
+				$html      = str_replace( $image_src[0], FrmProFileField::get_icon_for_file_type( $file_type['ext'] ), $html );
+				$html      = str_replace( 'width="48"', 'width="56"', $html );
+				$html      = str_replace( 'height="64"', 'height="56"', $html );
+			} else {
+				if ( is_array( $this->field ) ) {
+					$form_id = $this->field['form_id'];
+				} elseif ( is_object( $this->field ) && isset( $this->field->form_id ) ) {
+					$form_id = $this->field->form_id;
+				} else {
+					$form_id = FrmProFileField::get_form_id_from_file_id( $id );
+				}
+
+				if ( FrmProFileField::file_is_protected( $id, $form_id ) ) {
+					$image_src = wp_get_attachment_image_src( $id, $atts['size'], ! $is_image );
+
+					if ( is_array( $image_src ) && $image_src ) {
+						$builder = new FrmProFilePayloadBuilder( $id, $atts['size'], false );
+						$html    = str_replace(
+							$image_src[0],
+							$builder->get_protected_url( FrmProFileField::file_protocol(), false ),
+							$html
+						);
+					}
+				}
+			}
+
+			add_filter( 'wp_get_attachment_url', 'FrmProFileField::filter_attachment_url', 10, 2 );
+			add_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src', 10, 4 );
+			add_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta', 10, 2 );
 
 			// If show_filename=1 is included
 			if ( $atts['show_filename'] ) {
@@ -604,7 +643,14 @@ class FrmProFieldFile extends FrmFieldType {
 		$form_is_protected = FrmProFileField::get_option( $form->parent_form_id ? $form->parent_form_id : $form->id, 'protect_files', 0 );
 
 		$stop_sanitizing = ! $form_is_protected;
-		$stop_sanitizing = apply_filters( 'frm_stop_file_switching', $stop_sanitizing, array( 'form_id' => $this->field->form_id, 'field_id' => $this->field->id ) );
+		$stop_sanitizing = apply_filters(
+			'frm_stop_file_switching',
+			$stop_sanitizing,
+			array(
+				'form_id'  => $this->field->form_id,
+				'field_id' => $this->field->id,
+			) 
+		);
 
 		if ( $stop_sanitizing ) {
 			return;

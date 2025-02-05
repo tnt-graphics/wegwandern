@@ -78,10 +78,14 @@ $field['hide_field_cond'][ $meta_name ] = isset( $field['hide_field_cond'][ $met
 		'html_name' => 'field_options[hide_opt_' . $field['id'] . '][]',
 		'value'     => isset( $field['hide_opt'][ $meta_name ] ) ? $field['hide_opt'][ $meta_name ] : '',
 		'source'    => $field['type'],
+		'truncate'  => 40, // The default is 25. Allow more since there is available space.
 	);
 
-	FrmFieldsHelper::display_field_value_selector( $selector_field_id, $selector_args );
+	FrmProFieldsHelper::show_field_value_selector( $field['hide_field_cond'][ $meta_name ], $selector_field_id, $selector_args );
 ?>
 </span>
-<a href="javascript:void(0)" class="frm_icon_font frm_remove_tag" data-removeid="frm_logic_<?php echo esc_attr( $field['id'] . '_' . $meta_name ); ?>" data-showlast="#logic_<?php echo esc_attr( $field['id'] ); ?>" data-hidelast="#frm_logic_rows_<?php echo absint( $field['id'] ); ?>"></a>
+<a href="javascript:void(0)" class="frm_remove_tag" data-removeid="frm_logic_<?php echo esc_attr( $field['id'] . '_' . $meta_name ); ?>" data-showlast="#logic_<?php echo esc_attr( $field['id'] ); ?>" data-hidelast="#frm_logic_rows_<?php echo absint( $field['id'] ); ?>">
+	<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?>
+	&nbsp;<?php esc_html_e( 'Remove', 'formidable-pro' ); ?>
+</a>
 </div>

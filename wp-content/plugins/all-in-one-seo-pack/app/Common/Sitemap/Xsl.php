@@ -27,7 +27,7 @@ class Xsl {
 		$sitemapPath = aioseo()->helpers->getPermalinkPath( $sitemapUrl );
 
 		// Figure out which sitemap we're serving.
-		preg_match( '/\/(.*?)-?sitemap([0-9]*)\.xml/', $sitemapPath, $sitemapInfo );
+		preg_match( '/\/(.*?)-?sitemap([0-9]*)\.xml/', (string) $sitemapPath, $sitemapInfo );
 		$sitemapName = ! empty( $sitemapInfo[1] ) ? strtoupper( $sitemapInfo[1] ) : '';
 
 		// Remove everything after ? from sitemapPath to avoid caching issues.
@@ -40,6 +40,16 @@ class Xsl {
 					break;
 				case 'post-archive':
 					$sitemapName = __( 'Post Archive', 'all-in-one-seo-pack' );
+					break;
+				case 'bp-activity':
+				case 'bp-group':
+				case 'bp-member':
+					$bpFakePostTypes = aioseo()->standalone->buddyPress->getFakePostTypes();
+					$labels          = array_column( wp_list_filter( $bpFakePostTypes, [ 'name' => $sitemapInfo[1] ] ), 'label' );
+					$sitemapName     = ! empty( $labels[0] ) ? $labels[0] : $sitemapName;
+					break;
+				case 'product_attributes':
+					$sitemapName = __( 'Product Attributes', 'all-in-one-seo-pack' );
 					break;
 				default:
 					if ( post_type_exists( $sitemapInfo[1] ) ) {

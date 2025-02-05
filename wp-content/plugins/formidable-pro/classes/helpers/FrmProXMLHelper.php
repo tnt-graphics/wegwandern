@@ -242,9 +242,11 @@ class FrmProXMLHelper {
 		$f = fopen( $path, 'r' );
 		if ( $f ) {
 			unset( $path );
-			$row     = 0;
-			$headers = array();
-			while ( ( $data = fgetcsv( $f, 100000, $del ) ) !== false ) {
+			$row       = 0;
+			$headers   = array();
+			$enclosure = '"';
+			$escape    = '\\';
+			while ( ( $data = fgetcsv( $f, 100000, $del, $enclosure, $escape ) ) !== false ) {
 				++$row;
 				if ( $row === 1 ) {
 					$headers = $data;
@@ -413,9 +415,10 @@ class FrmProXMLHelper {
 			return;
 		}
 
+		$item_meta     = FrmAppHelper::get_post_param( 'item_meta', array() );
 		$is_array_type = $field->type === 'checkbox' || ( $field->type === 'data' && $field->field_options['data_type'] !== 'checkbox' );
-		if ( $value && $is_array_type && ! empty( $_POST['item_meta'][ $field_id ] ) ) {
-			$value = array_merge( (array) $_POST['item_meta'][ $field_id ], (array) $value );
+		if ( $value && $is_array_type && ! empty( $item_meta[ $field_id ] ) ) {
+			$value = array_merge( (array) $item_meta[ $field_id ], (array) $value );
 		}
 
 		$values['item_meta'][ $field_id ] = $value;
@@ -499,8 +502,9 @@ class FrmProXMLHelper {
 			return $field->field_options['in_section'];
 		}
 
-		if ( self::field_is_embedded( $field ) ) {
-			return self::get_section_id_from_form_fields( $_POST['form_id'], $field->form_id );
+		$form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
+		if ( $form_id && self::field_is_embedded( $field ) ) {
+			return self::get_section_id_from_form_fields( $form_id, $field->form_id );
 		}
 
 		return false;
@@ -529,9 +533,9 @@ class FrmProXMLHelper {
 	 * @return bool
 	 */
 	private static function is_the_child_of_a_repeater( $field ) {
-		$form_id = isset( $_POST['form_id'] ) ? $_POST['form_id'] : false;
+		$form_id = FrmAppHelper::get_post_param( 'form_id', false, 'absint' );
 
-		if ( $field->form_id === $form_id || empty( $field->field_options['in_section'] ) ) {
+		if ( (int) $field->form_id === $form_id || empty( $field->field_options['in_section'] ) ) {
 			return false;
 		}
 
@@ -574,10 +578,11 @@ class FrmProXMLHelper {
 	 * @param mixed $value
 	 */
 	private static function get_new_section_data_for_legacy_format( $section_id, $form_id, $field_id, $value ) {
-		$value = array_map( 'trim', explode( ',', $value ) );
+		$value     = array_map( 'trim', explode( ',', $value ) );
+		$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
 		foreach ( $value as $index => $current ) {
-			if ( isset( $_POST['item_meta'][ $section_id ] ) ) {
-				$section_data = $_POST['item_meta'][ $section_id ];
+			if ( isset( $item_meta[ $section_id ] ) ) {
+				$section_data = (array) $item_meta[ $section_id ];
 			} else {
 				$section_data = array( 'form' => $form_id );
 			}
@@ -601,14 +606,15 @@ class FrmProXMLHelper {
 	 * @param mixed $value
 	 */
 	private static function get_new_section_data_for_multiple_row_format( $section_id, $form_id, $field_id, $value ) {
-		if ( ! isset( $_POST['item_meta'][ $section_id ] ) ) {
+		$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+		if ( ! isset( $item_meta[ $section_id ] ) ) {
 			return array(
 				'form' => $form_id,
 				array( $field_id => $value ),
 			);
 		}
 
-		$section_data = $_POST['item_meta'][ $section_id ];
+		$section_data = $item_meta[ $section_id ];
 		$index        = 0;
 		while ( true ) {
 			if ( ! array_key_exists( $index, $section_data ) ) {

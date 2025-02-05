@@ -7,7 +7,7 @@ class FrmRegAppHelper {
 	/**
 	 * @var string $plug_version
 	 */
-	public static $plug_version = '2.13';
+	public static $plug_version = '3.0.1';
 
 	/**
 	 * @return string
@@ -78,13 +78,33 @@ class FrmRegAppHelper {
 	public static function enqueue_admin_js() {
 		wp_register_script( 'frmreg_admin', self::plugin_url() . '/js/back_end.js', array(), self::plugin_version() );
 
-		wp_localize_script( 'frmreg_admin', 'frmRegGlobal', array(
-			'nonce'        => wp_create_nonce( 'frm_ajax' ),
-		) );
+		$global_data = array(
+			'nonce' => wp_create_nonce( 'frm_ajax' ),
+		);
+
+		if ( self::is_repeater_actions_ready() && self::is_form_settings_page() ) {
+			$form_id = FrmAppHelper::simple_get( 'id', 'intval' );
+
+			$global_data['repeaters']   = FrmProFieldsHelper::get_repeater_fields( $form_id );
+			$global_data['formActions'] = array_values( FrmFormAction::get_action_for_form( $form_id, 'register', array( 'post_status' => 'all' ) ) );
+		}
+
+		wp_localize_script( 'frmreg_admin', 'frmRegGlobal', $global_data );
 
 		if ( self::is_form_settings_page() ) {
 			wp_enqueue_script( 'frmreg_admin' );
 		}
+	}
+
+	/**
+	 * Checks if Repeater Actions feature is ready in Pro plugin.
+	 *
+	 * @since 3.0
+	 *
+	 * @return bool
+	 */
+	private static function is_repeater_actions_ready() {
+		return method_exists( 'FrmProFieldsHelper', 'get_repeater_fields' );
 	}
 
 	/**
@@ -109,10 +129,11 @@ class FrmRegAppHelper {
 	public static function is_form_settings_page() {
 		$is_form_settings_page = false;
 
-		$page = FrmAppHelper::simple_get( 'page', 'sanitize_title' );
-		$action = FrmAppHelper::simple_get( 'frm_action', 'sanitize_title' );
+		$page    = FrmAppHelper::simple_get( 'page', 'sanitize_title' );
+		$action  = FrmAppHelper::simple_get( 'frm_action', 'sanitize_title' );
+		$form_id = FrmAppHelper::simple_get( 'id', 'intval' );
 
-		if ( $page === 'formidable' && $action === 'settings' ) {
+		if ( $page === 'formidable' && $action === 'settings' && $form_id ) {
 			$is_form_settings_page = true;
 		}
 
@@ -135,12 +156,18 @@ class FrmRegAppHelper {
 	 * Check if the current user has permission to create new users with the given form action
 	 *
 	 * @since 2.0
+	 * @since 3.0 The `$action` parameter could be null.
 	 *
-	 * @param WP_Post $action
+	 * @param WP_Post|null $action
 	 * @return bool
 	 */
 	public static function current_user_can_create_users( $action ) {
 		$can_create = false;
+
+		if ( ! $action ) {
+			return $can_create;
+		}
+
 		$capability = apply_filters( 'frmreg_required_role', '' );
 
 		$is_rest_request = defined( 'REST_REQUEST' ) && REST_REQUEST;
@@ -149,8 +176,7 @@ class FrmRegAppHelper {
 		} else if ( $capability !== '' ) {
 			$can_create = current_user_can( $capability );
 		} elseif ( isset( $action->post_content['reg_create_users'] ) && $action->post_content['reg_create_users'] === 'allow' ) {
-
-				// Check if current user's role(s) is within selected roles
+			// Check if current user's role(s) is within selected roles
 			foreach ( $action->post_content['reg_create_role'] as $selected_role ) {
 				if ( current_user_can( $selected_role ) ) {
 					$can_create = true;
@@ -377,5 +403,29 @@ class FrmRegAppHelper {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Check for the Siteground Security Optimizer plugin.
+	 * This is required to handle conflicts with the plugin.
+	 *
+	 * @since 3.0.1
+	 *
+	 * @return bool
+	 */
+	public static function siteground_security_is_active() {
+		global $sg_security_loader;
+		return ! is_null( $sg_security_loader );
+	}
+
+	/**
+	 * Determine whether we want to allow people to login using alt-login.php.
+	 *
+	 * @since 3.0.1
+	 *
+	 * @return bool
+	 */
+	public static function supports_alternative_login_url() {
+		return (bool) apply_filters( 'frmreg_supports_alternative_login_url', false );
 	}
 }

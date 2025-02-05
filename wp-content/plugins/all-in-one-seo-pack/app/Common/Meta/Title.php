@@ -6,6 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use AIOSEO\Plugin\Common\Integrations\BuddyPress as BuddyPressIntegration;
+
 /**
  * Handles the title.
  *
@@ -80,6 +82,10 @@ class Title {
 	 * @return string            The page title.
 	 */
 	public function getTitle( $post = null, $default = false ) {
+		if ( BuddyPressIntegration::isComponentPage() ) {
+			return aioseo()->standalone->buddyPress->component->getMeta( 'title' );
+		}
+
 		if ( is_home() ) {
 			return $this->getHomePageTitle();
 		}
@@ -89,7 +95,7 @@ class Title {
 		}
 
 		if ( is_category() || is_tag() || is_tax() ) {
-			$term = $post ? $post : get_queried_object();
+			$term = $post ? $post : aioseo()->helpers->getTerm();
 
 			return $this->getTermTitle( $term, $default );
 		}
@@ -109,10 +115,7 @@ class Title {
 		if ( is_post_type_archive() ) {
 			$postType = get_queried_object();
 			if ( is_a( $postType, 'WP_Post_Type' ) ) {
-				$dynamicOptions = aioseo()->dynamicOptions->noConflict();
-				if ( $dynamicOptions->searchAppearance->archives->has( $postType->name ) ) {
-					return $this->helpers->prepare( aioseo()->dynamicOptions->searchAppearance->archives->{ $postType->name }->title );
-				}
+				return $this->helpers->prepare( $this->getArchiveTitle( $postType->name ) );
 			}
 		}
 
@@ -141,6 +144,7 @@ class Title {
 
 		$title    = '';
 		$metaData = aioseo()->meta->metaData->getMetaData( $post );
+
 		if ( ! empty( $metaData->title ) && ! $default ) {
 			$title = $this->helpers->prepare( $metaData->title, $post->ID );
 		}
@@ -163,6 +167,30 @@ class Title {
 		$posts[ $post->ID ] = $title;
 
 		return $posts[ $post->ID ];
+	}
+
+	/**
+	 * Retrieve the default title for the archive template.
+	 *
+	 * @since 4.7.6
+	 *
+	 * @param  string $postType The custom post type.
+	 * @return string           The title.
+	 */
+	public function getArchiveTitle( $postType ) {
+		static $archiveTitle = [];
+		if ( isset( $archiveTitle[ $postType ] ) ) {
+			return $archiveTitle[ $postType ];
+		}
+
+		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
+		if ( $dynamicOptions->searchAppearance->archives->has( $postType ) ) {
+			$title = aioseo()->dynamicOptions->searchAppearance->archives->{ $postType }->title;
+		}
+
+		$archiveTitle[ $postType ] = empty( $title ) ? '' : $title;
+
+		return $archiveTitle[ $postType ];
 	}
 
 	/**
@@ -211,7 +239,7 @@ class Title {
 		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
 		if ( ! $title && $dynamicOptions->searchAppearance->taxonomies->has( $term->taxonomy ) ) {
 			$newTitle = aioseo()->dynamicOptions->searchAppearance->taxonomies->{$term->taxonomy}->title;
-			$newTitle = preg_replace( '/#taxonomy_title/', aioseo()->helpers->escapeRegexReplacement( $term->name ), $newTitle );
+			$newTitle = preg_replace( '/#taxonomy_title/', aioseo()->helpers->escapeRegexReplacement( $term->name ), (string) $newTitle );
 			$title    = $this->helpers->prepare( $newTitle, $term->term_id, $default );
 		}
 

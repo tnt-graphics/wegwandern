@@ -1,7 +1,10 @@
 <div class="frm_grid_container">
 	<p class="frm6 frm_form_field">
-		<label><?php esc_html_e( 'User Email', 'frmreg' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Only Email fields will show here. An email field must be selected if you would like to register new users with this form.', 'frmreg' ); ?>"></span>
+		<label>
+			<?php
+			esc_html_e( 'User Email', 'frmreg' );
+			FrmRegAppController::show_svg_tooltip( __( 'Only Email fields will show here. An email field must be selected if you would like to register new users with this form.', 'frmreg' ) );
+			?>
 		</label>
 
 		<select name="<?php echo esc_attr( $this->get_field_name( 'reg_email' ) ); ?>">
@@ -47,9 +50,10 @@
 		</select>
 	</p>
 
+	<?php $id_attr = $this->get_field_id( 'reg_password' ); ?>
 	<p class="frm6 frm_form_field">
-		<label for="reg_password"><?php esc_html_e( 'Password', 'frmreg' ); ?></label>
-		<select name="<?php echo esc_attr( $this->get_field_name( 'reg_password' ) ); ?>" id="reg_password">
+		<label for="<?php echo esc_attr( $id_attr ); ?>"><?php esc_html_e( 'Password', 'frmreg' ); ?></label>
+		<select name="<?php echo esc_attr( $this->get_field_name( 'reg_password' ) ); ?>" id="<?php echo esc_attr( $id_attr ); ?>>" class="frm_reg_password">
 			<option value=""><?php esc_html_e( 'Set with link in email notification', 'frmreg' ); ?></option>
 			<?php
 			if ( isset( $fields ) && is_array( $fields ) ) {
@@ -79,7 +83,15 @@
 					if ( 'text' === $field->type || 'name' === $field->type ) {
 						?>
 						<option value="<?php echo esc_attr( $field->id ); ?>" <?php selected( $form_action->post_content['reg_first_name'], $field->id ); ?>>
-							<?php echo esc_html( substr( esc_attr( stripslashes( $field->name ) ), 0, 50 ) ); ?>
+							<?php
+							echo esc_html( substr( esc_attr( stripslashes( $field->name ) ), 0, 50 ) );
+
+							if ( 'name' === $field->type ) {
+								echo ' (';
+								esc_html_e( 'First', 'formidable' );
+								echo ')';
+							}
+							?>
 						</option>
 						<?php
 					}
@@ -100,7 +112,15 @@
 					if ( 'text' === $field->type || 'name' === $field->type ) {
 						?>
 						<option value="<?php echo esc_attr( $field->id ); ?>" <?php selected( $form_action->post_content['reg_last_name'], $field->id ); ?>>
-							<?php echo esc_html( substr( esc_attr( stripslashes( $field->name ) ), 0, 50 ) ); ?>
+							<?php
+							echo esc_html( substr( esc_attr( stripslashes( $field->name ) ), 0, 50 ) );
+
+							if ( 'name' === $field->type ) {
+								echo ' (';
+								esc_html_e( 'Last', 'formidable' );
+								echo ')';
+							}
+							?>
 						</option>
 						<?php
 					}
@@ -165,8 +185,11 @@
 	</p>
 
 	<p class="frm6 frm_form_field">
-		<label><?php esc_html_e( 'Avatar', 'frmreg' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Only file upload fields will show here.', 'frmreg' ); ?>" ></span>
+		<label>
+			<?php
+			esc_html_e( 'Avatar', 'frmreg' );
+			FrmRegAppController::show_svg_tooltip( __( 'Only file upload fields will show here.', 'frmreg' ) );
+			?>
 		</label>
 		<select name="<?php echo esc_attr( $this->get_field_name( 'reg_avatar' ) ); ?>">
 			<option value="">- <?php esc_html_e( 'None', 'frmreg' ); ?> -</option>
@@ -187,14 +210,15 @@
 		</select>
 	</p>
 
-	<p id="reg_auto_login_row"<?php echo ( $show_auto_login ) ? '' : ' style="display:none"'; ?>>
-		<label for="reg_auto_login">
-			<input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'login' ) ); ?>" value="1" id="reg_auto_login" <?php checked( $form_action->post_content['login'], 1 ); ?> />
+	<?php $id_attr = $this->get_field_id( 'reg_auto_login' ); ?>
+	<p class="frm_reg_auto_login_row"<?php echo ( $show_auto_login ) ? '' : ' style="display:none"'; ?>>
+		<label for="<?php echo esc_attr( $id_attr ); ?>">
+			<input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'login' ) ); ?>" value="1" id="<?php echo esc_attr( $id_attr ); ?>" <?php checked( $form_action->post_content['login'], 1 ); ?> />
 			<?php esc_html_e( 'Automatically log in users who submit this form', 'frmreg' ); ?>
 		</label>
 	</p>
-	<p id="reg_auto_login_msg" <?php echo ( ! $show_auto_login && $form_action->post_content['login'] == '1' ) ? ' ' : 'style="display:none"'; ?>>
-		<span><?php esc_html_e( 'Please note: the automatic login option will appear if you map the Password setting to a Password field in your form.', 'frmreg' ); ?></span>
+	<p class="frm_reg_auto_login_msg" <?php echo ( ! $show_auto_login && $form_action->post_content['login'] == '1' ) ? ' ' : 'style="display:none"'; ?>>
+		<span><?php esc_html_e( 'Please note: the automatic login option will appear if you map the Password setting to a Password field in your form and this action runs for the main entry.', 'frmreg' ); ?></span>
 	</p>
 </div>
 
@@ -204,11 +228,12 @@
 <!--User Moderation-->
 <h3><?php esc_html_e( 'User Moderation', 'frmreg' ); ?></h3>
 
-<table class="form-table" id="reg_user_moderation_section" <?php echo ( $show_auto_login ) ? '' : ' style="display:none"'; ?>>
+<table class="form-table frm_reg_user_moderation_section" <?php echo ( $show_auto_login ) ? '' : ' style="display:none"'; ?>>
 	<tr>
 		<td width="250px">
-			<label <?php FrmRegAppHelper::add_tooltip( 'mod_email' ); ?>>
-				<input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'reg_moderate' ) ); ?>[]" value="email" id="reg_moderate_email" <?php FrmRegAppHelper::array_checked( $form_action->post_content['reg_moderate'], 'email' ); ?> /> <?php esc_html_e( 'Email confirmation', 'frmreg' ); ?>
+			<?php $id_attr = $this->get_field_id( 'reg_moderate_email' ); ?>
+			<label for="<?php echo esc_attr( $id_attr ); ?>" <?php FrmRegAppHelper::add_tooltip( 'mod_email' ); ?>>
+				<input type="checkbox" name="<?php echo esc_attr( $this->get_field_name( 'reg_moderate' ) ); ?>[]" value="email" id="<?php echo esc_attr( $id_attr ); ?>" <?php FrmRegAppHelper::array_checked( $form_action->post_content['reg_moderate'], 'email' ); ?> /> <?php esc_html_e( 'Email confirmation', 'frmreg' ); ?>
 			</label>
 		</td>
 		<td style="padding-top:0;<?php echo $form_action->post_content['reg_moderate'] ? '' : 'display:none;'; ?>">
@@ -263,7 +288,7 @@
 	</tr>
 </table>
 
-<span id="reg_user_moderation_msg" <?php echo ( ! $show_auto_login ) ? '' : ' style="display:none"'; ?>>
+<span class="frm_reg_user_moderation_msg" <?php echo ( ! $show_auto_login ) ? '' : ' style="display:none"'; ?>>
 	<?php esc_html_e( 'Please note: the Email Confirmation option will appear if you map the Password setting to a Password field in your form.', 'frmreg' ); ?>
 </span>
 

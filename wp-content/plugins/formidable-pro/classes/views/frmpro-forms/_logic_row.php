@@ -73,11 +73,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'value'     => isset( $condition['hide_opt'] ) ? $condition['hide_opt'] : '',
 				'source'    => 'form_actions',
 			);
-			FrmFieldsHelper::display_field_value_selector( $selector_field_id, $selector_args );
+
+			FrmProFieldsHelper::show_field_value_selector( $condition['hide_field_cond'], $selector_field_id, $selector_args );
 		?></span>
 	</p>
 	<p class="frm1 frm_form_field">
-		<a href="javascript:void(0)" class="frm_remove_tag frm_icon_font" data-removeid="<?php echo esc_attr( $id ); ?>" <?php echo ! empty( $showlast ) ? 'data-showlast="' . esc_attr( $showlast ) . '"' : ''; ?> <?php echo empty( $hidelast ) ? '' : 'data-hidelast="' . esc_attr( $hidelast ) . '"'; ?>></a>
-		<a href="javascript:void(0)" class="frm_add_tag frm_icon_font frm_add_<?php echo esc_attr( $type ); ?>_logic" data-emailkey="<?php echo esc_attr( $key ); ?>"></a>
+		<a href="javascript:void(0)" class="frm_remove_tag" data-removeid="<?php echo esc_attr( $id ); ?>" <?php echo ! empty( $showlast ) ? 'data-showlast="' . esc_attr( $showlast ) . '"' : ''; ?> <?php echo empty( $hidelast ) ? '' : 'data-hidelast="' . esc_attr( $hidelast ) . '"'; ?>><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?></a>
+		<a href="javascript:void(0)" class="frm_add_tag frm_add_<?php echo esc_attr( $type ); ?>_logic" data-emailkey="<?php echo esc_attr( $key ); ?>"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon' ); ?></a>
 	</p>
 </div>

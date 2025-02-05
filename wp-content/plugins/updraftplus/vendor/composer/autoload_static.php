@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71
+class ComposerStaticInit31d9c6e64cdb60e7e826f7f09bc8194b
 {
     public static $files = array (
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
@@ -49,6 +49,10 @@ class ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
+        ),
+        'B' => 
+        array (
+            'Brumann\\Polyfill\\' => 17,
         ),
     );
 
@@ -104,6 +108,10 @@ class ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71
         'GuzzleHttp\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
+        ),
+        'Brumann\\Polyfill\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/brumann/polyfill-unserialize/src',
         ),
     );
 
@@ -172,10 +180,10 @@ class ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit8f3a07f17cc86045334fe89d63af8f71::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit31d9c6e64cdb60e7e826f7f09bc8194b::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit31d9c6e64cdb60e7e826f7f09bc8194b::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit31d9c6e64cdb60e7e826f7f09bc8194b::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit31d9c6e64cdb60e7e826f7f09bc8194b::$classMap;
 
         }, null, ClassLoader::class);
     }

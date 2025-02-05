@@ -67,8 +67,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     </select>
 	</div>
 	<div class="frm1 frm_form_field frm-inline-select">
-		<a href="javascript:void(0)" class="frm_remove_tag frm_icon_font" data-removeid="frm_postmeta_<?php echo esc_attr( $sanitized_name ); ?>" data-hidelast="#frm_form_action_<?php echo esc_attr( $action_control->number ); ?> .frm_name_value" data-showlast="#frm_form_action_<?php echo esc_attr( $action_control->number ); ?> .frm_add_postmeta_row"></a>
-		<a href="javascript:void(0)" class="frm_add_tag frm_icon_font frm_add_postmeta_row"></a>
+		<a href="javascript:void(0)" class="frm_remove_tag" data-removeid="frm_postmeta_<?php echo esc_attr( $sanitized_name ); ?>" data-hidelast="#frm_form_action_<?php echo esc_attr( $action_control->number ); ?> .frm_name_value" data-showlast="#frm_form_action_<?php echo esc_attr( $action_control->number ); ?> .frm_add_postmeta_row"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?></a>
+		<a href="javascript:void(0)" class="frm_add_tag frm_add_postmeta_row"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon' ); ?></a>
 	</div>
 </div>
 <?php

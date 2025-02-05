@@ -30,7 +30,18 @@ if ( isset( $list_fields['merge_fields'] ) && is_array( $list_fields['merge_fiel
                 
                 $selected = ( isset($list_options['fields'][$list_field['tag'] ]) && $list_options['fields'][$list_field['tag']] == $form_field->id ) ? ' selected="selected"' : '';
             ?>
-        <option value="<?php echo esc_attr( $form_field->id ) ?>" <?php echo esc_html( $selected ) ?>><?php echo FrmAppHelper::truncate($form_field->name, 40) ?></option>
+        <option value="<?php echo esc_attr( $form_field->id ) ?>" <?php echo esc_html( $selected ) ?>>
+			<?php
+			echo FrmAppHelper::truncate( $form_field->name, 50 );
+			if ( 'name' === $form_field->type ) {
+				if ( 'FNAME' === $list_field['tag'] ) {
+					echo ' (' . esc_html__( 'First', 'formidable' ) . ')'; // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
+				} elseif ( 'LNAME' === $list_field['tag'] ) {
+					echo ' (' . esc_html__( 'Last', 'formidable' ) . ')'; // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
+				}
+			}
+			?>
+		</option>
         <?php } ?>
     </select>
 </p>

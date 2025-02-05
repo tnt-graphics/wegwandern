@@ -27,8 +27,8 @@ echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || r
 				<?php
 			} else {
 				?>
-				<option value="show" <?php selected( $field['show_hide'], 'show' ); ?>><?php echo $field['type'] === 'break' ? esc_html__( 'Do not skip next page', 'formidable-pro' ) : esc_html__( 'Show this field', 'formidable-pro' ); ?></option>
-				<option value="hide" <?php selected( $field['show_hide'], 'hide' ); ?>><?php echo $field['type'] === 'break' ? esc_html__( 'Skip next page', 'formidable-pro' ) : esc_html__( 'Hide this field', 'formidable-pro' ); ?></option>
+				<option value="show" <?php selected( $field['show_hide'], 'show' ); ?>><?php echo $field['type'] === 'break' ? esc_html__( 'Do not skip next page', 'formidable-pro' ) : esc_html__( 'Show', 'formidable-pro' ); ?></option>
+				<option value="hide" <?php selected( $field['show_hide'], 'hide' ); ?>><?php echo $field['type'] === 'break' ? esc_html__( 'Skip next page', 'formidable-pro' ) : esc_html__( 'Hide', 'formidable-pro' ); ?></option>
 				<?php
 			}
 			?>
@@ -41,7 +41,7 @@ echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || r
 			'<option value="all" ' . selected( $field['any_all'], 'all', false ) . '>' . __( 'all', 'formidable-pro' ) . '</option>' .
 			'</select>';
 
-		printf( esc_html__( 'if %s of the following match:', 'formidable-pro' ), $all_select ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		printf( esc_html__( 'this field, if %s of the following match:', 'formidable-pro' ), '<br>' . $all_select ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		unset( $all_select );
 
 		if ( ! empty( $field['hide_field'] ) ) {

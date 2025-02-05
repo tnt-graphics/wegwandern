@@ -2,7 +2,7 @@
 
 namespace DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder;
 
-use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\SelectorSyntaxMatch;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\AbstractMatch;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\Utils;
 /**
  * An attribute definition for `SelectorSyntaxFinder` with attribute name, operator
@@ -36,7 +36,6 @@ class SelectorSyntaxAttribute
      * @param string $comparator
      * @param string $value
      * @param string $functions
-     * @codeCoverageIgnore
      */
     public function __construct($finder, $attribute, $comparator, $value, $functions)
     {
@@ -55,6 +54,10 @@ class SelectorSyntaxAttribute
      */
     public function matchesComparator($value)
     {
+        // Special case: When we search for a value with quotes, we should revert the decoding of the quotes of the passed `$value`
+        if (\strpos($this->value, '&quot;') !== \false) {
+            $value = \str_replace('"', '&quot;', $value);
+        }
         switch ($this->comparator) {
             case self::COMPARATOR_EXISTS:
                 return $value !== null;
@@ -74,9 +77,31 @@ class SelectorSyntaxAttribute
         }
     }
     /**
+     * Loose comparator that does not check for the exact value but only for the presence of the attribute and value.
+     *
+     * @param string $str
+     */
+    public function matchesComparatorLoose($str)
+    {
+        switch ($this->comparator) {
+            case self::COMPARATOR_EXISTS:
+                return \strpos($str, $this->attribute) !== \false;
+            case SelectorSyntaxAttribute::COMPARATOR_EQUAL:
+            case SelectorSyntaxAttribute::COMPARATOR_STARTS_WITH:
+            case SelectorSyntaxAttribute::COMPARATOR_CONTAINS:
+            case SelectorSyntaxAttribute::COMPARATOR_ENDS_WITH:
+                return \is_string($this->attribute) && \is_string($this->value) && \strpos($str, $this->attribute) !== \false && \strpos($str, $this->value) !== \false;
+            case SelectorSyntaxAttribute::COMPARATOR_REGULAR_EXPRESSION:
+                return \true;
+            // @codeCoverageIgnoreStart
+            default:
+                return \false;
+        }
+    }
+    /**
      * Checks if the current attribute satisfies the passed functions.
      *
-     * @param SelectorSyntaxMatch $match
+     * @param AbstractMatch $match
      */
     public function satisfiesFunctions($match)
     {
@@ -89,8 +114,6 @@ class SelectorSyntaxAttribute
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getAttribute()
     {
@@ -98,8 +121,6 @@ class SelectorSyntaxAttribute
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getComparator()
     {
@@ -107,8 +128,6 @@ class SelectorSyntaxAttribute
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getValue()
     {
@@ -116,8 +135,6 @@ class SelectorSyntaxAttribute
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getFinder()
     {
@@ -125,8 +142,6 @@ class SelectorSyntaxAttribute
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getFunctions()
     {
@@ -136,7 +151,6 @@ class SelectorSyntaxAttribute
      * Setter.
      *
      * @param SelectorSyntaxFinder $finder
-     * @codeCoverageIgnore
      */
     public function setFinder($finder)
     {

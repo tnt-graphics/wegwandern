@@ -51,6 +51,7 @@ class HeadlessContentBlocker extends FastHtmlTag
     private $inlineStyleBlockRuleByCallback = [];
     private $visualParentCallback = [];
     private $blockableStringExpressionCallback = [];
+    private $beforeSetBlockedInResultCallback = [];
     private $replaceAlwaysAttributes = ['iframe' => ['sandbox'], 'script' => ['type'], 'style' => ['type']];
     private $visualParentIfClass = [];
     private $allowMultipleBlockerResults = \false;
@@ -67,8 +68,15 @@ class HeadlessContentBlocker extends FastHtmlTag
      * @var AbstractBlockable[]
      */
     private $blockables = [];
+    /**
+     * Pool of all found markups.
+     *
+     * @var Markup[]
+     */
+    private $markupPool = [];
+    private $markupChain = [];
     private $finderToMatcher;
-    private $tagAttributeMap = [self::TAG_ATTRIBUTE_MAP_LINKABLE => ['tags' => ['script', 'link', 'iframe', 'embed', 'img'], 'attr' => ['href', 'data-src', 'src']]];
+    private $tagAttributeMap = [self::TAG_ATTRIBUTE_MAP_LINKABLE => ['tags' => ['script', 'link', 'iframe', 'embed', 'img', 'video', 'source', 'audio'], 'attr' => ['href', 'data-src', 'src', 'poster']]];
     /**
      * See `processMatch`.
      *
@@ -82,9 +90,16 @@ class HeadlessContentBlocker extends FastHtmlTag
      */
     private $selectorSyntaxMap = [];
     /**
-     * C'tor.
+     * This array holds instances of SelectorSyntaxFinder indexed by their associated tag.
+     * Each entry is an array containing the first attribute of the finder and the finder instance itself.
      *
-     * @codeCoverageIgnore
+     * Why? Get possible selector syntax finders for a match. See also `findPotentialSelectorSyntaxFindersForMatch`.
+     *
+     * @var array<string, array<string, SelectorSyntaxFinder[]>>
+     */
+    private $selectorSyntaxFindersTagMatrix = [];
+    /**
+     * C'tor.
      */
     public function __construct()
     {
@@ -99,9 +114,11 @@ class HeadlessContentBlocker extends FastHtmlTag
      */
     public function addPlugin($pluginName)
     {
+        // @codeCoverageIgnoreStart
         if (!\class_exists($pluginName) || !\is_subclass_of($pluginName, AbstractPlugin::class)) {
             return null;
         }
+        // @codeCoverageIgnoreEnd
         /**
          * Plugin.
          *
@@ -127,6 +144,7 @@ class HeadlessContentBlocker extends FastHtmlTag
         $this->addInlineStyleModifyDocumentsCallback([$plugin, 'inlineStyleModifyDocuments']);
         $this->addInlineStyleBlockRuleCallback([$plugin, 'inlineStyleBlockRule']);
         $this->addBlockableStringExpressionCallback([$plugin, 'blockableStringExpression']);
+        $this->addBeforeSetBlockedInResultCallback([$plugin, 'beforeSetBlockedInResult']);
         return $plugin;
     }
     /**
@@ -226,6 +244,18 @@ class HeadlessContentBlocker extends FastHtmlTag
         $this->blockedMatchCallbacks[] = $callback;
     }
     /**
+     * Remove a callback added through `addBlockedMatchCallback`.
+     *
+     * @param callable $callback
+     * @codeCoverageIgnore
+     */
+    public function removeBlockedMatchCallback($callback)
+    {
+        $this->blockedMatchCallbacks = \array_filter($this->blockedMatchCallbacks, function ($c) use($callback) {
+            return $c !== $callback;
+        });
+    }
+    /**
      * Add a callable after a blocked match got not found, but a match. Parameters:
      * `BlockedResult $result, AbstractMatcher $matcher, AbstractMatch $match`.
      *
@@ -294,6 +324,7 @@ class HeadlessContentBlocker extends FastHtmlTag
      * In the folder there need to exist the following two files: `dummy.css`, `dummy.png`.
      *
      * @param string $urlPath
+     * @codeCoverageIgnore
      */
     public function setInlineStyleDummyUrlPath($urlPath)
     {
@@ -322,9 +353,19 @@ class HeadlessContentBlocker extends FastHtmlTag
         $this->blockableStringExpressionCallback[] = $callback;
     }
     /**
+     * Add a callable before an blockable and expression gets added to a `BlockedResult`.
+     *
+     * @param callable $callback
+     */
+    public function addBeforeSetBlockedInResultCallback($callback)
+    {
+        $this->beforeSetBlockedInResultCallback[] = $callback;
+    }
+    /**
      * A set of HTML tags => attribute names which should always prefix with `consent-original-`.
      *
      * @param string[][] $tagToAttributesMap
+     * @codeCoverageIgnore
      */
     public function addReplaceAlwaysAttributes($tagToAttributesMap)
     {
@@ -429,6 +470,7 @@ class HeadlessContentBlocker extends FastHtmlTag
             $selectorSyntaxFinder = SelectorSyntaxFinder::fromExpression($selectorSyntax);
             if ($selectorSyntaxFinder !== \false) {
                 $selectorSyntaxFinder->setFastHtmlTag($this);
+                // Find matches which are not yet covered by the selector-syntax-map in previous calls
                 $selectorSyntaxMatcher = new SelectorSyntaxMatcher($this, null, \false);
                 $selectorSyntaxFinder->addCallback(function ($match) use($selectorSyntaxMatcher) {
                     $this->processMatch($selectorSyntaxMatcher, $match);
@@ -440,13 +482,29 @@ class HeadlessContentBlocker extends FastHtmlTag
         $this->runAfterSetupCallback();
     }
     /**
+     * When adding a finder, save the instances of `SelectorSyntaxFinder`.
+     *
+     * @param AbstractFinder $finder
+     */
+    public function addFinder($finder)
+    {
+        parent::addFinder($finder);
+        if ($finder instanceof SelectorSyntaxFinder) {
+            $tag = $finder->getTag();
+            $firstAttribute = $finder->getAttributes()[0]->getAttribute();
+            $this->selectorSyntaxFindersTagMatrix[$tag] = $this->selectorSyntaxFindersTagMatrix[$tag] ?? [];
+            $this->selectorSyntaxFindersTagMatrix[$tag][] = [$firstAttribute, $finder];
+        }
+    }
+    /**
      * A match got found from one of our finders. Run plugins and hooks.
      *
      * @param AbstractMatcher $matcher
      * @param AbstractMatch $match
      */
-    protected function processMatch($matcher, $match)
+    public function processMatch($matcher, $match)
     {
+        $originalMatch = $match->getOriginalMatch();
         $rerunExceptionDispatcher = [];
         foreach ($this->rerunExceptions as $idx => $exception) {
             if ($match->getInvisibleAttribute(RerunOnMatchException::ID_ATTRIBUTE_NAME) === $exception->getId()) {
@@ -472,9 +530,13 @@ class HeadlessContentBlocker extends FastHtmlTag
         } catch (RerunOnMatchException $e) {
             $this->registerRerun();
             $this->rerunExceptions[] = $e;
+            // When writing tests for this function I did no longer found a reproduce case for this but I keep this for backwards-compatibility
+            // @codeCoverageIgnoreStart
             foreach ($rerunExceptionDispatcher as $c) {
                 $c();
             }
+            // @codeCoverageIgnoreEnd
+            $this->persistMarkupChain($originalMatch, $match);
             return;
         }
         if ($result->isBlocked()) {
@@ -489,13 +551,40 @@ class HeadlessContentBlocker extends FastHtmlTag
                 if ($originalAttributeKey !== \false) {
                     $mimeType = $match->isAttributeDataUrl($originalAttributeKey);
                     if ($mimeType !== \false) {
+                        // When writing tests for this function I did no longer found a reproduce case for this but I keep this for backwards-compatibility
+                        // @codeCoverageIgnoreStart
                         $match->setAttribute($key, $val, $mimeType);
+                        // @codeCoverageIgnoreEnd
                     }
                 }
             }
         }
         foreach ($rerunExceptionDispatcher as $c) {
             $c();
+        }
+        $this->persistMarkupChain($originalMatch, $match);
+    }
+    /**
+     * Persist the markup chain so we can reconstruct the original match in the scanner.
+     *
+     * @param string $originalMatch
+     * @param AbstractMatch $match
+     */
+    protected function persistMarkupChain($originalMatch, $match)
+    {
+        if (!empty($originalMatch) && $match->hasChanged()) {
+            // Temporarily disable before and after tag as this is not needed for the chain
+            $beforeTag = $match->getBeforeTag();
+            $afterTag = $match->getAfterTag();
+            $match->setBeforeTag('');
+            $match->setAfterTag('');
+            $to = \md5($match->render());
+            $from = \md5($originalMatch);
+            if ($to !== $from) {
+                $this->markupChain[$to] = $from;
+            }
+            $match->setBeforeTag($beforeTag);
+            $match->setAfterTag($afterTag);
         }
     }
     /**
@@ -539,9 +628,9 @@ class HeadlessContentBlocker extends FastHtmlTag
     {
         foreach ($this->blockedMatchCallbacks as $callback) {
             $callback($result, $matcher, $match);
-            // Delegate `MatchPluginCallbacks`
-            MatchPluginCallbacks::getFromMatch($match)->runBlockedMatchCallback($result, $matcher);
         }
+        // Delegate `MatchPluginCallbacks`
+        MatchPluginCallbacks::getFromMatch($match)->runBlockedMatchCallback($result, $matcher);
     }
     /**
      * Run registered not-blocked-match callbacks.
@@ -674,14 +763,38 @@ class HeadlessContentBlocker extends FastHtmlTag
         return $expression;
     }
     /**
+     * Run registered callbacks before a blockable and expression gets added to a `BlockedResult`.
+     *
+     * @param BlockedResult $result
+     * @param AbstractBlockable $blockable
+     * @param string $expression
+     * @param AbstractMatcher $matcher
+     * @return boolean
+     */
+    public function runBeforeSetBlockedInResultCallback($result, $blockable, $expression, $matcher)
+    {
+        $returnResult = \true;
+        foreach ($this->beforeSetBlockedInResultCallback as $callback) {
+            $returnResult = $callback($result, $blockable, $expression, $matcher);
+            // @codeCoverageIgnoreStart
+            if ($returnResult === \false) {
+                break;
+            }
+            // @codeCoverageIgnoreEnd
+        }
+        return $returnResult;
+    }
+    /**
      * Add a callback which should throw an `Exception` when the content blocker is not setup.
      */
     protected function init()
     {
         $this->addCallback(function ($html) {
+            // @codeCoverageIgnoreStart
             if (!$this->isSetup) {
                 throw new Exception('Please setup() your headless content blocker before modifying your content!');
             }
+            // @codeCoverageIgnoreEnd
             return $html;
         });
     }
@@ -732,6 +845,27 @@ class HeadlessContentBlocker extends FastHtmlTag
         return \array_map($prepareRows, $result);
     }
     /**
+     * Find potential selector syntax finders for a given match. You need to use `matchesAttributes` on the match
+     * to check if the match is covered by the returned finders.
+     *
+     * @param string $tag
+     * @param string[] $attributeNames
+     * @return SelectorSyntaxFinder[]
+     */
+    public function findPotentialSelectorSyntaxFindersForMatch($tag, $attributeNames)
+    {
+        $result = [];
+        $tagFinders = $this->selectorSyntaxFindersTagMatrix[$tag] ?? [];
+        foreach ($tagFinders as $entry) {
+            $attributeName = $entry[0];
+            $finder = $entry[1];
+            if (\in_array($attributeName, $attributeNames, \true)) {
+                $result[] = $finder;
+            }
+        }
+        return $result;
+    }
+    /**
      * Get blockable rules starting with a given string. This does only work for non-Selector-Syntax expressions.
      *
      * Example: `avf_exclude_assets:avia_google_maps_api_script` -> search by `avf_exclude_assets:` and it will return
@@ -767,14 +901,15 @@ class HeadlessContentBlocker extends FastHtmlTag
                 return $blockable;
             }
         }
+        // @codeCoverageIgnoreStart
         return null;
+        // @codeCoverageIgnoreEnd
     }
     /**
      * If you pass `true`, the generated `BlockedResult` will contain multiple results and will not
      * break after the first found blockable to block.
      *
      * @param boolean $status
-     * @codeCoverageIgnore
      */
     public function setAllowMultipleBlockerResults($status)
     {
@@ -782,8 +917,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function isAllowMultipleBlockerResults()
     {
@@ -791,8 +924,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getTagAttributeMap()
     {
@@ -809,8 +940,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getBlockables()
     {
@@ -818,8 +947,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getKeepAlwaysAttributes()
     {
@@ -827,8 +954,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getKeepAlwaysAttributesIfClass()
     {
@@ -836,8 +961,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getSkipInlineScriptVariableAssignments()
     {
@@ -845,8 +968,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getInlineStyleDummyUrlPath()
     {
@@ -854,8 +975,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getReplaceAlwaysAttributes()
     {
@@ -863,8 +982,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getVisualParentIfClass()
     {
@@ -881,8 +998,6 @@ class HeadlessContentBlocker extends FastHtmlTag
     }
     /**
      * Getter.
-     *
-     * @codeCoverageIgnore
      */
     public function getFinderToMatcher()
     {
@@ -897,5 +1012,32 @@ class HeadlessContentBlocker extends FastHtmlTag
     public function getPluginsByClassName($className)
     {
         return $this->plugins[$className] ?? null;
+    }
+    /**
+     * Getter.
+     *
+     * This also allows you to clear the markup pool by using `= []` to the retrieved reference.
+     */
+    public function &getMarkupPool()
+    {
+        return $this->markupPool;
+    }
+    /**
+     * Find the original markup from a given markup without any transformations.
+     *
+     * @param Markup $markup
+     */
+    public function findOriginalMarkup($markup)
+    {
+        // @codeCoverageIgnoreStart
+        if ($markup === null) {
+            return null;
+        }
+        // @codeCoverageIgnoreEnd
+        $id = $markup->getId();
+        while (isset($this->markupChain[$id])) {
+            $id = $this->markupChain[$id];
+        }
+        return $this->markupPool[$id] ?? $markup;
     }
 }

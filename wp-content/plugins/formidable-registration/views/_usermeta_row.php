@@ -1,19 +1,34 @@
+<?php
+/**
+ * Shows a single user meta row.
+ *
+ * @package FrmReg
+ *
+ * @var int          $meta_key
+ * @var int          $meta_name
+ * @var FrmRegAction $action_control
+ * @var int          $field_id
+ * @var array        $fields
+ * @var bool         $echo
+ */
+?>
+
 <div id="frm_user_meta_<?php echo esc_attr( $meta_key ); ?>" class="frm_user_meta_row frm_grid_container">
 	<div class="frm4 frm_form_field">
-		<label class="screen-reader-text">
-			<?php esc_html_e( 'Name', 'formidable' ); ?>
+		<label class="screen-reader-text" for="<?php echo esc_attr( 'meta_name_' . $meta_key ); ?>">
+			<?php esc_html_e( 'Name', 'frmreg' ); ?>
 		</label>
-		<input type="text" value="<?php echo esc_attr( ( isset( $echo ) && $echo ) ? $meta_name : '' ); ?>" name="<?php echo esc_attr( $action_control->get_field_name( 'reg_usermeta' ) ); ?>[<?php echo esc_attr( $meta_key ); ?>][meta_name]"/>
+		<input type="text" id="<?php echo esc_attr( 'meta_name_' . $meta_key ); ?>" value="<?php echo esc_attr( $echo ? $meta_name : '' ); ?>" name="<?php echo esc_attr( $action_control->get_field_name( 'reg_usermeta' ) ); ?>[<?php echo esc_attr( $meta_key ); ?>][meta_name]"/>
 	</div>
 
 	<div class="frm7 frm_form_field">
-		<label class="screen-reader-text">
-			<?php esc_html_e( 'Value', 'formidable' ); ?>
+		<label class="screen-reader-text" for="<?php echo esc_attr( 'meta_value_' . $meta_key ); ?>">
+			<?php esc_html_e( 'Value', 'frmreg' ); ?>
 		</label>
-		<select name="<?php echo esc_attr( $action_control->get_field_name( 'reg_usermeta' ) ); ?>[<?php echo esc_attr( $meta_key ); ?>][field_id]">
+		<select id="<?php echo esc_attr( 'meta_value_' . $meta_key ); ?>" name="<?php echo esc_attr( $action_control->get_field_name( 'reg_usermeta' ) ); ?>[<?php echo esc_attr( $meta_key ); ?>][field_id]">
 			<option value="">- <?php esc_html_e( 'Select Field', 'frmreg' ); ?> -</option>
 			<?php
-			if ( isset( $fields ) && is_array( $fields ) ) {
+			if ( is_array( $fields ) ) {
 				foreach ( $fields as $field ) {
 					if ( ! FrmField::is_no_save_field( $field->type ) && FrmRegActionHelper::include_in_user_meta( $field, $field_id ) ) { ?>
 						<option value="<?php echo esc_attr( $field->id ); ?>" <?php selected( $field_id, $field->id ); ?>><?php echo esc_html( FrmAppHelper::truncate( $field->name, 50 ) ); ?></option>

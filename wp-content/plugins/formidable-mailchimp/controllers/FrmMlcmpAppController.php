@@ -5,6 +5,13 @@ class FrmMlcmpAppController {
 	private static $entry;
 	private static $action;
 
+	/**
+	 * @since 2.09
+	 *
+	 * @var string
+	 */
+	private static $list_fields_cache_key = 'frm_mlcmp_list_fields';
+
 	public static function load_lang() {
 		load_plugin_textdomain( 'frmmlcmp', false, FrmMlcmpAppHelper::plugin_folder() . '/languages/' );
 	}
@@ -511,9 +518,37 @@ class FrmMlcmpAppController {
 		return self::decode_call( '/lists', array( 'count' => 100, 'method' => 'GET' ) );
 	}
 
+	/**
+	 * Clears MailChimp lists field cache.
+	 *
+	 * @since 2.09
+	 *
+	 * @return void
+	 */
+	public static function clear_mailchimp_lists_field_cache() {
+		FrmAppHelper::permission_check( 'frm_edit_forms' );
+		check_ajax_referer( 'frm_ajax' );
+		delete_transient( self::$list_fields_cache_key );
+		wp_send_json_success();
+	}
+
 	public static function get_list_fields( $list_id ) {
-		$args = array( 'method' => 'GET', 'count' => 100 );
-		return self::decode_call( '/lists/' . $list_id . '/merge-fields', $args );
+		$cached_list_fields = get_transient( self::$list_fields_cache_key );
+		if ( ! is_array( $cached_list_fields ) ) {
+			$cached_list_fields = array();
+		}
+		if ( ! empty( $cached_list_fields[ $list_id ] ) ) {
+			return $cached_list_fields[ $list_id ];
+		}
+		$args        = array( 'method' => 'GET', 'count' => 100 );
+		$list_fields = self::decode_call( '/lists/' . $list_id . '/merge-fields', $args );
+
+		if ( empty( $list_fields['error'] ) ) {
+			$cached_list_fields[ $list_id ] = $list_fields;
+			set_transient( self::$list_fields_cache_key, $cached_list_fields, DAY_IN_SECONDS );
+		}
+
+		return $list_fields;
 	}
 
 	/**
@@ -527,7 +562,7 @@ class FrmMlcmpAppController {
 	 * @return array
 	 */
 	public static function get_marketing_permissions( $list_id ) {
-		$args = array( 'method' => 'GET', 'count' => 1 );
+		$args    = array( 'method' => 'GET', 'count' => 1 );
 		$members = self::decode_call( '/lists/' . $list_id . '/members', $args );
 		$member  = isset( $members['members'] ) && isset( $members['members'][0] ) ? $members['members'][0] : array();
 		return isset( $member['marketing_permissions'] ) ? $member['marketing_permissions'] : array();

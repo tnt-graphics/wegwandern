@@ -21,7 +21,7 @@ class FrmProHooksController {
 		}
 
 		add_action( 'admin_init', 'FrmProAppController::admin_init' );
-		add_action( 'plugins_loaded', 'FrmProAppController::load_lang' );
+		add_action( 'init', 'FrmProAppController::load_lang', 0 );
 
 		global $frm_vars;
 		if ( ! $frm_vars['pro_is_authorized'] ) {
@@ -110,6 +110,8 @@ class FrmProHooksController {
 		add_action( 'frm_after_create_entry', 'FrmProEntriesController::maybe_set_cookie', 20, 2 );
 		add_filter( 'frm_setup_edit_entry_vars', 'FrmProEntriesController::setup_edit_vars' );
 
+		add_filter( 'the_content', 'FrmProEntriesController::maybe_add_entry_delete_message', 20 );
+
 		// File field
 		add_filter( 'frm_validate_entry', 'FrmProFileField::upload_files_no_js', 10, 1 );
 		add_action( 'frm_before_destroy_entry', 'FrmProFileField::delete_files_with_entry', 10, 2 );
@@ -154,6 +156,7 @@ class FrmProHooksController {
 		add_action( 'template_redirect', 'FrmProFieldsController::redirect_attachment', 1 );
 		add_action( 'frm_pro_delete_temp_files_event', 'FrmProFieldsController::delete_temp_files' );
 		add_filter( 'frm_data_sort', 'FrmProFieldsController::order_values', 20, 2 );
+		add_action( 'frm_dropdown_field_after_no_placeholder_option', 'FrmProFieldsController::dropdown_field_after_no_placeholder_option' );
 
 		// Fields Helper
 		add_filter( 'frm_posted_field_ids', 'FrmProFieldsHelper::posted_field_ids' );
@@ -262,6 +265,10 @@ class FrmProHooksController {
 
 		// License expired email.
 		add_action( 'frm_daily_event', 'FrmProEmailLicenseExpiredController::maybe_send' );
+
+		// Usage
+		add_filter( 'frm_usage_settings', 'FrmProUsageController::settings' );
+		add_filter( 'frm_usage_form', 'FrmProUsageController::form', 10, 2 );
 	}
 
 	public static function load_admin_hooks() {
@@ -364,8 +371,6 @@ class FrmProHooksController {
 			add_action( 'frm_add_form_settings_section', 'FrmProFormsController::form_settings_sections' );
 			add_action( 'frm_add_form_perm_options', 'FrmProFormsController::add_form_page_options', 100 );
 			add_action( 'frm_add_form_ajax_options', 'FrmProFormsController::add_form_ajax_options' );
-			add_action( 'frm_add_form_button_options', 'FrmProFormsController::add_form_button_options' );
-			add_action( 'frm_add_form_style_tab_options', 'FrmProFormsController::add_form_style_tab_options' );
 			add_action( 'admin_enqueue_scripts', 'FrmProAppController::load_admin_js_assets' );
 		}
 
@@ -442,10 +447,6 @@ class FrmProHooksController {
 		add_action( 'wp_ajax_frm_fields_ajax_time_options', 'FrmProTimeFieldsController::ajax_time_options' );
 		add_action( 'wp_ajax_nopriv_frm_fields_ajax_time_options', 'FrmProTimeFieldsController::ajax_time_options' );
 
-		// Usage
-		add_filter( 'frm_usage_settings', 'FrmProUsageController::settings' );
-		add_filter( 'frm_usage_form', 'FrmProUsageController::form', 10, 2 );
-
 		// Summary field
 		add_action( 'frm_before_create_field', 'FrmProFieldSummary::maybeAddBreakFieldBeforeSummary', 10, 2 );
 
@@ -513,6 +514,13 @@ class FrmProHooksController {
 
 		add_action( 'frm_enqueue_floating_links', 'FrmProAppController::load_floating_links_js' );
 		add_filter( 'frm_inbox_slidein_js_vars', 'FrmProAppController::inbox_slidein_js_vars' );
+
+		add_action(
+			'admin_init',
+			function () {
+				self::fix_entries_list_for_some_license_types();
+			} 
+		);
 	}
 
 	public static function load_ajax_hooks() {
@@ -562,8 +570,8 @@ class FrmProHooksController {
 		// Lookup Fields
 		add_action( 'wp_ajax_frm_add_watch_lookup_row', 'FrmProLookupFieldsController::add_watch_lookup_row' );
 		add_action( 'wp_ajax_frm_get_options_for_get_values_field', 'FrmProLookupFieldsController::ajax_get_options_for_get_values_field' );
-		add_action( 'wp_ajax_frm_replace_lookup_field_options', 'FrmProLookupFieldsController::ajax_get_dependent_lookup_field_options' );
-		add_action( 'wp_ajax_nopriv_frm_replace_lookup_field_options', 'FrmProLookupFieldsController::ajax_get_dependent_lookup_field_options' );
+		add_action( 'wp_ajax_frm_replace_lookup_field_options_arr', 'FrmProLookupFieldsController::ajax_get_dependent_lookup_field_options_arr' );
+		add_action( 'wp_ajax_nopriv_frm_replace_lookup_field_options_arr', 'FrmProLookupFieldsController::ajax_get_dependent_lookup_field_options_arr' );
 		add_action( 'wp_ajax_frm_replace_cb_radio_lookup_options', 'FrmProLookupFieldsController::ajax_get_dependent_cb_radio_lookup_options' );
 		add_action( 'wp_ajax_nopriv_frm_replace_cb_radio_lookup_options', 'FrmProLookupFieldsController::ajax_get_dependent_cb_radio_lookup_options' );
 		add_action( 'wp_ajax_nopriv_frm_get_lookup_text_value', 'FrmProLookupFieldsController::ajax_get_text_field_lookup_value' );
@@ -645,5 +653,88 @@ class FrmProHooksController {
 		add_action( 'frm_update_form', 'FrmProCopiesController::save_copied_form', 20, 2 );
 		add_action( 'frm_destroy_form', 'FrmProCopiesController::destroy_copied_form' );
 		add_action( 'wp_uninitialize_site', 'FrmProCopiesController::delete_copy_rows', 20, 2 );
+	}
+
+	/**
+	 * Basic and Plus licenses (and possibly others), do not allow for global inbox settings.
+	 * These settings may have been previously changed when using another license,
+	 * but then ignored after downgrading.
+	 *
+	 * @since 6.17.2
+	 *
+	 * @return void
+	 */
+	private static function fix_entries_list_for_some_license_types() {
+		$user_type = FrmProAddonsController::license_type();
+		if ( in_array( $user_type, array( 'elite', 'business', 'personal', 'grandfathered' ), true ) ) {
+			return;
+		}
+
+		$menu_name = FrmAppHelper::get_menu_name();
+		if ( ! in_array( $menu_name, array( 'Formidable', 'Forms' ), true ) ) {
+			return;
+		}
+
+		$settings        = FrmProAppHelper::get_settings();
+		$inbox_badge_off = ! empty( $settings->inbox ) && ! isset( $settings->inbox['badge'] );
+
+		if ( ! $inbox_badge_off ) {
+			// Exit early to avoid duplicate filters.
+			// This is only an issue if the inbox setting is disabled, but not actually functioning.
+			return;
+		}
+
+		$inbox        = new FrmInbox();
+		$unread_count = count( $inbox->unread() );
+
+		if ( ! $unread_count ) {
+			return;
+		}
+
+		$sanitized_menu_name = sanitize_title( $menu_name );
+
+		add_filter( 'manage_' . $sanitized_menu_name . '-' . $unread_count . '_page_formidable-entries_columns', 'FrmEntriesController::manage_columns' );
+		add_filter( 'manage_' . $sanitized_menu_name . '-' . $unread_count . '_page_formidable-dashboard_columns', 'FrmDashboardController::entries_columns' );
+
+		if ( in_array( FrmAppHelper::simple_get( 'frm_action', 'sanitize_title' ), array( 'edit', 'show', 'new', 'duplicate' ), true ) ) {
+			add_filter(
+				'screen_options_show_screen',
+				function ( $show_screen, $screen ) use ( $sanitized_menu_name, $unread_count ) {
+					if ( $screen->id === $sanitized_menu_name . '-' . $unread_count . '_page_formidable-entries' ) {
+						$show_screen = false;
+					}
+					return $show_screen;
+				},
+				10,
+				2 
+			);
+		}
+
+		// Fix payments tables.
+		$hook_name = 'manage_' . $sanitized_menu_name . '-' . $unread_count . '_page_formidable-payments_columns';
+
+		if ( FrmTransLiteAppHelper::should_fallback_to_paypal() && is_callable( 'FrmPaymentsController::payment_columns' ) ) {
+			// Fallback to PayPal add-on.
+			add_filter( $hook_name, 'FrmPaymentsController::payment_columns' );
+		} elseif ( is_callable( 'FrmTransListsController::payment_columns' ) ) {
+			// Fallback to the Payments submodule.
+			add_filter( $hook_name, 'FrmTransListsController::payment_columns' );
+		} elseif ( is_callable( 'FrmTransLiteListsController::payment_columns' ) ) {
+			add_filter( $hook_name, 'FrmTransLiteListsController::payment_columns' );
+		}
+
+		if ( in_array( FrmAppHelper::simple_get( 'action', 'sanitize_title' ), array( 'edit', 'show', 'new', 'duplicate' ), true ) ) {
+			add_filter(
+				'screen_options_show_screen',
+				function ( $show_screen, $screen ) use ( $sanitized_menu_name, $unread_count ) {
+					if ( $screen->id === $sanitized_menu_name . '-' . $unread_count . '_page_formidable-payments' ) {
+						$show_screen = false;
+					}
+					return $show_screen;
+				},
+				10,
+				2 
+			);
+		}
 	}
 }

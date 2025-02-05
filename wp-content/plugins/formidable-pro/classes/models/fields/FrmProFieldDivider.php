@@ -214,7 +214,14 @@ DEFAULT_HTML;
 			}
 		}
 
-		$this->maybe_add_html_atts( $trigger, $html, array( 'tabindex' => '0', 'role' => 'button' ) );
+		$this->maybe_add_html_atts(
+			$trigger,
+			$html,
+			array(
+				'tabindex' => '0',
+				'role'     => 'button',
+			) 
+		);
 		$this->maybe_add_collapse_icon( $trigger, $html, ! empty( $section_is_open ) );
 		$this->maybe_hide_section( $html );
 

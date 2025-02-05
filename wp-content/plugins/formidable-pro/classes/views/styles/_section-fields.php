@@ -21,7 +21,9 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 					<div class="frm_grid_container">
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Color', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_section_color"
+								class="frm-style-item-heading"><?php esc_html_e( 'Color', 'formidable-pro' ); ?></label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
@@ -36,7 +38,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 							?>
 						</div>
 
-						<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Font Size', 'formidable-pro' ); ?></label></div>
+						<div class="frm5 frm_form_field">
+							<label
+								for="frm_success_font_size"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Font Size', 'formidable-pro' ); ?>
+							</label>
+						</div>
 						<div class="frm7 frm_form_field">
 							<?php
 							new FrmSliderStyleComponent(
@@ -51,7 +59,9 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 						</div>
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Weight', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_section_weight"
+								class="frm-style-item-heading"><?php esc_html_e( 'Weight', 'formidable-pro' ); ?></label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
@@ -67,7 +77,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 						</div>
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'BG Color', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_section_bg_color"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'BG Color', 'formidable-pro' ); ?>
+							</label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
@@ -82,7 +96,12 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 							?>
 						</div>
 
-						<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Padding', 'formidable-pro' ); ?></label></div>
+						<div class="frm5 frm_form_field">
+							<label
+								for="frm_section_pad"
+								class="frm-style-item-heading"><?php esc_html_e( 'Padding', 'formidable-pro' ); ?>
+							</label>
+						</div>
 						<div class="frm7 frm_form_field">
 							<?php
 							new FrmSliderStyleComponent(
@@ -97,7 +116,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 							?>
 						</div>
 
-						<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Margin', 'formidable-pro' ); ?></label></div>
+						<div class="frm5 frm_form_field">
+							<label
+								for="frm_section_margins"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Margin', 'formidable-pro' ); ?>
+							</label>
+						</div>
 						<div class="frm7 frm_form_field">
 							<?php
 							new FrmSliderStyleComponent(
@@ -127,7 +152,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 						</div>
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Border Color', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_section_border_color"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Border Color', 'formidable-pro' ); ?>
+							</label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
@@ -142,7 +171,13 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 							?>
 						</div>
 
-						<div class="frm5 frm_form_field"><label class="frm-style-item-heading"><?php esc_html_e( 'Border Width', 'formidable-pro' ); ?></label></div>
+						<div class="frm5 frm_form_field">
+							<label
+								for="frm_section_border_width"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Border Width', 'formidable-pro' ); ?>
+							</label>
+						</div>
 						<div class="frm7 frm_form_field">
 							<?php
 							new FrmSliderStyleComponent(
@@ -157,7 +192,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 						</div>
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Style', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_section_border_style"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Style', 'formidable-pro' ); ?>
+							</label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
@@ -178,7 +217,11 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 						</div>
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Position', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_section_border_loc"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Position', 'formidable-pro' ); ?>
+							</label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
@@ -205,23 +248,33 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 				<div class="frm-active">
 					<div class="frm_grid_container">
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Icons', 'formidable-pro' ); ?></label>
+							<label class="frm-style-item-heading">
+								<?php esc_html_e( 'Icons', 'formidable-pro' ); ?>
+							</label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php FrmStylesHelper::bs_icon_select( $style, $frm_style, 'arrow' ); ?>
 						</div>
 
 						<div class="frm5 frm_form_field">
-							<label class="frm-style-item-heading"><?php esc_html_e( 'Icons Position', 'formidable-pro' ); ?></label>
+							<label
+								for="frm_submit_weight"
+								class="frm-style-item-heading">
+								<?php esc_html_e( 'Icons Position', 'formidable-pro' ); ?>
+							</label>
 						</div>
 						<div class="frm7 frm_form_field">
 							<?php
 							new FrmDropdownStyleComponent(
-								$frm_style->get_field_name( 'submit_weight' ),
-								$style->post_content['submit_weight'],
+								$frm_style->get_field_name( 'collapse_pos' ),
+								$style->post_content['collapse_pos'],
 								array(
-									'id'      => 'frm_submit_weight',
-									'options' => FrmStyle::get_bold_options(),
+									'id'      => 'frm_collapse_pos',
+									'options' => array(
+										'after'  => __( 'After Heading', 'formidable-pro' ),
+										'before' => __( 'Before Heading', 'formidable-pro' ),
+
+									),
 								)
 							);
 							?>

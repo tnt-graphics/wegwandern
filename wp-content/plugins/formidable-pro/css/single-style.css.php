@@ -7,15 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php
 if ( ! empty( $vars ) && is_callable( 'FrmStylesHelper::output_vars' ) ) {
 	FrmStylesHelper::output_vars( $settings, $defaults, $vars );
-} else {
-	foreach ( $vars as $var ) {
-		if ( isset( $settings[ $var ] ) && $settings[ $var ] !== '' && $settings[ $var ] !== $defaults[ $var ] ) {
-			?>
-		--<?php echo esc_html( str_replace( '_', '-', $var ) ); ?>:<?php echo esc_html( $settings[ $var ] ); ?>;
-			<?php
-		}
-	}
 }
+
 if ( isset( $settings['progress_border_color'] ) && $settings['progress_border_color'] !== $defaults['progress_border_color'] ) {
 	?>
 	--progress-border-color-b: <?php echo esc_html( FrmStylesHelper::adjust_brightness( $settings['progress_border_color'], -10 ) ); ?>;
@@ -181,21 +174,23 @@ if ( isset( $settings['progress_border_color'] ) && $settings['progress_border_c
 
 <?php } // End if ( isset( $settings['progress_color'] ) ) { ?>
 
+<?php
+$thumb_color = $settings['slider_color'];
+$thumb       = 'border: 2px solid ' . esc_html( $thumb_color ) . $important . ';';
+$thumb      .= 'color:' . esc_html( $settings['progress_active_color'] . $important ) . ';';
+?>
+
 /* Start Range slider */
 .<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-webkit-slider-thumb {
-	<?php
-	$thumb_color = $settings['slider_color'];
-	echo $thumb  = 'border: 2px solid ' . esc_html( $thumb_color ) . $important . ';
-	color:' . esc_html( $settings['progress_active_color'] . $important ) . ';';
-	?>
+	<?php echo esc_html( $thumb ); ?>
 }
 
 .<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-moz-range-thumb {
-	<?php echo $thumb; ?>
+	<?php echo esc_html( $thumb ); ?>
 }
 
 .<?php echo esc_html( $settings['style_class'] ); ?> input[type=range]::-ms-thumb {
-	<?php echo $thumb; ?>
+	<?php echo esc_html( $thumb ); ?>
 }
 /* End Range Slider */
 

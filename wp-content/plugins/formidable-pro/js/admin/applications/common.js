@@ -139,12 +139,28 @@
 		});
 	}
 
+	function getDeleteChildItemsControl() {
+		const checkbox = frmDom.tag( 'input' );
+		checkbox.type  = 'checkbox';
+		checkbox.id    = 'frm_delete_child_items';
+		const label = frmDom.tag( 'label', {
+			children: [
+				checkbox,
+				document.createTextNode( __( 'Remove child forms, views, entries and pages from database as well.', 'formidable-pro' ) ),
+			],
+		} );
+		label.for = 'frm_delete_child_items';
+
+		return label;
+	};
+
 	function triggerDeleteApplicationModal( termId, callback ) {
 		const title = __( 'Delete Application', 'formidable-pro' );
+		const deleteRelatedItemControl = getDeleteChildItemsControl();
 		const content = div({
 			children: [
 				tag( 'p', __( 'Are you sure you want to delete this application?', 'formidable-pro' ) ),
-				tag( 'p', __( 'Forms, Views, and pages will not be deleted.', 'formidable-pro' ) )
+				deleteRelatedItemControl
 			]
 		});
 		content.style.padding = '20px';
@@ -163,6 +179,7 @@
 		function handleDeleteConfirmation() {
 			const formData = new FormData();
 			formData.append( 'term_id', termId );
+			formData.append( 'delete_related_items', document.getElementById( 'frm_delete_child_items' ).checked ? '1' : '0' );
 			doJsonPost( 'delete_application', formData ).then(
 				() => callback( termId )
 			);

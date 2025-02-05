@@ -48,15 +48,22 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 			return;
 		}
 
-		$field_list = FrmField::getAll( array( 'fi.form_id' => $form->id, 'fi.type not' => FrmField::no_save_fields() ), 'field_order' );
+		$field_list = FrmField::getAll(
+			array(
+				'fi.form_id'  => $form->id,
+				'fi.type not' => FrmField::no_save_fields(),
+			),
+			'field_order' 
+		);
 
-		$fid        = isset( $_REQUEST['fid'] ) ? sanitize_title( stripslashes( $_REQUEST['fid'] ) ) : '';
+		$fid        = FrmAppHelper::get_param( 'fid', '', 'request', 'sanitize_title' );
 		$input_id   = $input_id . '-search-input';
-		$search_str = isset( $_REQUEST['s'] ) ? sanitize_text_field( stripslashes( $_REQUEST['s'] ) ) : '';
+		$search_str = FrmAppHelper::get_param( 's', '', 'request', 'sanitize_text_field' );
 
 		foreach ( array( 'orderby', 'order' ) as $get_var ) {
-			if ( ! empty( $_REQUEST[ $get_var ] ) ) {
-				echo '<input type="hidden" name="' . esc_attr( $get_var ) . '" value="' . esc_attr( $_REQUEST[ $get_var ] ) . '" />';
+			$var_value = FrmAppHelper::get_param( $get_var, '', 'request', 'sanitize_text_field' );
+			if ( $var_value ) {
+				echo '<input type="hidden" name="' . esc_attr( $get_var ) . '" value="' . esc_attr( $var_value ) . '" />';
 			}
 		}
 

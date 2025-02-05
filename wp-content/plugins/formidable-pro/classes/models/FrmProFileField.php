@@ -236,7 +236,7 @@ class FrmProFileField {
 	 *
 	 * @return string
 	 */
-	private static function get_icon_for_file_type( $extension ) {
+	public static function get_icon_for_file_type( $extension ) {
 		$images_url = FrmProAppHelper::plugin_url() . '/images/';
 
 		if ( in_array( $extension, array( 'pdf', 'doc', 'xls', 'docx', 'xlsx' ), true ) ) {
@@ -1022,7 +1022,10 @@ class FrmProFileField {
 
 		self::allow_xlsx_files_from_google_sheets();
 
-		$response = array( 'media_ids' => array(), 'errors' => array() );
+		$response = array(
+			'media_ids' => array(),
+			'errors'    => array(),
+		);
 		add_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
 
 		if ( ! $sideload && isset( $_FILES[ $file_id ] ) && isset( $_FILES[ $file_id ]['name'] ) && is_array( $_FILES[ $file_id ]['name'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
@@ -1393,7 +1396,12 @@ class FrmProFileField {
 			return;
 		}
 
-		$upload_fields = FrmField::getAll( array( 'fi.type' => 'file', 'fi.form_id' => $entry->form_id ) );
+		$upload_fields = FrmField::getAll(
+			array(
+				'fi.type'    => 'file',
+				'fi.form_id' => $entry->form_id,
+			) 
+		);
 		foreach ( $upload_fields as $field ) {
 			self::delete_files_from_field( $field, $entry );
 			unset( $field );
@@ -1558,7 +1566,12 @@ class FrmProFileField {
 	 */
 	public static function duplicate_files_with_entry( $entry_id, $form_id, $args ) {
 		$old_entry_id  = ! empty( $args['old_id'] ) ? $args['old_id'] : 0;
-		$upload_fields = FrmField::getAll( array( 'fi.type' => 'file', 'fi.form_id' => $form_id ) );
+		$upload_fields = FrmField::getAll(
+			array(
+				'fi.type'    => 'file',
+				'fi.form_id' => $form_id,
+			) 
+		);
 
 		if ( ! $old_entry_id || ! $upload_fields ) {
 			return;
@@ -1953,7 +1966,11 @@ class FrmProFileField {
 		}
 
 		$protected    = self::file_is_protected( $id, $form_id );
-		$chmod_params = array( 'file_id' => $id, 'form_id' => $form_id, 'protected' => $protected );
+		$chmod_params = array(
+			'file_id'   => $id,
+			'form_id'   => $form_id,
+			'protected' => $protected,
+		);
 
 		if ( false === $size && wp_attachment_is_image( $id ) && ! get_post_meta( $id, '_wp_attachment_metadata', true ) ) {
 			self::delay_file_protection_for_image( $chmod_params );
@@ -2137,7 +2154,7 @@ class FrmProFileField {
 	 * @param int $file_id
 	 * @return int
 	 */
-	private static function get_form_id_from_file_id( $file_id ) {
+	public static function get_form_id_from_file_id( $file_id ) {
 		$meta = get_post_meta( $file_id, '_frm_file', true );
 
 		if ( ! $meta ) {
@@ -2322,7 +2339,7 @@ class FrmProFileField {
 	/**
 	 * @return string
 	 */
-	private static function file_protocol() {
+	public static function file_protocol() {
 		return get_option( 'permalink_structure' ) ? '/frm_file/' : '?frm_file=';
 	}
 
@@ -2404,14 +2421,20 @@ class FrmProFileField {
 			}
 		}
 
-		$is_image = wp_attachment_is_image( $file_id );
+		$is_pdf   = '.pdf' === substr( $filename, -4, 4 );
+		$is_image = $is_pdf || wp_attachment_is_image( $file_id );
 
+		$size = false;
 		if ( $is_image ) {
 			if ( $count === 6 && $split[4] !== 'size' ) {
 				return array( 'message' => __( 'payload does not match the expected format', 'formidable-pro' ) );
 			}
 
 			$size = $count === 6 ? $split[5] : 'full';
+		}
+
+		if ( $is_pdf && 'full' === $size ) {
+			$is_image = false;
 		}
 
 		$get_file_url_args = array();
@@ -2470,7 +2493,23 @@ class FrmProFileField {
 			if ( 2 === count( $split ) ) {
 				$size = $split;
 			}
+
 			$image_src = wp_get_attachment_image_src( $file_id, $size );
+
+			if ( ! $image_src && $is_pdf ) {
+				remove_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src' );
+				remove_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta' );
+
+				$image_src = wp_get_attachment_image_src( $file_id, $size );
+
+				if ( ! $image_src ) {
+					wp_safe_redirect( self::get_icon_for_file_type( 'pdf' ) );
+					exit;
+				}
+
+				add_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src', 10, 4 );
+				add_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta', 10, 2 );
+			}
 		}
 
 		$final_path .= ! empty( $image_src ) ? basename( reset( $image_src ) ) : $filename;
@@ -2670,12 +2709,16 @@ class FrmProFileField {
 		$path      = get_attached_file( $attachment_id );
 		$file_type = wp_check_filetype( $path );
 
-		if ( 'pdf' === $file_type['ext'] && false === strpos( $image[0], 'document.png' ) ) {
+		if ( 'pdf' === $file_type['ext'] && false === strpos( $image[0], 'document.png' ) && false === strpos( $image[0], 'document.svg' ) ) {
 			// Some servers allow PDF previews. We do not want to place an ICON if the PDF icon is not document.png.
 			return;
 		}
 
 		$image[0] = self::get_icon_for_file_type( $file_type['ext'] );
+
+		// Change the size of the icon as well.
+		$image[1] = 56;
+		$image[2] = 56;
 	}
 
 	/**
@@ -2784,14 +2827,5 @@ class FrmProFileField {
 		$form_directory = self::upload_dir_path( $form_id );
 		$path           = wp_upload_dir()['basedir'] . '/' . $path;
 		return 0 === strpos( $path, $form_directory );
-	}
-
-	/**
-	 * @deprecated 2.03.08
-	 */
-	public static function validate( $errors, $field, $values, $args ) {
-		_deprecated_function( __FUNCTION__, '2.03.08', 'FrmProFileField::no_js_validate' );
-
-		return self::no_js_validate( $errors, $field, $values, $args );
 	}
 }

@@ -1,4 +1,8 @@
-<h3><?php esc_html_e( 'User Meta', 'frmreg' ); ?> <span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php esc_attr_e( 'Add user meta to save submitted values to a user\'s profile. User meta can be retrieved with the [user_meta key="insert_name_here"] shortcode.', 'frmreg' ); ?>"></span></h3>
+<h3>
+<?php
+esc_html_e( 'User Meta', 'frmreg' );
+FrmRegAppController::show_svg_tooltip( __( 'Add user meta to save submitted values to a user\'s profile. User meta can be retrieved with the [user_meta key="insert_name_here"] shortcode.', 'frmreg' ) );
+?>
 <?php $has_meta = isset( $form_action->post_content['reg_usermeta'] ) && FrmRegActionHelper::has_user_meta( $form_action->post_content['reg_usermeta'] ); ?>
 <div id="frm_user_meta_add" class="form-table<?php echo esc_attr( $has_meta ? ' frm_hidden' : '' ); ?>">
 	<span class="frm_add_meta_link">

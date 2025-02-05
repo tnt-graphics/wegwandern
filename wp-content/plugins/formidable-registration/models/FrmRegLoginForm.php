@@ -319,8 +319,10 @@ class FrmRegLoginForm extends FrmRegForm {
 		);
 
 		if ( $this->show_elements['labels'] === true ) {
-			$this->element_classes['username'] .= ' frm_top_container';
-			$this->element_classes['password'] .= ' frm_top_container';
+			$label_position = ' frm_' . FrmRegAppController::get_style_option( $atts, 'position', 'top' ) . '_container';
+
+			$this->element_classes['username'] .= $label_position;
+			$this->element_classes['password'] .= $label_position;
 		} else {
 			$this->element_classes['username'] .= ' frm_none_container';
 			$this->element_classes['password'] .= ' frm_none_container';
@@ -900,7 +902,7 @@ class FrmRegLoginForm extends FrmRegForm {
 		}
 
 		parse_str( $parts[1], $query );
-		if ( isset( $query['redirect_to'] ) && ! empty( $query['redirect_to'] ) ) {
+		if ( ! empty( $query['redirect_to'] ) ) {
 			$redirect_to = $query['redirect_to'];
 		} else {
 			$redirect_to = '';
@@ -996,6 +998,28 @@ class FrmRegLoginForm extends FrmRegForm {
 		if ( $this->get_layout() === 'h' ) {
 			do_action( 'login_form' );
 		}
+	}
+
+	/**
+	 * Initializes the fields label position class.
+	 *
+	 * @since 3.0.1
+	 * @return void
+	 */
+	protected function init_label_class() {
+		// Do not bother calling FrmRegAppController::get_style_option since we will be calling it in init_element_classes().
+	}
+
+	/**
+	 * @since 3.0.1
+	 *
+	 * @return string
+	 */
+	public function get_form_action_url() {
+		if ( FrmRegAppHelper::supports_alternative_login_url() ) {
+			return add_query_arg( 'action', 'frm_login', FrmAppHelper::get_ajax_url() );
+		}
+		return site_url( 'wp-login.php', 'login_post' );
 	}
 
 	/**

@@ -629,25 +629,47 @@ class FrmProLookupFieldsController {
 	}
 
 	/**
-	 * Get the options for a dependent Lookup Field based on the parent Lookup field values
+	 * Handle AJAX for multiple lookup fields.
 	 *
-	 * @since 2.01.0
+	 * @since 6.15
+	 *
+	 * @return void
 	 */
-	public static function ajax_get_dependent_lookup_field_options() {
+	public static function ajax_get_dependent_lookup_field_options_arr() {
 		// Don't use nonce since this is front-end.
 
-		$field_id    = FrmAppHelper::get_param( 'field_id', '', 'post', 'absint' );
-		$parent_args = array(
-			'parent_field_ids' => FrmAppHelper::get_param( 'parent_fields', '', 'post', 'absint' ),
-			'parent_vals'      => FrmAppHelper::get_param( 'parent_vals', '', 'post', 'wp_kses_post' ),
-		);
-		FrmAppHelper::sanitize_value( 'wp_specialchars_decode', $parent_args['parent_vals'] );
+		$data = FrmAppHelper::get_param( 'postData', array(), 'post' );
+		if ( ! is_array( $data ) || ! $data ) {
+			echo json_encode( array() );
+			wp_die();
+		}
 
-		$child_field = FrmField::getOne( $field_id );
+		$response = array();
+		foreach ( $data as $lookup ) {
+			if ( ! isset( $lookup['unique'] ) ) {
+				continue;
+			}
 
-		$final_values = self::get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field );
+			$unique_key  = absint( $lookup['unique'] );
+			$field_id    = isset( $lookup['fieldId'] ) ? absint( $lookup['fieldId'] ) : 0;
+			$parents     = isset( $lookup['parents'] ) ? $lookup['parents'] : '';
+			$parent_vals = isset( $lookup['parentVals'] ) ? $lookup['parentVals'] : '';
 
-		echo json_encode( $final_values );
+			FrmAppHelper::sanitize_value( 'absint', $parents );
+			FrmAppHelper::sanitize_value( 'wp_kses_post', $parent_vals );
+
+			$parent_args = array(
+				'parent_field_ids' => $parents,
+				'parent_vals'      => $parent_vals,
+			);
+
+			FrmAppHelper::sanitize_value( 'wp_specialchars_decode', $parent_args['parent_vals'] );
+
+			$child_field             = FrmField::getOne( $field_id );
+			$response[ $unique_key ] = self::get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field );
+		}
+
+		echo json_encode( $response );
 		wp_die();
 	}
 
@@ -1109,5 +1131,29 @@ class FrmProLookupFieldsController {
 			// If autocomplete is selected, add a blank data-placeholder so chosen's default isn't used
 			$add_html .= ' data-placeholder=" "';
 		}
+	}
+
+	/**
+	 * Get the options for a dependent Lookup Field based on the parent Lookup field values
+	 *
+	 * @since 2.01.0
+	 * @deprecated 6.15 This has been replaced with ajax_get_dependent_lookup_field_options_arr. As of v6.15 lookup requests are batched.
+	 */
+	public static function ajax_get_dependent_lookup_field_options() {
+		_deprecated_function( __METHOD__, '6.15', 'FrmProLookupFieldsController::ajax_get_dependent_lookup_field_options_arr' );
+
+		$field_id    = FrmAppHelper::get_param( 'field_id', '', 'post', 'absint' );
+		$parent_args = array(
+			'parent_field_ids' => FrmAppHelper::get_param( 'parent_fields', '', 'post', 'absint' ),
+			'parent_vals'      => FrmAppHelper::get_param( 'parent_vals', '', 'post', 'wp_kses_post' ),
+		);
+		FrmAppHelper::sanitize_value( 'wp_specialchars_decode', $parent_args['parent_vals'] );
+
+		$child_field = FrmField::getOne( $field_id );
+
+		$final_values = self::get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field );
+
+		echo json_encode( $final_values );
+		wp_die();
 	}
 }

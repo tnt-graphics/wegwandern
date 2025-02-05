@@ -2,7 +2,7 @@
 
 namespace DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\selectorSyntaxFunction;
 
-use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\SelectorSyntaxMatch;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\AbstractMatch;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\SelectorSyntaxAttributeFunction;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\AbstractPlugin;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\finder\match\MatchPluginCallbacks;
@@ -35,7 +35,7 @@ class TransformAttribute extends AbstractPlugin
      * Function implementation.
      *
      * @param SelectorSyntaxAttributeFunction $fn
-     * @param SelectorSyntaxMatch $match
+     * @param AbstractMatch $match
      * @param mixed $value
      */
     public function fn($fn, $match, $value)
@@ -55,9 +55,6 @@ class TransformAttribute extends AbstractPlugin
                             $newValue = \preg_replace($regexpMatch, $regexpReplace, $newValue);
                         } catch (Exception $e) {
                             // Silence is golden.
-                        }
-                        if (!\is_string($newValue)) {
-                            $newValue = $attributeValue;
                         }
                     }
                     if (!empty($rename)) {

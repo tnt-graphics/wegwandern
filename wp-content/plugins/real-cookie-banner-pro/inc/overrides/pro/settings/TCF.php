@@ -91,7 +91,7 @@ trait TCF
     // Documented in IOverrideTCF
     public function clearGvl()
     {
-        Core::getInstance()->getTcfVendorListNormalizer()->getPersist()->clear();
+        Core::getInstance()->getTcfVendorListNormalizer()->clear();
         \update_option(SettingsTCF::SETTING_TCF_GVL_DOWNLOAD_TIME, '');
         \update_option(SettingsTCF::OPTION_TCF_GVL_NEXT_DOWNLOAD_TIME, '');
     }
@@ -154,7 +154,7 @@ trait TCF
     public function localize($arr, $context)
     {
         $isActive = $this->isActive();
-        $isFrontend = $context === Constants::ASSETS_TYPE_FRONTEND || \is_customize_preview();
+        $isFrontend = \in_array($context, [Constants::ASSETS_TYPE_FRONTEND, Constants::ASSETS_TYPE_LOGIN], \true) || \is_customize_preview();
         $banner = TcfBanner::getInstance();
         if ($isFrontend && $isActive || $context === Constants::ASSETS_TYPE_ADMIN) {
             $arr['bannerI18n'] = \array_merge($arr['bannerI18n'], $banner->localizeTexts());

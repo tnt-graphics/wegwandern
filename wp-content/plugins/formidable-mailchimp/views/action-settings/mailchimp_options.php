@@ -1,4 +1,10 @@
 <div class="mlchp_list frm_grid_container">
+	<p class="frm12 frm_form_field">
+		<a href="#" class="frm_clear_mailchimp_cache button frm-button-secondary" >
+			<?php esc_html_e( 'Clear Cache', 'frmmlcmp' ); ?>
+		</a>
+		<span style="float:none" class="frm_clear_mailchimp_cache_spinner spinner"></span>
+	</p>
 	<p class="frm6">
 		<?php if ( $lists && isset( $lists['lists'] ) ) { ?>
 		<label><?php esc_html_e( 'List', 'frmmlcmp' ); ?> <span class="frm_required">*</span></label>

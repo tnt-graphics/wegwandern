@@ -496,7 +496,10 @@ class FrmProStatisticsController {
 	 * @return mixed
 	 */
 	private static function get_form_posts_for_statistics( $atts ) {
-		$where_post = array( 'form_id' => $atts['form_id'], 'post_id >' => 1 );
+		$where_post = array(
+			'form_id'   => $atts['form_id'],
+			'post_id >' => 1,
+		);
 
 		if ( $atts['drafts'] !== 'both' ) {
 			$where_post['is_draft'] = $atts['drafts'];
@@ -566,7 +569,10 @@ class FrmProStatisticsController {
 			// If first character is a quote, but the last character is not a quote
 			if ( ( strpos( $val, '"' ) === 0 && substr( $val, -1 ) != '"' ) || ( strpos( $val, "'" ) === 0 && substr( $val, -1 ) != "'" ) ) {
 				//parse atts back together if they were broken at spaces
-				$next_val = array( 'char' => substr( $val, 0, 1 ), 'val' => $val );
+				$next_val = array(
+					'char' => substr( $val, 0, 1 ),
+					'val'  => $val,
+				);
 				continue;
 				// If we don't have a previous value that needs to be parsed back together
 			}
@@ -575,7 +581,10 @@ class FrmProStatisticsController {
 				foreach ( array( '"', "'" ) as $q ) {
 					// Check if <" or >" exists in string and string does not end with ".
 					if ( substr( $temp, -1 ) != $q && ( strpos( $temp, '<' . $q ) || strpos( $temp, '>' . $q ) ) ) {
-						$next_val = array( 'char' => $q, 'val' => $val );
+						$next_val = array(
+							'char' => $q,
+							'val'  => $val,
+						);
 						$cont     = true;
 					}
 					unset( $q );
@@ -948,7 +957,14 @@ class FrmProStatisticsController {
 
 			$entry_ids = FrmDb::get_col( 'frm_items', $where );
 		} else {
-			$where_atts = apply_filters( 'frm_stats_where', array( 'where_is' => $filter_args['operator'], 'where_val' => $filter_args['value'] ), $filter_args );
+			$where_atts = apply_filters(
+				'frm_stats_where',
+				array(
+					'where_is'  => $filter_args['operator'],
+					'where_val' => $filter_args['value'],
+				),
+				$filter_args 
+			);
 
 			$pass_args = array(
 				'where_opt'   => $filter_args['field'],

@@ -3,12 +3,16 @@
 		document.addEventListener( 'change', handleChangeEvent );
 		document.addEventListener( 'keydown', handleKeyDownEvent );
 
-		jQuery( document ).on(
-			'frm-multiselect-changed',
-			function( _, option ) {
-				toggleSingleEntrySettings( option.value );
-			}
-		);
+		if ( document.getElementById( 'frm_single_entry_type' ) ) {
+			// This script will also load in the form builder if a toggle field is added.
+			// So avoid this listener if we're on another page.
+			jQuery( document ).on(
+				'frm-multiselect-changed',
+				function( _, option ) {
+					toggleSingleEntrySettings( option.value );
+				}
+			);
+		}
 	}
 
 	function handleDisabledRolesClick() {

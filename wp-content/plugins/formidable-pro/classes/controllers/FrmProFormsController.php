@@ -13,8 +13,9 @@ class FrmProFormsController {
 		wp_register_style( 'formidable-pro-form-settings', FrmProAppHelper::plugin_url() . '/css/settings/form-settings.css', array(), $version );
 
 		$frm_settings = FrmAppHelper::get_settings();
+		$unread_count = is_callable( 'FrmEntriesHelper::get_visible_unread_inbox_count' ) ? FrmEntriesHelper::get_visible_unread_inbox_count() : 0;
 
-		add_filter( 'manage_' . sanitize_title( $frm_settings->menu ) . '_page_formidable-entries_columns', 'FrmProEntriesController::manage_columns', 25 );
+		add_filter( 'manage_' . sanitize_title( $frm_settings->menu ) . ( $unread_count ? '-' . $unread_count : '' ) . '_page_formidable-entries_columns', 'FrmProEntriesController::manage_columns', 25 );
 
 		wp_register_style( 'formidable-dropzone', FrmProAppHelper::plugin_url() . '/css/dropzone.css', array(), $version );
 		wp_register_style( 'formidable-pro-fields', admin_url( 'admin-ajax.php?action=pro_fields_css' ), array(), $version );
@@ -378,6 +379,10 @@ class FrmProFormsController {
 			$i                         = 1;
 			require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/form_page_options.php';
 		}
+
+		// Print the hidden inputs for backward compatibility.
+		self::add_form_button_options( $values );
+		self::add_form_style_tab_options( $values );
 	}
 
 	/**
@@ -422,11 +427,12 @@ class FrmProFormsController {
 	 * @return void
 	 */
 	public static function add_form_button_options( $values ) {
-		global $frm_vars;
-		$page_field        = FrmProFormsHelper::has_field( 'break', $values['id'], true );
-		$post_types        = FrmProAppHelper::get_custom_post_types();
-		$submit_conditions = $values['submit_conditions'];
-		require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/add_form_button_options.php';
+		FrmProFormsHelper::array_to_hidden_inputs(
+			array(
+				'submit_conditions' => $values['submit_conditions'],
+			),
+			'options'
+		);
 	}
 
 	/**
@@ -436,7 +442,12 @@ class FrmProFormsController {
 	 * @return void
 	 */
 	public static function add_form_style_tab_options( $values ) {
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/add_form_style_options.php';
+		FrmProFormsHelper::array_to_hidden_inputs(
+			array(
+				'transition' => $values['transition'],
+			),
+			'options'
+		);
 	}
 
 	/**
@@ -540,7 +551,15 @@ class FrmProFormsController {
 		if ( $atts['entry_id'] && $atts['entry_id'] === 'last' ) {
 			$user_ID = get_current_user_id();
 			if ( $user_ID ) {
-				$frm_vars['editing_entry'] = FrmDb::get_var( $wpdb->prefix . 'frm_items', array( 'form_id' => $atts['id'], 'user_id' => $user_ID ), 'id', array( 'order_by' => 'created_at DESC' ) );
+				$frm_vars['editing_entry'] = FrmDb::get_var(
+					$wpdb->prefix . 'frm_items',
+					array(
+						'form_id' => $atts['id'],
+						'user_id' => $user_ID,
+					),
+					'id',
+					array( 'order_by' => 'created_at DESC' )
+				);
 			}
 		} elseif ( $atts['entry_id'] ) {
 			$frm_vars['editing_entry'] = $atts['entry_id'];
@@ -724,7 +743,7 @@ class FrmProFormsController {
 				case 'deletelink':
 					$replace_with = FrmProEntriesController::entry_delete_link( $atts );
 					break;
-                case 'back_label':
+				case 'back_label':
 					global $frm_vars;
 					if ( isset( $frm_vars['frm_prev_label'] ) ) {
 						$replace_with = $frm_vars['frm_prev_label'];
@@ -838,13 +857,22 @@ class FrmProFormsController {
 	public static function advanced_options( $options ) {
 		$adv_opts = array(
 			'x clickable=1'                               => __( 'Clickable Links', 'formidable-pro' ),
-			'x links=0'                                   => array( 'label' => __( 'Remove Links', 'formidable-pro' ), 'title' => __( 'Removes the automatic links to category pages', 'formidable-pro' ) ),
-			'x sanitize=1'                                => array( 'label' => __( 'Sanitize', 'formidable-pro' ), 'title' => __( 'Replaces spaces with dashes and lowercases all. Use if adding an HTML class or ID', 'formidable-pro' ) ),
+			'x links=0'                                   => array(
+				'label' => __( 'Remove Links', 'formidable-pro' ),
+				'title' => __( 'Removes the automatic links to category pages', 'formidable-pro' ),
+			),
+			'x sanitize=1'                                => array(
+				'label' => __( 'Sanitize', 'formidable-pro' ),
+				'title' => __( 'Replaces spaces with dashes and lowercases all. Use if adding an HTML class or ID', 'formidable-pro' ),
+			),
 			'x sanitize_url=1'                            => array(
 				'label' => __( 'Sanitize URL', 'formidable-pro' ),
 				'title' => __( 'Replaces all HTML entities with a URL safe string.', 'formidable-pro' ),
 			),
-			'x truncate=40'                               => array( 'label' => __( 'Truncate', 'formidable-pro' ), 'title' => __( 'Truncate text with a link to view more. If using Both (dynamic), the link goes to the detail page. Otherwise, it will show in-place.', 'formidable-pro' ) ),
+			'x truncate=40'                               => array(
+				'label' => __( 'Truncate', 'formidable-pro' ),
+				'title' => __( 'Truncate text with a link to view more. If using Both (dynamic), the link goes to the detail page. Otherwise, it will show in-place.', 'formidable-pro' ),
+			),
 			'x truncate=100 more_text="More"'             => __( 'More Text', 'formidable-pro' ),
 			'x time_ago=1'                                => array(
 				'label' => __( 'Time Ago', 'formidable-pro' ),
@@ -855,9 +883,18 @@ class FrmProFormsController {
 				'title' => __( 'Add or remove time from the selected date for date calculations.', 'formidable-pro' ),
 			),
 			'x decimal=2 dec_point="." thousands_sep=","' => __( '# Format', 'formidable-pro' ),
-			'x show="value"'                              => array( 'label' => __( 'Saved Value', 'formidable-pro' ), 'title' => __( 'Show the saved value for fields with separate values.', 'formidable-pro' ) ),
-			'x striphtml=1'                               => array( 'label' => __( 'Remove HTML', 'formidable-pro' ), 'title' => __( 'Remove all HTML added into your form before display', 'formidable-pro' ) ),
-			'x keepjs=1'                                  => array( 'label' => __( 'Keep JS', 'formidable-pro' ), 'title' => __( 'Javascript from your form entries are automatically removed. Add this option only if you trust those submitting entries.', 'formidable-pro' ) ),
+			'x show="value"'                              => array(
+				'label' => __( 'Saved Value', 'formidable-pro' ),
+				'title' => __( 'Show the saved value for fields with separate values.', 'formidable-pro' ),
+			),
+			'x striphtml=1'                               => array(
+				'label' => __( 'Remove HTML', 'formidable-pro' ),
+				'title' => __( 'Remove all HTML added into your form before display', 'formidable-pro' ),
+			),
+			'x keepjs=1'                                  => array(
+				'label' => __( 'Keep JS', 'formidable-pro' ),
+				'title' => __( 'Javascript from your form entries are automatically removed. Add this option only if you trust those submitting entries.', 'formidable-pro' ),
+			),
 		);
 
 		$options = array_merge( $options, $adv_opts );
@@ -1043,10 +1080,22 @@ class FrmProFormsController {
 	 * @return array $shortcodes
 	 */
 	public static function popup_shortcodes( $shortcodes ) {
-		$shortcodes['frm-graph']       = array( 'name' => __( 'Graph', 'formidable-pro' ), 'label' => __( 'Insert a Graph', 'formidable-pro' ) );
-		$shortcodes['frm-search']      = array( 'name' => __( 'Search', 'formidable-pro' ), 'label' => __( 'Add a Search Form', 'formidable-pro' ) );
-		$shortcodes['frm-show-entry']  = array( 'name' => __( 'Single Entry', 'formidable-pro' ), 'label' => __( 'Display a Single Entry', 'formidable-pro' ) );
-		$shortcodes['frm-entry-links'] = array( 'name' => __( 'List of Entries', 'formidable-pro' ), 'label' => __( 'Display a List of Entries', 'formidable-pro' ) );
+		$shortcodes['frm-graph']       = array(
+			'name'  => __( 'Graph', 'formidable-pro' ),
+			'label' => __( 'Insert a Graph', 'formidable-pro' ),
+		);
+		$shortcodes['frm-search']      = array(
+			'name'  => __( 'Search', 'formidable-pro' ),
+			'label' => __( 'Add a Search Form', 'formidable-pro' ),
+		);
+		$shortcodes['frm-show-entry']  = array(
+			'name'  => __( 'Single Entry', 'formidable-pro' ),
+			'label' => __( 'Display a Single Entry', 'formidable-pro' ),
+		);
+		$shortcodes['frm-entry-links'] = array(
+			'name'  => __( 'List of Entries', 'formidable-pro' ),
+			'label' => __( 'Display a List of Entries', 'formidable-pro' ),
+		);
 
 		/*
 		To add:
@@ -1071,7 +1120,10 @@ class FrmProFormsController {
 	 */
 	private static function popup_opts_formidable( array &$opts ) {
 		//'fields' => '', 'entry_id' => 'last' or #, 'exclude_fields' => '', GET => value
-		$opts['readonly'] = array( 'val' => 'disabled', 'label' => __( 'Make read-only fields editable', 'formidable-pro' ) );
+		$opts['readonly'] = array(
+			'val'   => 'disabled',
+			'label' => __( 'Make read-only fields editable', 'formidable-pro' ),
+		);
 	}
 
 	private static function popup_opts_display_frm_data( array &$opts, $shortcode ) {
@@ -1086,7 +1138,10 @@ class FrmProFormsController {
 	 */
 	private static function popup_opts_frm_search( array &$opts ) {
 		$opts = array(
-			'style'   => array( 'val' => 1, 'label' => __( 'Use Formidable styling', 'formidable-pro' ) ), // or custom class?
+			'style'   => array(
+				'val'   => 1,
+				'label' => __( 'Use Formidable styling', 'formidable-pro' ),
+			), // or custom class?
 			'label'   => array(
 				'val'   => __( 'Search', 'formidable-pro' ),
 				'label' => __( 'Customize search button', 'formidable-pro' ),
@@ -1104,7 +1159,11 @@ class FrmProFormsController {
 		$where     = array(
 			'status'      => 'published',
 			'is_template' => 0,
-			array( 'or' => 1, 'parent_form_id' => null, 'parent_form_id <' => 1 ),
+			array(
+				'or'               => 1,
+				'parent_form_id'   => null,
+				'parent_form_id <' => 1,
+			),
 		);
 		$form_list = FrmForm::getAll( $where, 'name' );
 
@@ -1149,19 +1208,49 @@ class FrmProFormsController {
 				'type'  => 'select',
 				'opts'  => FrmProGraphsController::get_data_type_options(),
 			),
-			'height'       => array( 'val' => '', 'label' => __( 'Height', 'formidable-pro' ), 'type' => 'text' ),
-			'width'        => array( 'val' => '', 'label' => __( 'Width', 'formidable-pro' ), 'type' => 'text' ),
-			'bg_color'     => array( 'val' => '', 'label' => __( 'Background color', 'formidable-pro' ), 'type' => 'text' ),
-			'title'        => array( 'val' => '', 'label' => __( 'Graph title', 'formidable-pro' ), 'type' => 'text' ),
-			'title_size'   => array( 'val' => '', 'label' => __( 'Title font size', 'formidable-pro' ), 'type' => 'text' ),
-			'title_font'   => array( 'val' => '', 'label' => __( 'Title font name', 'formidable-pro' ), 'type' => 'text' ),
+			'height'       => array(
+				'val'   => '',
+				'label' => __( 'Height', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'width'        => array(
+				'val'   => '',
+				'label' => __( 'Width', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'bg_color'     => array(
+				'val'   => '',
+				'label' => __( 'Background color', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'title'        => array(
+				'val'   => '',
+				'label' => __( 'Graph title', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'title_size'   => array(
+				'val'   => '',
+				'label' => __( 'Title font size', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'title_font'   => array(
+				'val'   => '',
+				'label' => __( 'Title font name', 'formidable-pro' ),
+				'type'  => 'text',
+			),
 			'is3d'         => array(
 				'val'   => 1,
 				'label' => __( 'Turn your pie graph three-dimensional', 'formidable-pro' ),
 				'show'  => array( 'type' => 'pie' ),
 			),
-			'include_zero' => array( 'val' => 1, 'label' => __( 'When using dates for the x_axis parameter, you can include dates with a zero value.', 'formidable-pro' ) ),
-			'show_key'     => array( 'val' => 1, 'label' => __( 'Include a legend with the graph', 'formidable-pro' ) ),
+			'include_zero' => array(
+				'val'   => 1,
+				'label' => __( 'When using dates for the x_axis parameter, you can include dates with a zero value.', 'formidable-pro' ),
+			),
+			'show_key'     => array(
+				'val'   => 1,
+				'label' => __( 'Include a legend with the graph', 'formidable-pro' ),
+			),
 		);
 	}
 
@@ -1175,16 +1264,52 @@ class FrmProFormsController {
 	<div class="frm_box_line"></div>
 <?php
 		$opts = array(
-			'user_info'     => array( 'val' => 1, 'label' => __( 'Include user info like browser and IP', 'formidable-pro' ) ),
-			'include_blank' => array( 'val' => 1, 'label' => __( 'Include rows for blank fields', 'formidable-pro' ) ),
-			'plain_text'    => array( 'val' => 1, 'label' => __( 'Do not include any HTML', 'formidable-pro' ) ),
-			'direction'     => array( 'val' => 'rtl', 'label' => __( 'Use RTL format', 'formidable-pro' ) ),
-			'font_size'     => array( 'val' => '', 'label' => __( 'Font size', 'formidable-pro' ), 'type' => 'text' ),
-			'text_color'    => array( 'val' => '', 'label' => __( 'Text color', 'formidable-pro' ), 'type' => 'text' ),
-			'border_width'  => array( 'val' => '', 'label' => __( 'Border width', 'formidable-pro' ), 'type' => 'text' ),
-			'border_color'  => array( 'val' => '', 'label' => __( 'Border color', 'formidable-pro' ), 'type' => 'text' ),
-			'bg_color'      => array( 'val' => '', 'label' => __( 'Background color', 'formidable-pro' ), 'type' => 'text' ),
-			'alt_bg_color'  => array( 'val' => '', 'label' => __( 'Alternate background color', 'formidable-pro' ), 'type' => 'text' ),
+			'user_info'     => array(
+				'val'   => 1,
+				'label' => __( 'Include user info like browser and IP', 'formidable-pro' ),
+			),
+			'include_blank' => array(
+				'val'   => 1,
+				'label' => __( 'Include rows for blank fields', 'formidable-pro' ),
+			),
+			'plain_text'    => array(
+				'val'   => 1,
+				'label' => __( 'Do not include any HTML', 'formidable-pro' ),
+			),
+			'direction'     => array(
+				'val'   => 'rtl',
+				'label' => __( 'Use RTL format', 'formidable-pro' ),
+			),
+			'font_size'     => array(
+				'val'   => '',
+				'label' => __( 'Font size', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'text_color'    => array(
+				'val'   => '',
+				'label' => __( 'Text color', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'border_width'  => array(
+				'val'   => '',
+				'label' => __( 'Border width', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'border_color'  => array(
+				'val'   => '',
+				'label' => __( 'Border color', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'bg_color'      => array(
+				'val'   => '',
+				'label' => __( 'Background color', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'alt_bg_color'  => array(
+				'val'   => '',
+				'label' => __( 'Alternate background color', 'formidable-pro' ),
+				'type'  => 'text',
+			),
 		);
 	}
 
@@ -1215,7 +1340,11 @@ class FrmProFormsController {
 					0 => __( 'Include all entries', 'formidable-pro' ),
 				),
 			),
-			'page_id'     => array( 'val' => '', 'label' => __( 'The ID of the page to link to', 'formidable-pro' ), 'type' => 'text' ),
+			'page_id'     => array(
+				'val'   => '',
+				'label' => __( 'The ID of the page to link to', 'formidable-pro' ),
+				'type'  => 'text',
+			),
 			'edit'        => array(
 				'val'   => 1,
 				'type'  => 'select',
@@ -1225,8 +1354,16 @@ class FrmProFormsController {
 					0 => __( 'View only', 'formidable-pro' ),
 				),
 			),
-			'show_delete' => array( 'val' => '', 'label' => __( 'Delete link label', 'formidable-pro' ), 'type' => 'text' ),
-			'confirm'     => array( 'val' => '', 'label' => __( 'Delete confirmation message', 'formidable-pro' ), 'type' => 'text' ),
+			'show_delete' => array(
+				'val'   => '',
+				'label' => __( 'Delete link label', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'confirm'     => array(
+				'val'   => '',
+				'label' => __( 'Delete confirmation message', 'formidable-pro' ),
+				'type'  => 'text',
+			),
 			'link_type'   => array(
 				'val'   => 'page',
 				'type'  => 'select',
@@ -1237,7 +1374,11 @@ class FrmProFormsController {
 					'admin'  => __( 'The entry in the back-end', 'formidable-pro' ),
 				),
 			),
-			'param_name'  => array( 'val' => 'entry', 'label' => __( 'URL parameter (?entry=5)', 'formidable-pro' ), 'type' => 'text' ),
+			'param_name'  => array(
+				'val'   => 'entry',
+				'label' => __( 'URL parameter (?entry=5)', 'formidable-pro' ),
+				'type'  => 'text',
+			),
 			'param_value' => array(
 				'val'   => 'key',
 				'type'  => 'select',
@@ -1247,9 +1388,20 @@ class FrmProFormsController {
 					'id'  => __( 'Entry ID', 'formidable-pro' ),
 				),
 			),
-			'class'       => array( 'val' => '', 'label' => __( 'Add HTML classes', 'formidable-pro' ), 'type' => 'text' ),
-			'blank_label' => array( 'val' => '', 'label' => __( 'Label on first option in the dropdown', 'formidable-pro' ), 'type' => 'text' ),
-			'drafts'      => array( 'val' => 1, 'label' => __( 'Include draft entries', 'formidable-pro' ) ),
+			'class'       => array(
+				'val'   => '',
+				'label' => __( 'Add HTML classes', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'blank_label' => array(
+				'val'   => '',
+				'label' => __( 'Label on first option in the dropdown', 'formidable-pro' ),
+				'type'  => 'text',
+			),
+			'drafts'      => array(
+				'val'   => 1,
+				'label' => __( 'Include draft entries', 'formidable-pro' ),
+			),
 		);
 	}
 

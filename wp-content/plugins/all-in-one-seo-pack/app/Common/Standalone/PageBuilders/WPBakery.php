@@ -20,7 +20,8 @@ class WPBakery extends Base {
 	 * @var array
 	 */
 	public $plugins = [
-		'js_composer/js_composer.php'
+		'js_composer/js_composer.php',
+		'js_composer_salient/js_composer.php'
 	];
 
 	/**
@@ -68,7 +69,7 @@ class WPBakery extends Base {
 	 */
 	public function maybeDisableWpBakeryMetaTags( $value, $objectId, $metaKey ) {
 		if ( is_singular() && '_wpb_post_custom_seo_settings' === $metaKey ) {
-			return [];
+			return null;
 		}
 
 		return $value;
@@ -93,7 +94,7 @@ class WPBakery extends Base {
 	 */
 	public function isBuiltWith( $postId ) {
 		$postObj = get_post( $postId );
-		if ( ! empty( $postObj ) && preg_match( '/vc_row/', $postObj->post_content ) ) {
+		if ( ! empty( $postObj ) && preg_match( '/vc_row/', (string) $postObj->post_content ) ) {
 			return true;
 		}
 

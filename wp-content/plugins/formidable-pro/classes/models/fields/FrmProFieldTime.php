@@ -26,7 +26,7 @@ class FrmProFieldTime extends FrmFieldType {
 	/**
 	 * @var bool
 	 */
-	protected $array_allowed = false;
+	protected $array_allowed = true;
 
 	public function show_on_form_builder( $name = '' ) {
 		$field          = FrmFieldsHelper::setup_edit_vars( $this->field );
@@ -860,7 +860,13 @@ class FrmProFieldTime extends FrmFieldType {
 
 	private function time_string_to_array( &$value ) {
 		// H for hour, m for minute, A for am or pm, s for second, and ms for millisecond.
-		$defaults = array( 'H' => '', 'm' => '', 'A' => '', 's' => '', 'ms' => '' );
+		$defaults = array(
+			'H'  => '',
+			'm'  => '',
+			'A'  => '',
+			's'  => '',
+			'ms' => '',
+		);
 
 		if ( is_array( $value ) ) {
 			$value = wp_parse_args( $value, $defaults );

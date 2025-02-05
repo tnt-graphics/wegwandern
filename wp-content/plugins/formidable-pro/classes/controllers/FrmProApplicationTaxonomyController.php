@@ -560,6 +560,10 @@ class FrmProApplicationTaxonomyController {
 			wp_send_json_error( 'Application does not exist' );
 			die();
 		}
+		$delete_related_items = FrmAppHelper::get_post_param( 'delete_related_items', '', 'absint' );
+		if ( $delete_related_items ) {
+			FrmProApplicationsController::delete_child_items( $term_id );
+		}
 
 		wp_delete_term( $term_id, 'frm_application' );
 
