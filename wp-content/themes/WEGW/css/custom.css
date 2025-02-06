@@ -3338,7 +3338,7 @@ p+.full-width.ad-section-wrap{
         margin: 10px 0 10px!important;
 }
 .with_frm_style .frm_radio input[type=radio]{
-    width:25px;
+    width:25px !important;
     height:25px !important;
 }
 .with_frm_style .vertical_radio .frm_radio label{
