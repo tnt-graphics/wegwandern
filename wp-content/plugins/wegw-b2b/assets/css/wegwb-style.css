@@ -1181,6 +1181,10 @@ body .frm_forms.with_frm_style .frm_fields_container .frm_checkbox input[type=ch
     width: 100%;
         object-fit: cover;
 }
+
+body .frm_dropzone .dz-preview .dz-image {
+    max-width: 100%;
+}
 .frm_dropzone .dz-preview .dz-image{
     width: 132px;
     height: 132px;
