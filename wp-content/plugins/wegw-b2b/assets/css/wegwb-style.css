@@ -1117,7 +1117,6 @@ table.dataTable.no-footer{
     border: 1px solid #D6D6D6; 
     border-radius: 4px !important;  
     background: #FFFFFF;
-    background-color: #FFFFFF !important;
     margin: 0;
     display: inline-block !important;
     visibility: visible;
@@ -1125,6 +1124,15 @@ table.dataTable.no-footer{
      box-shadow:none;
      margin-bottom: 0 !important;
 }
+
+body .frm_forms.with_frm_style .frm_fields_container .frm_checkbox input[type=checkbox]:not([disabled]):checked {
+  background-color: #FFFFFF !important;
+}
+
+body .frm_forms.with_frm_style .frm_fields_container .frm_checkbox input[type=checkbox]:not([disabled]):checked {
+    border-color: #D6D6D6 !important;
+}
+
 .with_frm_style .frm_checkbox input[type=checkbox]:checked:before{
     left: 6px;
     bottom: 5px;
