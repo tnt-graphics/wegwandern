@@ -4911,6 +4911,15 @@ input::placeholder, textarea::placeholder{
 /*.region_icon_slider_item_wrapper:hover p,*/ .region_icon_slider a .region_icon_slider_item_wrapper:hover p{
     color: #BE000B;
 }
+
+body .frm_forms.with_frm_style .frm_fields_container .frm_radio input[type=radio]:not([disabled]):checked {
+  border-color: #D9000D !important;
+}
+body .with_frm_style .frm_radio input[type=radio]:before {
+  background-color: #D9000D !important;
+  width: 11px;
+  height: 11px;
+}
 .main-menu .with_frm_style .frm_radio input[type=radio]{
     border-radius: 50% !important;
 }
