@@ -80,7 +80,7 @@ function angebote_slider_display() {
 				if ( count( $cat_array ) > 1 || ( count( $b2b_category ) > 1 ) ) {
 					$ads_title = 'Angebote';
 				} else {
-					$ads_title = $b2b_category[0]->nam;
+					$ads_title = $b2b_category[0]->name;
 				}
 			}
 
