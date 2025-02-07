@@ -80,7 +80,8 @@ function angebote_slider_display() {
 				if ( count( $cat_array ) > 1 || ( count( $b2b_category ) > 1 ) ) {
 					$ads_title = 'Angebote';
 				} else {
-					$ads_title = $b2b_category[0]->name;
+					//$ads_title = $b2b_category[0]->name; client wanted just simple Text Feb 25
+					$ads_title = 'Angebote';
 				}
 			}
 
@@ -140,6 +141,7 @@ function angebote_slider_display() {
 
 		if ( 3 < $angebote_count ) {
 			$btn = '';
+			$subtitle_ads_slider = "Angebote von unseren Partnern"; // changed due to not displaying on single hike feb 25 by rilana
 
 			if ( 12 < $angebote_count ) {
 				$btn = '<a href="/angebote/"><div class="wander-in-region-btn">' . esc_html__( 'Alle Angebote', 'wegwandern' ) . '</div></a>';
