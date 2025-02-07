@@ -871,7 +871,7 @@ function valLogin(element){
     $('.'+element + ' .frm_submit input').addClass('disableButton');
   }
 }
-window.onload = function() { // can also use window.addEventListener('load', (event) => {
+function checkFormidableConditions() {
  // Check if login failed and show the appropriate validation message
   if (isLoginFailed()) {
       if(window.location.href.indexOf('summit_book_login=yes') !== -1){
@@ -1174,10 +1174,11 @@ window.onload = function() { // can also use window.addEventListener('load', (ev
       }, 500);
     }
   }
-};
+}
 document.addEventListener("DOMContentLoaded", function() {
   loginWindowPosition('summitLoginMenu');
   loginWindowPosition('userNavigationMenu');
+  checkFormidableConditions();
   if(jQuery("#user_login0").length > 0){
     var usernameInput = document.getElementById("user_login0");
     var passwordInput = document.getElementById("user_pass0");
