@@ -36,15 +36,7 @@
 	<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
 
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-QN6SKXNB8P"></script>
-	<script>
-	  window.dataLayer = window.dataLayer || [];
-	  function gtag(){dataLayer.push(arguments);}
-	  gtag('js', new Date());
-
-	  gtag('config', 'G-QN6SKXNB8P');
-	</script>
+	
 	
 	<!-- config scripts:  these scripts are required for loading all slot dependencies -->
 	<script type="text/javascript">
