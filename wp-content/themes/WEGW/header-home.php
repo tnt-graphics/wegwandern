@@ -46,6 +46,15 @@
 	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Smartphone/DE_wegwandern_ROS_BTF_Smartphone_AllAdFormats.js"></script>
 	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Tablet/D_ROS_Banner.js"></script>
 
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-QN6SKXNB8P"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'G-QN6SKXNB8P');
+	</script>
 
 	<?php wp_head(); ?>
 	
