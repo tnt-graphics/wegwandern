@@ -39,56 +39,27 @@
 
 		if (windowWidth > 900) {
 
-			// Create a div with the ID 'div-ad-gds-1280-1'
-			var adDiv = $('<div>', {
-				id: 'div-ad-gds-1280-1',
-				class: 'ad-visibility'
-			});
+			// Create the new ad structure for big screens
 			var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
+			var adDiv = '<div id="gb-div-ad-gds-1280-1"></div>';
+			var adScript = '<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js" data-slot="div-ad-gds-1280-1" crossorigin></script>';
 
-			// Create a script element and set its type and content
-			var adScript = document.createElement('script');
-			adScript.type = 'text/javascript';
-			adScript.innerHTML = 'gbcallslot1280("div-ad-gds-1280-1", "");';
-			
-			// Create the Adform script element testpixel
-			var adformScript = document.createElement('script');
-			adformScript.type = 'text/javascript';
-			adformScript.src = "https://track.adform.net/adfscript/?bn=67858885";
-			
-			// Append elements to the ad div
-			adDiv.append(adCloseBtn);
-			adDiv.append(adScript);
-			adDiv.append(adformScript);
+			// Combine all elements
+			var adContent = adCloseBtn + adDiv + adScript;
 
-
-			// Append the created div with the script to the '.ad-section' div
-			$('.ad-section.header').html(adDiv);
+			// Append the content to the '.ad-section' div
+			$('.ad-section.header').html(adContent);
 		} else if (windowWidth < 900) {
-			// Create a div with the ID 'div-ad-gds-1280-1'
-			var adDiv = $('<div>', {
-				id: 'div-ad-gds-1281-1',
-				class: 'ad-visibility'
-			});
+			// Create the new ad structure for mobile screens
 			var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
+			var adDiv = '<div id="gb-div-ad-gds-1281-1"></div>';
+			var adScript = '<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js" data-slot="div-ad-gds-1281-1" crossorigin></script>';
 
-			// Create a script element and set its type and content
-			var adScript = document.createElement('script');
-			adScript.type = 'text/javascript';
-			adScript.innerHTML = 'gbcallslot1281("div-ad-gds-1281-1", "");';
-			
-			// Create the Adform script element testpixel
-			var adformScript = document.createElement('script');
-			adformScript.type = 'text/javascript';
-			adformScript.src = "https://track.adform.net/adfscript/?bn=70102338";
+			// Combine all elements
+			var adContent = adCloseBtn + adDiv + adScript;
 
-			// Append elements to the ad div
-			adDiv.append(adCloseBtn);
-			adDiv.append(adScript);
-			adDiv.append(adformScript);
-
-			// Append the created div with the script to the '.ad-section' div
-			$('.ad-section.header').html(adDiv);
+			// Append the content to the '.ad-section' div
+			$('.ad-section.header').html(adContent);
 		}
 	}
 
