@@ -76,6 +76,6 @@
 
 	// Execute the function on window resize
 	jQuery(window).on('resize', function() {
-		// loadAndResizeFunction();
+		loadAndResizeFunction();
 	});
 </script>
