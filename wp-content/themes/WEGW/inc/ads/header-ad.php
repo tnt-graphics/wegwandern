@@ -38,28 +38,34 @@
 		$('.ad-section.header').empty();
 
 		if (windowWidth > 900) {
-
 			// Create the new ad structure for big screens
 			var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
 			var adDiv = '<div id="gb-div-ad-gds-1280-1"></div>';
-			var adScript = '<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js" data-slot="div-ad-gds-1280-1" crossorigin></script>';
-
-			// Combine all elements
-			var adContent = adCloseBtn + adDiv + adScript;
-
-			// Append the content to the '.ad-section' div
-			$('.ad-section.header').html(adContent);
+			
+			// Create the ad container
+			$('.ad-section.header').html(adCloseBtn + adDiv);
+			
+			// Create and append the script element properly
+			var adScript = document.createElement('script');
+			adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
+			adScript.setAttribute('data-slot', 'div-ad-gds-1280-1');
+			adScript.crossOrigin = '';
+			document.head.appendChild(adScript);
+			
 		} else if (windowWidth < 900) {
 			// Create the new ad structure for mobile screens
 			var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
 			var adDiv = '<div id="gb-div-ad-gds-1281-1"></div>';
-			var adScript = '<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js" data-slot="div-ad-gds-1281-1" crossorigin></script>';
-
-			// Combine all elements
-			var adContent = adCloseBtn + adDiv + adScript;
-
-			// Append the content to the '.ad-section' div
-			$('.ad-section.header').html(adContent);
+			
+			// Create the ad container
+			$('.ad-section.header').html(adCloseBtn + adDiv);
+			
+			// Create and append the script element properly
+			var adScript = document.createElement('script');
+			adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
+			adScript.setAttribute('data-slot', 'div-ad-gds-1281-1');
+			adScript.crossOrigin = '';
+			document.head.appendChild(adScript);
 		}
 	}
 
