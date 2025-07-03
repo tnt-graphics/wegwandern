@@ -32,10 +32,40 @@
 </script>
 
 <script>
+	// Track if ad was recently closed
+	var adRecentlyClosed = false;
+	var lastAdCloseTime = 0;
+	
+	// Override the adCloseHeader function to track when ads are closed
+	var originalAdCloseHeader = window.adCloseHeader;
+	window.adCloseHeader = function() {
+		adRecentlyClosed = true;
+		lastAdCloseTime = Date.now();
+		console.log('Ad closed at:', new Date().toISOString());
+		
+		// Call the original function
+		if (originalAdCloseHeader) {
+			originalAdCloseHeader();
+		} else {
+			jQuery('.ad-above-header-container').addClass("hide");
+			jQuery('body').removeClass('Top');
+		}
+	};
+
 	// Define a function to execute on load and resize
 	function loadAndResizeFunction() {
 		var windowWidth = $(window).width();
 		$('.ad-section.header').empty();
+
+		// Check if ad was recently closed (within last 30 seconds)
+		var timeSinceLastClose = Date.now() - lastAdCloseTime;
+		if (adRecentlyClosed && timeSinceLastClose < 30000) {
+			console.log('Ad was recently closed, waiting 2 seconds before loading new ad...');
+			setTimeout(function() {
+				loadAndResizeFunction();
+			}, 2000);
+			return;
+		}
 
 		if (windowWidth > 900) {
 			// Create the new ad structure for big screens
@@ -50,6 +80,26 @@
 			adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
 			adScript.setAttribute('data-slot', 'div-ad-gds-1280-1');
 			adScript.crossOrigin = '';
+			
+			// Add error handling and debugging
+			adScript.onload = function() {
+				console.log('Desktop ad script loaded successfully');
+				// Check if ad content loads within 10 seconds
+				setTimeout(function() {
+					var adContainer = document.getElementById('gb-div-ad-gds-1280-1');
+					if (adContainer && adContainer.innerHTML.trim() === '') {
+						console.warn('Desktop ad container is empty after 10 seconds');
+					} else if (adContainer) {
+						console.log('Desktop ad content loaded successfully');
+						adRecentlyClosed = false; // Reset the flag when ad loads successfully
+					}
+				}, 10000);
+			};
+			
+			adScript.onerror = function() {
+				console.error('Failed to load desktop ad script');
+			};
+			
 			document.head.appendChild(adScript);
 			
 		} else if (windowWidth < 900) {
@@ -65,6 +115,26 @@
 			adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
 			adScript.setAttribute('data-slot', 'div-ad-gds-1281-1');
 			adScript.crossOrigin = '';
+			
+			// Add error handling and debugging
+			adScript.onload = function() {
+				console.log('Mobile ad script loaded successfully');
+				// Check if ad content loads within 10 seconds
+				setTimeout(function() {
+					var adContainer = document.getElementById('gb-div-ad-gds-1281-1');
+					if (adContainer && adContainer.innerHTML.trim() === '') {
+						console.warn('Mobile ad container is empty after 10 seconds');
+					} else if (adContainer) {
+						console.log('Mobile ad content loaded successfully');
+						adRecentlyClosed = false; // Reset the flag when ad loads successfully
+					}
+				}, 10000);
+			};
+			
+			adScript.onerror = function() {
+				console.error('Failed to load mobile ad script');
+			};
+			
 			document.head.appendChild(adScript);
 		}
 	}
