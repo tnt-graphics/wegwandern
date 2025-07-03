@@ -31,9 +31,21 @@ $teaser_2_title        = get_field( 'teaser_2_title' );
 $teaser_2_image        = get_field( 'teaser_2_image' );
 $teaser_2_redirect_url = get_field( 'teaser_2_redirect_url' );
 
+// Debug: Check if ACF fields exist and have content
+$side_ad_left = get_field('side_ad_left', 'option');
+$side_ad_right = get_field('side_ad_right', 'option');
+$inside_mobile = get_field('inside_mobile', 'option');
 
-
-
+// Debug output (remove this after testing)
+if (empty($side_ad_left)) {
+    $side_ad_left = '<div style="background: #f0f0f0; padding: 20px; text-align: center; border: 2px dashed #ccc;">Desktop Ad Placeholder (side_ad_left)</div>';
+}
+if (empty($side_ad_right)) {
+    $side_ad_right = '<div style="background: #f0f0f0; padding: 20px; text-align: center; border: 2px dashed #ccc;">Tablet Ad Placeholder (side_ad_right)</div>';
+}
+if (empty($inside_mobile)) {
+    $inside_mobile = '<div style="background: #f0f0f0; padding: 20px; text-align: center; border: 2px dashed #ccc;">Mobile Ad Placeholder (inside_mobile)</div>';
+}
 
 $current_logged_in_user = 0;
 if ( is_user_logged_in() ) {
@@ -44,91 +56,8 @@ if ( is_user_logged_in() ) {
 <main id="primary" class="site-main">
 	<div class="touren_container">
 		<section class="weg-map-main-wrapper">
-			<?php /*
-			<div id="weg-map-popup" >
-				<div id="weg-map-popup-inner-wrapper">
-					<div class="close_map" onclick="closeElement(this)"><span class="close_map_icon"></span></div>
-					<div id="cesiumContainer" class="cesiumContainer"></div>
-					<div class="map_currentLocation"></div>
-					<div id="threeD" class="map_3d"></div>
-					<div id="map_direction" class="map_direction"></div>
-					<div class="botom_layer_icon">
-						<div class="accordion" >
-							<div class="weg-layer-wrap layer_head">
-								<div class="weg-layer-text">Hintergrund</div>
-							</div>
-						</div>
-						<div class="panel">
-							<div class="weg-layer-wrap activeLayer" id="colormap_view_section">
-								<div class="weg-layer-text">Karte farbig</div>
-							</div>
-							<div class="weg-layer-wrap" id="aerial_view_section">
-								<div class="weg-layer-text">Luftbild</div>
-							</div>
-							<div class="weg-layer-wrap" id="grey_view_section">
-								<div class="weg-layer-text">Karte SW</div>
-							</div>
-						</div>
-					</div>
-					<div class="copyRight">
-						<a target="_blank" href="https://www.swisstopo.admin.ch/de/home.html">© swisstopo</a>
-					</div>
-					<div class="map_filter">
-						<div class="map_filter_inner_wrapper">
-							<div class="accordion"><?php echo __( 'Karteninformationen', 'wegwandern' ); ?></div>
-							<div class="panel">
-								<div class="fc_check_wrap">
-									<label class="check_wrapper"><?php echo __( 'ÖV-Haltestellen', 'wegwandern' ); ?>
-										<input type="checkbox" name="" id="transport_layer_checkbox" value="">
-										<span class="redmark"></span>
-									</label>
-									<label class="check_wrapper"><?php echo __( 'Gesperrte Wanderwege', 'wegwandern' ); ?>
-										<input type="checkbox" name="" id="closure_hikes_layer" value="">
-										<span class="redmark"></span>
-									</label>
-									<label class="check_wrapper"><?php echo __( 'Hangneigungen über 30°', 'wegwandern' ); ?>
-										<input type="checkbox" id="slope_30_layer" name="" value="">
-										<span class="redmark"></span>
-									</label>
-									<label class="check_wrapper"><?php echo __( 'Wildruhezonen', 'wegwandern' ); ?>
-										<input type="checkbox" id="wildlife_layer" name="" value="">
-										<span class="redmark"></span>
-									</label>
-									<label class="check_wrapper"><?php echo __( 'Wegpunkte WegWandern.ch', 'wegwandern' ); ?>
-										<input type="checkbox" id="waypoints_layer" name="" value="">
-										<span class="redmark"></span>
-									</label>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div id="detailPgPopup"><div id="detailPgPopupContent"></div></div>
-				<div class="elevationGraph"></div>	
-				<div class="options" id="mapOptions"></div>
-				<div id="info"></div>
-				<div class="popover" id="transport-layer-info-popup">
-					<div class="arrow"></div>
-					<div class="popover-title">
-						<div class="popup-title"><?php echo __( 'Objekt Informationen', 'wegwandern' ); ?></div>
-						<div class="popup-buttons">
-							<!-- <button class="fa-print" title="Print"></button> -->
-							<!-- <button class="fa-minus" title="Minimize"></button> -->
-							<button class="fa fa-remove" title="Close" onclick="closeTransportLayerPopup()"></button>
-						</div>
-					</div>
-					<div class="popover-content">
-						<div class="popover-scope">
-							<div class="popover-binding">
-								<div class="htmlpopup-container" id="tl-content-area">
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			*/ ?>
-			<div class="mapView hide" id="map-resp" style="width: 100%; height: 500px;">
+
+		<div class="mapView hide" id="map-resp" style="width: 100%; height: 500px;">
 				<div class="close_map" onclick="closeElementMapResp(this)">
 					<span class="close_map_icon"></span>
 				</div>
@@ -340,28 +269,19 @@ if ( is_user_logged_in() ) {
 									// Desktop - load side_ad_left
 									$('.ad-section-wrap.header-ad-desktop-wrapper').show();
 									<?php 
-									$side_ad_left = get_field('side_ad_left', 'option');
-									if ($side_ad_left) {
-										echo "$('.ad-section-wrap.header-ad-desktop-wrapper .ad-section').html(`" . $side_ad_left . "`);";
-									}
+									echo "$('.ad-section-wrap.header-ad-desktop-wrapper .ad-section').html(`" . $side_ad_left . "`);";
 									?>
 								} else if (windowWidth >= 900 && windowWidth <= 1199) {
 									// Tablet - load side_ad_right
 									$('.ad-section-wrap.header-ad-tablet-wrapper').show();
 									<?php 
-									$side_ad_right = get_field('side_ad_right', 'option');
-									if ($side_ad_right) {
-										echo "$('.ad-section-wrap.header-ad-tablet-wrapper .ad-section').html(`" . $side_ad_right . "`);";
-									}
+									echo "$('.ad-section-wrap.header-ad-tablet-wrapper .ad-section').html(`" . $side_ad_right . "`);";
 									?>
 								} else if (windowWidth < 900) {
 									// Mobile - load inside_mobile
 									$('.ad-section-wrap.header-ad-mobile-wrapper').show();
 									<?php 
-									$inside_mobile = get_field('inside_mobile', 'option');
-									if ($inside_mobile) {
-										echo "$('.ad-section-wrap.header-ad-mobile-wrapper .ad-section').html(`" . $inside_mobile . "`);";
-									}
+									echo "$('.ad-section-wrap.header-ad-mobile-wrapper .ad-section').html(`" . $inside_mobile . "`);";
 									?>
 								}
 							}
