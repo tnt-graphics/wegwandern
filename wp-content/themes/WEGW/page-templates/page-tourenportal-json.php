@@ -30,62 +30,11 @@ $teaser_2_short_title  = get_field( 'teaser_2_short_title' );
 $teaser_2_title        = get_field( 'teaser_2_title' );
 $teaser_2_image        = get_field( 'teaser_2_image' );
 $teaser_2_redirect_url = get_field( 'teaser_2_redirect_url' );
-$ad_script_desktop     = '';
-$ad_script_tablet      = '';
-$ad_script_mobile      = '';
 
-$custom_ad_desktop = '';
-$custom_ad_tablet  = '';
-$custom_ad_mobile  = '';
 
-if ( have_rows( 'manage_ad_scripts', 'option' ) ) :
-	while ( have_rows( 'manage_ad_scripts', 'option' ) ) :
-		the_row();
 
-		$desktop_ad_scripts = get_sub_field( 'desktop_ad_scripts', 'option' );
-		$tablet_ad_scripts  = get_sub_field( 'tablet_ad_scripts', 'option' );
-		$mobile_ad_scripts  = get_sub_field( 'mobile_ad_scripts', 'option' );
 
-		foreach ( $desktop_ad_scripts as $desktop_ad ) {
-			if ( $desktop_ad['ad_size'] = '300×600' ) {
-				$ad_script_desktop = $desktop_ad['ad_script'];
-			}
-		}
 
-		foreach ( $tablet_ad_scripts as $tablet_ad ) {
-			if ( $tablet_ad['ad_size'] = '300×250' ) {
-				$ad_script_tablet = $tablet_ad['ad_script'];
-			}
-		}
-
-		foreach ( $mobile_ad_scripts as $mob_ad ) {
-			if ( $mob_ad['ad_size'] = '300×250' ) {
-				$ad_script_mobile = $mob_ad['ad_script'];
-			}
-		}
-
-	endwhile;
-endif;
-if ( $ad_script_desktop != '' ) {
-	$custom_ad_desktop = '<div class="ad-section-wrap header-ad-desktop-wrapper">
-		<p>' . $ad_title . '</p>
-		<div class="ad-section">' . $ad_script_desktop . '</div>
-	</div>';
-}
-
-if ( $ad_script_tablet != '' ) {
-	$custom_ad_tablet = '<div class="ad-section-wrap header-ad-tablet-wrapper">
-		<p>' . $ad_title . '</p>
-		<div class="ad-section">' . $ad_script_tablet . '</div>
-	</div>';
-}
-
-if ( $ad_script_mobile != '' ) {
-	$custom_ad_mobile = '<div class="ad-section-wrap header-ad-mobile-wrapper">
-		<p>' . $ad_title . '</p>
-		<div class="ad-section">' . $ad_script_mobile . '</div>
-	</div>';
-}
 $current_logged_in_user = 0;
 if ( is_user_logged_in() ) {
 	$current_logged_in_user = wp_get_current_user()->ID;
