@@ -363,50 +363,63 @@ if ( is_user_logged_in() ) {
 					</div>
 					<div class="ListSec">
 						<div class="single-wander-wrappe-json" data-ad-title="<?php echo esc_attr( $ad_title ); ?>" data-ad-position="<?php echo esc_attr( $ad_placement_pos_mark ); ?>" data-logged-user="<?php echo $current_logged_in_user; ?>">
-							<div id="side-ad-left-container"></div>
-							<script type="text/javascript">
-							(function() {
-								function loadSideAdLeft() {
-									var windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-									var adContainer = document.getElementById('side-ad-left-container');
-									if (adContainer) {
-										if (windowWidth > 1200) {
-											<?php 
-											$side_ad_left = get_field('side_ad_left', 'option');
-											if ($side_ad_left) {
-												echo "adContainer.innerHTML = `" . $side_ad_left . "`";
-											} else {
-												echo "adContainer.innerHTML = '';";
-											}
-											?>
-										} else if (windowWidth >= 900 && windowWidth <= 1199) {
-											<?php 
-											$side_ad_right = get_field('side_ad_right', 'option');
-											if ($side_ad_right) {
-												echo "adContainer.innerHTML = `" . $side_ad_right . "`";
-											} else {
-												echo "adContainer.innerHTML = '';";
-											}
-											?>
-										} else if (windowWidth < 900) {
-											<?php 
-											$inside_mobile = get_field('inside_mobile', 'option');
-											if ($inside_mobile) {
-												echo "adContainer.innerHTML = `" . $inside_mobile . "`";
-											} else {
-												echo "adContainer.innerHTML = '';";
-											}
-											?>
-										} else {
-											adContainer.innerHTML = '';
-										}
+							<div class="ad-section-wrap header-ad-desktop-wrapper">
+								<p><?php echo $ad_title; ?></p>
+								<div class="ad-section"></div>
+							</div>
+							<div class="ad-section-wrap header-ad-tablet-wrapper">
+								<p><?php echo $ad_title; ?></p>
+								<div class="ad-section"></div>
+							</div>
+							<div class="ad-section-wrap header-ad-mobile-wrapper">
+								<p><?php echo $ad_title; ?></p>
+								<div class="ad-section"></div>
+							</div>
+							
+							<script>
+							// Define a function to execute on load and resize
+							function loadAndResizeFunction() {
+								var windowWidth = $(window).width();
+								
+								// Clear all ad sections
+								$('.ad-section-wrap .ad-section').empty();
+								
+								if (windowWidth > 1200) {
+									// Desktop - load side_ad_left
+									<?php 
+									$side_ad_left = get_field('side_ad_left', 'option');
+									if ($side_ad_left) {
+										echo "$('.ad-section-wrap.header-ad-desktop-wrapper .ad-section').html(`" . $side_ad_left . "`);";
 									}
+									?>
+								} else if (windowWidth >= 900 && windowWidth <= 1199) {
+									// Tablet - load side_ad_right
+									<?php 
+									$side_ad_right = get_field('side_ad_right', 'option');
+									if ($side_ad_right) {
+										echo "$('.ad-section-wrap.header-ad-tablet-wrapper .ad-section').html(`" . $side_ad_right . "`);";
+									}
+									?>
+								} else if (windowWidth < 900) {
+									// Mobile - load inside_mobile
+									<?php 
+									$inside_mobile = get_field('inside_mobile', 'option');
+									if ($inside_mobile) {
+										echo "$('.ad-section-wrap.header-ad-mobile-wrapper .ad-section').html(`" . $inside_mobile . "`);";
+									}
+									?>
 								}
-								// Load on page load
-								loadSideAdLeft();
-								// Reload on window resize
-								window.addEventListener('resize', loadSideAdLeft);
-							})();
+							}
+
+							// Execute the function on page load
+							jQuery(document).ready(function() {
+								loadAndResizeFunction();
+							});
+
+							// Execute the function on window resize
+							jQuery(window).on('resize', function() {
+								loadAndResizeFunction();
+							});
 							</script>
 							<div class="promo-section">
 								<a href="<?php echo $teaser_1_redirect_url; ?>" class="teaser-wrap">
