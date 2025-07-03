@@ -1400,10 +1400,3 @@ function infoIconClicked(event, parentId) {
 function infoIconClosed(event, parentId) {
     $("#" + parentId + " .snow_info_details").addClass("hide");
 }
-
-// Add this before the ad script loads (for testing only)
-window.tcfApi = {
-    getTCData: function() {
-        return { tcString: "1---" }; // Minimal consent string
-    }
-};
