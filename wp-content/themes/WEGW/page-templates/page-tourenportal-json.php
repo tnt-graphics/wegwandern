@@ -363,7 +363,51 @@ if ( is_user_logged_in() ) {
 					</div>
 					<div class="ListSec">
 						<div class="single-wander-wrappe-json" data-ad-title="<?php echo esc_attr( $ad_title ); ?>" data-ad-position="<?php echo esc_attr( $ad_placement_pos_mark ); ?>" data-logged-user="<?php echo $current_logged_in_user; ?>">
-							<?php echo $custom_ad_desktop . $custom_ad_mobile . $custom_ad_tablet; ?>
+							<div id="side-ad-left-container"></div>
+							<script type="text/javascript">
+							(function() {
+								function loadSideAdLeft() {
+									var windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+									var adContainer = document.getElementById('side-ad-left-container');
+									if (adContainer) {
+										if (windowWidth > 1200) {
+											<?php 
+											$side_ad_left = get_field('side_ad_left', 'option');
+											if ($side_ad_left) {
+												echo "adContainer.innerHTML = `" . $side_ad_left . "`";
+											} else {
+												echo "adContainer.innerHTML = '';";
+											}
+											?>
+										} else if (windowWidth >= 900 && windowWidth <= 1199) {
+											<?php 
+											$side_ad_right = get_field('side_ad_right', 'option');
+											if ($side_ad_right) {
+												echo "adContainer.innerHTML = `" . $side_ad_right . "`";
+											} else {
+												echo "adContainer.innerHTML = '';";
+											}
+											?>
+										} else if (windowWidth < 900) {
+											<?php 
+											$inside_mobile = get_field('inside_mobile', 'option');
+											if ($inside_mobile) {
+												echo "adContainer.innerHTML = `" . $inside_mobile . "`";
+											} else {
+												echo "adContainer.innerHTML = '';";
+											}
+											?>
+										} else {
+											adContainer.innerHTML = '';
+										}
+									}
+								}
+								// Load on page load
+								loadSideAdLeft();
+								// Reload on window resize
+								window.addEventListener('resize', loadSideAdLeft);
+							})();
+							</script>
 							<div class="promo-section">
 								<a href="<?php echo $teaser_1_redirect_url; ?>" class="teaser-wrap">
 									<img src="<?php echo $teaser_1_image['sizes']['region-slider']; ?>" class="teaser-section">
