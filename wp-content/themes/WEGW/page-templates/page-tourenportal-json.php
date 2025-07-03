@@ -31,21 +31,7 @@ $teaser_2_title        = get_field( 'teaser_2_title' );
 $teaser_2_image        = get_field( 'teaser_2_image' );
 $teaser_2_redirect_url = get_field( 'teaser_2_redirect_url' );
 
-// Debug: Check if ACF fields exist and have content
-$side_ad_left = get_field('side_ad_left', 'option');
-$side_ad_right = get_field('side_ad_right', 'option');
-$inside_mobile = get_field('inside_mobile', 'option');
-
-// Debug output (remove this after testing)
-if (empty($side_ad_left)) {
-    $side_ad_left = '<div style="background: #f0f0f0; padding: 20px; text-align: center; border: 2px dashed #ccc;">Desktop Ad Placeholder (side_ad_left)</div>';
-}
-if (empty($side_ad_right)) {
-    $side_ad_right = '<div style="background: #f0f0f0; padding: 20px; text-align: center; border: 2px dashed #ccc;">Tablet Ad Placeholder (side_ad_right)</div>';
-}
-if (empty($inside_mobile)) {
-    $inside_mobile = '<div style="background: #f0f0f0; padding: 20px; text-align: center; border: 2px dashed #ccc;">Mobile Ad Placeholder (inside_mobile)</div>';
-}
+// No ACF fields needed - using dynamic JavaScript like header-ad.php
 
 $current_logged_in_user = 0;
 if ( is_user_logged_in() ) {
@@ -266,23 +252,43 @@ if ( is_user_logged_in() ) {
 								$('.ad-section-wrap .ad-section').empty();
 								
 								if (windowWidth > 1200) {
-									// Desktop - load side_ad_left
+									// Desktop - create ad structure for big screens
 									$('.ad-section-wrap.header-ad-desktop-wrapper').show();
-									<?php 
-									echo "$('.ad-section-wrap.header-ad-desktop-wrapper .ad-section').html(`" . $side_ad_left . "`);";
-									?>
+									var adDiv = '<div id="gb-div-ad-gds-1280-8"></div>';
+									$('.ad-section-wrap.header-ad-desktop-wrapper .ad-section').html(adDiv);
+									
+									// Create and append the script element properly
+									var adScript = document.createElement('script');
+									adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
+									adScript.setAttribute('data-slot', 'div-ad-gds-1280-8');
+									adScript.crossOrigin = '';
+									document.head.appendChild(adScript);
+									
 								} else if (windowWidth >= 900 && windowWidth <= 1199) {
-									// Tablet - load side_ad_right
+									// Tablet - create ad structure for tablet screens
 									$('.ad-section-wrap.header-ad-tablet-wrapper').show();
-									<?php 
-									echo "$('.ad-section-wrap.header-ad-tablet-wrapper .ad-section').html(`" . $side_ad_right . "`);";
-									?>
+									var adDiv = '<div id="gb-div-ad-gds-1280-3"></div>';
+									$('.ad-section-wrap.header-ad-tablet-wrapper .ad-section').html(adDiv);
+									
+									// Create and append the script element properly
+									var adScript = document.createElement('script');
+									adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
+									adScript.setAttribute('data-slot', 'div-ad-gds-1280-3');
+									adScript.crossOrigin = '';
+									document.head.appendChild(adScript);
+									
 								} else if (windowWidth < 900) {
-									// Mobile - load inside_mobile
+									// Mobile - create ad structure for mobile screens
 									$('.ad-section-wrap.header-ad-mobile-wrapper').show();
-									<?php 
-									echo "$('.ad-section-wrap.header-ad-mobile-wrapper .ad-section').html(`" . $inside_mobile . "`);";
-									?>
+									var adDiv = '<div id="gb-div-ad-gds-1281-2"></div>';
+									$('.ad-section-wrap.header-ad-mobile-wrapper .ad-section').html(adDiv);
+									
+									// Create and append the script element properly
+									var adScript = document.createElement('script');
+									adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
+									adScript.setAttribute('data-slot', 'div-ad-gds-1281-2');
+									adScript.crossOrigin = '';
+									document.head.appendChild(adScript);
 								}
 							}
 
