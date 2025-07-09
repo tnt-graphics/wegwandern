@@ -46,7 +46,7 @@
 	  gtag('config', 'G-QN6SKXNB8P');
 	</script>
 	
-	<!-- config scripts:  these scripts are required for loading all slot dependencies -->
+	<!-- config scripts:  these scripts are required for loading all slot dependencies 
 	<script type="text/javascript">
 	var gbucket = gbucket || {}; var setgbpartnertag1280 = true; var setgbpartnertag1281 = true; var setgbpartnertag4440 = true; if(typeof(setgbtargetingobj) == 'undefined') {var setgbtargetingobj = {};} 
 	</script>
@@ -54,7 +54,7 @@
 	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Desktop/DE_wegwandern_ROS_BTF_AllAdFormats.js"></script>
 	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Smartphone/DE_wegwandern_ROS_BTF_Smartphone_AllAdFormats.js"></script>
 	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Tablet/D_ROS_Banner.js"></script>
-
+-->
 	<?php wp_head(); ?>
 
 </head>
