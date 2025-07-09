@@ -20,7 +20,16 @@
 	</div>
 </div>
 
-
+<script type="text/javascript">
+	window.addEventListener('message', function(event) {
+		if (event.data.type === 'connector' && event.data.name === 'codevelop') {
+			var script = document.createElement('script');
+			script.async = true;
+			script.src = 'https://bcdn.codevelop.network/static/adformats/global/publisherHelper.js';
+			document.head.appendChild(script);
+		}
+	}, false);
+</script>
 
 <script>
 	// Define a function to execute on load and resize
@@ -30,7 +39,7 @@
 
 		if (windowWidth > 900) {
 			// Create the new ad structure for big screens
-			var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
+			//var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
 			var adDiv = '<div id="gb-div-ad-gds-1280-1"></div>';
 			
 			// Create the ad container
@@ -45,7 +54,7 @@
 			
 		} else if (windowWidth < 900) {
 			// Create the new ad structure for mobile screens
-			var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
+			//var adCloseBtn = '<div class="close_ad" onclick="adCloseHeader()"><span class="close_ad_icon"></span></div>';
 			var adDiv = '<div id="gb-div-ad-gds-1281-1"></div>';
 			
 			// Create the ad container
