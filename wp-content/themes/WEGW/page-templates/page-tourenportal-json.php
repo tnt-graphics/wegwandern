@@ -227,7 +227,7 @@ if ( is_user_logged_in() ) {
 					</div>
 					<div class="ListSec">
 						<div class="single-wander-wrappe-json" data-ad-title="<?php echo esc_attr( $ad_title ); ?>" data-ad-position="<?php echo esc_attr( $ad_placement_pos_mark ); ?>" data-logged-user="<?php echo $current_logged_in_user; ?>">
-							<div class="ad-section-wrap header-ad-desktop-wrapper" style="display: none;">
+							<div class="ad-section-wrap header-ad-desktop-wrapper">
 								<p><?php echo $ad_title; ?></p>
 								<div class="ad-section">
 									<div id="gb-inside-full-pos1-multidevice"></div>
