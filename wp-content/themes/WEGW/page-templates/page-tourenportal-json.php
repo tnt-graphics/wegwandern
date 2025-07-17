@@ -229,79 +229,12 @@ if ( is_user_logged_in() ) {
 						<div class="single-wander-wrappe-json" data-ad-title="<?php echo esc_attr( $ad_title ); ?>" data-ad-position="<?php echo esc_attr( $ad_placement_pos_mark ); ?>" data-logged-user="<?php echo $current_logged_in_user; ?>">
 							<div class="ad-section-wrap header-ad-desktop-wrapper" style="display: none;">
 								<p><?php echo $ad_title; ?></p>
-								<div class="ad-section"></div>
+								<div class="ad-section">
+									<div id="gb-inside-full-pos1-multidevice"></div>
+									<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js"  data-slot="inside-full-pos1-multidevice"  crossorigin>
+									</script>
+								</div>
 							</div>
-							<div class="ad-section-wrap header-ad-tablet-wrapper" style="display: none;">
-								<p><?php echo $ad_title; ?></p>
-								<div class="ad-section"></div>
-							</div>
-							<div class="ad-section-wrap header-ad-mobile-wrapper" style="display: none;">
-								<p><?php echo $ad_title; ?></p>
-								<div class="ad-section"></div>
-							</div>
-							
-							<script>
-							// Define a function to execute on load and resize
-							function loadAndResizeFunction() {
-								var windowWidth = $(window).width();
-								
-								// Hide all ad wrappers first
-								$('.ad-section-wrap').hide();
-								
-								// Clear all ad sections
-								$('.ad-section-wrap .ad-section').empty();
-								
-								if (windowWidth > 1200) {
-									// Desktop - create ad structure for big screens
-									$('.ad-section-wrap.header-ad-desktop-wrapper').show();
-									var adDiv = '<div id="gb-div-ad-gds-1280-8"></div>';
-									$('.ad-section-wrap.header-ad-desktop-wrapper .ad-section').html(adDiv);
-									
-									// Create and append the script element properly
-									var adScript = document.createElement('script');
-									adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
-									adScript.setAttribute('data-slot', 'div-ad-gds-1280-8');
-									adScript.crossOrigin = '';
-									document.head.appendChild(adScript);
-									
-								} else if (windowWidth >= 900 && windowWidth <= 1199) {
-									// Tablet - create ad structure for tablet screens
-									$('.ad-section-wrap.header-ad-tablet-wrapper').show();
-									var adDiv = '<div id="gb-div-ad-gds-1280-3"></div>';
-									$('.ad-section-wrap.header-ad-tablet-wrapper .ad-section').html(adDiv);
-									
-									// Create and append the script element properly
-									var adScript = document.createElement('script');
-									adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
-									adScript.setAttribute('data-slot', 'div-ad-gds-1280-3');
-									adScript.crossOrigin = '';
-									document.head.appendChild(adScript);
-									
-								} else if (windowWidth < 900) {
-									// Mobile - create ad structure for mobile screens
-									$('.ad-section-wrap.header-ad-mobile-wrapper').show();
-									var adDiv = '<div id="gb-div-ad-gds-1281-2"></div>';
-									$('.ad-section-wrap.header-ad-mobile-wrapper .ad-section').html(adDiv);
-									
-									// Create and append the script element properly
-									var adScript = document.createElement('script');
-									adScript.src = 'https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js';
-									adScript.setAttribute('data-slot', 'div-ad-gds-1281-2');
-									adScript.crossOrigin = '';
-									document.head.appendChild(adScript);
-								}
-							}
-
-							// Execute the function on page load
-							jQuery(document).ready(function() {
-								loadAndResizeFunction();
-							});
-
-							// Execute the function on window resize
-							jQuery(window).on('resize', function() {
-								loadAndResizeFunction();
-							});
-							</script>
 							<div class="promo-section">
 								<a href="<?php echo $teaser_1_redirect_url; ?>" class="teaser-wrap">
 									<img src="<?php echo $teaser_1_image['sizes']['region-slider']; ?>" class="teaser-section">
