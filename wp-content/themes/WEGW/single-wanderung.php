@@ -334,19 +334,16 @@ if ( ! empty( $post_thumb ) ) {
 			?>
 	</div>
 	<div class="single-hike-right">
-		<?php
-		if ( $ad_script_desktop_300x600 != '' ) {
-			echo '<div class="ad-section-wrap ad-block-content-desktop-wrapper"><p>Anzeige</p><div class="ad-section">' . $ad_script_desktop_300x600 . '</div></div>';
-		}
-
-		if ( $ad_script_tablet_300×250 != '' ) {
-			echo '<div class="ad-section-wrap ad-block-content-tablet-wrapper"><p>Anzeige</p><div class="ad-section">' . $ad_script_tablet_300×250 . '</div></div>';
-		}
-
-		if ( $ad_script_mobile != '' ) {
-			echo '<div class="ad-section-wrap ad-block-content-mobile-wrapper"><p>Anzeige</p><div class="ad-section">' . $ad_script_mobile . '</div></div>';
-		}
-		?>
+		
+		<div class="ad-section-wrap ad-block-content-desktop-wrapper">
+			<p>Anzeige</p>
+			<div class="ad-section">
+			<div id="gb-outside-right"></div>
+				<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js"  data-slot="outside-right"  crossorigin>
+				</script>
+			</div>
+		</div>
+		
 	</div>
 			
 			
@@ -360,69 +357,12 @@ if ( is_plugin_active( 'wegw-b2b/wegw-b2b.php' ) ) {
 
 	<div class='ad-section-wrap ad-block-content-desktop-wrapper full-width'>
 		 <p>Anzeige </p>
-		 <div class='ad-section insidewide'></div>
+		 <div class='ad-section insidewide'>
+			<div id="gb-inside-full-pos1-multidevice"></div>
+			<script src="https://ch.prod.gbads.io/prod/loader/wegwandern.ch.loader.js"  data-slot="inside-full-pos1-multidevice"  crossorigin>
+			</script>
+		 </div>
 	</div>
-	<script>
-		 // Define a function to execute on load and resize
-	function loadAdInside() {
-		var windowWidth = $(window).width();
-		$('.ad-section.insidewide').empty();
-		 
-		 if (windowWidth > 900) {
-		   
-		   // Create a div with the ID 'div-ad-gds-1280-1'
-		   var adDiv = $('<div>', { id: 'div-ad-gds-1280-7' });
-		 
-		   // Create a script element and set its type and content
-		   var adScript = document.createElement('script');
-		   adScript.type = 'text/javascript';
-		   adScript.innerHTML = 'gbcallslot1280("div-ad-gds-1280-7", "");';
-		 
-		   // Append the script to the created div
-		   adDiv.append(adScript);
-		 
-		   // Append the created div with the script to the '.ad-section' div
-		   $('.ad-section.insidewide').html(adDiv);
-		 } else if (windowWidth > 700) {
-		 
-			// Create a div with the ID 'div-ad-gds-1280-1'
-			var adDiv = $('<div>', { id: 'div-ad-gds-4440-4' });
-		  
-			// Create a script element and set its type and content
-			var adScript = document.createElement('script');
-			adScript.type = 'text/javascript';
-			adScript.innerHTML = 'gbcallslot4440("div-ad-gds-4440-4", "");';
-		  
-			// Append the script to the created div
-			adDiv.append(adScript);
-		  
-			// Append the created div with the script to the '.ad-section' div
-			$('.ad-section.insidewide').html(adDiv);
-		  } else if (windowWidth < 700) {
-		   
-			  // Create a div with the ID 'div-ad-gds-1280-1'
-			  var adDiv = $('<div>', { id: 'div-ad-gds-1281-5' });
-			
-			  // Create a script element and set its type and content
-			  var adScript = document.createElement('script');
-			  adScript.type = 'text/javascript';
-			  adScript.innerHTML = 'gbcallslot1281("div-ad-gds-1281-5", "");';
-			
-			  // Append the script to the created div
-			  adDiv.append(adScript);
-			
-			  // Append the created div with the script to the '.ad-section' div
-			  $('.ad-section.insidewide').html(adDiv);
-			} 
-	
-	}
-		 
-		 // Execute the function on page load
-		 jQuery(document).ready(function(){
-		   loadAdInside();
-		 });
-		 
-	</script>
 
 </div>
 <?php wanderung_region_slider(); 
