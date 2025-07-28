@@ -72,7 +72,7 @@ if ( ! is_page( 'b2b-portal' ) ) {
 }
 ?>
 
-<header id="<?php echo $idname; ?>" >
+<header class="rilana" id="<?php echo $idname; ?>" >
 	<div class="container">
 		<div class="header_main_wrapper">
 			<div>
