@@ -37,14 +37,7 @@
 	<link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png" />
 	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
 	
-	<!-- config scripts:  these scripts are required for loading all slot dependencies -->
-	<script type="text/javascript">
-	var gbucket = gbucket || {}; var setgbpartnertag1280 = true; var setgbpartnertag1281 = true; var setgbpartnertag4440 = true; if(typeof(setgbtargetingobj) == 'undefined') {var setgbtargetingobj = {};} 
-	</script>
-	<script type="text/javascript" id="gbconfigscript" src="//gbucket.ch/CH/ch_config_desktop.js"></script>
-	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Desktop/DE_wegwandern_ROS_BTF_AllAdFormats.js"></script>
-	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Smartphone/DE_wegwandern_ROS_BTF_Smartphone_AllAdFormats.js"></script>
-	<script type="text/javascript" id="gbadtag" src="//gbucket.ch/CH/wegwandern/Tablet/D_ROS_Banner.js"></script>
+
 
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-QN6SKXNB8P"></script>
@@ -72,7 +65,7 @@ if ( ! is_page( 'b2b-portal' ) ) {
 }
 ?>
 
-<header class="rilana" id="<?php echo $idname; ?>" >
+<header id="<?php echo $idname; ?>" >
 	<div class="container">
 		<div class="header_main_wrapper">
 			<div>
