@@ -1400,3 +1400,15 @@ function infoIconClicked(event, parentId) {
 function infoIconClosed(event, parentId) {
     $("#" + parentId + " .snow_info_details").addClass("hide");
 }
+
+jQuery(document).ready(function($) {
+    var interval = setInterval(function() {
+        var btn = $('a').filter(function() {
+            return $(this).text().trim().toLowerCase().includes('weiter ohne einwilligung');
+        });
+        if (btn.length) {
+            btn.hide();
+            clearInterval(interval);
+        }
+    }, 500); // check every 0.5 seconds
+});
