@@ -73,7 +73,7 @@ class FrmProFileField {
 			}
 
 			$file_size = self::get_max_file_size( $field['size'] );
-			$form_id   = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
+			$form_id   = $field['parent_form_id'] ?? $field['form_id'];
 
 			$frm_vars['dropzone_loaded'][ $the_id ] = array(
 				'maxFilesize'      => round( $file_size, 2 ),
@@ -107,7 +107,24 @@ class FrmProFileField {
 			);
 
 			if ( array_key_exists( 'honeypot', $frm_vars ) && array_key_exists( $form_id, $frm_vars['honeypot'] ) ) {
-				$frm_vars['dropzone_loaded'][ $the_id ]['checkHoneypot'] = 'strict' === $frm_vars['honeypot'][ $form_id ];
+				if ( class_exists( 'FrmAntiSpamController' ) ) {
+					$honeypot              = new FrmHoneypot( $field['form_id'] );
+					$should_check_honeypot = $honeypot->should_render_field();
+
+					/**
+					 * Filter to control whether to check for Honeypot spam on file upload.
+					 *
+					 * @since 6.21
+					 *
+					 * @param bool  $should_check_honeypot
+					 * @param array $field
+					 */
+					$should_check_honeypot                                   = apply_filters( 'frm_check_honeypot_on_file_upload', $should_check_honeypot, $field );
+					$frm_vars['dropzone_loaded'][ $the_id ]['checkHoneypot'] = $should_check_honeypot;
+				} else {
+					// For backward compatibility.
+					$frm_vars['dropzone_loaded'][ $the_id ]['checkHoneypot'] = 'strict' === $frm_vars['honeypot'][ $form_id ];
+				}
 			}
 
 			$file_types = self::get_allowed_mimes( $field );
@@ -717,10 +734,15 @@ class FrmProFileField {
 		$default_invalid_messages   = array( '' );
 		$default_invalid_messages[] = __( 'This field is invalid', 'formidable-pro' );
 		$default_invalid_messages[] = $field_name . ' ' . __( 'is invalid', 'formidable-pro' );
+		$default_invalid_messages[] = '[field_name] ' . __( 'is invalid', 'formidable-pro' );
 		$is_default_message         = in_array( $field_invalid_msg, $default_invalid_messages );
 
 		$invalid_type    = __( 'Sorry, this file type is not permitted.', 'formidable-pro' );
 		$invalid_message = $is_default_message ? $invalid_type : $field_invalid_msg;
+
+		if ( false !== strpos( $invalid_message, '[field_name]' ) ) {
+			$invalid_message = str_replace( '[field_name]', $field_name, $invalid_message );
+		}
 
 		return $invalid_message;
 	}
@@ -760,6 +782,7 @@ class FrmProFileField {
 		}
 
 		$values = array(
+			'form_id'   => $field->form_id,
 			'item_meta' => array( $field->id => $file_names ),
 		);
 		if ( FrmEntryValidate::blacklist_check( $values ) ) {
@@ -775,7 +798,7 @@ class FrmProFileField {
 	 * @return array
 	 */
 	private static function get_default_filename_spam_keywords() {
-		return array( 'fortnite', 'vbucks', 'roblox', 'robux' );
+		return array( 'fortnite', 'vbucks', 'roblox', 'robux', 'free-rbx-', 'fullmovie-athome' );
 	}
 
 	/**
@@ -1400,7 +1423,7 @@ class FrmProFileField {
 			array(
 				'fi.type'    => 'file',
 				'fi.form_id' => $entry->form_id,
-			) 
+			)
 		);
 		foreach ( $upload_fields as $field ) {
 			self::delete_files_from_field( $field, $entry );
@@ -1570,7 +1593,7 @@ class FrmProFileField {
 			array(
 				'fi.type'    => 'file',
 				'fi.form_id' => $form_id,
-			) 
+			)
 		);
 
 		if ( ! $old_entry_id || ! $upload_fields ) {
@@ -1905,7 +1928,7 @@ class FrmProFileField {
 		}
 
 		if ( ! isset( $args['form_id'] ) ) {
-			$file_id         = isset( $args['file_id'] ) ? $args['file_id'] : reset( $args['file_ids'] );
+			$file_id         = $args['file_id'] ?? reset( $args['file_ids'] );
 			$args['form_id'] = self::get_form_id_from_file_id( $file_id );
 		}
 
@@ -1958,7 +1981,7 @@ class FrmProFileField {
 	 */
 	public static function get_file_url( $id, $size = false, $args = array() ) {
 		$form_id = self::get_form_id_from_file_id( $id );
-		$url     = isset( $args['url'] ) ? $args['url'] : false;
+		$url     = $args['url'] ?? false;
 		$builder = new FrmProFilePayloadBuilder( $id, $size, $url );
 
 		if ( -1 === $form_id ) {
@@ -2026,7 +2049,7 @@ class FrmProFileField {
 	public static function get_option( $form_id, $key, $default ) {
 		$options = FrmDb::get_var( 'frm_forms', array( 'id' => $form_id ), 'options' );
 		FrmProAppHelper::unserialize_or_decode( $options );
-		return isset( $options[ $key ] ) ? $options[ $key ] : $default;
+		return $options[ $key ] ?? $default;
 	}
 
 	/**
@@ -2498,7 +2521,6 @@ class FrmProFileField {
 
 			if ( ! $image_src && $is_pdf ) {
 				remove_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src' );
-				remove_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta' );
 
 				$image_src = wp_get_attachment_image_src( $file_id, $size );
 
@@ -2508,7 +2530,6 @@ class FrmProFileField {
 				}
 
 				add_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src', 10, 4 );
-				add_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta', 10, 2 );
 			}
 		}
 
@@ -2735,25 +2756,6 @@ class FrmProFileField {
 	}
 
 	/**
-	 * Remove attachment metadata for PDF file it is a formidable file as well.
-	 *
-	 * @param array $data
-	 * @param int   $attachment_id
-	 *
-	 * @return array $data
-	 */
-	public static function maybe_turnoff_attachment_meta( $data, $attachment_id ) {
-		if ( self::is_formidable_file( $attachment_id ) && get_post_mime_type( $attachment_id ) === 'application/pdf' ) {
-			$form_id = self::get_form_id_from_file_id( $attachment_id );
-			if ( self::file_is_protected( $attachment_id, $form_id ) ) {
-				return array();
-			}
-		}
-
-		return $data;
-	}
-
-	/**
 	 * @param int $attachment_id
 	 * @return bool
 	 */
@@ -2827,5 +2829,21 @@ class FrmProFileField {
 		$form_directory = self::upload_dir_path( $form_id );
 		$path           = wp_upload_dir()['basedir'] . '/' . $path;
 		return 0 === strpos( $path, $form_directory );
+	}
+
+	/**
+	 * Remove attachment metadata for PDF file it is a formidable file as well.
+	 *
+	 * @since 5.4.5
+	 * @deprecated 6.23
+	 *
+	 * @param array $data
+	 * @param int   $attachment_id
+	 *
+	 * @return array $data
+	 */
+	public static function maybe_turnoff_attachment_meta( $data, $attachment_id ) {
+		_deprecated_function( __METHOD__, '6.23' );
+		return $data;
 	}
 }

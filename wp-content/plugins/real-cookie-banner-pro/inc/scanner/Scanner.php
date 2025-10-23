@@ -9,7 +9,6 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\scanner
 use DevOwl\RealCookieBanner\base\UtilsProvider;
 use DevOwl\RealCookieBanner\Cache;
 use DevOwl\RealCookieBanner\comp\ComingSoonPlugins;
-use DevOwl\RealCookieBanner\comp\TemplatesPluginIntegrations;
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\templates\StorageHelper;
 use DevOwl\RealCookieBanner\templates\TemplateConsumers;
@@ -42,6 +41,8 @@ class Scanner
      * so the `robots.txt` exposes a sitemap and also activates the sitemap.
      */
     const QUERY_ARG_FORCE_SITEMAP = 'rcb-force-sitemap';
+    const QUERY_ARG_SITEMAP_FILTER = 'sitemap-crawler-filter';
+    const HEADER_SITEMAP_FILTER = 'X-Sitemap-Crawler-Filter';
     private $query;
     private $onChangeDetection;
     private $isActiveCache = null;
@@ -440,6 +441,32 @@ class Scanner
         return \count($deleted);
     }
     /**
+     * Output a boolean flag if the current requested sitemap matches the current blog ID.
+     *
+     * This is currently only enabled for logged-in users and useful in a multisite scenario
+     * with path based subsites. Example `robots.txt`:
+     *
+     * ```
+     * User-agent: *
+     * Allow: /
+     * Sitemap: https://example.com/de/wp-sitemap.xml
+     * Sitemap: https://example.com/en/wp-sitemap.xml
+     * ```
+     *
+     * When we start the scan process on the `/de` subsite, we are not allowed to access the
+     * `https://example.com/en/wp-sitemap.xml` URL. This header helps us to identify the correct
+     * blog ID in this case.
+     */
+    public function outputBlogId()
+    {
+        if (isset($_GET[self::QUERY_ARG_SITEMAP_FILTER]) && \is_user_logged_in()) {
+            $sitemapFilter = $_GET[self::QUERY_ARG_SITEMAP_FILTER];
+            $currentBlogId = \get_current_blog_id();
+            $sitemapBlogId = \is_numeric($sitemapFilter) ? \intval($sitemapFilter) : null;
+            \header(\sprintf('%s: %s', self::HEADER_SITEMAP_FILTER, $currentBlogId === $sitemapBlogId ? 'true' : 'false'));
+        }
+    }
+    /**
      * Get human-readable label for RCB queue jobs.
      *
      * @param string $label
@@ -563,10 +590,7 @@ class Scanner
      */
     public function getUserLoginUrls()
     {
-        if (\get_option(TemplatesPluginIntegrations::OPTION_NAME_USERS_CAN_REGISTER)) {
-            return [\wp_login_url(), \wp_lostpassword_url(), \wp_registration_url()];
-        }
-        return [];
+        return [\wp_login_url(), \wp_lostpassword_url(), \wp_registration_url()];
     }
     /**
      * Getter.

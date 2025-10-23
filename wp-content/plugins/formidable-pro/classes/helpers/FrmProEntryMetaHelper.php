@@ -63,7 +63,7 @@ class FrmProEntryMetaHelper {
 					'form_id'     => $field->form_id,
 					'field'       => $field,
 					'links'       => $links,
-					'exclude_cat' => isset( $field->field_options['exclude_cat'] ) ? $field->field_options['exclude_cat'] : array(),
+					'exclude_cat' => $field->field_options['exclude_cat'] ?? array(),
 				);
 
 				foreach ( array( 'show', 'truncate', 'sep' ) as $p ) {
@@ -144,7 +144,7 @@ class FrmProEntryMetaHelper {
 			if ( isset( $atts['field']->field_options ) ) {
 				$field_options = $atts['field']->field_options;
 				FrmProAppHelper::unserialize_or_decode( $field_options );
-				$tax  = isset( $field_options['taxonomy'] ) ? $field_options['taxonomy'] : 'frm_tag';
+				$tax  = $field_options['taxonomy'] ?? 'frm_tag';
 				$tags = get_the_terms( $post_id, $tax );
 
 				if ( $tags ) {
@@ -453,25 +453,24 @@ class FrmProEntryMetaHelper {
 		// The most recent entry ID is not necessarily the highest because of draft statuses.
 		// So try to get the highest from the most recent few meta values.
 		global $wpdb;
-		$max_values = FrmDb::get_col(
+		$max_values = FrmDb::get_results(
 			$wpdb->prefix . 'frm_item_metas m JOIN ' . $wpdb->prefix . 'frm_items i ON i.id = m.item_id',
 			array(
 				'm.field_id' => $field->id,
 				'i.is_draft' => 0,
 			),
-			'm.meta_value',
+			'i.user_id, m.meta_value',
 			array(
 				'order_by' => 'item_id DESC',
-			),
-			5
+			)
 		);
 		if ( ! $max_values ) {
 			$max = '0';
 		} else {
-			$max    = self::get_increment_from_value( $max_values[0], $field );
+			$max    = self::get_increment_from_value( $max_values[0]->meta_value, $field, $max_values[0]->user_id );
 			$length = count( $max_values );
 			for ( $i = 1; $i < $length; ++$i ) {
-				$max_value = self::get_increment_from_value( $max_values[ $i ], $field );
+				$max_value = self::get_increment_from_value( $max_values[ $i ]->meta_value, $field, $max_values[ $i ]->user_id );
 				if ( $max_value > $max ) {
 					$max = $max_value;
 				}
@@ -524,10 +523,11 @@ class FrmProEntryMetaHelper {
 	 * If an auto_id field includes a prefix or suffix, strip them from the last value
 	 *
 	 * @param string|null $max
-	 * @param stdClass $field
+	 * @param stdClass    $field
+	 * @param int         $user_id
 	 * @return string
 	 */
-	private static function get_increment_from_value( $max, $field ) {
+	private static function get_increment_from_value( $max, $field, $user_id = 0 ) {
 		if ( is_null( $max ) ) {
 			return '0';
 		}
@@ -539,11 +539,13 @@ class FrmProEntryMetaHelper {
 
 			if ( $prefix !== '' ) {
 				list ( $max, $prefix ) = self::maybe_remove_date_or_time_from_from_autoid( $max, $prefix, true );
+				$prefix                = self::maybe_replace_user_id_shortcode_in_auto_id( $prefix, $user_id );
 				FrmProFieldsHelper::replace_non_standard_formidable_shortcodes( array(), $prefix );
 			}
 
 			if ( $suffix !== '' ) {
 				list ( $max, $suffix ) = self::maybe_remove_date_or_time_from_from_autoid( $max, $suffix, false );
+				$suffix                = self::maybe_replace_user_id_shortcode_in_auto_id( $suffix, $user_id );
 				FrmProFieldsHelper::replace_non_standard_formidable_shortcodes( array(), $suffix );
 			}
 
@@ -554,6 +556,14 @@ class FrmProEntryMetaHelper {
 		$max = filter_var( $max, FILTER_SANITIZE_NUMBER_INT );
 
 		return $max;
+	}
+
+	private static function maybe_replace_user_id_shortcode_in_auto_id( $pattern, $user_id ) {
+		if ( ! $user_id || false === strpos( $pattern, '[user_id]' ) ) {
+			return $pattern;
+		}
+
+		return str_replace( '[user_id]', $user_id, $pattern );
 	}
 
 	/**

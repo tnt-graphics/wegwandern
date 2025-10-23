@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	) );
 
 	$class     = 'odd';
-	$time_data = isset( $data['time'] ) ? $data['time'] : '';
+	$time_data = $data['time'] ?? '';
 	?>
 	<div class="frm-inner-content wrap">
 		<h2><?php esc_html_e( 'Reports', 'formidable-pro' ); ?></h2>
@@ -75,6 +75,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<b><?php echo count( $entries ); ?></b>
 			</div>
 		</div>
+		<?php
+		/**
+		 * Allows running code after submissions box.
+		 *
+		 * @since 6.23
+		 *
+		 * @param array $args
+		 */
+		do_action( 'frm_pro_report_summary_after_submissions', compact( 'form', 'fields', 'date_range' ) );
+		?>
 		<?php if ( isset( $submitted_user_ids ) ) { ?>
 			<div class="postbox">
 				<div class="inside">
@@ -101,6 +111,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 		if ( $time_data ) {
 			echo $data['time'];
 		}
+
+		/**
+		 * Allows running code before field report.
+		 *
+		 * @since 6.23
+		 *
+		 * @param array $args
+		 */
+		do_action( 'frm_pro_before_field_report', compact( 'form', 'fields', 'date_range' ) );
 
 		foreach ( $fields as $field ) {
 			if ( ! isset( $data[ $field->id ] ) ) {
@@ -149,10 +168,10 @@ if ( ! defined( 'ABSPATH' ) ) {
             </div>
         <?php
 			$class = $class === 'odd' ? 'even' : 'odd';
-            unset($field);
+            unset( $field );
         }
 
-        if ( isset($data['month']) ) {
+        if ( isset( $data['month'] ) ) {
             echo $data['month'];
         }
 ?>

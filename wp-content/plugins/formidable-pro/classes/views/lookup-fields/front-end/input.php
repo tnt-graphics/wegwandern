@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( $disabled && $field['data_type'] !== 'text' ) {
 	foreach ( $saved_value_array as $v ) {
 		?>
-		<input name="<?php echo esc_attr( $field_name ); ?>" type="hidden" value="<?php echo esc_attr( $v ); ?>" <?php do_action('frm_field_input_html', $field); ?> />
+		<input name="<?php echo esc_attr( $field_name ); ?>" type="hidden" value="<?php echo esc_attr( $v ); ?>" <?php do_action( 'frm_field_input_html', $field ); ?> />
 		<?php
     }
 }
@@ -18,13 +18,16 @@ if ( 'select' === $field['data_type'] ) {
 	// If there are field options, show them in a dropdown
 	if ( ! empty( $field['options'] ) ) {
 		?>
-		<select <?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" <?php do_action('frm_field_input_html', $field); ?>>
+		<select <?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" <?php do_action( 'frm_field_input_html', $field ); ?>>
 			<?php
 			$placeholder = FrmField::get_option( $field, 'placeholder' );
 			foreach ( $field['options'] as $opt ) {
 				$option_params = array();
 
-				$is_placeholder = ( $opt == $placeholder );
+				$lookup_option_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt, $field );
+				$opt                 = FrmProFieldLookup::filter_lookup_saved_value( $opt, $field );
+
+				$is_placeholder = $opt === $placeholder || $lookup_option_label === $placeholder;
 				if ( $is_placeholder && $field['autocom'] ) {
 					if ( FrmProAppHelper::use_chosen_js() ) {
 						$opt = '';
@@ -45,7 +48,7 @@ if ( 'select' === $field['data_type'] ) {
 				}
 				?>
 				<option <?php FrmAppHelper::array_to_html_params( $option_params, true ); ?>>
-					<?php echo $opt == '' ? ' ' : esc_html( $opt ); ?>
+					<?php echo $lookup_option_label == '' ? ' ' : esc_html( $lookup_option_label ); ?>
 				</option>
 				<?php
 			}
@@ -92,14 +95,21 @@ if ( 'select' === $field['data_type'] ) {
 
 	$value = is_array( $field['value'] ) ? reset( $field['value'] ) : $field['value'];
 	?>
-	<input type="text" id="<?php echo esc_attr( $html_id ); ?>" name="<?php echo esc_attr( $field_name ); ?>" value="<?php echo esc_attr( $value ); ?>" <?php do_action('frm_field_input_html', $field); ?><?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>/>
+	<input type="text" id="<?php echo esc_attr( $html_id ); ?>" name="<?php echo esc_attr( $field_name ); ?>" value="<?php echo esc_attr( $value ); ?>" <?php do_action( 'frm_field_input_html', $field ); ?><?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>/>
 	<?php
 } elseif ( $field['data_type'] === 'data' && ! empty( $field['watch_lookup'] ) && is_numeric( $field['get_values_field'] ) ) {
-	$value = implode( ', ', $saved_value_array );
+	$displayed_value_array = array();
+	foreach ( $saved_value_array as $k => $v ) {
+		$saved_value_array[ $k ] = FrmProFieldLookup::filter_lookup_saved_value( $v, $field );
+		$displayed_value_array[] = FrmProFieldLookup::filter_lookup_displayed_value( $v, $field );
+	}
+
+	$saved_value     = implode( ', ', $saved_value_array );
+	$displayed_value = implode( ', ', $displayed_value_array );
 	?>
 	<p>
-		<?php echo wp_kses_post( $value ); ?>
+		<?php echo wp_kses_post( $displayed_value ); ?>
 	</p>
-	<input type="hidden" value="<?php echo esc_attr( $value ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
+	<input type="hidden" value="<?php echo esc_attr( $saved_value ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
 	<?php
 }

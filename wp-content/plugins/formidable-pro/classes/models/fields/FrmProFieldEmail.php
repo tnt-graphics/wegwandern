@@ -50,10 +50,15 @@ class FrmProFieldEmail extends FrmFieldEmail {
 	/**
 	 * @since 4.0
 	 * @param array $args - Includes 'field', 'display'.
+	 *
+	 * TODO: Remove this method once the majority of active LITE version installations are above 6.19.
 	 */
 	public function show_after_default( $args ) {
-		$field = $args['field'];
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/confirmation-placeholder.php';
+		if ( is_callable( 'FrmAppHelper::is_admin_list_page' ) ) {
+			return;
+		}
+
+		FrmProFieldsController::add_confirmation_placeholder( $args );
 	}
 
 	/**

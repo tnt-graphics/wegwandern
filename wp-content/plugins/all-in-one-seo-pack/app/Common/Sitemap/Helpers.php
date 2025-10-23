@@ -189,7 +189,10 @@ class Helpers {
 		$memory    = $this->performance['memory'];
 		$type      = aioseo()->sitemap->type;
 		$indexName = aioseo()->sitemap->indexName;
+
+		// phpcs:disable WordPress.PHP.DevelopmentFunctions
 		error_log( wp_json_encode( "$indexName index of $type sitemap generated in $time seconds using a maximum of $memory mb of memory." ) );
+		// phpcs:enable WordPress.PHP.DevelopmentFunctions
 	}
 
 	/**
@@ -350,7 +353,7 @@ class Helpers {
 	 * @return string       The formatted datetime.
 	 */
 	public function lastModifiedAdditionalPage( $page ) {
-		return gmdate( 'c', strtotime( $page->lastModified ) );
+		return aioseo()->helpers->isValidDate( $page->lastModified ) ? gmdate( 'c', strtotime( $page->lastModified ) ) : '';
 	}
 
 	/**
@@ -398,9 +401,35 @@ class Helpers {
 	 */
 	private function excludedObjectIds( $option ) {
 		$type = aioseo()->sitemap->type;
+
 		// The RSS Sitemap needs to exclude whatever is excluded in the general sitemap.
 		if ( 'rss' === $type ) {
 			$type = 'general';
+		}
+
+		// For LLMS sitemap, use LLMS-specific settings
+		if ( 'llms' === $type ) {
+			// Handle LLMS-specific excluded items
+			$excluded = aioseo()->options->sitemap->llms->advancedSettings->{$option};
+
+			if ( empty( $excluded ) ) {
+				return '';
+			}
+
+			$ids = [];
+			foreach ( $excluded as $object ) {
+				if ( is_int( $object ) ) {
+					$ids[] = (int) $object;
+					continue;
+				}
+
+				$object = json_decode( $object );
+				if ( is_int( $object->value ) ) {
+					$ids[] = $object->value;
+				}
+			}
+
+			return count( $ids ) ? esc_sql( implode( ', ', $ids ) ) : '';
 		}
 
 		// Allow WPML to filter out hidden language posts/terms.

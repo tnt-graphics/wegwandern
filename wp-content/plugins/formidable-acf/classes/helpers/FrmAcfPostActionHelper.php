@@ -214,8 +214,13 @@ class FrmAcfPostActionHelper {
 			unset( $field, $index );
 		}
 
+		$skip_field_types = array( 'end_divider' );
+		if ( class_exists( 'FrmSubmitHelper' ) ) {
+			$skip_field_types[] = FrmSubmitHelper::FIELD_TYPE;
+		}
+
 		foreach ( $fields as $index => $field ) {
-			if ( 'end_divider' === $field->type || ( 'divider' === $field->type && ! FrmField::is_repeating_field( $field ) ) ) {
+			if ( in_array( $field->type, $skip_field_types, true ) || ( 'divider' === $field->type && ! FrmField::is_repeating_field( $field ) ) ) {
 				unset( $fields[ $index ] );
 				continue;
 			}

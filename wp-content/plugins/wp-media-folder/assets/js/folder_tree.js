@@ -554,6 +554,11 @@ var wpmfFoldersTreeModule = void 0;
                     wpmfFoldersTreeModule.getTreeElement().find('.wpmf-all-tree').append('<ul class="wpmf-nextcloud"></ul>');
                     wpmfFoldersTreeModule.getTreeElement().find('.nextcloud_list').appendTo(wpmfFoldersTreeModule.getTreeElement().find('.wpmf-nextcloud'));
                 }
+
+                if (!wpmfFoldersTreeModule.getTreeElement().find('.wpmf-owncloud').length && wpmfFoldersTreeModule.getTreeElement().find('.owncloud_list').length) {
+                    wpmfFoldersTreeModule.getTreeElement().find('.wpmf-all-tree').append('<ul class="wpmf-owncloud"></ul>');
+                    wpmfFoldersTreeModule.getTreeElement().find('.owncloud_list').appendTo(wpmfFoldersTreeModule.getTreeElement().find('.wpmf-owncloud'));
+                }
             }
 
             // load scroll bar
@@ -748,6 +753,16 @@ var wpmfFoldersTreeModule = void 0;
                             }
 
                             icondrive = '<svg class="tree_drive_icon_img" version="1.1" viewBox="0 0 256 128" xmlns="http://www.w3.org/2000/svg"><path d="m128 7c-25.871 0-47.817 17.485-54.713 41.209-5.9795-12.461-18.642-21.209-33.287-21.209-20.304 0-37 16.696-37 37s16.696 37 37 37c14.645 0 27.308-8.7481 33.287-21.209 6.8957 23.724 28.842 41.209 54.713 41.209s47.817-17.485 54.713-41.209c5.9795 12.461 18.642 21.209 33.287 21.209 20.304 0 37-16.696 37-37s-16.696-37-37-37c-14.645 0-27.308 8.7481-33.287 21.209-6.8957-23.724-28.842-41.209-54.713-41.209zm0 22c19.46 0 35 15.54 35 35s-15.54 35-35 35-35-15.54-35-35 15.54-35 35-35zm-88 20c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15zm176 0c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15z" color="#000000" fill="' + odvColor + '" style="-inkscape-stroke:none"/></svg>';
+                        }
+
+                        if (wpmfFoldersTreeModule.categories[ij].drive_type === 'owncloud') {
+                            if (parseInt(wpmfFoldersTreeModule.categories[ij].parent_id) === 0) {
+                                drive_root = true;
+                                className += 'owncloud_list wpmf_drive_tree';
+                                className = className.replace('closed', '');
+                            }
+
+                            icondrive = '<svg class="tree_drive_icon_img" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><path d="M64 128a40 40 0 1 1 80 0 40 40 0 1 1 -80 0Z M160 128a32 32 0 1 1 64 0 32 32 0 1 1 -64 0Z M112 96a24 24 0 1 1 48 0 24 24 0 1 1 -48 0Z" color="#000000" fill="' + odvColor + '" style="-inkscape-stroke:none"/></svg>';
                         }
 
                         if (typeof wpmfFoldersTreeModule.categories[ij].drive_type === 'undefined' || wpmfFoldersTreeModule.categories[ij].drive_type === '') {

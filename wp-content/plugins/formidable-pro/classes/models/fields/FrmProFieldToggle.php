@@ -36,6 +36,52 @@ class FrmProFieldToggle extends FrmFieldType {
 	}
 
 	/**
+	 * @since 6.19
+	 *
+	 * {@inheritdoc}
+	 */
+	public function show_default_value_field( $field, $default_name, $default_value ) {
+		$inactive_value = 'frm-toggle-inactive';
+		$active_value   = 'frm-toggle-active';
+		$custom_value   = 'frm-toggle-custom';
+
+		$field_id  = FrmField::get_option( $field, 'id' );
+		$off_label = FrmField::get_option( $field, 'toggle_off' );
+		$on_label  = FrmField::get_option( $field, 'toggle_on' );
+
+		$options = array(
+			$inactive_value => array(
+				'label'      => __( 'Inactive', 'formidable-pro' ),
+				'attributes' => array(
+					'data-label' => $off_label,
+				),
+			),
+			$active_value   => array(
+				'label'      => __( 'Active', 'formidable-pro' ),
+				'attributes' => array(
+					'data-label' => $on_label,
+				),
+			),
+			$custom_value   => array(
+				'label'      => __( 'Custom', 'formidable-pro' ),
+				'attributes' => array(
+					'data-label' => '',
+				),
+			),
+		);
+
+		if ( ! in_array( $default_value, array( '', $off_label, $on_label ), true ) ) {
+			$selected = $custom_value;
+		} else {
+			$selected = FrmAppHelper::check_selected( $default_value, $on_label )
+				? $active_value
+				: $inactive_value;
+		}
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/select-default-value-field.php';
+	}
+
+	/**
 	 * @since 4.0
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */

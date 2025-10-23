@@ -18,7 +18,7 @@ if ( ! empty( $show_form ) ) {
         FrmFormsHelper::get_scroll_js( $form->id );
     }
 ?>
-<form enctype="multipart/form-data" method="post" class="frm-show-form <?php do_action('frm_form_classes', $form); ?>" id="form_<?php echo esc_attr( $form->form_key ); ?>" <?php echo apply_filters( 'frm_form_div_attributes', '', $form ); ?>>
+<form enctype="multipart/form-data" method="post" class="frm-show-form <?php do_action( 'frm_form_classes', $form ); ?>" id="form_<?php echo esc_attr( $form->form_key ); ?>" <?php echo apply_filters( 'frm_form_div_attributes', '', $form ); ?>>
 <?php
     $form_action = 'update';
 	require FrmAppHelper::plugin_path() . '/classes/views/frm-entries/form.php';

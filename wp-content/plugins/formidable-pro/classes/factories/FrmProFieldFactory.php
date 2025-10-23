@@ -103,7 +103,7 @@ class FrmProFieldFactory {
 				$type_classes[ FrmSubmitHelper::FIELD_TYPE ] = 'FrmProFieldSubmit';
 			}
 
-			$class = isset( $type_classes[ $field_type ] ) ? $type_classes[ $field_type ] : '';
+			$class = $type_classes[ $field_type ] ?? '';
 			if ( empty( $class ) ) {
 				$class = 'FrmProFieldDefault';
 			}

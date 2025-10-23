@@ -41,7 +41,7 @@ class FrmProConditionalLogicOptionData {
 					return false;
 				}
 
-				if ( in_array( $field->type, array( 'file', 'date', 'address', 'credit_card' ), true ) ) {
+				if ( in_array( $field->type, array( 'file', 'address', 'credit_card' ), true ) ) {
 					return false;
 				}
 

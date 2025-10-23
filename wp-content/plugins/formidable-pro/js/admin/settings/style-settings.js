@@ -38,6 +38,7 @@
 		wp.hooks.addFilter( 'frm_style_card_dropdown_options', 'formidable', addDropdownOptionsToStyleCard );
 		wp.hooks.addAction( 'frm_style_card_click', 'formidable', handleCardClick );
 		addApplyButtonEventListener();
+		initDatepickerSample();
 
 		/**
 		 * @returns {void}
@@ -530,6 +531,8 @@
 	 * @returns {void}
 	 */
 	function initEditPage() {
+		initDatepickerSample();
+
 		function setupEventListeners() {
 			jQuery( document ).on( 'change', 'input.frm_image_id[name="frm_style_setting[post_content][bg_image_id]"]', onBgImageUpload );
 
@@ -711,6 +714,18 @@
 		 * @returns {void}
 		 */
 		function initializeDatepicker( target ) {
+			if ( 'undefined' !== typeof flatpickr ) {
+				flatpickr( target, {
+					dateFormat: 'Y-m-d',
+					changeMonth: true,
+					changeYear: true,
+					onReady: function( selectedDates, dateStr, instance ) {
+						instance.calendarContainer.classList.add( 'frm-datepicker' );
+					}
+				});
+				return;
+			}
+
 			jQuery( target ).datepicker({
 				changeMonth: true,
 				changeYear: true,
@@ -1007,5 +1022,26 @@
 	 */
 	function getSampleForms() {
 		return document.getElementById( 'frm_style_preview' ).querySelectorAll( '.frm_forms.with_frm_style' );
+	}
+
+	function initDatepickerSample() {
+		if ( 'undefined' !== typeof flatpickr ) {
+			flatpickr( '#datepicker_sample', {
+				dateFormat: 'Y-m-d',
+				changeMonth: true,
+				changeYear: true,
+				inline: true,
+				onReady: function( selectedDates, dateStr, instance ) {
+					instance.calendarContainer.classList.add( 'frm-datepicker' );
+					instance.calendarContainer.classList.add( 'frm-datepicker-inline-small' );
+				}
+			});
+			return;
+		}
+
+		const $sample = jQuery( '#datepicker_sample' );
+		if ( $sample.length && 'function' === typeof $sample.datepicker ) {
+			$sample.datepicker({ changeMonth: true, changeYear: true });
+		}
 	}
 }() );

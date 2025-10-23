@@ -177,6 +177,483 @@ function frmProFormJS() {
 		loadUniqueTimeFields();
 	}
 
+	function frmDatepickerPro( input, settings ) {
+
+		if ( input._flatpickr ) {
+			return input._flatpickr;
+		}
+
+		const _this = this;
+
+		// Init the static methods
+		this.initAccessiblity    = frmDatepickerPro.initAccessiblity;
+		this.initMonthSelector   = frmDatepickerPro.initMonthSelector;
+		this.initYearSelector    = frmDatepickerPro.initYearSelector;
+		this.parseFunctionConfig = frmDatepickerPro.parseFunctionConfig;
+		this.getDateRange        = frmDatepickerPro.getDateRange;
+		this.callbacks           = frmDatepickerPro.callbacks;
+		this.getDefaultConfigs   = frmDatepickerPro.getDefaultConfigs;
+		this.isUsingACustomTheme = frmDatepickerPro.isUsingACustomTheme;
+
+		this.getConfigs = function() {
+			if ( 'undefined' === typeof settings.datepickerJsOptions ) {
+				return _this.getDefaultConfigs( settings, input );
+			}
+			return { ..._this.getDefaultConfigs( settings, input ), ..._this.parseFunctionConfig( settings.datepickerJsOptions ) };
+		};
+		return flatpickr( input, this.getConfigs() );
+	}
+
+	frmDatepickerPro.getThemeType = function() {
+		const themeFile      = document.querySelector( 'link[href*="flatpickr/dist/themes/"]' );
+		const themeSelectors = [
+			{ name: 'frm-dark', selector: 'dark.css' },
+			{ name: 'frm-material-blue', selector: 'material_blue.css' },
+			{ name: 'frm-material-green', selector: 'material_green.css' },
+			{ name: 'frm-material-orange', selector: 'material_orange.css' },
+			{ name: 'frm-material-red', selector: 'material_red.css' },
+			{ name: 'frm-airbnb', selector: 'airbnb.css' },
+			{ name: 'frm-confetti', selector: 'confetti.css' }
+		];
+
+		if ( themeFile && themeFile.href ) {
+			for ( const theme of themeSelectors ) {
+				if ( themeFile.href.includes( theme.selector ) ) {
+					return theme.name;
+				}
+			}
+		}
+
+		return '';
+	};
+	frmDatepickerPro.themeType = frmDatepickerPro.getThemeType();
+	frmDatepickerPro.isUsingACustomTheme = frmDatepickerPro.themeType !== '';
+	frmDatepickerPro.callbacks = {};
+	frmDatepickerPro.callbacks.onOpen = function( selectedDates, dateStr, instance ) {
+		instance.calendarContainer.classList.add( 'frm-datepicker', 'with_frm_style' );
+		if ( frmDatepickerPro.isUsingACustomTheme ) {
+			instance.calendarContainer.classList.add( 'frm-datepicker-custom-theme', frmDatepickerPro.themeType );
+		}
+	};
+	frmDatepickerPro.callbacks.onClose = function( selectedDates, dateStr, instance ) {
+		if ( ! instance.config.inline ) {
+			instance.calendarContainer.classList.remove( 'frm-datepicker', 'with_frm_style' );
+			if ( frmDatepickerPro.isUsingACustomTheme ) {
+				instance.calendarContainer.classList.remove( 'frm-datepicker-custom-theme', frmDatepickerPro.themeType );
+			}
+		}
+
+		triggerEvent( instance.input, 'frmFlatpickrClosed', {
+			instance,
+		});
+	};
+
+	/**
+	 * Get the default configs for the datepicker.
+	 *
+	 * @since 6.19
+	 *
+	 * @returns {object}
+	 */
+	frmDatepickerPro.getDefaultConfigs = function( config, input ) {
+
+		this.getSettings = function() {
+			const result = {};
+			if ( config.formidable_dates || config.options ) {
+				return config;
+			}
+
+			result.formidable_dates = config;
+			result.options = config.datepickerOptions;
+			return result;
+		};
+
+		this.getDatesDisabled = function( settings ) {
+			const disabledDates = settings?.formidable_dates?.datesDisabled || settings?.options?.datesDisabled;
+
+			if ( ! Array.isArray( disabledDates ) ) {
+				return [];
+			}
+
+			return disabledDates.map( date => new Date( date + 'T00:00:00' ) );
+		};
+
+		this.getInstanceElement = ( instance ) => {
+			if ( instance.config.inline && 'INPUT' !== instance.element.nodeName ) {
+				const fieldId = instance.element.dataset.fieldId;
+				const element = document.querySelector( `input[name="item_meta[${ fieldId }]"]` );
+				if ( element ) {
+					return element;
+				}
+				return instance.element;
+			}
+			return instance.element;
+		};
+
+		/**
+		 * Update the range fields(start field and the related end field) on change.
+		 *
+		 * @since 6.24
+		 *
+		 * @param {string} mode The mode of the datepicker.
+		 * @param {object} instance The instance of the datepicker.
+		 * @param {string} dateStr The date string.
+		 * @param {array} selectedDates The selected dates.
+		 * @returns {void}
+		 */
+		this.updateRangeFieldsOnChange = ( mode, instance, dateStr, selectedDates ) => {
+			if ( 'range' !== mode ) {
+				return;
+			}
+
+			const fieldId                = input.dataset.fieldId || input.dataset.rangeStartFieldId;
+			const startDateField         = document.querySelector( `input[data-field-id="${ fieldId }"]` ) || document.querySelector( `input[type="hidden"][name="item_meta[${ fieldId }]"]` );
+			const [ startDate, endDate ] = selectedDates;
+			const endDateField           = 'undefined' !== typeof endDate ? document.querySelector( `input[data-range-start-field-id="${ fieldId }"]` ) : null;
+			const instanceElement        = this.getInstanceElement( instance );
+
+			instanceElement.dataset.rangeValue = dateStr;
+
+			if ( instanceElement === startDateField && null !== endDateField ) {
+				instanceElement.value              = flatpickr.formatDate( startDate, settings.options.fpDateFormat );
+				endDateField.dataset.rangeValue    = dateStr;
+
+				endDateField._flatpickr.setDate( dateStr );
+				endDateField.value = flatpickr.formatDate( endDate, settings.options.fpDateFormat );
+
+				// Trigger the change event to end range field to update the calculation
+				endDateField.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+
+			if ( instanceElement === endDateField ) {
+				instanceElement.value              = flatpickr.formatDate( endDate, settings.options.fpDateFormat );
+				startDateField.dataset.rangeValue  = dateStr;
+				startDateField._flatpickr.setDate( dateStr );
+				startDateField.value               = flatpickr.formatDate( startDate, settings.options.fpDateFormat );
+			}
+		};
+
+		const settings      = this.getSettings();
+		const mode          = input.classList.contains( 'frm_date_range' ) || ( settings.formidable_dates && settings.formidable_dates.isRangeEnabled ) ? 'range' : 'single';
+		const inline        = settings.formidable_dates && settings.formidable_dates.inline;
+		const showMonths    = inline && 'range' === mode ? 2 : 1;
+
+		const { min, max }  = frmDatepickerPro.getDateRange( settings );
+		const disabledDates = this.getDatesDisabled( settings );
+		const firstDay      = settings.options.firstDay || 1;
+
+		const flatpickrOptions = {
+			dateFormat: settings.options.fpDateFormat,
+			inline: settings.formidable_dates && settings.formidable_dates.inline,
+			minDate: min,
+			maxDate: max,
+			monthSelectorType: 'true' === settings.options.changeMonth ? 'dropdown' : 'static',
+			changeYear: settings.options.changeYear,
+			closeOnSelect: true,
+			showMonths: showMonths,
+			locale: {
+				...flatpickr.l10ns[ settings.locale || settings.options.locale ],
+				firstDayOfWeek: firstDay,
+			},
+			mode: mode,
+			disable: [
+				function( date ) {
+					return settings.formidable_dates && settings.formidable_dates.daysEnabled && -1 === settings.formidable_dates.daysEnabled.indexOf( date.getDay() );
+				},
+				...( disabledDates ? disabledDates : [] )
+			],
+			onReady: function( selectedDates, dateStr, instance ) {
+				setTimeout( () => frmDatepickerPro.setDefaultRangeValue( instance.element ) );
+				if ( instance.config.inline ) {
+					instance.calendarContainer.classList.add( 'frm-datepicker', 'with_frm_style', 'frm_date_inline' );
+					if ( frmDatepickerPro.isUsingACustomTheme ) {
+						instance.calendarContainer.classList.add( 'frm-datepicker-custom-theme', frmDatepickerPro.themeType );
+					}
+				}
+				frmDatepickerPro.initMonthSelector( instance );
+				frmDatepickerPro.initYearSelector( instance );
+				frmDatepickerPro.initAccessiblity( instance );
+			},
+			onChange: ( selectedDates, dateStr, instance ) => {
+				if ( instance.config.inline ) {
+					instance.config.altInputElement.value = dateStr;
+					instance.config.altInputElement.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				}
+
+				this.updateRangeFieldsOnChange( mode, instance, dateStr, selectedDates );
+
+			},
+			onOpen: function( selectedDates, dateStr, instance ) {
+				frmDatepickerPro.callbacks.onOpen( selectedDates, dateStr, instance );
+			},
+			onClose: frmDatepickerPro.callbacks.onClose,
+			shorthandCurrentMonth: true,
+			altInputClass: ''
+		};
+
+		if ( settings.formidable_dates && settings.formidable_dates.inline ) {
+			flatpickrOptions.altInput = true;
+			flatpickrOptions.altInputElement = document.querySelector( settings.options.altField );
+		}
+
+		return flatpickrOptions;
+	};
+
+	/**
+	 * Set the default range value for the datepicker.
+	 *
+	 * @since 6.24
+	 *
+	 * @param {object} input
+	 * @returns {void}
+	 */
+	frmDatepickerPro.setDefaultRangeValue = function( instanceElement ) {
+		let input = instanceElement;
+
+		if ( instanceElement._flatpickr.config.inline ) {
+			const fieldId = instanceElement.dataset.fieldId;
+			input = document.querySelector( `input[name="item_meta[${ fieldId }]"]` );
+			input.dataset.fieldId = fieldId;
+		}
+
+		if ( ! input.classList.contains( 'frm_date_range' ) ) {
+			return null;
+		}
+
+		const startDate = input.dataset.rangeStartFieldId ? document.querySelector( `input[data-field-id="${ input.dataset.rangeStartFieldId }"]` ) : input;
+		const startDateValue = startDate.value;
+		const endDate = input.dataset.rangeStartFieldId ? input : document.querySelector( `input[data-range-start-field-id="${ input.dataset.fieldId }"]` );
+		const endDateValue = endDate.value;
+
+		if ( instanceElement._flatpickr.config.inline ) {
+			instanceElement._flatpickr.setDate( startDateValue + ' to ' + endDateValue );
+			startDate.value = startDateValue;
+			endDate.value = endDateValue;
+			return;
+		}
+
+		// When the inline datepicker is enabled, the range’s default value is controlled by the “Start Date” field.
+		// If the Flatpickr instance for “Start Date” isn’t available, setDefaultRangeValue is executed for the “End Date” field when the "Display Inline" is activated - the default dates are already updated by the "Start Date" field
+		if ( 'undefined' === typeof startDate._flatpickr ) {
+			return;
+		}
+
+		startDate._flatpickr.setDate( startDateValue + ' to ' + endDateValue );
+		startDate.value = startDateValue;
+		endDate._flatpickr.setDate( startDateValue + ' to ' + endDateValue );
+		endDate.value = endDateValue;
+	};
+
+	/**
+	 * Initialize the month selector for the datepicker.
+	 *
+	 * @since 6.19
+	 *
+	 * @param {object} instance
+	 * @returns {void}
+	 */
+	frmDatepickerPro.initMonthSelector = function( instance ) {
+		if ( 'static' !== instance.config.monthSelectorType ) {
+			return;
+		}
+		instance.calendarContainer.classList.add( 'frm-date-no-month-select' );
+	};
+
+	/**
+	 * Initialize the year selector for the datepicker.
+	 *
+	 * @since 6.19
+	 *
+	 * @param {object} instance
+	 * @returns {void}
+	 */
+	frmDatepickerPro.initYearSelector = function( instance ) {
+		if ( 'false' !== instance.config.changeYear ) {
+			return;
+		}
+		instance.calendarContainer.classList.add( 'frm-date-no-year-select' );
+	};
+
+	/**
+	 * Initialize the accessibility for the datepicker.
+	 *
+	 * @since 6.19
+	 *
+	 * @param {object} instance
+	 * @returns {void}
+	 */
+	frmDatepickerPro.initAccessiblity = function( instance ) {
+
+		/**
+		 * Initialize the accessibility for the datepicker.
+		 *
+		 * @since 6.19
+		 *
+		 * @returns {void}
+		 */
+		this.init = function() {
+			instance.calendarContainer.setAttribute( 'role', 'dialog' );
+			instance.calendarContainer.setAttribute( 'tabindex', '0' );
+			this.prevButton();
+			this.nextButton();
+		};
+
+		/**
+		 * Initialize the previous button for the datepicker.
+		 *
+		 * @since 6.19
+		 *
+		 * @returns {void}
+		 */
+		this.prevButton = function(  ) {
+			const prevArrow = instance.calendarContainer.querySelector( '.flatpickr-prev-month' );
+			if ( null === prevArrow ) {
+				return;
+			}
+			prevArrow.setAttribute( 'tabindex', '0' );
+			prevArrow.setAttribute( 'role', 'button' );
+			prevArrow.addEventListener( 'keydown', function( event ) {
+				if ( event.key === 'Enter' ) {
+					prevArrow.click();
+				}
+			});
+		};
+
+		/**
+		 * Initialize the next button for the datepicker.
+		 *
+		 * @since 6.19
+		 *
+		 * @returns {void}
+		 */
+		this.nextButton = function(  ) {
+			const nextArrow = instance.calendarContainer.querySelector( '.flatpickr-next-month' );
+			if ( null === nextArrow ) {
+				return;
+			}
+			nextArrow.setAttribute( 'tabindex', '0' );
+			nextArrow.setAttribute( 'role', 'button' );
+			nextArrow.addEventListener( 'keydown', function( event ) {
+				if ( event.key === 'Enter' ) {
+					nextArrow.click();
+				}
+			});
+		};
+
+		this.init();
+	};
+
+	/**
+	 * Get the date range for the datepicker.
+	 *
+	 * @since 6.19
+	 *
+	 * @param {object} optionsData
+	 * @returns {object}
+	 */
+	frmDatepickerPro.getDateRange = function( optionsData ) {
+		const dates = {
+			min: null,
+			max: null,
+		};
+		const [ minYear, maxYear ] = optionsData.options.yearRange.split( ':' );
+
+		dates.min = new Date( minYear + '-01-01T00:00:00' );
+		dates.max = new Date( maxYear + '-12-31T23:59:59' );
+
+		if ( ! optionsData.formidable_dates ) {
+			return dates;
+		}
+
+		if ( optionsData.formidable_dates.maximum_date_cond ) {
+			if ( optionsData.maxDate ) {
+				dates.max = optionsData.maxDate;
+			} else {
+				dates.max = frmDatepickerPro.parseOffsetDate( optionsData.formidable_dates.maximum_date_val );
+			}
+		}
+		if ( optionsData.formidable_dates.minimum_date_cond ) {
+			if ( optionsData.minDate ) {
+				dates.min = optionsData.minDate;
+			} else {
+				dates.min = frmDatepickerPro.parseOffsetDate( optionsData.formidable_dates.minimum_date_val );
+			}
+		}
+
+		return dates;
+	};
+
+	/**
+	 * Parse the offset date from the datepickerJsOptions.
+	 *
+	 * @since 6.19
+	 *
+	 * @param {string} date
+	 * @returns {object}
+	 */
+	frmDatepickerPro.parseOffsetDate = function( date ) {
+		const cleanedDate = date.toLowerCase().replace(/\s+/g, '');
+		const regex       = /^([+-]\d+)(day|days|month|months|year|years)$/;
+		const match       = cleanedDate.match( regex );
+		if ( ! match ) {
+			return date;
+		}
+		const [, number, unit ] = match;
+		const amount = parseInt( number );
+		const currentDate = new Date();
+
+		if ( unit.startsWith( 'day' ) ) {
+			currentDate.setDate( currentDate.getDate() + amount );
+			return currentDate;
+		}
+		if ( unit.startsWith( 'month' ) ) {
+			currentDate.setMonth( currentDate.getMonth() + amount );
+			return currentDate;
+		}
+		if ( unit.startsWith( 'year' ) ) {
+			currentDate.setFullYear( currentDate.getFullYear() + amount );
+			return currentDate;
+		}
+
+		return currentDate;
+	};
+
+	/**
+	 * Parse the function config from the datepickerJsOptions.
+	 *
+	 * @since 6.19
+	 *
+	 * @param {string} config
+	 * @returns {object}
+	 */
+	frmDatepickerPro.parseFunctionConfig = function( config ) {
+		const parsed = JSON.parse( config );
+
+		const stringToFunction = ( str ) => {
+			if ( typeof str === 'string' && str.startsWith( 'function' ) ) {
+				return new Function( 'return ' + str )();
+			}
+			return str;
+		};
+
+		Object.keys( parsed ).forEach( key => {
+			if ( Array.isArray( parsed[ key ] ) ) {
+				parsed[ key ] = parsed[ key ].map( item => stringToFunction( item ) );
+			} else {
+				parsed[ key ] = stringToFunction( parsed[ key ] );
+			}
+		});
+
+		return parsed;
+	};
+
+	/**
+	 * Check if the flatpickr library is available.
+	 *
+	 * @since 6.19
+	 */
+	frmDatepickerPro.useFlatpickr = () => window.frm_js && window.frm_js.datepickerLibrary === 'flatpickr';
+
 	function triggerDateField() {
 		/*jshint validthis:true */
 		if ( this.className.indexOf( 'frm_custom_date' ) !== -1 || typeof __frmDatepicker === 'undefined' ) {
@@ -194,8 +671,6 @@ function frmProFormJS() {
 			altID = 'input[id^="' + idParts.join( '-' ) + '"]';
 		}
 
-		jQuery.datepicker.setDefaults( jQuery.datepicker.regional[ '' ]);
-
 		var optKey = 0;
 		for ( var i = 0; i < dateFields.length; i++ ) {
 			if ( dateFields[ i ].triggerID === '#' + id || dateFields[ i ].triggerID == altID ) {
@@ -208,14 +683,20 @@ function frmProFormJS() {
 			dateFields[ optKey ].options.defaultDate = new Date( dateFields[ optKey ].options.defaultDate );
 		}
 
-		dateFields[ optKey ].options.beforeShow = frmProForm.addFormidableClassToDatepicker;
-		dateFields[ optKey ].options.onClose = frmProForm.removeFormidableClassFromDatepicker;
+		if ( frmDatepickerPro.useFlatpickr() ) {
+			new frmDatepickerPro( this, dateFields[ optKey ] );
+		} else {
+			// Legacy datepicker.
+			// TO DO: Remove this once the legacy datepicker is removed.
+			dateFields[ optKey ].options.beforeShow = frmProForm.addFormidableClassToDatepicker;
+			dateFields[ optKey ].options.onClose = frmProForm.removeFormidableClassFromDatepicker;
 
-		jQuery( this ).datepicker( jQuery.extend(
-			{},
-			jQuery.datepicker.regional[ dateFields[ optKey ].locale ],
-			dateFields[ optKey ].options
-		) );
+			jQuery( this ).datepicker( jQuery.extend(
+				{},
+				jQuery.datepicker.regional[ dateFields[ optKey ].locale ],
+				dateFields[ optKey ].options
+			));
+		}
 	}
 
 	function loadDropzones( repeatRow ) {
@@ -304,7 +785,9 @@ function frmProFormJS() {
 
 				this.on( 'thumbnail', function( file ) {
 					if ( file.size < 1024 * 1024 * ( this.options.minFilesize ) ) {
-						file.rejectSize();
+						if ( 'function' === typeof file.rejectSize ) {
+							file.rejectSize();
+						}
 					}
 				});
 
@@ -478,6 +961,82 @@ function frmProFormJS() {
 	}
 
 	/**
+	 * Load imask for the given container.
+	 *
+	 * @since 6.23
+	 *
+	 * @param {string|undefined} containerId
+	 * @returns {void}
+	 */
+	function loadImask( containerId ) {
+		if ( ! window.IMask ) {
+			return;
+		}
+
+		let inputs;
+		if ( containerId ) {
+			inputs = document.querySelectorAll( '#' + containerId + ' input[data-frmmask]' );
+		} else {
+			inputs = document.querySelectorAll( 'input[data-frmmask]' );
+		}
+
+		inputs.forEach(
+			( input ) => {
+				if ( input.getAttribute( 'data-frm-imask-initialized' ) ) {
+					return;
+				}
+
+				input.setAttribute( 'data-frm-imask-initialized', 1 );
+
+				const mask = IMask(
+					input,
+					{
+						mask: input.dataset.frmmask,
+						lazy: true,
+						definitions: {
+							'*': /[a-zA-Z0-9]/
+						}
+					}
+				);
+
+				input.addEventListener( 'change', () => mask.updateValue() );
+
+				// Show placeholder on focus
+				input.addEventListener( 'focus', () => {
+					mask.updateOptions({ lazy: false });
+
+					// Extend the maxlength by 1 to fix an issue where the placeholder characters would prevent
+					// characters from being added.
+					if ( input.hasAttribute( 'maxlength' ) && input.value.length >= input.maxLength ) {
+						if ( ! input.hasAttribute( 'original-maxlength' ) ) {
+							input.setAttribute( 'original-maxlength', input.maxLength );
+						}
+						input.maxLength = parseInt( input.getAttribute( 'original-maxlength' ) ) + 1;
+					}
+
+					if ( '' === mask.unmaskedValue ) {
+						// This fixes an issue in Chrome, where it
+						// automatically would move the cursor to the end of the input.
+						mask.alignCursor( 0 );
+					}
+				} );
+
+				input.addEventListener( 'blur', () => {
+					input.value = input.value.trim();
+
+					if ( '' === mask.unmaskedValue ) {
+						mask.updateOptions({ lazy: true });
+					}
+
+					if ( input.hasAttribute( 'original-maxlength' ) ) {
+						input.maxLength = parseInt( input.getAttribute( 'original-maxlength' ) );
+					}
+				} );
+			}
+		);
+	}
+
+	/**
 	 * Remove the submit loading class from a form and
 	 * only enable the submit button if it is not conditionally disabled.
 	 *
@@ -628,7 +1187,7 @@ function frmProFormJS() {
 	function isHoneypotSpam( formID ) {
 		var honeypotField = document.getElementById( 'frm_email_' + formID );
 		if ( honeypotField === null ) {
-			honeypotField = document.getElementById( 'frm_verify_' + formID );
+			honeypotField = document.getElementById( 'frm_form_' + formID + '_container' )?.querySelector( '.frm_verify[id^="field_"]' );
 		}
 		return honeypotField !== null && honeypotField.value !== '';
 	}
@@ -1059,6 +1618,8 @@ function frmProFormJS() {
 			fieldValue = getValueFromNameField( logicFieldArgs, depFieldArgs );
 		} else if ( logicFieldArgs.inputType === 'radio' || logicFieldArgs.inputType === 'checkbox' || logicFieldArgs.inputType === 'toggle' ) {
 			fieldValue = getValueFromRadioOrCheckbox( logicFieldArgs, depFieldArgs );
+		} else if ( logicFieldArgs.inputType === 'date' ) {
+			fieldValue = getValueForDateField( logicFieldArgs, depFieldArgs );
 		} else {
 			fieldValue = getValueFromTextOrDropdown( logicFieldArgs, depFieldArgs );
 		}
@@ -1066,6 +1627,27 @@ function frmProFormJS() {
 		fieldValue = cleanFinalFieldValue( fieldValue );
 
 		return fieldValue;
+	}
+
+	/**
+	 * @since 6.21
+	 *
+	 * @param {object} logicFieldArgs
+	 * @param {object} depFieldArgs
+	 * @return {string}
+	 */
+	function getValueForDateField( logicFieldArgs, depFieldArgs ) {
+		const fieldId        = logicFieldArgs.fieldId;
+		const fieldContainer = document.getElementById( 'frm_field_' + fieldId + '_container' );
+
+		if ( fieldContainer && fieldContainer.querySelector( '.frm_date_inline' ) ) {
+			const altField = fieldContainer.querySelector( '#field_' + logicFieldArgs.fieldKey + '_alt' );
+			if ( altField ) {
+				return altField.value;
+			}
+		}
+
+		return getValueFromTextOrDropdown( logicFieldArgs, depFieldArgs );
 	}
 
 	function getValueFromNameField( logicFieldArgs, depFieldArgs ) {
@@ -1268,7 +1850,8 @@ function frmProFormJS() {
 			// If dep field is Dynamic and logic field is Dynamic
 			outcome = getDynamicFieldLogicOutcome( logicCondition, fieldValue, depFieldArgs );
 		} else {
-			outcome = operators( logicCondition.operator, logicCondition.value, fieldValue );
+			const values = maybePrepareValuesCompared( logicCondition, fieldValue, depFieldArgs.formId );
+			outcome = operators( logicCondition.operator, values.logicValue, values.fieldValue );
 		}
 
 		return outcome;
@@ -1294,13 +1877,138 @@ function frmProFormJS() {
 				outcome = true;
 			}
 		} else {
+			const values = maybePrepareValuesCompared( logicCondition, fieldValue, depFieldArgs.formId );
 			// Logic: "Dynamic field is equal to/not equal to specific option"
-			outcome = operators( logicCondition.operator, logicCondition.value, fieldValue );
+			outcome = operators( logicCondition.operator, values.logicValue, values.fieldValue );
 		}
 		depFieldArgs.dataLogic = logicCondition;
 		depFieldArgs.dataLogic.actualValue = fieldValue;
 
 		return outcome;
+	}
+
+	/**
+	 * @since 6.19
+	 *
+	 * @param {object}        logicCondition
+	 * @param {number|string} fieldValue
+	 * @param {string}        formId
+	 * @returns {object}
+	 */
+	function maybePrepareValuesCompared( logicCondition, fieldValue, formId ) {
+		let logicValue = logicCondition.value;
+		if ( 'undefined' === typeof __FRMRULES || 'undefined' === typeof __FRMRULES[ logicCondition.fieldId ] ) {
+			return { logicValue, fieldValue };
+		}
+		const logicConditionFieldType = __FRMRULES[ logicCondition.fieldId ].fieldType;
+		if ( 'total' === logicConditionFieldType ) {
+			const currency = getCurrency( formId );
+			logicValue     = preparePrice( logicCondition.value, currency );
+			fieldValue     = preparePrice( fieldValue, currency );
+		} else if ( 'date' === logicConditionFieldType ) {
+			const dateFormat = getDateFormatForField( logicCondition.fieldId );
+			if ( false !== dateFormat ) {
+				logicValue = prepareDate( logicValue, dateFormat );
+				fieldValue = prepareDate( fieldValue, dateFormat );
+			}
+		}
+		return { logicValue, fieldValue };
+	}
+
+	/**
+	 * Change date to Y-m-d format if the current format is not sortable.
+	 *
+	 * @since 6.21
+	 *
+	 * @param {string} date
+	 * @param {string} format
+	 * @return {string}
+	 */
+	function prepareDate( date, format ) {
+		if ( 'Y-m-d' === format ) {
+			return date;
+		}
+
+		const possibleSeparators = [ '/', '.', '-' ];
+		let separator            = false;
+		possibleSeparators.forEach( ( sep ) => {
+			if ( format.includes( sep ) ) {
+				separator = sep;
+			}
+		} );
+		if ( separator === false ) {
+			return date;
+		}
+
+		const split = date.split( separator );
+		if ( 3 !== split.length ) {
+			return date;
+		}
+
+		let yearPart, monthPart, dayPart;
+
+		switch ( format ) {
+			case 'Y/m/d':
+				yearPart  = split[ 0 ];
+				monthPart = split[ 1 ];
+				dayPart   = split[ 2 ];
+				break;
+			case 'n/j/Y':
+			case 'm/d/Y':
+				monthPart = split[ 0 ];
+				dayPart   = split[ 1 ];
+				yearPart  = split[ 2 ];
+				break;
+			case 'd/m/Y':
+			case 'd.m.Y':
+			case 'j/m/Y':
+			case 'j/n/Y':
+			case 'j-m-Y':
+			default:
+				dayPart   = split[ 0 ];
+				monthPart = split[ 1 ];
+				yearPart  = split[ 2 ];
+				break;
+		}
+
+		if ( yearPart.length !== 4 ) {
+			return date;
+		}
+
+		if ( monthPart.length < 2 ) {
+			monthPart = '0' + monthPart;
+		}
+
+		if ( dayPart.length < 2 ) {
+			dayPart = '0' + dayPart;
+		}
+
+		return yearPart + '-' + monthPart + '-' + dayPart;
+	}
+
+	/**
+	 * @since 6.21
+	 *
+	 * @param {string} fieldId
+	 * @return {string|false}
+	 */
+	function getDateFormatForField( fieldId ) {
+		if ( ! window.__frmDatepicker ) {
+			return false;
+		}
+
+		let fieldRule = false;
+		__frmDatepicker.forEach( ( rule ) => {
+			if ( ! rule.fieldId || rule.fieldId === fieldId ) {
+				fieldRule = rule;
+			}
+		} );
+
+		if ( false === fieldRule ) {
+			return false;
+		}
+
+		return fieldRule.options.fpDateFormat;
 	}
 
 	function operators( op, a, b ) {
@@ -1364,6 +2072,11 @@ function frmProFormJS() {
 				c = prepareLogicValueForLikeComparison( c );
 				d = prepareEnteredValueForLikeComparison( c, d );
 
+				if ( Array.isArray( d ) ) {
+					// If d is still an array after calling prepareEnteredValueForLikeComparison, there is no match.
+					return false;
+				}
+
 				return d.substr( 0, c.length ) === c;
 			},
 			// Ends with
@@ -1375,6 +2088,11 @@ function frmProFormJS() {
 
 				c = prepareLogicValueForLikeComparison( c );
 				d = prepareEnteredValueForLikeComparison( c, d );
+
+				if ( Array.isArray( d ) ) {
+					// If d is still an array after calling prepareEnteredValueForLikeComparison, there is no match.
+					return false;
+				}
 
 				return d.substr( -c.length ) === c;
 			}
@@ -1646,7 +2364,7 @@ function frmProFormJS() {
 	 */
 	function setValuesInsideFieldAcrossPage( depFieldArgs ) {
 		var inputs = getInputsInFieldAcrossPage( depFieldArgs ),
-			inContainer = ( depFieldArgs.fieldType === 'divider' || depFieldArgs.fieldType === 'form' );
+			inContainer = depFieldArgs.fieldType === 'divider' || depFieldArgs.fieldType === 'form' || depFieldArgs.isRepeating;
 
 		setValueForInputs( inputs, inContainer, depFieldArgs.formId );
 	}
@@ -2032,11 +2750,19 @@ function frmProFormJS() {
 					}
 				}
 			} else if ( input.type === 'range' ) {
+				let sliderDefault = defaultVal;
 				if ( ! reset ) {
-					input.value = 0;
-				} else {
-					input.value = defaultVal;
+					// Reset to mid value
+					const min = parseFloat( input.getAttribute( 'min' ) );
+					const max = parseFloat( input.getAttribute( 'max' ) );
+					const mid = ( ( max - min ) / 2 ) + min;
+					const step  = parseFloat( input.getAttribute( 'step' ), 10 );
+					const midSteps = Math.round( mid / step );
+					sliderDefault = midSteps * step;
+					input.parentElement.querySelector( '.frm_range_value' ).textContent = sliderDefault;
 				}
+				input.value = sliderDefault;
+				initRangeInput( [ input ] );
 			} else if ( input.getAttribute( 'data-frmprice' ) !== null ) {
 				setHiddenProduct( input );
 			} else {
@@ -2054,6 +2780,9 @@ function frmProFormJS() {
 				if ( null !== input.getAttribute( 'data-frmfile' ) ) {
 					clearDropzoneFiles( input );
 				}
+				if ( input.type === 'hidden' && input.closest( '.frm_range_container ' ) ) {
+					resetRangeInput( input );
+				}
 			}
 
 			if ( required === 'required' ) {
@@ -2068,6 +2797,14 @@ function frmProFormJS() {
 		if ( valueChanged === true ) {
 			triggerChange( jQuery( prevInput ) );
 		}
+	}
+
+	function resetRangeInput( input ) {
+		const rangeContainer          = input.parentElement;
+		const rangeSliderWrapperClone = rangeContainer.querySelector( '.frm-slider-wrapper' ).cloneNode( true );
+		// Replace old range slider elements with cloned ones to prevent jerky behavior after reset when initializeRangeSlider is called.
+		rangeContainer.querySelector( 'div:last-of-type' ).replaceChild( rangeSliderWrapperClone, rangeContainer.querySelector( '.frm-slider-wrapper' ) );
+		initializeRangeSlider( input, rangeContainer );
 	}
 
 	function setSlimValue( input, value ) {
@@ -2388,6 +3125,16 @@ function frmProFormJS() {
 						jQuery( input ).val( defaultValue ).trigger( 'chosen:updated' );
 					} else {
 						input.value = defaultValue;
+
+						// Trigger change event for range slider input so it knows to sync the handles.
+						if ( 'hidden' === input.type && input.dataset.isRangeSliderInitialized ) {
+							input.dispatchEvent( new Event( 'change' ) );
+						}
+
+						if ( 'range' === input.type ) {
+							// Trigger input event
+							input.dispatchEvent( new Event( 'input' ) );
+						}
 					}
 				}
 				if ( 'SELECT' === input.tagName ) {
@@ -2472,6 +3219,8 @@ function frmProFormJS() {
 			);
 		}
 
+		let hiddenFieldIndex = 0;
+
 		// Loop through options and set the default value
 		for ( var i = 0, l = radioInputs.length; i < l; i++ ) {
 			if ( firstInput === false ) {
@@ -2480,11 +3229,12 @@ function frmProFormJS() {
 
 			if ( radioInputs[ i ].type === 'hidden' ) {
 				// If field is read-only and there is a hidden input
-				if ( Array.isArray( defaultValue ) && defaultValue[ i ] !== null ) {
-					radioInputs[ i ].value = defaultValue[ i ];
+				if ( Array.isArray( defaultValue ) && defaultValue[ hiddenFieldIndex ] !== null && 'undefined' !== typeof defaultValue[ hiddenFieldIndex ] ) {
+					radioInputs[ i ].value = defaultValue[ hiddenFieldIndex ];
 				} else {
 					radioInputs[ i ].value = defaultValue;
 				}
+				hiddenFieldIndex++;
 				isSet = true;
 			} else if ( radioInputs[ i ].value == defaultValue ||
 				( Array.isArray( defaultValue ) && defaultValue.indexOf( radioInputs[ i ].value ) > -1 ) ) {
@@ -2516,6 +3266,7 @@ function frmProFormJS() {
 				}
 			);
 		}
+
 		if ( Array.isArray( defaultValue ) ) {
 			for ( var i = 0, l = defaultValue.length; i < l; i++ ) {
 				if ( i in hiddenInputs ) {
@@ -2641,7 +3392,7 @@ function frmProFormJS() {
 
 		// We want to allow duplicate form ids (inside repeaters) here because the number of calls
 		// to enableFormAfterLookup matters for handling the processesRunning variable.
-		let allFormIds = [];
+		const allFormIds = [];
 
 		const batchSize = 20;
 		const batches   = Math.ceil( unprocessedPendingLookups.length / batchSize );
@@ -2667,14 +3418,16 @@ function frmProFormJS() {
 				},
 				function( newOptionsByFieldId ) {
 					allFormIds.forEach( enableFormAfterLookup );
-	
+
 					Object.entries( newOptionsByFieldId ).forEach( entry => {
-						const key        = entry[0];
-						const newOptions = entry[1];
-						unprocessedPendingLookups.forEach(
+						const key          = entry[0];
+						const newOptions   = entry[1];
+						const optionLabels = 'undefined' !== typeof newOptionsByFieldId[ key + '_label' ] ? newOptionsByFieldId[ key + '_label' ] : [];
+
+						currentBatch.forEach(
 							function( pendingLookup ) {
-								if ( pendingLookup.childFieldArgs.unique === parseInt( key ) ) {
-									pendingLookup.callback( newOptions );
+								if ( ! isNaN( key ) && pendingLookup.childFieldArgs.unique === parseInt( key ) ) {
+									pendingLookup.callback( newOptions, optionLabels );
 								}
 							}
 						);
@@ -2923,8 +3676,8 @@ function frmProFormJS() {
 
 			getLookupValues(
 				childFieldArgs,
-				function( newOptions ) {
-					replaceSelectLookupFieldOptions( childFieldArgs, childSelect, newOptions );
+				function( newOptions, optionLabels ) {
+					replaceSelectLookupFieldOptions( childFieldArgs, childSelect, newOptions, optionLabels );
 					triggerLookupOptionsLoaded( jQuery( childDiv ) );
 					enableFormAfterLookup( childFieldArgs.formId );
 				}
@@ -3093,7 +3846,7 @@ function frmProFormJS() {
 	 * @param {object} childSelect
 	 * @param {Array} newOptions
 	 */
-	function replaceSelectLookupFieldOptions( fieldArgs, childSelect, newOptions ) {
+	function replaceSelectLookupFieldOptions( fieldArgs, childSelect, newOptions, optionLabels ) {
 		var origVal, i, optsLength, newOption, optionData;
 
 		// Get selected options
@@ -3117,7 +3870,8 @@ function frmProFormJS() {
 		}
 
 		for ( i = 0; i < optsLength; i++ ) {
-			newOption                    = new Option( newOptions[ i ], newOptions[ i ], false, false );
+			const optionLabel            = optionLabels[ i ] || newOptions[ i ];
+			newOption                    = new Option( optionLabel, newOptions[ i ], false, false );
 			childSelect.options[ i + 1 ] = newOption;
 			optionData.push( newOption );
 		}
@@ -3162,6 +3916,11 @@ function frmProFormJS() {
 			if ( defaultValue !== null ) {
 				childSelect.value = defaultValue;
 			}
+		}
+
+		if ( childSelect.value === '' ) {
+			// Set the value to empty string again to fix the issue with blank option show.
+			childSelect.value = '';
 		}
 	}
 
@@ -3279,8 +4038,8 @@ function frmProFormJS() {
 				content.innerHTML = '';
 			}
 		} else {
-			getLookupValues( childFieldArgs, function( response ) {
-				content.innerHTML = response.join( ', ' );
+			getLookupValues( childFieldArgs, function( response, optionLabels ) {
+				content.innerHTML = optionLabels.length ? optionLabels.join( ', ' ) : response.join( ', ' );
 				inputs[0].value = response;
 
 				maybeShowRadioLookup( childFieldArgs, childDiv );
@@ -3512,14 +4271,37 @@ function frmProFormJS() {
 	 * @since 2.03.05
 	 *
 	 * @param {string} elementId
+	 * @return {void}
 	 */
 	function doNextItemInLookupQueue( elementId ) {
-		if ( currentLookupHasQueue( elementId ) ) {
-			var childFieldArgs = lookupQueues[ elementId ][ 0 ].childFieldArgs,
-				childInput = lookupQueues[ elementId ][ 0 ].childInput;
-
-			maybeInsertValueInFieldWatchingLookup( childFieldArgs, childInput );
+		if ( ! currentLookupHasQueue( elementId ) ) {
+			return;
 		}
+
+		const childFieldArgs = lookupQueues[ elementId ][ 0 ].childFieldArgs;
+		const childInput     = lookupQueues[ elementId ][ 0 ].childInput;
+
+		updateParentValsForLookup( childInput.name, childFieldArgs );
+		maybeInsertValueInFieldWatchingLookup( childFieldArgs, childInput );
+	}
+
+	/**
+	 * Ensures Lookup field parentVals are updated for the current field.
+	 * Fixes issue #5611
+	 *
+	 * @since 6.19
+	 *
+	 * @param {string} childInputName
+	 * @param {object} childFieldArgs
+	 *
+	 * @returns {void}
+	 */
+	function updateParentValsForLookup( childInputName, childFieldArgs ) {
+		if ( ! childInputName ) {
+			return;
+		}
+		childFieldArgs.repeatRow  = getRepeatArgsFromFieldName( childInputName ).repeatRow;
+		childFieldArgs.parentVals = getParentLookupFieldVals( childFieldArgs );
 	}
 
 	/**
@@ -3853,7 +4635,7 @@ function frmProFormJS() {
 			vals = [];
 
 		for ( var fieldKey in calcs ) {
-			if ( calcs[ fieldKey ].fields.length < 1 ) {
+			if ( calcs[ fieldKey ].fields.length < 1 && calcs[ fieldKey ].calc ) {
 				var totalField = document.getElementById( 'field_' + fieldKey );
 				if ( totalField !== null && ! isChildInputConditionallyHidden( totalField, calcs[ fieldKey ].form_id ) ) {
 					// if field is not hidden, do calculation
@@ -4126,6 +4908,17 @@ function frmProFormJS() {
 		}
 	}
 
+	/**
+	 * @param {object} triggerField
+	 * @param {string} fieldKey
+	 *
+	 * @returns {object}
+	 */
+	function getTotalOrCalcField( triggerField, fieldKey ) {
+		const form = document.contains( triggerField[0] ) ? triggerField.closest( 'form' ) : jQuery( `#frm_field_${triggerField[0].dataset.sectionid}_container` ).closest( 'form' );
+		return form.find( fieldKey );
+	}
+
 	function doSingleCalculation( allCalcs, fieldKey, vals, triggerField ) {
 		var currency, total, dec, updatedTotal, totalField,
 			thisCalc = allCalcs.calc[ fieldKey ],
@@ -4137,9 +4930,13 @@ function frmProFormJS() {
 			};
 
 		if ( typeof triggerField !== 'undefined' && triggerField && triggerField.length ) {
-			totalField = triggerField.closest( 'form' ).find( '#field_' + fieldKey );
+			totalField = getTotalOrCalcField( triggerField, '#field_' + fieldKey );
 		} else {
 			totalField = jQuery( document.getElementById( 'field_' + fieldKey ) );
+		}
+
+		if ( totalField.get( 0 )?.dataset.minGap ) { // Avoid running calculation for Range sliders.
+			return;
 		}
 
 		// exit early for sliders as there is no calculation for such types and avoid errors that might rise due to formatting the value
@@ -4166,10 +4963,15 @@ function frmProFormJS() {
 		dec = '';
 
 		if ( 'function' === typeof window[ 'frmProGetCalcTotal' + thisCalc.calc_type ]) {
-			total = window[ 'frmProGetCalcTotal' + thisCalc.calc_type ].call( thisCalc, thisFullCalc );
+			total = window[ 'frmProGetCalcTotal' + thisCalc.calc_type ].call( thisCalc, thisFullCalc, { totalField });
 		} else if ( thisCalc.calc_type === 'text' ) {
 			total = thisFullCalc;
 		} else {
+			if ( 'date' === thisCalc.calc_type ) {
+				// If the datepicker JS did not load, skip date calculations.
+				return;
+			}
+
 			// Set the number of decimal places
 			dec = thisCalc.calc_dec;
 
@@ -4588,7 +5390,7 @@ function frmProFormJS() {
 						vals[ field.valKey ] = parseFloat( this.parentNode.textContent );
 					}
 				}
-			} else if ( this.hasAttribute( 'data-frmprice' ) || field.thisField.type === 'total' ) {
+			} else if ( this.hasAttribute( 'data-frmprice' ) || field.thisField.type === 'total' || this.classList.contains( 'frm-has-number-format' ) ) {
 				// data-frmprice means product field.
 				currency = getCurrency( field.formID );
 				vals[ field.valKey ] += parseFloat( ! currency ? thisVal : preparePrice( thisVal, currency ) );
@@ -4670,7 +5472,7 @@ function frmProFormJS() {
 			}
 
 			if ( 'undefined' !== typeof field.triggerField && field.triggerField && field.triggerField.length ) {
-				calcField = field.triggerField.closest( 'form' ).find( field.thisFieldCall );
+				calcField = getTotalOrCalcField( field.triggerField, field.thisFieldCall );
 			} else {
 				calcField = jQuery( field.thisFieldCall );
 			}
@@ -4858,14 +5660,46 @@ function frmProFormJS() {
 			} else {
 				thisVal = currentOpt.dataset.off;
 			}
+		} else if ( currentOpt.hasAttribute( 'data-frmprice' ) ) {
+			thisVal = currentOpt.dataset.frmprice;
+		} else if ( isCurrencyFormatField( thisField ) ) {
+			const fieldKey = thisField.key.replace( '[id="field_', '' ).replace( '"]', '' );
+			const calcRule = window.__FRMCALC?.calc?.[ fieldKey ];
+
+			thisVal = jQuery( currentOpt ).val();
+
+			if ( ! calcRule ) {
+				return thisVal;
+			}
+
+			const resultFieldKey = thisField.total[0];
+			const totalField     = resultFieldKey ? window.__FRMCALC?.calc?.[ resultFieldKey ] : false;
+
+			if ( ! totalField || totalField.calc_type !== 'text' ) {
+				const isNegative = '-' === thisVal.charAt( 0 );
+				const currency   = getCurrencyFromCalcRule( calcRule );
+
+				thisVal = '' + preparePrice( thisVal, currency );
+
+				// Calling preparePrice() will remove the negative sign, so add it back if needed
+				if ( isNegative ) {
+					thisVal = '-' + thisVal;
+				}
+			}
 		} else {
-			thisVal = currentOpt.hasAttribute( 'data-frmprice' ) ? currentOpt.dataset.frmprice : jQuery( currentOpt ).val();
+			thisVal = jQuery( currentOpt ).val();
 		}
 
 		if ( typeof thisVal === 'undefined' ) {
 			thisVal = '';
 		}
 		return thisVal;
+	}
+
+	function isCurrencyFormatField( field ) {
+		const fieldKey = field.key.replace( '[id="field_', '' ).replace( '"]', '' );
+		const isCalcField = window.__FRMCALC?.calc?.[ fieldKey ]?.is_currency;
+		return isCalcField ? true : false;
 	}
 
 	/* Check if current option is an "Other" option (not an Other text field) */
@@ -5042,6 +5876,7 @@ function frmProFormJS() {
 		triggerChangeOnCalcTriggers();
 		maybeAddIntlTelInput( document.querySelectorAll( '.frm-intl-tel-input' ) );
 		initRangeInput( document.querySelectorAll( '.with_frm_style input[type=range]' ) );
+		initFormatFieldValueNumbers();
 	}
 
 	function triggerChangeOnCalcTriggers() {
@@ -5217,6 +6052,7 @@ function frmProFormJS() {
 		}
 
 		var chart = new google.visualization[ type ]( chartDiv );
+
 		chart.draw( data, graphData.options );
 		jQuery( document ).trigger( 'frmDrawChart', [ chart, 'chart_' + graphData.graph_id, data ]);
 	}
@@ -5471,6 +6307,16 @@ function frmProFormJS() {
 			nonce: frm_js.nonce,
 			frm_state: state
 		};
+
+		/**
+		 * Allow other add-ons to add additional data when a new repeater row is added.
+		 *
+		 * @since 6.25
+		 *
+		 * @param {Object} data
+		 */
+		triggerEvent( form, 'frmBeforeNewRepeaterRow', data );
+
 		success = function( r ) {
 			var html, item, checked, fieldID, fieldObject, repeatArgs, j, inputRanges;
 
@@ -5549,14 +6395,17 @@ function frmProFormJS() {
 				);
 
 				maybeAddIntlTelInput( item.find( '.frm-intl-tel-input' ).get() );
-				initRangeInput( item.find( '.with_frm_style input[type=range]' ).get() );
+				if ( item.closest( '.with_frm_style' ).length > 0 ) {
+					initRangeInput( item.find( 'input[type=range]' ).get() );
+				}
+
+				initFormatFieldValueNumbers();
 				loadDropzones( repeatArgs.repeatRow );
 				loadSliders();
-
-				// trigger autocomplete
 				loadAutocomplete();
+				loadImask();
 
-				// load rich textboxes
+				// Load rich textboxes.
 				jQuery( html ).find( '.frm_html_container' ).each( function() {
 					// check heading logic
 					var fieldID = this.id.replace( 'frm_field_', '' ).split( '-' )[ 0 ];
@@ -5565,7 +6414,7 @@ function frmProFormJS() {
 				});
 
 				// Find any RTEs in the new row/repeat and initialize the editor for them
-				//  there is an assumption here that tinyMCEPreInit.mceInit[0] referes to
+				//  there is an assumption here that tinyMCEPreInit.mceInit[0] refers to
 				//  an RTE that was initially loaded on the page. It's a safe assumption as
 				//  adding a row/repeat wouldn't have any RTEs if there wasn't one on the
 				//  page in the first place.
@@ -5581,6 +6430,9 @@ function frmProFormJS() {
 			/* eslint-enable camelcase */
 
 			jQuery( document ).trigger( 'frmAfterAddRow' );
+
+			handleRangeSliders();
+			triggerEvent( document, 'frmAfterAddRepeaterRow', { repeater: item.get(0) });
 
 			jQuery( '.frm_repeat_' + id ).each( function( i ) {
 				this.style.zIndex = 999 - i;
@@ -5732,13 +6584,15 @@ function frmProFormJS() {
 		return queryParams;
 	}
 
-	function cancelEdit() {
+	function cancelEdit( event ) {
 		/*jshint validthis:true */
 
-		var $cancelLink = jQuery( this ),
-			prefix = $cancelLink.data( 'prefix' ),
-			entryId = $cancelLink.data( 'entryid' ),
-			$cont = jQuery( document.getElementById( prefix + entryId ) );
+		event.preventDefault();
+
+		const $cancelLink = jQuery( this );
+		const prefix      = $cancelLink.data( 'prefix' );
+		const entryId     = $cancelLink.data( 'entryid' );
+		const $cont       = jQuery( document.getElementById( prefix + entryId ) );
 
 		$cont.children( '.frm_forms' ).replaceWith( '' );
 		$cont.children( '.frm_orig_content' ).fadeIn( 'slow' ).removeClass( 'frm_orig_content' );
@@ -5872,6 +6726,7 @@ function frmProFormJS() {
 		// If this runs right away, the Datepicker Calculation function may not be available yet.
 		setTimeout( triggerCalc, 0 );
 		loadDropzones();
+		loadImask( containerId );
 		checkPasswordFields();
 		triggerLookupWatchUpdates();
 	}
@@ -6277,32 +7132,32 @@ function frmProFormJS() {
 		}
 	}
 
+	/**
+	 * Formats a value as currency.
+	 */
+	function formatValueAsCurrency( value, fieldKey ) {
+		const currency = getCurrencyFromCalcRule( __FRMCALC.calc[ fieldKey ]);
+		return new DOMParser().parseFromString(
+			formatCurrency( normalizeTotal( value, currency ), currency ),
+			'text/html'
+		).documentElement.textContent;
+	}
+
 	function handleSliderEvent() {
-		var i, c, fieldKey, currency;
-
-		c = this.parentNode.children;
-		for ( i = 0; i < c.length; i++ ) {
-			if ( c[ i ].className !== 'frm_range_value' ) {
-				continue;
-			}
-
-			fieldKey = getFieldKey( this.id, this.name );
-			if ( 'undefined' !== typeof __FRMCALC && __FRMCALC.calc[ fieldKey ]) {
-				currency = getCurrencyFromCalcRule( __FRMCALC.calc[ fieldKey ]);
-				c[i].textContent = new DOMParser().parseFromString(
-					formatCurrency( normalizeTotal( this.value, currency ), currency ),
-					'text/html'
-				).documentElement.textContent;
-			} else {
-				c[i].textContent = this.value;
-			}
-
-			break;
+		if ( this.type !== 'range' ) {
+			return;
+		}
+		const sliderValueEl = this.parentNode.querySelector( '.frm_range_value' );
+		const fieldKey = getFieldKey( this.id, this.name );
+		if ( window.__FRMCALC?.calc[ fieldKey ]) {
+			sliderValueEl.textContent = formatValueAsCurrency( this.value, fieldKey );
+		} else {
+			sliderValueEl.textContent = this.value;
 		}
 	}
 
 	function loadSliders() {
-		jQuery( document ).on( 'input change', 'input[data-frmrange]', handleSliderEvent );
+		handleRangeSliders();
 	}
 
 	function getCurrencyFromCalcRule( calcRule ) {
@@ -6575,7 +7430,7 @@ function frmProFormJS() {
 			if ( buttonContainer ) {
 				buttonContainer.prepend( addButtonWrapper );
 			} else {
-				firstRepeatedSection.parentNode.insertBefore( addButtonWrapper, firstRepeatedSection )
+				firstRepeatedSection.parentNode.insertBefore( addButtonWrapper, firstRepeatedSection );
 			}
 		});
 	}
@@ -6788,22 +7643,43 @@ function frmProFormJS() {
 
 	/**
 	 * Round total and maybe add trailing zeros so formatCurrency has a proper format to work with.
+	 *
+	 * @param {number} total The total amount to normalize.
+	 * @param {Object} currency The currency object containing decimal information.
+	 * @returns {number}
 	 */
 	function normalizeTotal( total, currency ) {
-		total = currency.decimals > 0 ? Math.round10( total, currency.decimals ) : Math.ceil( total );
-		return maybeAddTrailingZeroToPrice( total, currency );
+		const isLargeTotal = total > Number.MAX_SAFE_INTEGER;
+
+		if ( ! isLargeTotal ) {
+			const { decimals } = currency;
+			total = decimals > 0 ? Math.round10( total, decimals ) : Math.ceil( total );
+		}
+
+		return maybeAddTrailingZeroToPrice( total, currency, isLargeTotal );
 	}
 
 	/**
+	 * Format a numeric value according to the specified currency format settings.
+	 *
 	 * @since 4.05.01
+	 *
+	 * @param {string} total The numeric value to format.
+	 * @param {Object} currency The currency formatting configuration.
+	 * @returns {string} The formatted currency string.
 	 */
 	function formatCurrency( total, currency ) {
-		var leftSymbol, rightSymbol;
 		total = maybeAddTrailingZeroToPrice( total, currency );
+		if ( total.length && ( total[ total.length - 1 ] === '.' || total[ total.length - 1 ] === currency.decimal_separator ) ) {
+			total = total.substr( 0, total.length - 1 );
+		}
+
 		total = maybeRemoveTrailingZerosFromPrice( total, currency );
 		total = addThousands( total, currency );
-		leftSymbol = currency.symbol_left + currency.symbol_padding;
-		rightSymbol = currency.symbol_padding + currency.symbol_right;
+
+		const leftSymbol = currency.symbol_left ? ( currency.symbol_left + currency.symbol_padding ) : '';
+		const rightSymbol = currency.symbol_right ? ( currency.symbol_padding + currency.symbol_right ) : '';
+
 		return leftSymbol + total + rightSymbol;
 	}
 
@@ -6978,18 +7854,47 @@ function frmProFormJS() {
 		}
 		price = price + ''; // convert to string just to be sure
 
-		matches = price.match( /[0-9,.]*\.?\,?[0-9]+/g );
+		const regex = getRegexForPrice( currency );
+
+		matches = price.match( regex );
 		if ( null === matches ) {
 			return 0;
 		}
 
 		price = matches.length ? matches[ matches.length - 1 ] : 0;
+		price = price.trim();
+
+		// Fix issues with parsing Fr.15.00. The regex catches .15.00.
+		// This checks for the leading decimal and removes it.
+		if ( currency.decimal_separator === '.' && 3 === price.split( '.' ).length && price[0] === '.' ) {
+			price = price.substr( 1 );
+		}
+
 		if ( price ) {
 			price = maybeUseDecimal( price, currency );
-			price = price.replace( currency.thousand_separator, '' ).replace( currency.decimal_separator, '.' );
+			price = price.split( currency.thousand_separator ).join( '' ).replace( currency.decimal_separator, '.' );
 		}
 
 		return price;
+	}
+
+	/**
+	 * @param {Object} currency The currency object.
+	 * @return {RegExp}
+	 */
+	function getRegexForPrice( currency ) {
+		let regexString = '[0-9,.';
+
+		if ( currency.thousand_separator !== '.' && currency.thousand_separator !== ',' ) {
+			regexString += currency.thousand_separator;
+		}
+		if ( currency.decimal_separator !== '.' && currency.decimal_separator !== ',' ) {
+			regexString += currency.decimal_separator;
+		}
+
+		regexString += ']*\\.?\\,?[0-9]+';
+
+		return new RegExp( regexString, 'g' );
 	}
 
 	/**
@@ -7008,10 +7913,17 @@ function frmProFormJS() {
 	}
 
 	/**
+	 * Add trailing zeros to a price if necessary and replace the decimal separator.
+	 *
 	 * @since 4.04
+	 *
+	 * @param {number|string} price The price to format.
+	 * @param {Object} currency The currency object containing the decimal separator.
+	 * @param {boolean} [force=false] Whether to force processing even if the price is not a number.
+	 * @returns {string}
 	 */
-	function maybeAddTrailingZeroToPrice( price, currency ) {
-		if ( 'number' !== typeof price ) {
+	function maybeAddTrailingZeroToPrice( price, currency, force = false ) {
+		if ( 'number' !== typeof price && ! force ) {
 			return price;
 		}
 
@@ -7019,22 +7931,49 @@ function frmProFormJS() {
 		var pos = price.indexOf( '.' );
 
 		if ( pos === -1 ) {
-			price = price + '.00';
-		} else if ( price.substring( pos + 1 ).length < 2 ) {
-			price += '0';
+			price = price + '.';
+
+			for ( let n = 0; n < currency.decimals; ++n ) {
+				price += '0';
+			}
+		} else {
+			const decimalsString = price.substring( pos + 1 );
+			if ( decimalsString.length < currency.decimals ) {
+				if ( decimalsString.length < 2 ) {
+					price += '0';
+				}
+
+				for ( let n = 2; n < currency.decimals; ++n ) {
+					price += '0';
+				}
+			}
 		}
 
 		return price.replace( '.', currency.decimal_separator );
 	}
 
 	/**
+	 * Format a numeric string by adding thousand separators.
+	 *
 	 * @since 4.04.04
+	 *
+	 * @param {string|number} total The numeric value to format.
+	 * @param {Object} options Formatting options.
+	 * @param {string} options.decimal_separator Character used as decimal separator.
+	 * @param {string} options.thousand_separator Character used as thousand separator.
+	 *
+	 * @returns {string}
 	 */
-	function addThousands( total, currency ) {
-		if ( currency.thousand_separator ) {
-			total = total.toString().replace( /\B(?=(\d{3})+(?!\d))/g, currency.thousand_separator );
+	function addThousands( total, { decimal_separator, thousand_separator } ) {
+		const split = decimal_separator === ''
+			? [ total.toString() ]
+			: total.split( decimal_separator );
+
+		if ( thousand_separator ) {
+			split[0] = split[0].replace( /\B(?=(\d{3})+(?!\d))/g, thousand_separator );
 		}
-		return total;
+
+		return split.join( decimal_separator );
 	}
 
 	/**
@@ -7253,13 +8192,17 @@ function frmProFormJS() {
 		 * @param {HTMLElement} formEl Form element.
 		 */
 		function reloadForm( formId, formEl ) {
+			const stateField = document.querySelector( 'input[name="frm_state"]' );
+			const state      = null !== stateField ? stateField.value : '';
+
 			formEl.classList.add( 'frm_loading_form' );
 			postToAjaxUrl(
 				formEl,
 				{
 					action: 'frm_load_form',
 					form: formId,
-					_ajax_nonce: frm_js.nonce
+					_ajax_nonce: frm_js.nonce,
+					frm_state: state
 				},
 				function( response ) {
 					var idValueMapping;
@@ -7710,6 +8653,17 @@ function frmProFormJS() {
 		});
 	}
 
+	function handleRangeSliders() {
+		document.querySelectorAll( '.frm_range_container' ).forEach( function( rangeContainer ) {
+			const rangeInput = rangeContainer.querySelector( 'input[type="hidden"]' );
+			if ( ! rangeInput || rangeInput.dataset.isRangeSliderInitialized ) {
+				return;
+			}
+
+			initializeRangeSlider( rangeInput, rangeContainer );
+		});
+	}
+
 	/**
 	 * Does the same as jQuery( document ).on( 'event', 'selector', handler ).
 	 *
@@ -7788,10 +8742,15 @@ function frmProFormJS() {
 		}
 
 		phoneInputs.forEach( function( phoneInput ) {
+			const parentContainer = document.createElement( 'div' );
+			parentContainer.classList.add( 'frm_forms', 'with_frm_style' );
+
+			document.body.appendChild( parentContainer );
+
 			var intlTelInputInstance = window.intlTelInput( phoneInput, {
 				initialCountry: 'auto',
 				formatOnDisplay: false,
-				dropdownContainer: phoneInput.closest( '.frm_form_field' ),
+				dropdownContainer: parentContainer,
 				geoIpLookup: function( callback ) {
 					if ( 'function' === typeof window.fetch ) {
 						fetch( 'https://ipapi.co/json' )
@@ -7800,6 +8759,13 @@ function frmProFormJS() {
 							.catch( function() { callback( 'us' ); } );
 					}
 				},
+			});
+
+			phoneInput.addEventListener( 'countrychange', function() {
+				if ( ! this.value ) {
+					return;
+				}
+				this.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 			});
 
 			// Update the input value with the full number including the country code
@@ -7849,12 +8815,577 @@ function frmProFormJS() {
 		}
 	}
 
+	/**
+	 * Initialize number formatting and input restrictions for `.frm-has-number-format` fields.
+	 */
+	function initFormatFieldValueNumbers() {
+		document.querySelectorAll( '.frm-has-number-format:not([data-has-number-format-events])' ).forEach( field => {
+			field.dataset.hasNumberFormatEvents = true;
+
+			document.addEventListener( 'frmShowField', () => onShowField( field ) );
+			field.addEventListener( 'focus', handleFocus );
+			field.addEventListener( 'blur', handleBlur );
+
+			if ( field.classList.contains( 'frm_field_number' ) ) {
+				field.addEventListener( 'keydown', restrictToNumericInput );
+			}
+
+			triggerFormatting( field );
+		});
+
+		/**
+		 * Trigger formatting manually.
+		 *
+		 * @param {HTMLElement} field Field element.
+		 */
+		function triggerFormatting( field ) {
+			field.dispatchEvent( new Event( 'blur', { bubbles: true } ) );
+		}
+
+		/**
+		 * Handle the 'frmShowField' event.
+		 *
+		 * @param {HTMLElement} field Field element.
+		 */
+		function onShowField( field ) {
+			if ( ! field.offsetHeight || field.value !== '' ) {
+				return;
+			}
+
+			// Restore raw value and apply formatting when field becomes visible.
+			const { rawValue, frmval } = field.dataset;
+			const valueToUse           = rawValue || frmval;
+			if ( valueToUse ?? false ) {
+				field.value = valueToUse;
+				triggerFormatting( field );
+			}
+		}
+
+		/**
+		 * Restore the unformatted value when the field gains focus.
+		 *
+		 * @param {FocusEvent} event Focus event for the field.
+		 */
+		function handleFocus( { target: field } ) {
+			const { rawValue } = field.dataset;
+
+			if ( rawValue !== null ) {
+				field.value = rawValue;
+			}
+		}
+
+		/**
+		 * Save the raw value and apply formatting when the field loses focus.
+		 *
+		 * @param {FocusEvent} event Blur event for the field.
+		 */
+		function handleBlur( { target: field } ) {
+			const previousValue    = field.value;
+			const previousRawValue = field.getAttribute( 'data-raw-value' ) ?? '';
+			const fieldKey         = getFieldKey( field.id, field.name );
+			const userTyped        = field.value;
+
+			field.setAttribute( 'data-raw-value', userTyped );
+			field.value = applyNumberFormatting( userTyped, fieldKey );
+
+			if ( previousValue !== field.value || previousRawValue !== userTyped ) {
+				field.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+			}
+		}
+
+		/**
+		 * Restrict input to valid numeric characters based on custom separators.
+		 *
+		 * @param {KeyboardEvent} event Keydown event for the field.
+		 */
+		function restrictToNumericInput( event ) {
+			const { target: field, key, ctrlKey, metaKey } = event;
+			const fieldKey = getFieldKey( field.id, field.name );
+			const formatConfig = getCurrencyFromCalcRule( __FRMCALC.calc?.[ fieldKey ] ) || {};
+			const decimalSeparator = formatConfig.decimal_separator ?? '.';
+			const thousandSeparator = formatConfig.thousand_separator ?? '';
+			const decimals = parseInt(formatConfig.decimals ?? 2, 10);
+
+			const allowedKeys = [
+				'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+				'Backspace', 'Delete', 'Tab', 'Home', 'End', 'Enter',
+			];
+
+			if ( allowedKeys.includes( key ) || ctrlKey || metaKey ) {
+				return;
+			}
+
+			// Build regex based on allowed chars
+			let regexPattern = '^[0-9\\+\\-';
+
+			// Only add decimal separator if decimals > 0
+			if ( decimals > 0 ) {
+				regexPattern += escapeForRegex( decimalSeparator );
+			}
+
+			if ( thousandSeparator ) {
+				regexPattern += escapeForRegex( thousandSeparator );
+			}
+
+			regexPattern += ']$';
+
+			const oneCharRegex = new RegExp( regexPattern );
+
+			if ( ! oneCharRegex.test( key ) ) {
+				event.preventDefault();
+				return;
+			}
+
+			// Prevent decimal input if decimals = 0
+			if ( decimals === 0 && key === ( decimalSeparator !== '' ? decimalSeparator : '.' ) ) {
+				event.preventDefault();
+				return;
+			}
+
+			// Only allow one decimal point
+			if ( key === decimalSeparator && field.value.includes( decimalSeparator ) ) {
+				event.preventDefault();
+				return;
+			}
+
+			// If user typed '+' or '-', allow only if it's the first character
+			if ( ( key === '+' || key === '-' ) && field.selectionStart !== 0 ) {
+				event.preventDefault();
+			}
+		}
+
+		/**
+		 * Format numeric substrings in the provided text based on the custom format configuration.
+		 *
+		 * @param {string} text The text containing numbers to format.
+		 * @param {string} fieldKey The field key used to retrieve the format configuration.
+		 * @returns {string} The text with formatted numbers.
+		 */
+		function applyNumberFormatting( text, fieldKey ) {
+			if ( ! __FRMCALC?.calc?.[ fieldKey ] ) {
+				return text;
+			}
+
+			const formatConfig = getCurrencyFromCalcRule( __FRMCALC.calc[fieldKey] );
+			const {
+				decimal_separator: decimalSeparator = '.',
+				thousand_separator: thousandSeparator = ',',
+				symbol_left: symbolLeft = '',
+				symbol_right: symbolRight = '',
+				symbol_padding: symbolPadding = ''
+			} = formatConfig;
+
+			const escapedDecimalSeparator = escapeForRegex( decimalSeparator );
+			const escapedThousandSeparator = escapeForRegex( thousandSeparator );
+			const escapedSymbolLeft = escapeForRegex( symbolLeft );
+			const escapedSymbolRight = escapeForRegex( symbolRight );
+			const escapedSymbolPadding = escapeForRegex( symbolPadding );
+
+			// Build the regex pattern
+			let pattern = '(?<!\\S)';
+
+			// Add left symbol with padding if there is a left symbol
+			if ( symbolLeft ) {
+				pattern += `(?:${escapedSymbolLeft}${symbolPadding ? escapedSymbolPadding : ''})?`;
+			}
+
+			// Add the core numeric pattern
+			pattern += `([-+]?\\d+(?:${escapedThousandSeparator}\\d+)*(?:${escapedDecimalSeparator}\\d+)?)`;
+
+			// Add right symbol with padding if there is a right symbol
+			if ( symbolRight ) {
+				pattern += `(?:${symbolPadding ? escapedSymbolPadding : ''}${escapedSymbolRight})?`;
+			}
+
+			pattern += '(?!\\S)';
+
+			const numericRegex = new RegExp( pattern, 'g' );
+
+			return text.replace( numericRegex, ( match ) => {
+				const sign = match.startsWith( '-' ) ? '-' : ( match.startsWith( '+' ) ? '+' : '' );
+				const signRemoved = match.replace( /^[-+]/, '' );
+
+				const number = stripSymbolsAndFormatNumber( signRemoved, formatConfig );
+				const formatted = formatCurrency( normalizeTotal( number, formatConfig ), formatConfig );
+
+				return `${sign}${formatted}`;
+			});
+		}
+
+		/**
+		 * Strip currency symbols and convert a numeric string to a standard decimal format by removing custom separators.
+		 *
+		 * @param {string} value The numeric string.
+		 * @param {Object} config The format configuration.
+		 * @param {string} [config.decimal_separator] The custom decimal separator.
+		 * @param {string} [config.thousand_separator] The custom thousand separator.
+		 * @param {string} [config.symbol_left] The left currency symbol.
+		 * @param {string} [config.symbol_right] The right currency symbol.
+		 * @returns {string} The numeric string in standard decimal format.
+		 */
+		function stripSymbolsAndFormatNumber( value, config = {} ) {
+			const {
+				symbol_left: symbolLeft = '',
+				symbol_right: symbolRight = '',
+				decimal_separator: decimalSeparator = '.',
+				thousand_separator: thousandSeparator = ','
+			} = config;
+
+			let cleanedValue = value.trim();
+
+			// Remove left and right symbols if present
+			if ( symbolLeft ) {
+				cleanedValue = cleanedValue.replace( symbolLeft, '' );
+			}
+
+			if ( symbolRight ) {
+				cleanedValue = cleanedValue.replace( symbolRight, '' );
+			}
+
+			cleanedValue = cleanedValue.trim();
+
+			// Remove thousand separators and replace custom decimal separator
+			if ( thousandSeparator ) {
+				const split = cleanedValue.split( thousandSeparator );
+				// Make sure that it isn't actually a decimal separator first.
+				if ( split.length !== 2 || split[1].length > 2 ) {
+					cleanedValue = split.join( '' );
+				} else {
+					cleanedValue = split[0] + '.' + split[1];
+				}
+			}
+
+			if ( decimalSeparator.trim() && decimalSeparator !== '.' ) {
+				cleanedValue = cleanedValue.split( decimalSeparator ).join( '.' );
+			}
+
+			return cleanedValue.trim();
+		}
+
+		/**
+		 * Escape special characters in a string for use in regular expressions.
+		 *
+		 * @param {string} str The string to escape.
+		 * @returns {string} The escaped string.
+		 */
+		function escapeForRegex( str ) {
+			return str.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+		}
+	}
+
+	/**
+	 * Initializes a range slider.
+	 *
+	 * @param {HTMLInputElement} rangeInput     The input element of the range slider.
+	 * @param {HTMLElement}      rangeContainer The container element of the range slider.
+	 * @return {void}
+	 */
+	function initializeRangeSlider( rangeInput, rangeContainer ) {
+		const parseDataset = dataset => {
+			const parsed = {};
+			for ( const [ key, value ] of Object.entries( dataset ) ) {
+			  parsed[ key ] = parseFloat( value, 10 );
+			}
+			return parsed;
+		};
+		const { minGap, maxGap } = parseDataset( rangeInput.dataset );
+
+		const min      = parseFloat( rangeInput.min, 10 );
+		const max      = parseFloat( rangeInput.max, 10 );
+		const minRange = minGap || 0;
+		const maxRange = maxGap || max - min;
+
+		// Validate inputs
+		if ( min >= max ) {
+			throw new Error( 'Min value must be less than max value' );
+		}
+
+		if ( minRange <= 0 || minRange > ( max - min ) ) {
+			throw new Error( 'Invalid minimum range value' );
+		}
+
+		if ( maxRange < minRange || maxRange > ( max - min ) ) {
+			throw new Error( 'Invalid maximum range value' );
+		}
+
+		const values          = rangeInput.value.split( ',' );
+		values[0]             = values[0] || min;
+		values[1]             = values[1] || max;
+		const step            = parseFloat( rangeInput.step, 10 );
+		const sliderRange     = max - min;
+		const stepInPercent   = step / sliderRange * 100;
+		const minRangePercent = ( minRange / sliderRange ) * 100;
+		const maxRangePercent = ( maxRange / sliderRange ) * 100;
+		const minHandle       = rangeContainer.querySelector( '.min-handle' );
+		const maxHandle       = rangeContainer.querySelector( '.max-handle' );
+		const rangeElement    = rangeContainer.querySelector( '.frm-slider-range' );
+		const minValueDisplay = rangeContainer.querySelector( '.min-value' );
+		const maxValueDisplay = rangeContainer.querySelector( '.max-value' );
+		const track           = rangeContainer.querySelector( '.frm-slider-track' );
+
+		let decimalsToUse = 0;
+
+		[ step, min, max, minRange, maxRange ].forEach( value => {
+			const decimal = countDecimals( value );
+			if ( decimal > decimalsToUse ) {
+				decimalsToUse = decimal;
+			}
+		});
+
+		const initialMinValue = Math.max( values[0], min );
+		const initialMaxValue = Math.min( values[1], initialMinValue + maxRange, max );
+
+		const getWidthWithHiddenParent = element => {
+			if ( ! element.isConnected ) { // If element is deleted
+				return 0;
+			}
+			if (
+				element.closest( '.frm_form_field' ).style.display !== 'none' &&
+				element.closest( '.frm_toggle_container.frm_grid_container' )?.style.display !== 'none'
+			) {
+				const trackRect = track.getBoundingClientRect();
+				return trackRect.width;
+			}
+
+			const originalParent      = element.parentNode;
+			const originalNextSibling = element.nextSibling;
+
+			// Move to body to avoid parent's `display: none`
+			document.body.appendChild( element) ;
+
+			const width = element.offsetWidth;
+
+			// Move back
+			if ( originalNextSibling ) {
+			  originalParent.insertBefore( element, originalNextSibling );
+			} else {
+			  originalParent.appendChild( element );
+			}
+
+			return width;
+		};
+
+		let trackWidth = getWidthWithHiddenParent( track );
+
+		// Initialize positions
+		let minPos = ( initialMinValue - min ) / sliderRange * 100;
+		let maxPos = ( initialMaxValue - min ) / sliderRange * 100;
+
+		updateHandlesPositionAndValue();
+
+		// Update track dimensions on resize
+		window.addEventListener( 'resize', function() {
+			trackWidth = getWidthWithHiddenParent( track );
+		} );
+
+		// State variables for dragging
+		let isDragging = false;
+		let activeHandle = null;
+		let startX = 0;
+		let startMinPos = 0;
+		let startMaxPos = 0;
+
+		// Setup both handles
+		setupHandle( minHandle );
+		setupHandle( maxHandle );
+
+		rangeInput.addEventListener( 'change', setHandlesBasedOnValue );
+
+		function setupHandle( handle ) {
+			handle.addEventListener( 'touchstart', handleTouchStart, { passive: false });
+			handle.addEventListener( 'mousedown', handleMouseDown );
+		}
+
+		function handleTouchStart( e ) {
+			isDragging = true;
+			activeHandle = e.target;
+			const touch = e.touches[0];
+			startX = touch.clientX;
+			startMinPos = minPos;
+			startMaxPos = maxPos;
+			document.addEventListener( 'touchmove', handleTouchMove, {passive: false});
+			document.addEventListener( 'touchend', handleTouchEnd );
+			e.preventDefault();
+		}
+
+		function handleMouseDown( e ) {
+			isDragging = true;
+			activeHandle = e.target;
+			startX = e.clientX;
+			startMinPos = minPos;
+			startMaxPos = maxPos;
+			document.addEventListener( 'mousemove', onMouseMove );
+			document.addEventListener( 'mouseup', onMouseUp );
+			e.preventDefault();
+		}
+
+		function handleTouchMove( e ) {
+			if ( ! isDragging ) {
+				return;
+			}
+
+			const touch = e.touches[0];
+			const mouseEvent = new MouseEvent( 'mousemove', {
+				clientX: touch.clientX,
+				clientY: touch.clientY
+			});
+			onMouseMove( mouseEvent, e );
+			e.preventDefault();
+		}
+
+		function handleTouchEnd() {
+			document.removeEventListener( 'touchmove', handleTouchMove );
+			document.removeEventListener( 'touchend', handleTouchEnd );
+		}
+
+		function onMouseMove( e ) {
+			if ( ! isDragging ) {
+				return;
+			}
+			const deltaX       = e.clientX - startX;
+			const deltaPercent = ( deltaX / trackWidth ) * 100;
+			const minHandleIsMoved = activeHandle === minHandle;
+			let newMinPos, newMaxPos, hasMovedMinimumSteps;
+
+			if ( minHandleIsMoved ) {
+				newMinPos = startMinPos + deltaPercent; // The new left handle's position in % -- at the current mouse position.
+				hasMovedMinimumSteps = Math.abs( newMinPos - minPos ) >= stepInPercent;
+			} else {
+				newMaxPos = startMaxPos + deltaPercent;
+				hasMovedMinimumSteps = Math.abs( newMaxPos - maxPos ) >= stepInPercent;
+			}
+
+			if ( ! hasMovedMinimumSteps ) {
+				return;
+			}
+
+			const movingRight      = minHandleIsMoved ? newMinPos > minPos : newMaxPos > maxPos;
+			const numberOfNewSteps = movingRight ? Math.floor( deltaPercent / stepInPercent ) : Math.ceil( deltaPercent / stepInPercent );
+			const newRange         = activeHandle === minHandle ? maxPos - newMinPos : newMaxPos - minPos; // The distance between the right and left handles in %.
+			const stepsDelta       = numberOfNewSteps * stepInPercent;
+
+			if ( activeHandle === minHandle ) {
+				if ( newRange < minRangePercent ) { // Move the whole range to right.
+					const tempMinPos = Math.max( startMinPos + stepsDelta, 0 );
+					if ( tempMinPos + minRangePercent <= 100 ) {
+						minPos = tempMinPos;
+						maxPos = Math.max( 0, minPos + minRangePercent );
+					}
+				} else if ( newRange > maxRangePercent ) { // Move the whole range to left.
+					minPos = Math.max( 0, startMinPos + stepsDelta );
+					maxPos = minPos + maxRangePercent;
+				} else {
+					// Normal movement within constraints
+					minPos = Math.max( 0, startMinPos + stepsDelta );
+				}
+				updateHandlesPositionAndValue();
+				return;
+			}
+
+			// Max handle is moved
+			if ( newRange < minRangePercent ) { // Move the whole range to left.
+				const tempMaxPos = Math.min( startMaxPos + stepsDelta, 100 );
+				if ( tempMaxPos - minRangePercent >= 0 ) {
+					maxPos = tempMaxPos;
+					minPos = Math.max( 0, maxPos - minRangePercent );
+				}
+			} else if ( newRange > maxRangePercent ) { // Move the whole range to right.
+				maxPos = Math.min( 100, startMaxPos + stepsDelta );
+				minPos = maxPos - maxRangePercent;
+			} else {
+				// Normal movement within constraints
+				maxPos = Math.min( 100, startMaxPos + stepsDelta );
+			}
+			updateHandlesPositionAndValue();
+		}
+
+		function updateHandlesPositionAndValue() {
+			minPos = parseFloat( minPos );
+			maxPos = parseFloat( maxPos );
+
+			// Update min and max handles positions.
+			minHandle.style.left  = `${minPos}%`;
+			maxHandle.style.right = `${100-maxPos}%`;
+
+			// Update range element.
+			updateRangeElement();
+
+			// Update displayed values.
+			const { currentMin, currentMax } = prepareCurrentValues();
+			updateDisplayedValues( currentMin, currentMax );
+
+			// Update input value.
+			rangeContainer.querySelector( 'input' ).value = `${currentMin},${currentMax}`;
+		}
+
+		function countDecimals( num ) {
+			const str          = num.toString();
+			const decimalIndex = str.indexOf( '.' );
+			return decimalIndex === -1 ? 0 : str.length - decimalIndex - 1;
+		}
+
+		function formatSliderValue ( value ) {
+			const fieldKey = getFieldKey( rangeInput.id, rangeInput.name );
+			if ( window.__FRMCALC?.calc[ fieldKey ]) {
+				return formatValueAsCurrency( value, fieldKey );
+			}
+			return value;
+		}
+
+		function updateDisplayedValues( currentMin, currentMax ) {
+			minValueDisplay.textContent = formatSliderValue( currentMin );
+			maxValueDisplay.textContent = formatSliderValue( currentMax );
+		}
+
+		function prepareCurrentValues() {
+			let currentMin = ( min + ( minPos / stepInPercent ) * step ).toFixed( decimalsToUse );
+			let currentMax = ( min + ( maxPos / stepInPercent ) * step ).toFixed( decimalsToUse );
+			currentMin     = Number( currentMin ).toPrecision().toString();
+			currentMax     = Number( currentMax ).toPrecision().toString();
+
+			return { currentMin, currentMax };
+		}
+
+		function onMouseUp() {
+			isDragging = false;
+			document.removeEventListener( 'mousemove', onMouseMove );
+			document.removeEventListener( 'mouseup', onMouseUp );
+		}
+
+		function updateRangeElement() {
+			rangeElement.style.left  = `${minPos}%`;
+			rangeElement.style.width = `${maxPos - minPos}%`;
+		}
+
+		/**
+		 * Change events are only triggered for the range slider when the default value is set
+		 * The default value is set when the field is conditionally shown.
+		 */
+		function setHandlesBasedOnValue() {
+			const { minGap }      = parseDataset( rangeInput.dataset );
+			const min             = parseFloat( rangeInput.min, 10 );
+			const max             = parseFloat( rangeInput.max, 10 );
+			const minRange        = minGap || 0;
+			const sliderRange     = max - min;
+			const values          = rangeInput.value.split( ',' );
+			values[0]             = values[0] || min;
+			values[1]             = values[1] || max;
+			const initialMinValue = Math.max( values[0], min );
+			const initialMaxValue = Math.min( Math.max( values[1], initialMinValue + minRange ), max );
+
+			minPos = ( initialMinValue - min ) / sliderRange * 100;
+			maxPos = ( initialMaxValue - min ) / sliderRange * 100;
+			updateHandlesPositionAndValue();
+		}
+	}
+
 	return {
 		init: function() {
 			maybeUpdateFormsOverflowX();
 
 			maybeAddIntlTelInput( document.querySelectorAll( '.frm-intl-tel-input' ) );
 			initRangeInput( document.querySelectorAll( '.with_frm_style input[type=range]' ) );
+			initFormatFieldValueNumbers();
 
 			addEventListener( 'pageshow', maybeTriggerCalc );
 
@@ -7871,10 +9402,6 @@ function frmProFormJS() {
 			}
 
 			jQuery( document ).on( 'click', '.frm_remove_link', removeFile );
-
-			jQuery( document ).on( 'focusin', 'input[data-frmmask]', function() {
-				jQuery( this ).mask( jQuery( this ).data( 'frmmask' ).toString(), { autoclear: false });
-			});
 
 			jQuery( document ).on( 'frmFieldChanged', maybeCheckDependent );
 
@@ -7897,9 +9424,9 @@ function frmProFormJS() {
 			jQuery( document ).on( 'click', '.frm_remove_form_row', removeRow );
 			jQuery( document ).on( 'click', '.frm_add_form_row', addRow );
 
-			// In place edit
-			jQuery( '.frm_edit_link_container' ).on( 'click', 'a.frm_inplace_edit', editEntry );
-			jQuery( '.frm_edit_link_container' ).on( 'click', 'a.frm_cancel_edit', cancelEdit );
+			// In place edit.
+			jQuery( document ).on( 'click', '.frm_edit_link_container a.frm_inplace_edit', editEntry );
+			jQuery( document ).on( 'click', '.frm_edit_link_container a.frm_cancel_edit', cancelEdit );
 			jQuery( document ).on( 'click', '.frm_ajax_delete', deleteEntry );
 
 			// toggle collapsible entries shortcode
@@ -7952,6 +9479,8 @@ function frmProFormJS() {
 			validateForm();
 
 			handleShowPasswordBtn();
+
+			jQuery( document ).on( 'input change', 'input[data-frmrange]', handleSliderEvent );
 		},
 
 		savingDraft: function( object ) {
@@ -8063,6 +9592,11 @@ function frmProFormJS() {
 			};
 
 			success = function( opts ) {
+				if ( null !== document.getElementById( timeField + '_H' ) ) {
+					frmProForm.removeUsedTimesForMultipleDropdown( opts, timeField );
+					return;
+				}
+
 				var $timeField = jQuery( document.getElementById( timeField ) );
 				$timeField.find( 'option' ).prop( 'disabled', false );
 				if ( opts.length > 0 ) {
@@ -8082,6 +9616,136 @@ function frmProFormJS() {
 			extraParams = { dataType: 'json' };
 
 			postToAjaxUrl( form, data, success, false, extraParams );
+		},
+
+		removeUsedTimesForMultipleDropdown: function( times, timeField ) {
+			const self = this;
+
+			self.hDropdown = null;
+			self.mDropdown = null;
+			self.ampmDropdown = null;
+
+			function getTimeDropdownsElements( timeField ) {
+				return {
+					h: getTimeDropdownsElements.prototype.h[ timeField ],
+					m: getTimeDropdownsElements.prototype.m[ timeField ],
+					ampm: getTimeDropdownsElements.prototype.ampm[ timeField ]
+				};
+			}
+
+			this.init = function() {
+				if ( 'undefined' === typeof getTimeDropdownsElements.prototype.h ) {
+					getTimeDropdownsElements.prototype.h = [];
+					getTimeDropdownsElements.prototype.m = [];
+					getTimeDropdownsElements.prototype.ampm = [];
+				}
+
+				if ( 'undefined' !== typeof getTimeDropdownsElements.prototype.h[ timeField ] ) {
+					return;
+				}
+
+				getTimeDropdownsElements.prototype.h[ timeField ] = document.getElementById( timeField + '_H' );
+				getTimeDropdownsElements.prototype.m[ timeField ] = document.getElementById( timeField + '_m' );
+				getTimeDropdownsElements.prototype.ampm[ timeField ] = document.getElementById( timeField + '_A' );
+
+				if ( null === getTimeDropdownsElements( timeField ).h ) {
+					return;
+				}
+
+				getTimeDropdownsElements( timeField ).h.addEventListener( 'change', function( event ){
+					self.disableMinutes( event.target.value );
+				});
+				getTimeDropdownsElements( timeField ).m.addEventListener( 'change', function( event ){
+				});
+				getTimeDropdownsElements( timeField ).ampm.addEventListener( 'change', function(){
+					self.disableHours();
+				});
+
+				self.disableHours();
+				self.disableAmpm();
+
+			};
+
+			this.checkIfTimeIsDisabled =  time => times.includes( time );
+
+			this.getActiveTime = function() {
+				var h = getTimeDropdownsElements( timeField ).h.value || '12',
+					m = getTimeDropdownsElements( timeField ).m.value || '00',
+					ampm = getTimeDropdownsElements( timeField ).ampm.value || 'AM';
+
+				return h + ':' + m + ' ' + ampm;
+			};
+
+			this.getMeridiem = function() {
+				return getTimeDropdownsElements( timeField ).ampm.value || 'AM';
+			};
+
+			this.listPossibleHourTimes = function( hour ) {
+				const minutes = [];
+				const ampm = [];
+				const minutesElement = getTimeDropdownsElements( timeField ).m;
+				const ampmElement = getTimeDropdownsElements( timeField ).ampm;
+
+				for ( let i = 0; i < ampmElement.options.length; i++ ) {
+					ampm.push( ampmElement.options[ i ].value );
+				}
+
+				for ( let i = 0; i < minutesElement.options.length; i++ ) {
+					if ( '' !== minutesElement.options[ i ].value ) {
+						minutes.push( minutesElement.options[ i ].value );
+					}
+				}
+
+				return ampm.reduce( ( array, ampm ) => {
+					array[ ampm ] = minutes.map( ( minute ) => {
+						return hour + ':' + minute + ' ' + ampm;
+					});
+					return array;
+				}, {} );
+			};
+
+			this.hourHasEmptySlots = function( hour ) {
+				const possibleTimes = this.listPossibleHourTimes( hour );
+				const ampm = this.getMeridiem();
+				const allPossibleTimes = possibleTimes[ ampm ];
+				return ! allPossibleTimes.every( ( time ) => {
+					return times.includes( time );
+				});
+			};
+
+			this.disableHours = function() {
+				if ( null === getTimeDropdownsElements( timeField ).h ) {
+					return;
+				}
+
+				getTimeDropdownsElements( timeField ).h.querySelectorAll( 'option' ).forEach( function( option ) {
+					option.disabled = ! self.hourHasEmptySlots( option.value );
+				});
+			};
+
+			this.disableMinutes = function( hour ) {
+				if ( null === getTimeDropdownsElements( timeField ).m ) {
+					return;
+				}
+
+				getTimeDropdownsElements( timeField ).m.querySelectorAll( 'option' ).forEach( function( option ) {
+					const timeString = hour + ':' + option.value + ' AM';
+					option.disabled = times.includes( timeString );
+				});
+			};
+
+			this.disableAmpm = function() {
+				if ( null === getTimeDropdownsElements( timeField ).ampm ) {
+					return;
+				}
+				getTimeDropdownsElements( timeField ).ampm.querySelectorAll( 'option' ).forEach( function( option ) {
+					if ( times.includes( option.value ) ) {
+						option.disabled = true;
+					}
+				});
+			};
+
+			this.init();
 		},
 
 		changeRte: function( editor ) {
@@ -8144,7 +9808,9 @@ function frmProFormJS() {
 
 		validateIntlPhoneInput: function( field ) {
 			return intlPhoneInputs[ field.id ].isValidNumber();
-		}
+		},
+
+		frmDatepicker: frmDatepickerPro,
 	};
 }
 var frmProForm = frmProFormJS();

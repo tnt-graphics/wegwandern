@@ -12,7 +12,7 @@ class FrmProNotification {
 		self::$form_is_protected = FrmProFileField::get_option( $form->parent_form_id ? $form->parent_form_id : $form->id, 'protect_files', 0 );
 
 		if ( ! empty( $args['settings']['attach_csv'] ) ) {
-			$action_id   = isset( $args['action_id'] ) ? $args['action_id'] : 0;
+			$action_id   = $args['action_id'] ?? 0;
 			$attachments = self::add_csv_attachment( $attachments, $form, $args['entry'], $action_id );
 		}
 

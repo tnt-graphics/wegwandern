@@ -131,7 +131,7 @@ class FrmProApplicationTaxonomyController {
 			$applications = array_slice( $applications, 0, $limit );
 		}
 
-		return array_reduce( $applications, array( __CLASS__, 'custom_application_reducer' ), array() );
+		return array_reduce( $applications, array( self::class, 'custom_application_reducer' ), array() );
 	}
 
 	/**
@@ -377,7 +377,7 @@ class FrmProApplicationTaxonomyController {
 	 */
 	private static function get_table_data_for_application( $id ) {
 		$children = self::get_children_for_application( $id );
-		return array_reduce( $children, array( __CLASS__, 'reduce_item' ) );
+		return array_reduce( $children, array( self::class, 'reduce_item' ) );
 	}
 
 	/**
@@ -889,7 +889,7 @@ class FrmProApplicationTaxonomyController {
 	 * @return void
 	 */
 	public static function before_create_page_with_shortcode() {
-		add_action( 'wp_insert_post', array( __CLASS__, 'after_create_page_with_shortcode' ), 10, 3 );
+		add_action( 'wp_insert_post', array( self::class, 'after_create_page_with_shortcode' ), 10, 3 );
 	}
 
 	/**
@@ -909,5 +909,20 @@ class FrmProApplicationTaxonomyController {
 			return;
 		}
 		FrmProApplication::add_post_to_application( $application_id, $post_ID, 'page' );
+	}
+
+	/**
+	 * Add features after form description setting in the form settings page.
+	 *
+	 * @since 6.19
+	 *
+	 * @param array $values
+	 *
+	 * @return void
+	 */
+	public static function after_form_description( $values ) {
+		$application_ids          = self::get_custom_applications();
+		$selected_application_ids = FrmProApplicationsHelper::get_application_ids_for_form( $values['id'] );
+		include FrmProAppHelper::plugin_path() . '/classes/views/applications/dropdown.php';
 	}
 }

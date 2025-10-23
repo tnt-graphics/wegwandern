@@ -47,7 +47,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			);
 			?>
 		</div>
-		<input class="frm_email_attachment" type="hidden" name="<?php echo esc_attr( $pass_args['action_control']->get_field_name( 'email_attachment_id' ) ); ?>" value="<?php echo esc_attr( isset( $form_action->post_content['email_attachment_id'] ) ? $form_action->post_content['email_attachment_id'] : '' ); ?>" />
+		<input class="frm_email_attachment" type="hidden" name="<?php echo esc_attr( $pass_args['action_control']->get_field_name( 'email_attachment_id' ) ); ?>" value="<?php echo esc_attr( $form_action->post_content['email_attachment_id'] ?? '' ); ?>" />
 	</div>
 	<!-- Attachment control container end. -->
 

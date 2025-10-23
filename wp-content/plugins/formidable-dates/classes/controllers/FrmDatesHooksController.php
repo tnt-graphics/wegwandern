@@ -15,7 +15,7 @@ class FrmDatesHooksController {
 			return;
 		}
 
-		self::load_lang();
+		add_action( 'init', __CLASS__ . '::load_lang', 0 );
 		self::load_admin_hooks();
 
 		add_filter( 'frm_date_field_options', array( 'FrmDatesAppController', 'date_field_options_js' ), 20, 2 );
@@ -26,6 +26,8 @@ class FrmDatesHooksController {
 		add_filter( 'frm_setup_new_fields_vars', array( 'FrmDatesField', 'remove_default_if_disabled' ), 1 );
 		add_action( 'frm_enqueue_form_scripts', array( 'FrmDatesAppController', 'maybe_enqueue_date_js_earlier' ), 5 );
 		add_filter( 'frm_build_date_diff_calc', array( 'FrmDatesCalculationController', 'maybe_build_date_diff_calc' ), 10, 2 );
+		add_filter( 'frm_field_container_extra_attributes', array( 'FrmDatesAppController', 'add_extra_atts_to_form_field_container' ), 10, 3 );
+		add_action( 'frmpro_fields_options_form_before', array( 'FrmDatesRangeController', 'init_date_range_relationship_between_start_end_date_fields' ), 10, 1 );
 	}
 
 	/**
@@ -35,7 +37,7 @@ class FrmDatesHooksController {
 	 *
 	 * @return void
 	 */
-	private static function load_lang() {
+	public static function load_lang() {
 		load_plugin_textdomain( 'frmdates', false, basename( FrmDatesAppHelper::get_path() ) . '/languages/' );
 	}
 
@@ -54,6 +56,7 @@ class FrmDatesHooksController {
 		add_action( 'admin_enqueue_scripts', array( 'FrmDatesAppController', 'enqueue_admin_assets' ) );
 
 		add_action( 'frm_date_field_options_form', array( 'FrmDatesAppController', 'add_settings_to_form' ), 10, 3 );
+		add_action( 'frm_after_field_created', array( 'FrmDatesAppController', 'init_start_date_field_extra_options_on_end_date_field_creation' ), 10, 2 );
 
 		if ( FrmDatesCalculationHelper::is_formidable_supported() ) {
 			add_filter( 'frm_default_value_types', array( 'FrmDatesCalculationController', 'add_default_value_type' ), 10, 2 );

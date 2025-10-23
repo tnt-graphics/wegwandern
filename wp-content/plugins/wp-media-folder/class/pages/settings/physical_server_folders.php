@@ -17,7 +17,7 @@ if (empty($folder_options)) {
     );
 }
 ?>
-<div id="physical_server_folders" class="tab-content">
+<div id="physical_server_folders">
     <div class="content-box">
         <div id="wpmf-disclaimer">
             <h2><?php esc_html_e('Please read this disclaimer first', 'wpmf') ?></h2>
@@ -72,7 +72,6 @@ if (empty($folder_options)) {
                 </div>
             </div>
         </div>
-
 
         <div class="ju-settings-option wpmf_right m-r-0">
             <div class="wpmf_row_full">
@@ -130,7 +129,7 @@ if (empty($folder_options)) {
                 <label data-wpmftippy="<?php esc_html_e('Additionally to the folder creation as physical folder, all the current folder structure and media will be transformed as WordPress physical folders', 'wpmf'); ?>"
                        class="ju-setting-label text"><?php esc_html_e('Transform current media folders', 'wpmf'); ?></label>
                 <button id="sync_wpmf"
-                        class="ju-button no-background orange-button waves-effect waves-light" <?php echo defined('WPMF_TAXO') ? '' : ('disabled="disabled" title="' . esc_html__('This functionnality requires WP Media Folder from Joomunited plugin', 'wpmf') . '"'); ?>>
+                        class="ju-button no-background primary-button waves-effect waves-light" <?php echo defined('WPMF_TAXO') ? '' : ('disabled="disabled" title="' . esc_html__('This functionnality requires WP Media Folder from Joomunited plugin', 'wpmf') . '"'); ?>>
                     <?php esc_html_e('Move existing media', 'wpmf'); ?>
                 </button>
                 <p id="sync_wpmf_doing"

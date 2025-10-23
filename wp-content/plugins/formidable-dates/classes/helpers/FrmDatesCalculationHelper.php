@@ -30,10 +30,11 @@ class FrmDatesCalculationHelper {
 
 		FrmFieldsHelper::inline_modal(
 			array(
-				'title'    => __( 'Smart Tags', 'frmdates' ),
-				'callback' => array( __CLASS__, 'shortcodes_modal_callback' ),
-				'args'     => $field,
-				'id'       => 'frm_dates_shortcodes_box',
+				'title'        => ! class_exists( 'FrmTextToggleStyleComponent' ) ? __( 'Smart Tags', 'frmdates' ) : '', // Backwards compatibility "@since 3.0".
+				'callback'     => array( __CLASS__, 'shortcodes_modal_callback' ),
+				'args'         => $field,
+				'id'           => 'frm_dates_shortcodes_box',
+				'dismiss-icon' => false,
 			)
 		);
 

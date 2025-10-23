@@ -39,6 +39,11 @@ class SeoPreview {
 	 * @since 4.2.8
 	 */
 	public function __construct() {
+		// Allow users to disable SEO Preview.
+		if ( apply_filters( 'aioseo_seo_preview_disable', false ) ) {
+			return;
+		}
+
 		// Hook into `wp` in order to have access to the WP queried object.
 		add_action( 'wp', [ $this, 'init' ], 20 );
 	}
@@ -54,7 +59,7 @@ class SeoPreview {
 	public function init() {
 		if (
 			is_admin() ||
-			! is_admin_bar_showing() ||
+			! aioseo()->helpers->isAdminBarEnabled() ||
 			// If we're seeing the Divi theme Visual Builder.
 			( function_exists( 'et_core_is_fb_enabled' ) && et_core_is_fb_enabled() ) ||
 			aioseo()->helpers->isAmpPage()
@@ -125,8 +130,9 @@ class SeoPreview {
 			],
 			'mainAssetCssQueue'      => aioseo()->core->assets->getJsAssetCssQueue( $this->mainAssetRelativeFilename ),
 			'data'                   => [
-				'isDev'    => aioseo()->helpers->isDev(),
-				'siteName' => aioseo()->helpers->getWebsiteName()
+				'isDev'           => aioseo()->helpers->isDev(),
+				'siteName'        => aioseo()->helpers->getWebsiteName(),
+				'usingPermalinks' => aioseo()->helpers->usingPermalinks()
 			]
 		];
 

@@ -106,7 +106,7 @@ class FrmProFieldBreak extends FrmFieldType {
 		FrmProFieldsHelper::set_field_js( $this->field );
 
 		$post_form_id    = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
-		$current_page    = isset( $frm_vars['prev_page'][ $this->field['form_id'] ] ) ? $frm_vars['prev_page'][ $this->field['form_id'] ] : 0;
+		$current_page    = $frm_vars['prev_page'][ $this->field['form_id'] ] ?? 0;
 		$is_current_page = $current_page == $this->field['field_order'];
 
 		$should_scroll = $is_current_page || ! isset( $frm_vars['scrolled'] );
@@ -132,7 +132,7 @@ class FrmProFieldBreak extends FrmFieldType {
 
 	public function front_field_input( $args, $shortcode_atts ) {
 		global $frm_vars;
-		$current_page = isset( $frm_vars['prev_page'][ $this->field['form_id'] ] ) ? $frm_vars['prev_page'][ $this->field['form_id'] ] : 0;
+		$current_page = $frm_vars['prev_page'][ $this->field['form_id'] ] ?? 0;
 		return '<input type="hidden" name="frm_next_page" class="frm_next_page" id="frm_next_p_' . esc_attr( $current_page ) . '" value="" />';
 	}
 

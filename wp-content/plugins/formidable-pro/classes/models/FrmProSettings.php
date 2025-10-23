@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProSettings extends FrmSettings {
 	public $option_name = 'frmpro_options';
 
-	// options
+	// Options.
 	public $edit_msg;
 	public $update_value;
 	public $already_submitted;
@@ -19,6 +19,25 @@ class FrmProSettings extends FrmSettings {
 	public $repeater_row_delete_confirmation;
 	public $hide_dashboard_videos;
 	public $entry_delete_message;
+	public $datepicker_library;
+
+	// Currency Options.
+	public $use_custom_currency_format;
+	public $thousand_separator;
+	public $decimal_separator;
+	public $decimals;
+
+	// Email style options. Since 6.25.
+	public $email_image_id;
+	public $email_image_size;
+	public $email_image_align;
+	public $email_image_location;
+	public $email_bg_color;
+	public $email_container_bg_color;
+	public $email_text_color;
+	public $email_link_color;
+	public $email_divider_color;
+	public $email_font;
 
 	/**
 	 * @return array
@@ -29,9 +48,14 @@ class FrmProSettings extends FrmSettings {
 			'update_value'                     => __( 'Update', 'formidable-pro' ),
 			'already_submitted'                => __( 'You have already submitted that form', 'formidable-pro' ),
 			'date_format'                      => 'm/d/Y',
+			'datepicker_library'               => 'default',
 			'cal_date_format'                  => $this->get_cal_date(),
 			'menu_icon'                        => '',
 			'currency'                         => 'USD',
+			'use_custom_currency_format'       => 0,
+			'thousand_separator'               => '',
+			'decimal_separator'                => '',
+			'decimals'                         => '',
 			'inbox'                            => array(
 				'set'      => FrmProDb::$plug_version,
 				'badge'    => 1,
@@ -42,6 +66,16 @@ class FrmProSettings extends FrmSettings {
 			'repeater_row_delete_confirmation' => __( 'Are you sure you want to delete this row?', 'formidable-pro' ),
 			'hide_dashboard_videos'            => 0,
 			'entry_delete_message'             => __( 'Your entry was successfully deleted.', 'formidable-pro' ),
+			'email_image_id'                   => '',
+			'email_image_size'                 => '',
+			'email_image_align'                => '',
+			'email_image_location'             => '',
+			'email_bg_color'                   => '#eaecf0',
+			'email_container_bg_color'         => '#ffffff',
+			'email_text_color'                 => '#3d3d3d',
+			'email_link_color'                 => '#4199fd',
+			'email_divider_color'              => '#dddddd',
+			'email_font'                       => '',
 		);
 	}
 
@@ -60,6 +94,10 @@ class FrmProSettings extends FrmSettings {
 			'repeater_row_delete_confirmation',
 			'hide_dashboard_videos',
 			'entry_delete_message',
+			'use_custom_currency_format',
+			'thousand_separator',
+			'decimal_separator',
+			'decimals',
 		);
 		parent::fill_with_defaults( $params );
 		$this->fill_inbox_defaults();
@@ -86,10 +124,56 @@ class FrmProSettings extends FrmSettings {
 		if ( isset( $params['frm_date_format'] ) ) {
 			$this->date_format = $params['frm_date_format'];
 		}
+		if ( isset( $params['frm_datepicker_library'] ) && $this->datepicker_library !== $params['frm_datepicker_library'] ) {
+			$this->datepicker_library = sanitize_key( $params['frm_datepicker_library'] );
+			$this->on_datepicker_library_change();
+		}
+
 		$this->get_cal_date();
 
 		$this->fill_with_defaults( $params );
 		$this->update_checkbox_settings( $params );
+	}
+
+	/**
+	 * Make changes when the datepicker setting changes.
+	 * We update the combined JS file, as well as update the inbox notices.
+	 *
+	 * @since 6.19
+	 *
+	 * @return void
+	 */
+	private function on_datepicker_library_change() {
+		FrmAppHelper::save_combined_js();
+
+		$frm_style = new FrmStyle();
+		$frm_style->save_settings();
+
+		$inbox = new FrmInbox();
+		$inbox->dismiss( 'try-flatpickr' );
+		$inbox->dismiss( 'try-flatpickr-date-ranges' );
+		$inbox->dismiss( 'jquery-datepickr-feedback' );
+		$inbox->dismiss( 'flatpickr-feedback' );
+
+		if ( 'flatpickr' === $this->datepicker_library ) {
+			$message = array(
+				'key'     => 'flatpickr-feedback',
+				'subject' => __( 'Thank you for trying Flatpickr!', 'formidable-pro' ),
+				'message' => __( 'We would like to hear your feedback! If you notice any issues, please let us know.', 'formidable-pro' ),
+				'cta'     => '<a href="https://feedback.strategy11.com/flatpickr-bug-report/">' . esc_html__( 'Send Feedback', 'formidable-pro' ) . '</a>',
+				'type'    => 'feedback',
+			);
+			$inbox->add_message( $message );
+		} elseif ( 'jquery' === $this->datepicker_library ) {
+			$message = array(
+				'key'     => 'jquery-datepickr-feedback',
+				'subject' => __( 'Did we get something wrong?', 'formidable-pro' ),
+				'message' => __( 'Our flatpickr library should support everything our jQuery datepicker does now. Please let us know why you don\'t want to use flatpickr so we can improve it!', 'formidable-pro' ), // phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+				'cta'     => '<a href="https://feedback.strategy11.com/flatpickr-bug-report/">' . esc_html__( 'Send Feedback', 'formidable-pro' ) . '</a>',
+				'type'    => 'feedback',
+			);
+			$inbox->add_message( $message );
+		}
 	}
 
 	/**
@@ -100,10 +184,11 @@ class FrmProSettings extends FrmSettings {
 	 * @return void
 	 */
 	private function update_checkbox_settings( $params ) {
-		$checkboxes = array( 'hide_dashboard_videos' );
+		$checkboxes = array( 'hide_dashboard_videos', 'use_custom_currency_format' );
 		foreach ( $checkboxes as $set ) {
 			$this->$set = isset( $params[ 'frm_' . $set ] ) ? absint( $params[ 'frm_' . $set ] ) : 0;
 		}
+		$this->menu_icon = empty( $params['frm_menu_icon'] ) ? '' : 'frm_white_label_icon';
 	}
 
 	/**

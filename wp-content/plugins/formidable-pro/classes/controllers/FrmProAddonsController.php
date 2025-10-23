@@ -22,6 +22,25 @@ class FrmProAddonsController extends FrmAddonsController {
 
 		$addon = self::get_addon( $plugin );
 
+		// Remove this in the future. This helps with testing before Test Mode is live.
+		// Once the Test Mode add-on is in the API data, this can be removed.
+		if ( false === $addon && 'test-mode' === $plugin && FrmAppHelper::show_new_feature( 'test-mode' ) ) {
+			$addon = array(
+				'title'      => 'Test Mode',
+				'slug'       => 'test-mode',
+				'plugin'     => 'formidable-test-mode/formidable-test-mode.php',
+				'categories' => array( 'Business' ),
+				'status'     => array(
+					'type'  => 'installed',
+					'label' => 'Installed',
+				),
+			);
+
+			if ( current_user_can( 'activate_plugins' ) ) {
+				$addon['activate_url'] = add_query_arg( array( 'action' => 'activate' ), admin_url( 'plugins.php' ) );
+			}
+		}
+
 		$atts                  = is_array( $upgrade_link_args ) ? $upgrade_link_args : array();
 		$atts['addon']         = $addon;
 		$atts['license_type']  = self::get_license_type();
@@ -142,17 +161,17 @@ class FrmProAddonsController extends FrmAddonsController {
 			if ( ! $force_type && isset( $addons['error']['code'] ) && $addons['error']['code'] === 'expired' ) {
 				return $addons['error']['code'];
 			}
-			$type = isset( $addons['error']['type'] ) ? $addons['error']['type'] : $type;
+			$type = $addons['error']['type'] ?? $type;
 		}
 
-		if ( ! is_callable( array( __CLASS__, 'get_pro_from_addons' ) ) ) {
-			$pro = isset( $addons['93790'] ) ? $addons['93790'] : array();
+		if ( ! is_callable( array( self::class, 'get_pro_from_addons' ) ) ) {
+			$pro = $addons['93790'] ?? array();
 		} else {
 			$pro = self::get_pro_from_addons( $addons );
 		}
 
 		if ( $type === 'free' ) {
-			$type = isset( $pro['type'] ) ? $pro['type'] : $type;
+			$type = $pro['type'] ?? $type;
 			if ( $type === 'free' ) {
 				return $type;
 			}
@@ -166,7 +185,7 @@ class FrmProAddonsController extends FrmAddonsController {
 			return $pro['code'];
 		}
 
-		$expires = isset( $pro['expires'] ) ? $pro['expires'] : '';
+		$expires = $pro['expires'] ?? '';
 		$expired = $expires && $expires < time();
 		return $expired ? 'expired' : strtolower( $type );
 	}
@@ -305,7 +324,7 @@ class FrmProAddonsController extends FrmAddonsController {
 			$status = self::get_license_status();
 		}
 
-		$echo_function = __CLASS__ . '::print_' . $status;
+		$echo_function = self::class . '::print_' . $status;
 
 		if ( ! is_callable( $echo_function ) ) {
 			$echo_function = function () {};
@@ -499,7 +518,7 @@ class FrmProAddonsController extends FrmAddonsController {
 		global $hook_suffix;
 		set_current_screen();
 
-		$free_plugin_supports_current_plugin_var = is_callable( __CLASS__ . '::get_current_plugin' );
+		$free_plugin_supports_current_plugin_var = is_callable( self::class . '::get_current_plugin' );
 
 		$download_urls = explode( ',', FrmAppHelper::get_param( 'plugin', '', 'post' ) );
 		FrmAppHelper::sanitize_value( 'esc_url_raw', $download_urls );

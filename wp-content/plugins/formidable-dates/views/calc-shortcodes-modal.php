@@ -47,7 +47,7 @@ FrmAppHelper::show_search_box(
 						}
 						?>
 					">
-					<?php echo esc_html( $label ); ?>
+					<span><?php echo esc_html( $label ); ?></span>
 					<span>[<?php echo esc_html( $sc_tag ); ?>]</span>
 				</a>
 			</li>
@@ -55,7 +55,7 @@ FrmAppHelper::show_search_box(
 		}
 		?>
 	</ul>
-	<p class="howto">
+	<p class="howto frm-italic frm-mt-sm">
 		<?php esc_html_e( 'Click smart value to dynamically populate this field. Smart values are not used when editing entries.', 'frmdates' ); ?>
 	</p>
 </div>

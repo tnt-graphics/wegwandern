@@ -52,6 +52,7 @@ class HeadlessContentBlocker extends FastHtmlTag
     private $visualParentCallback = [];
     private $blockableStringExpressionCallback = [];
     private $beforeSetBlockedInResultCallback = [];
+    private $modifyBlockablesCallback = [];
     private $replaceAlwaysAttributes = ['iframe' => ['sandbox'], 'script' => ['type'], 'style' => ['type']];
     private $visualParentIfClass = [];
     private $allowMultipleBlockerResults = \false;
@@ -103,6 +104,7 @@ class HeadlessContentBlocker extends FastHtmlTag
      */
     public function __construct()
     {
+        parent::__construct('HeadlessContentBlocker');
         $this->init();
         $this->addPlugin(NegatePlugin::class);
         $this->finderToMatcher = new SplObjectStorage();
@@ -145,6 +147,7 @@ class HeadlessContentBlocker extends FastHtmlTag
         $this->addInlineStyleBlockRuleCallback([$plugin, 'inlineStyleBlockRule']);
         $this->addBlockableStringExpressionCallback([$plugin, 'blockableStringExpression']);
         $this->addBeforeSetBlockedInResultCallback([$plugin, 'beforeSetBlockedInResult']);
+        $this->addModifyBlockablesCallback([$plugin, 'modifyBlockables']);
         return $plugin;
     }
     /**
@@ -181,8 +184,7 @@ class HeadlessContentBlocker extends FastHtmlTag
      */
     public function addBlockables($blockables)
     {
-        $this->blockables = \array_merge($this->blockables, $blockables);
-        $this->blockablesToHostsCache = null;
+        $this->setBlockables(\array_merge($this->blockables, $blockables));
     }
     /**
      * Set blockable items. In general, this are the URLs and elements you want to block.
@@ -191,7 +193,7 @@ class HeadlessContentBlocker extends FastHtmlTag
      */
     public function setBlockables($blockables)
     {
-        $this->blockables = $blockables;
+        $this->blockables = $this->runModifyBlockablesCallback($blockables);
         $this->blockablesToHostsCache = null;
     }
     /**
@@ -362,6 +364,15 @@ class HeadlessContentBlocker extends FastHtmlTag
         $this->beforeSetBlockedInResultCallback[] = $callback;
     }
     /**
+     * Add a callable to modify the blockables array before it gets registered.
+     *
+     * @param callable $callback
+     */
+    public function addModifyBlockablesCallback($callback)
+    {
+        $this->modifyBlockablesCallback[] = $callback;
+    }
+    /**
      * A set of HTML tags => attribute names which should always prefix with `consent-original-`.
      *
      * @param string[][] $tagToAttributesMap
@@ -422,13 +433,6 @@ class HeadlessContentBlocker extends FastHtmlTag
         }
         $this->isSetup = \true;
         $this->runSetupCallback();
-        // Block by inline style within HTML attribute `style=""`
-        $styleInlineAttributeMatcher = new StyleInlineAttributeMatcher($this);
-        $styleInlineAttributeFinder = new StyleInlineAttributeFinder();
-        $styleInlineAttributeFinder->addCallback(function ($match) use($styleInlineAttributeMatcher) {
-            $this->processMatch($styleInlineAttributeMatcher, $match);
-        });
-        $this->addFinder($styleInlineAttributeFinder);
         // Block by inline script
         $inlineScriptMatcher = new ScriptInlineMatcher($this);
         $inlineScriptFinder = new ScriptInlineFinder();
@@ -479,6 +483,13 @@ class HeadlessContentBlocker extends FastHtmlTag
                 $this->finderToMatcher[$selectorSyntaxFinder] = $selectorSyntaxMatcher;
             }
         }
+        // Block by inline style within HTML attribute `style=""`
+        $styleInlineAttributeMatcher = new StyleInlineAttributeMatcher($this);
+        $styleInlineAttributeFinder = new StyleInlineAttributeFinder();
+        $styleInlineAttributeFinder->addCallback(function ($match) use($styleInlineAttributeMatcher) {
+            $this->processMatch($styleInlineAttributeMatcher, $match);
+        });
+        $this->addFinder($styleInlineAttributeFinder);
         $this->runAfterSetupCallback();
     }
     /**
@@ -783,6 +794,19 @@ class HeadlessContentBlocker extends FastHtmlTag
             // @codeCoverageIgnoreEnd
         }
         return $returnResult;
+    }
+    /**
+     * Run registered callbacks to modify the blockables array before it gets registered.
+     *
+     * @param AbstractBlockable[] $blockables
+     * @return AbstractBlockable[]
+     */
+    public function runModifyBlockablesCallback($blockables)
+    {
+        foreach ($this->modifyBlockablesCallback as $callback) {
+            $blockables = $callback($blockables);
+        }
+        return $blockables;
     }
     /**
      * Add a callback which should throw an `Exception` when the content blocker is not setup.

@@ -59,6 +59,10 @@ class UserProfileTab {
 		}
 
 		aioseo()->core->assets->load( 'src/vue/standalone/user-profile-tab/main.js', [], $this->getVueData() );
+		// Load script again so we can add extra data to localize the strings.
+		aioseo()->core->assets->load( 'src/vue/standalone/user-profile-tab/main.js', [], [
+			'translations' => aioseo()->helpers->getJedLocaleData( 'aioseo-eeat' )
+		], 'eeat' );
 	}
 
 	/**
@@ -90,7 +94,7 @@ class UserProfileTab {
 
 		$extraVueData = [
 			'userProfile' => [
-				'userData'                          => get_userdata( $user_id )->data, // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+				'userData'                          => aioseo()->helpers->getUserData( $user_id )->data, // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 				'profiles'                          => [
 					'sameUsername'   => $sameUsername,
 					'urls'           => $socialProfiles,
@@ -174,6 +178,8 @@ class UserProfileTab {
 			'wikipediaUrl'    => '',
 			'myspaceUrl'      => '',
 			'wordPressUrl'    => '',
+			'blueskyUrl'      => '',
+			'threadsUrl'      => ''
 		];
 	}
 }

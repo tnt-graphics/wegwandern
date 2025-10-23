@@ -23,7 +23,7 @@ class FrmProHtmlHelper {
 			function () use ( $id, $name, $args ) {
 				require FrmProAppHelper::plugin_path() . '/classes/views/shared/toggle.php';
 			},
-			isset( $args['echo'] ) ? $args['echo'] : false
+			$args['echo'] ?? false
 		);
 	}
 
@@ -81,5 +81,35 @@ class FrmProHtmlHelper {
 		echo '>';
 		echo esc_html( $option === '' ? ' ' : $option );
 		echo '</option>';
+	}
+
+	/**
+	 * Output a simple radio button group
+	 *
+	 * @since 6.24
+	 *
+	 * @param string $name      The name attribute for the radio group
+	 * @param array  $options   Array of options with value => label pairs
+	 * @param mixed  $selected  The selected value
+	 * @param bool   $horizontal Whether to display horizontally (default: true = horizontal)
+	 * @return void
+	 */
+	public static function echo_radio_group( $name, $options, $selected, $horizontal = true ) {
+		?>
+		<div class="frm-gap-xs <?php echo $horizontal ? 'frm-flex' : 'frm-flex-col'; ?>">
+			<?php foreach ( $options as $value => $label ) { ?>
+				<label class="frm-h-stack frm-text-grey-700 frm-leading-none">
+					<input
+						class="frm-m-2xs"
+						type="radio"
+						name="<?php echo esc_attr( $name ); ?>"
+						value="<?php echo esc_attr( $value ); ?>"
+						<?php echo checked( $selected, $value, false ); ?>
+					/>
+					<span><?php echo esc_html( $label ); ?></span>
+				</label>
+			<?php } ?>
+		</div>
+		<?php
 	}
 }

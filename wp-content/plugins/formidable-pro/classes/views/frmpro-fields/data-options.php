@@ -39,7 +39,7 @@ if ( $field['data_type'] === 'select' ) {
 <?php
     }
 } elseif ( $field['data_type'] === 'data' && is_numeric( $field['hide_opt'] ) && is_numeric( $field['form_select'] ) ) {
-	$value = FrmEntryMeta::get_entry_meta_by_field($field['hide_opt'], $field['form_select']);
+	$value = FrmEntryMeta::get_entry_meta_by_field( $field['hide_opt'], $field['form_select'] );
 	echo wp_kses_post( $value );
 	?>
     <input type="hidden" value="<?php echo esc_attr( $value ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
@@ -54,14 +54,14 @@ if ( $field['data_type'] === 'select' ) {
 	}
 
     if ( isset( $observed_field_val ) && is_numeric( $observed_field_val ) ) {
-        $value = FrmEntryMeta::get_entry_meta_by_field($observed_field_val, $field['form_select']);
+        $value = FrmEntryMeta::get_entry_meta_by_field( $observed_field_val, $field['form_select'] );
 	} else {
         $value = '';
 	}
 ?>
 <p><?php echo wp_kses_post( $value ); ?></p>
-<input type="hidden" value="<?php echo esc_attr($value); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
-<?php } elseif ( $field['data_type'] === 'data' && ! is_array($field['value']) ) { ?>
+<input type="hidden" value="<?php echo esc_attr( $value ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
+<?php } elseif ( $field['data_type'] === 'data' && ! is_array( $field['value'] ) ) { ?>
 <p><?php echo wp_kses_post( $field['value'] ); ?></p>
 <input type="hidden" value="<?php echo esc_attr( $field['value'] ); ?>" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" />
 <?php
@@ -75,7 +75,7 @@ if ( $field['data_type'] === 'select' ) {
 	}
 
 	if ( isset( $observed_field_val ) && is_numeric( $observed_field_val ) ) {
-        $value = FrmEntryMeta::get_entry_meta_by_field($observed_field_val, $field['form_select']);
+        $value = FrmEntryMeta::get_entry_meta_by_field( $observed_field_val, $field['form_select'] );
 	} else {
         $value = '';
 	}
@@ -86,7 +86,7 @@ if ( $field['data_type'] === 'select' ) {
 } elseif ( $field['data_type'] === 'checkbox' ) {
     $checked_values = $field['value'];
 
-    if ( ! empty($field['options']) ) {
+    if ( ! empty( $field['options'] ) ) {
 		$option_index = 0;
 		foreach ( $field['options'] as $opt_key => $opt ) {
             $checked = ( ! is_array( $field['value'] ) && $field['value'] == $opt_key ) || ( is_array( $field['value'] ) && in_array( $opt_key, $field['value'] ) ) ? ' checked="checked"' : '';
@@ -109,7 +109,7 @@ if ( $field['data_type'] === 'select' ) {
 		}
 	}
 } elseif ( $field['data_type'] === 'radio' ) {
-    if ( ! empty($field['options']) ) {
+    if ( ! empty( $field['options'] ) ) {
         foreach ( $field['options'] as $opt_key => $opt ) {
 			$checked = checked( $field['value'] !== '' && in_array( $opt_key, (array) $field['value'] ), 1, false );
 			?>

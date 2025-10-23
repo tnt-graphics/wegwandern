@@ -26,4 +26,19 @@ class FrmProTransLiteController {
 		$form_ids[] = absint( $form_id );
 		return $form_ids;
 	}
+
+	/**
+	 * Hide the visibility setting for gateway fields.
+	 *
+	 * @since 6.22.1
+	 *
+	 * @param array $options
+	 * @return array
+	 */
+	public static function display_field_options( $options ) {
+		if ( 'gateway' === ( $options['field_data']->type ?? '' ) ) {
+			unset( $options['visibility'] );
+		}
+		return $options;
+	}
 }

@@ -9,7 +9,21 @@ if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addo
 }
 ?>
 <div id="rename_on_upload" class="tab-content">
+    <div class="wpmf_width_100 top_bar">
+        <h1><?php echo esc_html__('Rename on upload', 'wpmf') ?></h1>
+        <?php
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
+        ?>
+    </div>
     <div class="content-box content-wpmf-files-folders">
+        <?php if (get_option('wpmf_ai_rename_image_upload') === '1') : ?>
+        <div class="wpmf-notice-warning">
+            <p>
+                <?php esc_html_e('Image renaming is currently done with AI therefore renaming will only applies to other file types.', 'wpmf') ?>
+            </p>
+        </div>
+        <?php endif; ?>
+
         <div class="ju-settings-option">
             <div class="wpmf_row_full">
                 <input type="hidden" name="wpmf_media_rename" value="0">
@@ -275,6 +289,12 @@ if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addo
 </div>
 
 <div id="watermark" class="tab-content">
+    <div class="wpmf_width_100 top_bar">
+        <h1><?php echo esc_html__('Watermark', 'wpmf') ?></h1>
+        <?php
+        require WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/pages/settings/submit_button.php';
+        ?>
+    </div>
     <div class="content-box content-wpmf-files-folders">
         <div class="ju-settings-option wpmf_width_100 p-lr-20">
             <div class="ju-settings-option wpmf_width_40 wpmf-no-shadow wpmf-no-padding wpmf-no-margin">
@@ -319,88 +339,92 @@ if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addo
                 </div>
             </div>
 
-            <div class="ju-settings-option wpmf-no-shadow">
-                <div class="wpmf_row_full">
-                    <label data-wpmftippy="<?php esc_html_e('Set the watermark opacity (0-100)', 'wpmf'); ?>"
-                           class="p-b-20 wpmf_left text label_text">
-                        <?php esc_html_e('Watermark opacity', 'wpmf') ?>
-                    </label>
-                    <div class="wrap_apply wpmf_width_100">
-                        <div>
-                            <label>
-                                <input type="number" class="small-text"
-                                       name="watermark_opacity"
-                                       value="<?php echo (int)$watermark_opacity ?>" min="0" max="100">
-                            </label>
-                            <label><?php esc_html_e('%', 'wpmf') ?></label>
+            <div class="wpmf_width_100" style="display:flex">
+                <div class="ju-settings-option wpmf-no-shadow">
+                    <div class="wpmf_row_full">
+                        <label data-wpmftippy="<?php esc_html_e('Set the watermark opacity (0-100)', 'wpmf'); ?>"
+                            class="p-b-20 wpmf_left text label_text">
+                            <?php esc_html_e('Watermark opacity', 'wpmf') ?>
+                        </label>
+                        <div class="wrap_apply wpmf_width_100">
+                            <div>
+                                <label>
+                                    <input type="number" class="small-text"
+                                        name="watermark_opacity"
+                                        value="<?php echo (int)$watermark_opacity ?>" min="0" max="100">
+                                </label>
+                                <label><?php esc_html_e('%', 'wpmf') ?></label>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="ju-settings-option wpmf-no-shadow">
+                    <div class="wpmf_row_full">
+                        <label data-wpmftippy="<?php esc_html_e('Select the watermark image position', 'wpmf'); ?>"
+                            class="p-b-20 wpmf_left text label_text">
+                            <?php esc_html_e('Watermark position', 'wpmf') ?>
+                        </label>
+                        <label class="wpmf_width_100">
+                            <select name="wpmf_watermark_position" class="wpmf_width_50">
+                                <option
+                                    <?php selected($watermark_position, 'center'); ?>
+                                        value="center"><?php esc_html_e('Center', 'wpmf') ?></option>
+                                <option
+                                    <?php selected($watermark_position, 'bottom_left'); ?>
+                                        value="bottom_left"><?php esc_html_e('Bottom Left', 'wpmf') ?></option>
+                                <option
+                                    <?php selected($watermark_position, 'bottom_right'); ?>
+                                        value="bottom_right"><?php esc_html_e('Bottom Right', 'wpmf') ?></option>
+                                <option
+                                    <?php selected($watermark_position, 'top_right'); ?>
+                                        value="top_right"><?php esc_html_e('Top Right', 'wpmf') ?></option>
+                                <option
+                                    <?php selected($watermark_position, 'top_left'); ?>
+                                        value="top_left"><?php esc_html_e('Top Left', 'wpmf') ?></option>
+                            </select>
+                        </label>
                     </div>
                 </div>
             </div>
 
-            <div class="ju-settings-option wpmf-no-shadow">
-                <div class="wpmf_row_full">
-                    <label data-wpmftippy="<?php esc_html_e('Select the watermark image position', 'wpmf'); ?>"
-                           class="p-b-20 wpmf_left text label_text">
-                        <?php esc_html_e('Watermark position', 'wpmf') ?>
-                    </label>
-                    <label class="wpmf_width_100">
-                        <select name="wpmf_watermark_position" class="wpmf_width_50">
-                            <option
-                                <?php selected($watermark_position, 'center'); ?>
-                                    value="center"><?php esc_html_e('Center', 'wpmf') ?></option>
-                            <option
-                                <?php selected($watermark_position, 'bottom_left'); ?>
-                                    value="bottom_left"><?php esc_html_e('Bottom Left', 'wpmf') ?></option>
-                            <option
-                                <?php selected($watermark_position, 'bottom_right'); ?>
-                                    value="bottom_right"><?php esc_html_e('Bottom Right', 'wpmf') ?></option>
-                            <option
-                                <?php selected($watermark_position, 'top_right'); ?>
-                                    value="top_right"><?php esc_html_e('Top Right', 'wpmf') ?></option>
-                            <option
-                                <?php selected($watermark_position, 'top_left'); ?>
-                                    value="top_left"><?php esc_html_e('Top Left', 'wpmf') ?></option>
-                        </select>
-                    </label>
-                </div>
-            </div>
-
-            <div class="ju-settings-option wpmf-no-shadow wpmf-no-padding">
-                <div class="wpmf_row_full">
-                    <label data-wpmftippy="<?php esc_html_e('Make a watermark fit each photo size, resize the width of the watermark', 'wpmf'); ?>"
-                           class="p-b-20 wpmf_left text label_text">
-                        <?php esc_html_e('Set size of watermark from picture', 'wpmf') ?>
-                    </label>
-                    <div class="wrap_apply wpmf_width_100">
-                        <div>
-                            <label>
-                                <input type="number" class="small-text"
-                                       name="watermark_image_scaling"
-                                       value="<?php echo (int)$watermark_image_scaling ?>">
-                            </label>
-                            <label><?php esc_html_e('%', 'wpmf') ?></label>
+            <div class="wpmf_width_100" style="display:flex">
+                <div class="ju-settings-option wpmf-no-shadow wpmf-no-padding">
+                    <div class="wpmf_row_full">
+                        <label data-wpmftippy="<?php esc_html_e('Make a watermark fit each photo size, resize the width of the watermark', 'wpmf'); ?>"
+                            class="p-b-20 wpmf_left text label_text">
+                            <?php esc_html_e('Set size of watermark from picture', 'wpmf') ?>
+                        </label>
+                        <div class="wrap_apply wpmf_width_100">
+                            <div>
+                                <label>
+                                    <input type="number" class="small-text"
+                                        name="watermark_image_scaling"
+                                        value="<?php echo (int)$watermark_image_scaling ?>">
+                                </label>
+                                <label><?php esc_html_e('%', 'wpmf') ?></label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="ju-settings-option wpmf-no-shadow">
-                <div class="wpmf_row_full">
-                    <label data-wpmftippy="<?php esc_html_e('Select the watermark margin unit', 'wpmf'); ?>"
-                           class="p-b-20 wpmf_left text label_text">
-                        <?php esc_html_e('Margin unit', 'wpmf') ?>
-                    </label>
-                    <label class="wpmf_width_100">
-                        <select name="watermark_margin_unit" class="watermark_margin_unit">
-                            <option
-                                <?php selected($watermark_margin_unit, 'px'); ?>
-                                    value="px"><?php esc_html_e('px', 'wpmf') ?></option>
-                            <option
-                                <?php selected($watermark_margin_unit, '%'); ?>
-                                    value="%"><?php esc_html_e('%', 'wpmf') ?></option>
-                        </select>
-                    </label>
+                <div class="ju-settings-option wpmf-no-shadow">
+                    <div class="wpmf_row_full">
+                        <label data-wpmftippy="<?php esc_html_e('Select the watermark margin unit', 'wpmf'); ?>"
+                            class="p-b-20 wpmf_left text label_text">
+                            <?php esc_html_e('Margin unit', 'wpmf') ?>
+                        </label>
+                        <label class="wpmf_width_100">
+                            <select name="watermark_margin_unit" class="watermark_margin_unit">
+                                <option
+                                    <?php selected($watermark_margin_unit, 'px'); ?>
+                                        value="px"><?php esc_html_e('px', 'wpmf') ?></option>
+                                <option
+                                    <?php selected($watermark_margin_unit, '%'); ?>
+                                        value="%"><?php esc_html_e('%', 'wpmf') ?></option>
+                            </select>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -630,10 +654,10 @@ if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addo
         <div class="wpmf_row_full">
             <label class="ju-setting-label text"></label>
             <button type="button"
-                    class="ju-button no-background orange-button waves-effect waves-light wpmf_watermark_regeneration"
+                    class="ju-button no-background primary-button waves-effect waves-light wpmf_watermark_regeneration"
             ><?php esc_html_e('Thumbnail regeneration', 'wpmf') ?></button>
             <button type="button"
-                    class="ju-button orange-button no-background waves-effect waves-light btn_stop_watermark"
+                    class="ju-button primary-button no-background waves-effect waves-light btn_stop_watermark"
             ><?php esc_html_e('Stop the process', 'wpmf') ?></button>
             <div class="wpmf-process-bar-full process_watermark_thumb_full">
                 <div class="wpmf-process-bar process_watermark_thumb" data-w="0"></div>

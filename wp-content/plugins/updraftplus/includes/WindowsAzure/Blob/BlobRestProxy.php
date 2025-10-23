@@ -1334,7 +1334,7 @@ class BlobRestProxy extends ServiceRestProxy implements IBlob
             $blockSize = ($this->_SingleBlobUploadThresholdInBytes < 4194304) ? $this->_SingleBlobUploadThresholdInBytes : 4194304;
             while(!$end) {
                 if (is_resource($content)) {
-                    $body = fread($content, $blockSize);
+                    $body = fread($content, $blockSize); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Using the default PHP file read function instead of the WP Filesystem API
                     if (feof($content)) {
                         $end = 1;
                     }

@@ -21,15 +21,24 @@ class FrmDatesCalculationController {
 	public static function add_default_value_type( $types, $atts ) {
 		if ( isset( $atts['display']['type'] ) && 'date' === $atts['display']['type'] ) {
 			$types['date_calc'] = array(
-				'class' => 'frm-show-inline-modal',
-				'title' => __( 'Default Value (Date Calculation)', 'frmdates' ),
-				'icon'  => 'frm_icon_font frm_calculator_icon',
-				'data'  => array(
+				'class'   => '',
+				'title'   => __( 'Calculate Value', 'frmdates' ),
+				'icon'    => 'frm_icon_font frm_calculator_icon',
+				'data'    => array(
+					'show'    => '.frm-date-calc-box-{id}',
+					'disable' => '#default-value-for-{id}',
+				),
+				'tooltip' => __( 'Dynamically set the value of this field from another date.', 'frmdates' ),
+			);
+
+			// Backwards compatibility "@since 3.0".
+			if ( ! class_exists( 'FrmTextToggleStyleComponent' ) ) {
+				$types['date_calc']['data']  = array(
 					'open'    => 'frm-date-calc-box-',
 					'frmshow' => '.frm-date-calc-box-',
-					'frmhide' => '.frm-inline-modal,.default-value-section-' . $atts['display']['field_data']->id . ',.frm-lookup-box-',
-				),
-			);
+					'frmhide' => '.frm-inline-modal,.default-value-section-,.frm-lookup-box-',
+				);
+			}
 		}
 
 		return $types;

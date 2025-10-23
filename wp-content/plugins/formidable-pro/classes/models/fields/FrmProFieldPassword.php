@@ -120,10 +120,15 @@ class FrmProFieldPassword extends FrmFieldType {
 	/**
 	 * @since 4.0
 	 * @param array $args - Includes 'field', 'display'.
+	 *
+	 * TODO: Remove this method once the majority of active LITE version installations are above 6.19.
 	 */
 	public function show_after_default( $args ) {
-		$field = $args['field'];
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/confirmation-placeholder.php';
+		if ( is_callable( 'FrmAppHelper::is_admin_list_page' ) ) {
+			return;
+		}
+
+		FrmProFieldsController::add_confirmation_placeholder( $args );
 	}
 
 	/**
@@ -227,7 +232,7 @@ class FrmProFieldPassword extends FrmFieldType {
 	 */
 	private function maybe_add_show_password_html( &$input_html, $force = false ) {
 		if ( $force || FrmField::get_option( $this->field, 'show_password' ) ) {
-			$input_html = FrmProFieldsHelper::add_show_password_html( $input_html );
+			$input_html = FrmProFieldsHelper::add_show_password_html( $input_html, $this->field );
 		}
 	}
 

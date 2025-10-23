@@ -16,6 +16,6 @@ $allow_tabs_submit = array(
 <?php if (in_array($ju_tab['id'], $allow_tabs_submit)) : ?>
 <div class="btn_wpmf_saves">
     <button type="submit" name="btn_wpmf_save"
-            class="btn_wpmf_save ju-button orange-button waves-effect waves-light"><?php esc_html_e('Save Changes', 'wpmf'); ?></button>
+            class="btn_wpmf_save ju-button waves-effect waves-light"><?php esc_html_e('Save Changes', 'wpmf'); ?></button>
 </div>
 <?php endif; ?>

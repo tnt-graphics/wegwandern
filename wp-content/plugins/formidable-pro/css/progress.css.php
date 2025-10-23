@@ -205,7 +205,7 @@ ul.frm_rootline_hidden_steps li {
 }
 
 .frm_current_page .frm_rootline_title {
-	color: var(--progress-active-bg-color) <?php echo esc_html( $important ); ?>;
+	color: var(--progress-active-color) <?php echo esc_html( $important ); ?>;
 }
 
 .frm_rootline_title,
@@ -214,7 +214,7 @@ ul.frm_rootline_hidden_steps li {
 	font-size: 12px<?php echo esc_html( $important ); ?>;
 	font-weight: 500;
 	padding: 6px 0<?php echo esc_html( $important ); ?>;
-	color: var(--text-color) <?php echo esc_html( $important ); ?>;
+	color: var(--progress-color) <?php echo esc_html( $important ); ?>;
 }
 
 .frm_rootline_title {

@@ -76,7 +76,7 @@ class FrmProTimeFieldsController {
 			}
 
 			$unique_time_fields[] = array(
-				'dateID' => $datepicker,
+				'dateID' => self::get_linked_date_id( $options, $frm_vars, $datepicker ),
 				'timeID' => $time_field_id,
 			);
 		}
@@ -100,5 +100,29 @@ class FrmProTimeFieldsController {
 		}
 
 		return $values['step_unit'];
+	}
+
+	/**
+	 * Get the date key by id.
+	 *
+	 * @since 6.24
+	 *
+	 * @param array $time_options The time options array.
+	 * @param array $frm_vars The frm_vars array.
+	 * @param string $default_key The default key to return if the date field is not found.
+	 * @return string
+	 */
+	private static function get_linked_date_id( $time_options, $frm_vars, $default_key = '' ) {
+		if ( empty( $frm_vars['datepicker_loaded'] ) || empty( $time_options['linked_date_field'] ) ) {
+			return $default_key;
+		}
+
+		$key = array_search( $time_options['linked_date_field'], array_column( $frm_vars['datepicker_loaded'], 'field_id' ), true );
+
+		if ( $key === false ) {
+			return $default_key;
+		}
+
+		return array_keys( $frm_vars['datepicker_loaded'] )[ $key ];
 	}
 }

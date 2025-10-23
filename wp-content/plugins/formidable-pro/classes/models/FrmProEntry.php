@@ -38,17 +38,17 @@ class FrmProEntry {
 
 				// load next page for new entry
 				$errors = '';
-				$submit = isset( $form->options['submit_value'] ) ? $form->options['submit_value'] : $frm_settings->submit_value;
+				$submit = $form->options['submit_value'] ?? $frm_settings->submit_value;
 				$values = $fields ? FrmEntriesHelper::setup_new_vars( $fields, $form ) : array();
 
 				require FrmAppHelper::plugin_path() . '/classes/views/frm-entries/new.php';
 				add_filter( 'frm_continue_to_create', '__return_false' );
 			}
 		} elseif ( $entry_id && $form->editable && FrmProFormsHelper::check_single_entry_type( $form->options, 'user' ) && ! FrmProFormsHelper::saving_draft() ) {
-			$show_form = isset( $form->options['show_form'] ) ? $form->options['show_form'] : true;
+			$show_form = $form->options['show_form'] ?? true;
 
 			if ( $show_form ) {
-				$saved_message = isset( $form->options['success_msg'] ) ? $form->options['success_msg'] : $frm_settings->success_msg;
+				$saved_message = $form->options['success_msg'] ?? $frm_settings->success_msg;
 				$saved_message = apply_filters( 'frm_content', $saved_message, $form, $entry_id );
 				$message       = wpautop( do_shortcode( $saved_message ) );
 				$message       = '<div class="frm_message" id="message">' . $message . '</div>';
@@ -87,7 +87,7 @@ class FrmProEntry {
 			'form'             => $args['form'],
 			'show_title'       => $args['title'],
 			'show_description' => $args['description'],
-			'conf_message'     => isset( $args['message'] ) ? $args['message'] : '',
+			'conf_message'     => $args['message'] ?? '',
 		);
 
 		$function = $args['function'];
@@ -177,6 +177,10 @@ class FrmProEntry {
 		$sub_ids = array();
 
 		foreach ( $field_values as $k => $v ) {
+			if ( ! is_array( $v ) ) {
+				continue;
+			}
+
 			$has_values = array_filter( $v, array( 'FrmProContent', 'is_not_empty' ) );
 			if ( empty( $has_values ) ) {
 				// Don't create empty entries.
@@ -185,13 +189,14 @@ class FrmProEntry {
 
 			$entry_values                   = $new_values;
 			$entry_values['form_id']        = $sub_form_id;
-			$entry_values['item_meta']      = (array) $v;
-			$entry_values['parent_item_id'] = isset( $values['id'] ) ? $values['id'] : 0;
+			$entry_values['item_meta']      = $v;
+			$entry_values['parent_item_id'] = $values['id'] ?? 0;
 			$entry_values['parent_form_id'] = $form_id;
-			// include a nonce just to be sure the parent_form_id is legit
+
+			// Include a nonce just to be sure the parent_form_id is legit.
 			$entry_values['parent_nonce'] = wp_create_nonce( 'parent' );
 
-			// set values for later use (file upload and tags fields)
+			// Set values for later use (file upload and tags fields).
 			$_POST['item_meta']['key_pointer']  = $k;
 			$_POST['item_meta']['parent_field'] = $field->id;
 

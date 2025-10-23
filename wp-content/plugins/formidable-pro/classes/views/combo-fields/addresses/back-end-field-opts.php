@@ -4,6 +4,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <p>
+	<?php
+	if ( ! empty( $should_show_address_type_warning ) ) {
+		?>
+		<div class="frm_warning_style" style="padding-right: var(--gap-md);">
+			<?php esc_html_e( 'Square requires the country code in order to validate the address. Select another address type to prevent checkout errors.', 'formidable-pro' ); // phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong ?>
+		</div>
+		<?php
+	}
+	?>
+
 	<label for="address_type_<?php echo esc_attr( $field['id'] ); ?>">
 		<?php esc_html_e( 'Address Type', 'formidable-pro' ); ?>
 	</label>

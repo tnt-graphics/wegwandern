@@ -1327,7 +1327,12 @@ var wpmfFoldersModule = void 0,
                     class_names += ' wpmf_drive_folder';
                 }
 
-                if (wpmfFoldersModule.categories[term_id].drive_type !== 'google_drive' && wpmfFoldersModule.categories[term_id].drive_type !== 'dropbox' && wpmfFoldersModule.categories[term_id].drive_type !== 'onedrive' && wpmfFoldersModule.categories[term_id].drive_type !== 'onedrive_business' && wpmfFoldersModule.categories[term_id].drive_type !== 'nextcloud') {
+                if (wpmfFoldersModule.categories[term_id].drive_type === 'owncloud') {
+                    main_icon = '<svg class="wpmf-icon-category" version="1.1" viewBox="0 0 256 128" xmlns="http://www.w3.org/2000/svg"><path d="m128 7c-25.871 0-47.817 17.485-54.713 41.209-5.9795-12.461-18.642-21.209-33.287-21.209-20.304 0-37 16.696-37 37s16.696 37 37 37c14.645 0 27.308-8.7481 33.287-21.209 6.8957 23.724 28.842 41.209 54.713 41.209s47.817-17.485 54.713-41.209c5.9795 12.461 18.642 21.209 33.287 21.209 20.304 0 37-16.696 37-37s-16.696-37-37-37c-14.645 0-27.308 8.7481-33.287 21.209-6.8957-23.724-28.842-41.209-54.713-41.209zm0 22c19.46 0 35 15.54 35 35s-15.54 35-35 35-35-15.54-35-35 15.54-35 35-35zm-88 20c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15zm176 0c8.4146 0 15 6.5854 15 15s-6.5854 15-15 15-15-6.5854-15-15 6.5854-15 15-15z" color="#000000" fill="#0082c9" style="-inkscape-stroke:none"/></svg>';
+                    class_names += ' wpmf_drive_folder';
+                }
+
+                if (wpmfFoldersModule.categories[term_id].drive_type !== 'google_drive' && wpmfFoldersModule.categories[term_id].drive_type !== 'dropbox' && wpmfFoldersModule.categories[term_id].drive_type !== 'onedrive' && wpmfFoldersModule.categories[term_id].drive_type !== 'onedrive_business' && wpmfFoldersModule.categories[term_id].drive_type !== 'nextcloud' && wpmfFoldersModule.categories[term_id].drive_type !== 'owncloud') {
                     class_names += ' wpmf_local_media';
                 }
             } else if (type === 'back') {
@@ -1786,6 +1791,10 @@ var wpmfFoldersModule = void 0,
                     if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].drive_type === 'nextcloud') {
                         $('.wpmf-contextmenu-folder').append('<li><div class="material_syncdrive material_sync_nextcloud items_menu">' + wpmf.l18n.sync_drive + '<i class="material-icons wpmf_icon">sync</i></div></li>');
                     }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].drive_type === 'owncloud') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_syncdrive material_sync_owncloud items_menu">' + wpmf.l18n.sync_drive + '<i class="material-icons wpmf_icon">sync</i></div></li>');
+                    }
                     wpmfFoldersModule.doSyncDrive();
                     // render custom color
                     wpmfFoldersModule.renderCustomColor();
@@ -1994,6 +2003,10 @@ var wpmfFoldersModule = void 0,
 
             $('.material_sync_nextcloud').on('click', function () {
                 wpmfAddCloudQueue.addNextcloudQueue();
+            });
+
+            $('.material_sync_owncloud').on('click', function () {
+                wpmfAddCloudQueue.addOwncloudQueue();
             });
         },
 
@@ -2614,6 +2627,10 @@ var wpmfFoldersModule = void 0,
                 context_folder += '<li><a class="open_folder_permissions items_menu" href="#folder_permissions">' + wpmf.l18n.permissions_setting + '<span class="material-icons-outlined wpmf_icon"> settings </span></a></li>';
             }
 
+            if (typeof wpmf.vars.batch_ai_optimization !== 'undefined' && parseInt(wpmf.vars.batch_ai_optimization) === 1) {
+                context_folder += '<li><div class="ai_image_optimization_folder items_menu">' + wpmf.l18n.ai_image_optimization + '<span class="ju-icon-AI wpmf_icon"></span></div></li>';
+            }
+
             context_folder += '</ul>';
 
             // render context menu for file
@@ -2654,7 +2671,13 @@ var wpmfFoldersModule = void 0,
                 context_file += '<li><div class="set_folder_menu items_menu">' + wpmf.l18n.change_folder + '<span class="material-icons-outlined wpmf_icon"> snippet_folder </span></div></li>';
             }
 
-            context_file += '\n                <li><div class="material_import items_menu">' + wpmf.l18n.import_cloud + '<span class="material-icons-outlined wpmf_icon"> import_export </span></div></li>\n                <li class="insert_pdfembed_item hide"><div class="insert_pdfembed items_menu">' + wpmf.l18n.insert_pdfembed + '<span class="material-icons-outlined wpmf_icon"> send </span></div></li>\n                <li class="insert_image_lightbox_item hide"><div class="insert_image_lightbox items_menu">' + wpmf.l18n.insert_image_lightbox + '<span class="material-icons-outlined wpmf_icon"> send </span></div></li></ul>';
+            context_file += '\n                <li><div class="material_import items_menu">' + wpmf.l18n.import_cloud + '<span class="material-icons-outlined wpmf_icon"> import_export </span></div></li>\n                <li class="insert_pdfembed_item hide"><div class="insert_pdfembed items_menu">' + wpmf.l18n.insert_pdfembed + '<span class="material-icons-outlined wpmf_icon"> send </span></div></li>\n                <li class="insert_image_lightbox_item hide"><div class="insert_image_lightbox items_menu">' + wpmf.l18n.insert_image_lightbox + '<span class="material-icons-outlined wpmf_icon"> send </span></div></li>';
+
+            if (typeof wpmf.vars.batch_ai_optimization !== 'undefined' && parseInt(wpmf.vars.batch_ai_optimization) === 1) {
+                context_file += '<li><div class="ai_image_optimization_image items_menu">' + wpmf.l18n.ai_image_optimization + '<span class="ju-icon-AI wpmf_icon"></span></div></li>';
+            }
+
+            context_file += '</ul>';
 
             // Add the context menu box for folder to body
             if (!$('.wpmf-contextmenu.wpmf-contextmenu-folder').length) {
@@ -4100,6 +4123,11 @@ var wpmfFoldersModule = void 0,
                                 case 'bunny_cdn_edge':
                                     aws_text = 'BunnyNet';
                                     break;
+                                case 'cloudflare_r2':
+                                    aws_text = 'Cloudflare R2';
+                                    break;
+                                case 'bunny':
+                                    aws_text = 'Bunny';
                             }
 
                             $wrap.find('.attachment-preview').append('<span data-wpmftippy_id="' + id + '" class="wpmf_aws_text ' + endpoint + '">' + aws_text + '</span>');
@@ -4595,6 +4623,9 @@ var wpmfFoldersModule = void 0,
             });
         },
 
+        /**
+         * Sync the folders from Nextcloud to Media library
+         */
         addNextcloudQueue: function addNextcloudQueue() {
             $.ajax({
                 method: "POST",
@@ -4628,6 +4659,46 @@ var wpmfFoldersModule = void 0,
                 },
                 error: function error() {
                     wpmfAddCloudQueue.addNextcloudQueue();
+                }
+            });
+        },
+
+        /**
+         * Sync the folders from Owncloud to Media library
+         */
+        addOwncloudQueue: function addOwncloudQueue() {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_owncloud_add_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                beforeSend: function beforeSend() {
+                    wpmfSnackbarModule.show({
+                        id: 'sync_drive',
+                        content: wpmf.l18n.syncing_with_cloud,
+                        icon: '<span class="material-icons-outlined wpmf-snack-icon wpmf-snack-loader">sync</span>',
+                        auto_close: false,
+                        is_progress: true
+                    });
+                    if (!$('.owncloud_list .wpmf-loading-sync').length) {
+                        $('.owncloud_list > .wpmf-item .wpmf-item-title').append(cloud_sync_loader_icon);
+                    }
+                },
+                success: function success(response) {
+                    wpmfSnackbarModule.close('sync_drive');
+                    $('.owncloud_list .wpmf-loading-sync').remove();
+                    wpmfSnackbarModule.show({
+                        id: 'queue_alert',
+                        content: wpmf.l18n.queue_sync_alert,
+                        auto_close: true,
+                        is_progress: true
+                    });
+                },
+                error: function error() {
+                    wpmfAddCloudQueue.addOwncloudQueue();
                 }
             });
         },

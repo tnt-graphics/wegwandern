@@ -59,9 +59,16 @@ class UpdraftPlusAddOns_Options2 {
 
 	}
 
-	public function updraftplus_addonstab_content() {
+	/**
+	 * Return the content of the addons tab
+	 *
+	 * @param string $content - the addons tab content
+	 * @return string - the addons tab content
+	 */
+	public function updraftplus_addonstab_content($content) {
 		ob_start();
 		$this->options_printpage();
+		echo $content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escape late; we don't do it here because we want it to happen at caller's side
 		return ob_get_clean();
 	}
 
@@ -115,12 +122,7 @@ class UpdraftPlusAddOns_Options2 {
 	}
 
 	public function show_admin_warning_notconnected() {
-		global $updraftplus;
-		if (0 == $updraftplus->have_addons) {
-			$this->show_admin_warning(esc_html(__('You have not yet connected with your UpdraftPlus.Com account, to enable you to list your purchased add-ons.', 'updraftplus').' '.__('You need to connect to receive future updates to UpdraftPlus.', 'updraftplus')).' <a href="'.$this->options->addons_admin_url().'">'.esc_html__('Go here to connect.', 'updraftplus').'</a>');
-		} else {
-			$this->show_admin_warning(esc_html(__('You have not yet connected with your UpdraftPlus.Com account.', 'updraftplus').' '.__('You need to connect to receive future updates to UpdraftPlus.', 'updraftplus')).' <a href="'.$this->options->addons_admin_url().'">'.esc_html__('Go here to connect.', 'updraftplus').'</a>');
-		}
+		$this->show_admin_warning(esc_html(__('You have not yet connected the UpdraftPlus plugin to your UpdraftPlus licence.', 'updraftplus')).' <a href="https://teamupdraft.com/my-account/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=connect-to-licence&utm_creative_format=notice">'.esc_html__('Connect to your account.', 'updraftplus').'</a>');
 	}
 
 	public function show_admin_warning_noupdraftplus() {
@@ -226,9 +228,7 @@ class UpdraftPlusAddOns_Options2 {
 
 		$options = $this->options->get_option(UDADDONS2_SLUG.'_options');
 
-		$mother = $this->mother;
-
-		echo "\t<div class=\"wrap\">\n";
+		echo "\t<div class=\"wrap updraft-account-connection\">\n";
 
 		global $updraftplus_addons2, $updraftplus_admin, $updraftplus;
 
@@ -260,7 +260,9 @@ class UpdraftPlusAddOns_Options2 {
 		}
 
 		if ($this->connected) {
-			echo '<div class="udp-notice below-h2"><h3>'.sprintf(esc_html__('You are presently %s to an UpdraftPlus.Com account.', 'updraftplus'), '<strong class="success">'.esc_html__('connected', 'updraftplus').'</strong>').'</h3>';
+			/* translators: %s: Plugin's connection status (it's either connected or not connected) */
+			echo '<div class="udp-notice below-h2"><h3>'.sprintf(esc_html__('You are presently %s to a TeamUpdraft account.', 'updraftplus'), '<strong class="success">'.
+			esc_html__('connected', 'updraftplus').'</strong>').'</h3>';
 
 			echo '<p>';
 
@@ -274,13 +276,14 @@ class UpdraftPlusAddOns_Options2 {
 
 			echo '</div>';
 		} else {
-
-			echo "<div class=\"udp-notice below-h2\"><p>".sprintf(esc_html__('You are presently %s to an UpdraftPlus.Com account.', 'updraftplus'), '<strong>'.esc_html__('not connected', 'updraftplus').'</strong>').'</p></div>';
+			/* translators: %s: Plugin's connection status (it's either connected or not connected) */
+			echo "<div class=\"udp-notice below-h2\"><p>".sprintf(esc_html__('You are presently %s to a TeamUpdraft account.', 'updraftplus'), '<strong>'.
+			esc_html__('not connected', 'updraftplus').'</strong>').'</p></div>';
 
 		}
 
 		if (isset($connection_errors)) {
-			echo '<div class="error"><p><strong>'.esc_html__('Errors occurred when trying to connect to UpdraftPlus.Com:', 'updraftplus').'</strong></p><ul>';
+			echo '<div class="error"><p><strong>'.esc_html__('Errors occurred when trying to connect to your TeamUpdraft account:', 'updraftplus').'</strong></p><ul>';
 			foreach ($connection_errors as $err) {
 				echo '<li style="list-style:disc inside;">'.wp_kses_post($err).'</li>';
 			}
@@ -326,7 +329,6 @@ class UpdraftPlusAddOns_Options2 {
 		if (!$this->connected) $updraftplus_admin->build_credentials_form(UDADDONS2_SLUG, true);
 
 		$ourpageslug = UDADDONS2_PAGESLUG;
-		$mother = $this->mother;
 
 		$href = UpdraftPlus_Options::admin_page_url();
 
@@ -390,8 +392,6 @@ class UpdraftPlusAddOns_Options2 {
 ENDHERE;
 		}
 
-		echo '<h3 style="clear:left; margin-top: 10px;">'.esc_html__('UpdraftPlus Addons', 'updraftplus').'</h3><div>';
-
 		$addons = $updraftplus_addons2->get_available_addons();
 
 		$this->plugin_update_url = 'update-core.php';
@@ -447,20 +447,22 @@ ENDHERE;
 				}
 			}
 		} else {
-			echo "<em>".esc_html__('An error occurred when trying to retrieve your add-ons.', 'updraftplus')."</em>";
+			$first = "<em>".esc_html__('An error occurred when trying to retrieve your add-ons.', 'updraftplus')."</em>";
 		}
 
-		echo $first.$second.$third;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- contains HTML <a> tags that has inline onclick event
-
-		echo <<<ENDHERE
-		</div>
-ENDHERE;
+		$addon_boxes = $first.$second.$third;
+		// Hide header if no addon box is visible or no error trying to retrieve add-ons.
+		if (!empty($addon_boxes)) {
+			echo '<h3 style="clear:left; margin-top: 10px;">'.esc_html__('UpdraftPlus Premium', 'updraftplus').'</h3><div>';
+			echo $addon_boxes;// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- contains HTML <a> tags that has inline onclick event
+			echo '</div>';
+		}
 
 		if ($this->update_js) {
 		?>
 			<script>
 				jQuery(function() {
-						jQuery('#updraftaddons_updatewarning').html('<?php echo esc_js(__('An update containing your addons is available for UpdraftPlus - please follow this link to get it.', 'updraftplus')); ?>');
+						jQuery('#updraftaddons_updatewarning').html('<?php echo esc_js(__('A new update for UpdraftPlus is available - follow this link to get it', 'updraftplus')); ?>');
 					}
 				);
 			</script>
@@ -474,7 +476,7 @@ ENDHERE;
 
 		echo '<h3>'.esc_html__('UpdraftPlus Support', 'updraftplus').'</h3>
 <ul>
-<li style="list-style:disc inside;">'.esc_html__('Need to get support?', 'updraftplus').' <a aria-label="'.esc_html__('Need to get support?', 'updraftplus').esc_html__('Go here', 'updraftplus').'" target="_blank" href="'.esc_url($mother).'/support/">'.esc_html__('Go here', 'updraftplus')."</a>.</li>
+<li style="list-style:disc inside;">'.esc_html__('Need to get support?', 'updraftplus').' <a aria-label="'.esc_html__('Need to get support?', 'updraftplus').esc_html__('Go here', 'updraftplus').'" target="_blank" href="https://teamupdraft.com/support/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=go-here&utm_creative_format=text">'.esc_html__('Go here', 'updraftplus')."</a>.</li>
 </ul>";
 
 		if ($this->connected) {
@@ -509,13 +511,19 @@ ENDHERE;
 	private function addonbox($key, $name, $shopurl, $description, $installedversion, $latestversion = false, $installed = false, $unclaimed = false, $is_assigned = false, $have_all = false) {
 		$urlbase = UPDRAFTPLUS_URL.'/images/addons-images';
 		$mother = $this->mother;
+		$extra_description = '';
 
 		// Remove pCloud from the individual add-ons list.
 		if ('pcloud' == $key) {
 			return;
+		} elseif ('all' == $key) {
+			$name = esc_html('Get every feature of UpdraftPlus Premium', 'updraftplus');
+			$description = esc_html__('Reduce server load by backing up only incremental changes made to your website or by backing up at set times, like overnight when server resources are high.', 'updraftplus');
+			$extra_description = esc_html(__('Back up automatically before updates and protect more of your hard work by backing up more files and more databases.', 'updraftplus').' '.__('Anonymise personal backup data, encrypt the database and more.', 'updraftplus'));
 		}
 
 		if ($installed && ($is_assigned || ($have_all && 'all' != $key))) {
+			if ('all' === $key) return;
 			$blurb = "<p>";
 			$preblurb = "<div style=\"float:right;padding-top:10px;\"><img title=\"".esc_html__('You\'ve got it', 'updraftplus')."\" src=\"$urlbase/$key.png\" width=\"100\" height=\"100\" alt=\"".esc_html__("You've got it", 'updraftplus')."\"></div>";
 			if ('all' != $key) {
@@ -530,6 +538,7 @@ ENDHERE;
 			}
 			$blurb .= "</p>";
 		} else {
+			if ('all' == $key && $is_assigned && false === $unclaimed) return;
 			if ($have_all && 'all' != $key) {
 				$blurb = '<p><strong>'.esc_html__('Available for this site (via your all-addons purchase)', 'updraftplus').' - <a href="'.$this->plugin_update_url.'">'.esc_html__('please follow this link to update the plugin in order to get it', 'updraftplus').'</a></strong></p>';
 				$preblurb = "<div style=\"border: 2px solid #189c5f;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #1a9c5e0f;\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\"></div>";
@@ -546,13 +555,16 @@ ENDHERE;
 				}
 				$preblurb = "<div style=\"border: 2px solid #189c5f;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #1a9c5e0f;\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\"></div>";
 			} else {
-				$blurb = '<p><a aria-label="'.sprintf(esc_html__('Get %s from the UpdraftPlus.com Store', 'updraftplus'), $name).(($this->connected) ? '' : ' '.esc_html__('(or connect using the form on this page if you have already purchased it)', 'updraftplus')).'" target="_blank" href="'.$mother.$shopurl.'">'.esc_html__('Get it from the UpdraftPlus.Com Store', 'updraftplus').'</a>'.(($this->connected) ? '' : ' '.esc_html__('(or connect using the form on this page if you have already purchased it)', 'updraftplus')).'</p>';
+				/* translators: %s: Add-on name */
+				$blurb = '<p><a aria-label="'.sprintf(esc_html__('Get %s from teamupdraft.com', 'updraftplus'), $name).
+						(($this->connected) ? '' : ' '.esc_html__('(or connect using the form on this page if you have already purchased it)', 'updraftplus')).'" target="_blank" href="'.$mother.$shopurl.'">'.esc_html__('Get it from teamupdraft.com', 'updraftplus').'</a>'.(($this->connected) ? '' : ' '.esc_html__('(or connect using the login form on this page if you have already bought it)', 'updraftplus')).'</p>';
 				$preblurb = "<div style=\"border: 2px solid #8c8c8c;padding: 10px;width: 72px;height: 72px;border-radius: 5px;position: relative;background: #8c8c8c0f;\"><a href=\"".$mother.$shopurl."\" title=\"".sprintf(esc_html__('Buy %s', 'updraftplus'), $name)."\"><img style=\"-webkit-filter: grayscale(100%);filter: grayscale(100%);width: 56px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);\" src=\"$urlbase/$key.png\" alt=\"".esc_html__('Buy It', 'updraftplus')."\"></a></div>";
 			}
 		}
+		if ($extra_description) $extra_description = '<p>'.$extra_description.'</p>';
 		return <<<ENDHERE
 			<div id="addon-$key" style="border: 1px solid #d0d0d0;border-radius: 5px;padding: 12px;max-width: 680px;margin-bottom: 22px;background-color:#fff;box-shadow: 0 0 20px 5px rgb(0 0 0 / 7%);display: flex;justify-content: space-between;align-items: center;">
-				<div style="max-width: 80%;"><h2 style="">$name</h2><p>$description</p>$blurb</div>
+				<div style="max-width: 80%;"><h2 style="">$name</h2><p>$description</p>$extra_description$blurb</div>
 				$preblurb
 			</div>
 ENDHERE;

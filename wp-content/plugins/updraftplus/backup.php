@@ -2526,12 +2526,13 @@ class UpdraftPlus_Backup {
 
 		$table_data = array();
 		if ('VIEW' != $table_type) {
-			$fields = array();
+			$select_selected_fields = $insert_selected_fields = array();
 			$defs = array();
 			$integer_fields = array();
 			$binary_fields = array();
 			$bit_fields = array();
 			$bit_field_exists = false;
+			$invisible_field_exists = false;
 
 			// false means "not yet set"; a string means what it was set to; null means that there are multiple (and so not useful to us). If it is not a string, then $primary_key_type is invalid and should not be used.
 			$primary_key = false;
@@ -2556,15 +2557,19 @@ class UpdraftPlus_Backup {
 					$binary_fields[strtolower($struct->Field)] = true;
 				}
 
+				$insert_selected_fields[] = UpdraftPlus_Manipulation_Functions::backquote(str_replace('`', '``', $struct->Field));
+
 				if (preg_match('/^bit(?:\(([0-9]+)\))?$/i', trim($struct->Type), $matches)) {
 					if (!$bit_field_exists) $bit_field_exists = true;
 					$bit_fields[strtolower($struct->Field)] = !empty($matches[1]) ? max(1, (int) $matches[1]) : 1;
 					// the reason why if bit fields are found then the fields need to be cast into binary type is that if mysqli_query function is being used, mysql will convert the bit field value to a decimal number and represent it in a string format whereas, if mysql_query function is being used, mysql will not convert it to a decimal number but instead will keep it retained as it is
 					$struct->Field = "CAST(".UpdraftPlus_Manipulation_Functions::backquote(str_replace('`', '``', $struct->Field))." AS BINARY) AS ".UpdraftPlus_Manipulation_Functions::backquote(str_replace('`', '``', $struct->Field));
-					$fields[] = $struct->Field;
+					$select_selected_fields[] = $struct->Field;
 				} else {
-					$fields[] = UpdraftPlus_Manipulation_Functions::backquote(str_replace('`', '``', $struct->Field));
+					$select_selected_fields[] = UpdraftPlus_Manipulation_Functions::backquote(str_replace('`', '``', $struct->Field));
 				}
+
+				if (isset($struct->Extra) && preg_match('/\binvisible\b/i', $struct->Extra)) $invisible_field_exists = true;
 			}
 
 			$expected_via_count = false;
@@ -2617,7 +2622,7 @@ class UpdraftPlus_Backup {
 
 			$original_fetch_rows = $fetch_rows;
 
-			$select = $bit_field_exists ? implode(', ', $fields) : '*';
+			$select_selected_fields = $bit_field_exists || $invisible_field_exists ? implode(', ', $select_selected_fields) : '*';
 
 			$enough_for_now = false;
 
@@ -2671,7 +2676,7 @@ class UpdraftPlus_Backup {
 				}
 
 				// $this->wpdb_obj->prepare() not needed (will throw a notice) as there are no parameters (all parts are already sanitised or cast to known-safe types if not sanitised here)
-				$select_sql = "SELECT $select FROM ".UpdraftPlus_Manipulation_Functions::backquote($table)." $final_where $order_by $limit_statement";
+				$select_sql = "SELECT $select_selected_fields FROM ".UpdraftPlus_Manipulation_Functions::backquote($table)." $final_where $order_by $limit_statement";
 
 				if (defined('UPDRAFTPLUS_LOG_BACKUP_SELECTS') && UPDRAFTPLUS_LOG_BACKUP_SELECTS) $updraftplus->log($select_sql);
 
@@ -2695,7 +2700,8 @@ class UpdraftPlus_Backup {
 					if ($oversized_changes) $updraftplus->jobdata_set('oversized_rows_'.$table, $oversized_rows);
 					continue;
 				}
-				$entries = 'INSERT INTO '.UpdraftPlus_Manipulation_Functions::backquote($dump_as_table).' VALUES ';
+				$insert_selected_fields = $invisible_field_exists ? ' (' . implode(', ', $insert_selected_fields) . ')' : '';
+				$entries = 'INSERT INTO '.UpdraftPlus_Manipulation_Functions::backquote($dump_as_table).$insert_selected_fields.' VALUES ';
 
 				// \x08\\x09, not required
 
@@ -3014,6 +3020,16 @@ class UpdraftPlus_Backup {
 				}
 			}
 			$this->stow("# Site info: sql_mode=".$this->wpdb_obj->get_var('SELECT @@SESSION.sql_mode')."\n");
+
+			add_filter('updraftplus_backup_db_header_site_info', array($this, 'backup_db_header_site_info_woocommerce'));
+
+			// This filter allows a user to add extra information about site info.
+			if (array() !== ($site_info = apply_filters('updraftplus_backup_db_header_site_info', array()))) {
+				foreach ($site_info as $info) {
+					$this->stow("# Site info: ".$info."\n");
+				}
+			}
+
 			$this->stow("# Site info: end\n");
 		} else {
 			$this->stow("# MySQL database backup (supplementary database ".$this->whichdb.")\n");
@@ -4371,7 +4387,7 @@ class UpdraftPlus_Backup {
 
 		// Always warn of this
 		if (is_string($msg) && strpos($msg, 'File Size Limit Exceeded') !== false && 'UpdraftPlus_BinZip' == $this->use_zip_object) {
-			$updraftplus->log(sprintf(__('The zip engine returned the message: %s.', 'updraftplus'), 'File Size Limit Exceeded'). __('Go here for more information.', 'updraftplus').' https://updraftplus.com/what-should-i-do-if-i-see-the-message-file-size-limit-exceeded/', 'warning', 'zipcloseerror-filesizelimit');
+			$updraftplus->log(sprintf(__('The zip engine returned the message: %s.', 'updraftplus'), 'File Size Limit Exceeded'). __('Go here for more information.', 'updraftplus').' https://teamupdraft.com/documentation/updraftplus/topics/backing-up/troubleshooting/what-should-i-do-if-i-see-the-message-file-size-limit-exceeded/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=unknown&utm_creative_format=unknown', 'warning', 'zipcloseerror-filesizelimit');
 		} elseif ($warn) {
 			$warn_msg = __('A zip error occurred', 'updraftplus').' - ';
 			if (!empty($quota_low)) {
@@ -4657,6 +4673,31 @@ class UpdraftPlus_Backup {
 			if (0 === stripos($file, $pattern['directory']) && preg_match($pattern['regex'], $file)) return true;
 		}
 		return $filter;
+	}
+
+	/**
+	 * Adds WooCommerce-related information to the site info header for backup purposes.
+	 *
+	 * This method checks if WooCommerce is active and appends relevant information about
+	 * WooCommerce's state to the provided site info array. Specifically, it includes:
+	 * - Whether WooCommerce is active.
+	 * - Whether the High-Performance Order Storage (HPOS) feature is enabled.
+	 *
+	 * @param array $site_info The existing array of site information to which WooCommerce details will be appended.
+	 * @return array The updated site info array with WooCommerce-related details included.
+	 */
+	public function backup_db_header_site_info_woocommerce($site_info) {
+		if (class_exists('WooCommerce')) {
+			$wc_version = defined('WC_VERSION') ? WC_VERSION : get_option('woocommerce_version');
+			$info = 'WooCommerce='.$wc_version;
+
+			if (class_exists('Automattic\WooCommerce\Utilities\OrderUtil') && is_callable(array('Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled')) && call_user_func(array('Automattic\WooCommerce\Utilities\OrderUtil', 'custom_orders_table_usage_is_enabled'))) {
+				$info .= ',HPOS=enabled';
+			}
+
+			$site_info[] = $info;
+		}
+		return $site_info;
 	}
 }
 

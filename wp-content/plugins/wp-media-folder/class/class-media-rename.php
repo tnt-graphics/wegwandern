@@ -10,10 +10,22 @@ use Joomunited\WPMediaFolder\WpmfHelper;
 class WpmfMediaRename
 {
     /**
+     * Allowed image extensions (lowercase) that will be skipped from renaming if AI rename is enabled.
+     *
+     * This is filterable via 'wpmf_ai_allowed_image_types'.
+     *
+     * @var string[]
+     */
+    protected $aiAllowedImageTypes = array();
+
+    /**
      * WpmfMediaRename constructor.
      */
     public function __construct()
     {
+        $default_types = array('jpeg', 'jpg', 'png', 'gif', 'webp');
+        $this->aiAllowedImageTypes = apply_filters('wpmf_ai_allowed_image_types', $default_types);
+
         add_filter('wp_handle_upload_prefilter', array($this, 'customUploadFilter'));
         add_filter('wp_generate_attachment_metadata', array($this, 'afterUpload'), 10, 2);
     }
@@ -29,6 +41,11 @@ class WpmfMediaRename
     {
         global $pagenow;
         if (isset($pagenow) && $pagenow === 'update.php') {
+            return $file;
+        }
+
+        $file_ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (isset($file['type']) && strpos($file['type'], 'image/') === 0 && in_array($file_ext, $this->aiAllowedImageTypes) && get_option('wpmf_ai_rename_image_upload') === '1') {
             return $file;
         }
 
@@ -53,7 +70,7 @@ class WpmfMediaRename
 
         $sitename          = sanitize_title(get_bloginfo('name'));
         $original_filename = $info['filename'];
-        $date              = trim($upload_dir['subdir'], '/');
+        $date              = str_replace('/', '', $upload_dir['subdir']);
         if ($date === '') {
             $date = date('Ym', time());
         }
@@ -115,6 +132,13 @@ class WpmfMediaRename
      */
     public function afterUpload($metadata, $attachment_id)
     {
+        $mime_type = get_post_mime_type($attachment_id);
+        $file_ext = strtolower(pathinfo(get_attached_file($attachment_id), PATHINFO_EXTENSION));
+
+        if (strpos($mime_type, 'image/') === 0 && in_array($file_ext, $this->aiAllowedImageTypes) && get_option('wpmf_ai_rename_image_upload') === '1') {
+            return $metadata;
+        }
+
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
         if (isset($_POST['wpmf_folder'])) {
             // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No action, nonce is not required

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Formidable Mailchimp
 Description: Add new Mailchimp contacts from your Formidable forms
-Version: 2.09
+Version: 2.10
 Plugin URI: https://formidableforms.com/
 Author URI: https://formidableforms.com/
 Author: Strategy11
@@ -35,4 +35,4 @@ spl_autoload_register( 'frm_mlcmp_forms_autoloader' );
 
 // Load hooks and languages
 add_action( 'plugins_loaded', 'FrmMlcmpHooksController::load_hooks' );
-add_action( 'plugins_loaded', 'FrmMlcmpAppController::load_lang' );
+add_action( 'init', 'FrmMlcmpAppController::load_lang', 0 );

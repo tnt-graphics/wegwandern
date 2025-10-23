@@ -57,8 +57,9 @@ class FrmProSummaryFormatter {
 
 	protected function prepare_summary_attributes( $atts ) {
 		$defaults = array(
-			'excluded_ids'   => array(),
-			'excluded_types' => array(),
+			'excluded_ids'        => array(),
+			'excluded_types'      => array(),
+			'file_display_format' => 'thumbnail+filename',
 		);
 
 		return wp_parse_args( $atts, $defaults );
@@ -182,7 +183,8 @@ class FrmProSummaryFormatter {
 				'include_extras' => $this->include_extras(),
 				'include_fields' => $include_fields,
 				'class'          => 'frm-line-table',
-				'show_image'     => true,
+				'show_image'     => $this->should_show_image(),
+				'show_filename'  => $this->should_show_filename(),
 				'size'           => 'thumbnail',
 				'summary'        => true,
 				'exclude_fields' => $this->atts['excluded_ids'],
@@ -191,6 +193,36 @@ class FrmProSummaryFormatter {
 
 		$content .= $this_page;
 		$content .= '</div>';
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function should_show_image() {
+		return $this->check_file_display_format_setting( 'thumbnail' );
+	}
+
+	/**
+	 * @return bool
+	 */
+	private function should_show_filename() {
+		return $this->check_file_display_format_setting( 'filename' );
+	}
+
+	/**
+	 * @param string $compare_value
+	 * @return bool
+	 */
+	private function check_file_display_format_setting( $compare_value ) {
+		$value = $this->atts['file_display_format'];
+		if ( $value === $compare_value ) {
+			return true;
+		}
+		if ( false !== strpos( $value, '+' ) ) {
+			$split = explode( '+', $value );
+			return in_array( $compare_value, $split, true );
+		}
+		return false;
 	}
 
 	/**

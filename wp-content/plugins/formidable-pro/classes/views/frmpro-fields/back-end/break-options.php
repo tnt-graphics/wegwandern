@@ -29,9 +29,9 @@ $html_id    = 'frm_prev_label_' . absint( $field['id'] );
 
 <?php $html_id = 'frm_transition_' . absint( $field['id'] ); ?>
 <p>
-	<label for="<?php echo esc_attr( $html_id ); ?>">
-		<?php esc_html_e( 'Page Turn Transitions', 'formidable-pro' ); ?>
-		<?php FrmProAppHelper::tooltip_icon( __( 'This setting applies to all page break fields in this form.', 'formidable-pro' ) ); ?>
+	<label class="frm-h-stack-xs" for="<?php echo esc_attr( $html_id ); ?>">
+		<span><?php esc_html_e( 'Page Turn Transitions', 'formidable-pro' ); ?></span>
+		<?php FrmProAppHelper::tooltip_icon( __( 'This setting applies to all page break fields in this form.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 	</label>
 
 	<select

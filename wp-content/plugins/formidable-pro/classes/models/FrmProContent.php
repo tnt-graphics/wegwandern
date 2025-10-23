@@ -122,12 +122,12 @@ class FrmProContent {
 			return;
 		}
 
-		$sep = isset( $atts['sep'] ) ? $atts['sep'] : ', ';
+		$sep = $atts['sep'] ?? ', ';
 
 		if ( $field->form_id == $entry->form_id ) {
 			$replace_with = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $field, $atts );
 			// track number of date field types used as shortcodes
-			if ( 'date' === $field->type ) {
+			if ( 'date' === $field->type && isset( $shortcode_types_count['date_field'] ) ) {
 				++$shortcode_types_count['date_field'];
 			}
 		} elseif ( ! empty( $entry->parent_entry ) && intval( $field->form_id ) === intval( $entry->parent_entry->form_id ) ) {
@@ -174,7 +174,7 @@ class FrmProContent {
 			$keep_array = apply_filters( 'frm_keep_value_array', false, compact( 'field', 'replace_with' ) );
 			$keep_array = apply_filters( 'frm_keep_' . $field->type . '_value_array', $keep_array, compact( 'field', 'replace_with' ) );
 
-			if ( ! $keep_array && $field->type !== 'file' ) {
+			if ( ! $keep_array && ! in_array( $field->type, array( 'file', 'star' ), true ) ) {
 				$replace_with = FrmAppHelper::array_flatten( $replace_with );
 				$replace_with = array_filter( $replace_with, array( 'FrmProContent', 'is_not_empty' ) );
 
@@ -195,6 +195,9 @@ class FrmProContent {
 			self::check_conditional_shortcode( $content, $replace_with, $atts, $tag, 'foreach', $args );
 		} elseif ( $conditional ) {
 			$atts['short_key'] = $shortcodes[0][ $short_key ];
+			if ( ! isset( $atts['entry'] ) ) {
+				$atts['entry'] = $entry;
+			}
 			self::check_conditional_shortcode( $content, $replace_with, $atts, $tag, 'if', array( 'field' => $field ) );
 		} else {
 			if ( empty( $replace_with ) && $replace_with != '0' ) {
@@ -407,8 +410,8 @@ class FrmProContent {
 	 */
 	public static function do_shortcode_event_date( &$content, $atts, $shortcodes, $short_key, $args ) {
 		$event_date_get_param = FrmAppHelper::get_param( 'frmev-start', '', 'get', 'sanitize_text_field' ); // Modern Calendar.
-		$format               = isset( $atts['format'] ) ? $atts['format'] : get_option( 'date_format' );
-		$event_date           = isset( $args['event_date'] ) ? $args['event_date'] : $event_date_get_param; // Check for $args['event_date'] first to support Legacy Calendar.
+		$format               = $atts['format'] ?? get_option( 'date_format' );
+		$event_date           = $args['event_date'] ?? $event_date_get_param; // Check for $args['event_date'] first to support Legacy Calendar.
 
 		if ( ! empty( $event_date ) ) {
 			$event_date = FrmProFieldsHelper::get_date( $event_date, $format );
@@ -417,7 +420,7 @@ class FrmProContent {
 	}
 
 	public static function do_shortcode_entry_count( &$content, $atts, $shortcodes, $short_key, $args ) {
-		$content = str_replace( $shortcodes[0][ $short_key ], ( isset( $args['record_count'] ) ? $args['record_count'] : '' ), $content );
+		$content = str_replace( $shortcodes[0][ $short_key ], ( $args['record_count'] ?? '' ), $content );
 	}
 
 	public static function do_shortcode_detaillink( &$content, $atts, $shortcodes, $short_key, $args, $display ) {
@@ -506,10 +509,17 @@ class FrmProContent {
 	}
 
 	/*
-	 * Get the detail link parameter names from every view
+	 * Get the detail link parameter names from every view.
+	 *
 	 * @since 2.2.8
+	 *
+	 * @return array
 	 */
 	private static function get_rewrite_params() {
+		if ( ! function_exists( 'load_formidable_views' ) ) {
+			return array();
+		}
+
 		global $wpdb;
 		$params = FrmDb::get_col( $wpdb->postmeta, array( 'meta_key' => 'frm_param' ), 'meta_value' );
 		$params = self::remove_reserved_words( $params );
@@ -545,13 +555,13 @@ class FrmProContent {
 		global $post;
 
 		$replace_with = '';
-		$link_text    = isset( $atts['label'] ) ? $atts['label'] : false;
+		$link_text    = $atts['label'] ?? false;
 		if ( ! $link_text ) {
-			$link_text = isset( $atts['link_text'] ) ? $atts['link_text'] : __( 'Edit' );
+			$link_text = $atts['link_text'] ?? __( 'Edit' );
 		}
 
-		$class   = isset( $atts['class'] ) ? $atts['class'] : '';
-		$page_id = isset( $atts['page_id'] ) ? $atts['page_id'] : ( $post ? $post->ID : 0 );
+		$class   = $atts['class'] ?? '';
+		$page_id = $atts['page_id'] ?? ( $post ? $post->ID : 0 );
 
 		if ( ( isset( $atts['location'] ) && $atts['location'] === 'front' ) || ! empty( $atts['prefix'] ) || ! empty( $atts['page_id'] ) ) {
 			$edit_atts            = $atts;
@@ -585,7 +595,7 @@ class FrmProContent {
 	public static function do_shortcode_deletelink( &$content, $atts, $shortcodes, $short_key, $args ) {
 		global $post;
 
-		$page_id = isset( $atts['page_id'] ) ? $atts['page_id'] : ( $post ? $post->ID : 0 );
+		$page_id = $atts['page_id'] ?? ( $post ? $post->ID : 0 );
 
 		if ( ! isset( $atts['label'] ) ) {
 			$atts['label'] = false;
@@ -604,7 +614,7 @@ class FrmProContent {
 	}
 
 	public static function do_shortcode_post_id( &$content, $atts, $shortcodes, $short_key, $args ) {
-		$content = str_replace( $shortcodes[0][ $short_key ], $args['entry']->post_id, $content );
+		$content = str_replace( $shortcodes[0][ $short_key ], $args['entry']->post_id ?? '', $content );
 	}
 
 	public static function do_shortcode_parent_id( &$content, $atts, $shortcodes, $short_key, $args ) {
@@ -999,7 +1009,7 @@ class FrmProContent {
 			}
 
 			if ( isset( $atts['show'] ) ) {
-				$atts['blank'] = isset( $atts['blank'] ) ? $atts['blank'] : 1;
+				$atts['blank'] = $atts['blank'] ?? 1;
 				$replace_with  = FrmFieldsHelper::get_display_value( $replace_with, $field, $atts );
 			}
 		} elseif ( self::is_timestamp_tag( $tag ) || ( $field && $field->type === 'date' ) ) {
@@ -1121,6 +1131,14 @@ class FrmProContent {
 		foreach ( $conditions as $condition ) {
 			if ( ! isset( $atts[ $condition ] ) ) {
 				continue;
+			}
+
+			if ( false !== strpos( $atts[ $condition ], '[' ) && isset( $atts['entry'] ) && is_object( $atts['entry'] ) && isset( $atts['entry']->form_id ) ) {
+				$atts[ $condition ] = FrmFormsController::filter_content( $atts[ $condition ], $atts['entry']->form_id, $atts['entry'] );
+
+				if ( false !== strpos( $atts[ $condition ], '[' ) ) {
+					$atts[ $condition ] = do_shortcode( $atts[ $condition ] );
+				}
 			}
 
 			self::maybe_swap_condition_alias( $condition, $atts );
@@ -1390,7 +1408,7 @@ class FrmProContent {
 		if ( isset( $atts['more_text'] ) ) {
 			$more_link_text = $atts['more_text'];
 		} else {
-			$more_link_text = isset( $atts['more_link_text'] ) ? $atts['more_link_text'] : '. . .';
+			$more_link_text = $atts['more_link_text'] ?? '. . .';
 		}
 
 		if ( ! empty( $atts['no_link'] ) ) {

@@ -24,6 +24,20 @@ class FrmProFieldSelect extends FrmFieldSelect {
 		return $settings;
 	}
 
+
+	/**
+	 * @since 6.24
+	 *
+	 * @return void
+	 */
+	protected function show_priority_field_choices( $args = array() ) {
+		$field = $args['field'];
+
+		if ( ! isset( $field['post_field'] ) || $field['post_field'] !== 'post_category' ) {
+			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/separate-values.php';
+		}
+	}
+
 	/**
 	 * @since 4.0
 	 *
@@ -37,7 +51,6 @@ class FrmProFieldSelect extends FrmFieldSelect {
 
 		if ( ! isset( $field['post_field'] ) || $field['post_field'] !== 'post_category' ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/other-option.php';
-			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/separate-values.php';
 		}
 
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php';

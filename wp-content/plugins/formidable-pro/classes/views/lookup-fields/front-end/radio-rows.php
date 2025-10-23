@@ -4,6 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 foreach ( $field['options'] as $opt_key => $opt_value ) {
+	$opt_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt_value, $field );
+	$opt_value = FrmProFieldLookup::filter_lookup_saved_value( $opt_value, $field );
+
 	$checked = in_array( $opt_value, $saved_value_array ) ? ' checked="checked"' : '';
 	?>
 	<div class="<?php echo esc_attr( apply_filters( 'frm_radio_class', 'frm_radio', $field, $opt_value ) ); ?>">
@@ -11,9 +14,9 @@ foreach ( $field['options'] as $opt_key => $opt_value ) {
 		<input type="radio" name="<?php echo esc_attr( $field_name ); ?>"
 				id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>"
 				value="<?php echo esc_attr( $opt_value ); ?>" <?php
-		echo $checked . $disabled . ' ';
+		echo $checked . $disabled . ' '; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		do_action( 'frm_field_input_html', $field );
-		?> /> <?php echo $opt_value; ?>
+		?> /> <?php echo $opt_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	</label>
 	</div>
 	<?php

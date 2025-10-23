@@ -1,9 +1,9 @@
 === WP Media Folder ===
 Tags: media, folder
 Requires at least: 4.7.0
-Tested up to: 6.7
+Tested up to: 6.8.3
 Requires PHP: 5.6
-Stable tag: 6.0.1
+Stable tag: 6.1.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,59 @@ I can not tell more just watch our demo and please try it to make your own idea.
 Stop searching for an image through thousand of media, just navigate like you do on your desktop file manager.
 
 = Changelog = 
+
+= 6.1.7 =
+ * Add : Option to automatically convert new image uploads to WebP format
+
+= 6.1.6 =
+ * Fix : Enhanced handling of media size and file type during import
+ * Fix : Improved performance in remote video replacement
+
+= 6.1.5 =
+ * Add : New system prompt field to define image description context for improved AI image optimization
+ * Add : Option to configure a response language for AI image optimization
+
+= 6.1.4 =
+ * Add : Set default configuration values for AI options
+ * Fix : Prevent redirect to installer wizard after plugin update or license connection
+
+= 6.1.3 =
+ * Add : Compatibility with WP Media Folder cloud addon version 4.0 - ownCloud integration
+
+= 6.1.2 =
+ * Add : AI Optimizer: Add fallback option to send image file to AI instead of image URL
+ * Fix : AI Optimizer: AI rename on upload works for supported image types only, without affecting legacy rename
+
+= 6.1.1 =
+ * Fix : AI Optimizer: Continue batch optimization for remaining images even if some fail
+
+= 6.1.0 =
+ * Add : AI Integration: Bulk-generate title, alt text, caption, and description for existing images
+ * Add : AI Integration: Automatically add title, alt text, caption, and description on image upload
+ * Add : AI Integration: Automatically rename newly uploaded image files
+ * Add : Redesigned the plugin settings interface for improved usability
+
+= 6.0.7 =
+ * Add : Compatibility with WP Media Folder cloud addon version 3.9 - supports offloading to Bunny Storage
+ * Fix : Load video thumbnail issue when adding remote Youtube video
+
+= 6.0.6 =
+ * Fix : Edit image in the media library
+
+= 6.0.5 =
+ * Fix : Improve display of Google Drive video and audio players on mobile devices
+ * Fix : Attachment insertion function during folder synchronization on the server
+
+= 6.0.4 =
+ * Add : Possibility to import existing server folders into the media library, referencing the original files instead of creating copies in the uploads directory
+
+= 6.0.3 =
+ * Add : Compatibility with WP Media Folder cloud addon version 3.8 - Cloudflare R2 object storage
+
+= 6.0.2 =
+ * Fix : Watermark issue on thumbnail regeneration
+ * Fix : Cannot select image in some conner cases
+ * Fix : PHP warning in the edit media screen
 
 = 6.0.1 =
  * Fix : Cannot set feature image for post when creating a new post

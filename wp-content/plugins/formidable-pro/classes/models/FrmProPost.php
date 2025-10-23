@@ -134,14 +134,14 @@ class FrmProPost {
 			$post_id = FrmDb::get_var( $wpdb->prefix . 'frm_items', array( 'id' => $entry_id ), 'post_id' );
 		}
 
+		// Trigger delete actions for parent entry
+		FrmProFormActionsController::trigger_delete_actions( $entry_id, $entry );
+
 		// delete child entries
 		$child_entries = FrmDb::get_col( $wpdb->prefix . 'frm_items', array( 'parent_item_id' => $entry_id ) );
 		foreach ( $child_entries as $child_entry ) {
 			FrmEntry::destroy( $child_entry );
 		}
-
-		// Trigger delete actions for parent entry
-		FrmProFormActionsController::trigger_delete_actions( $entry_id, $entry );
 
 		if ( $post_id ) {
 			wp_delete_post( $post_id );
@@ -226,7 +226,7 @@ class FrmProPost {
 				 */
 				$new_post[ $setting_name ] = apply_filters( 'frm_post_parent', $action->post_content[ $setting_name ], compact( 'action', 'entry' ) );
 			} else {
-				$new_post[ $setting_name ] = isset( $combined_metas[ $action->post_content[ $setting_name ] ] ) ? $combined_metas[ $action->post_content[ $setting_name ] ] : '';
+				$new_post[ $setting_name ] = $combined_metas[ $action->post_content[ $setting_name ] ] ?? '';
 			}
 
 			if ( 'post_date' === $setting_name ) {
@@ -310,7 +310,7 @@ class FrmProPost {
 				continue;
 			}
 
-			$value = isset( $combined_metas[ $custom_field['field_id'] ] ) ? $combined_metas[ $custom_field['field_id'] ] : '';
+			$value = $combined_metas[ $custom_field['field_id'] ] ?? '';
 
 			if ( $fields[ $custom_field['field_id'] ]->type === 'date' ) {
 				$value = FrmProAppHelper::maybe_convert_to_db_date( $value );
@@ -339,7 +339,7 @@ class FrmProPost {
 			}
 
 			$tax_type = ! empty( $taxonomy['meta_name'] ) ? $taxonomy['meta_name'] : 'frm_tag';
-			$value    = isset( $entry->metas[ $taxonomy['field_id'] ] ) ? $entry->metas[ $taxonomy['field_id'] ] : '';
+			$value    = $entry->metas[ $taxonomy['field_id'] ] ?? '';
 
 			if ( isset( $fields[ $taxonomy['field_id'] ] ) && $fields[ $taxonomy['field_id'] ]->type === 'tag' ) {
 				$value = trim( $value );
@@ -460,7 +460,7 @@ class FrmProPost {
 	 */
 	private static function post_value_overrides( &$post, $new_post, $editing, $form, $entry, &$dyn_content ) {
 		//if empty post content and auto display, then save compiled post content
-		$default_display = isset( $new_post['post_custom']['frm_display_id'] ) ? $new_post['post_custom']['frm_display_id'] : 0;
+		$default_display = $new_post['post_custom']['frm_display_id'] ?? 0;
 		$display_id      = $editing ? get_post_meta( $post['ID'], 'frm_display_id', true ) : $default_display;
 
 		if ( ! isset( $post['post_content'] ) && $display_id ) {
@@ -903,7 +903,7 @@ class FrmProPost {
 	 * @return array
 	 */
 	private static function get_category_args( $field, $args ) {
-		$show_option_all = isset( $args['show_option_all'] ) ? $args['show_option_all'] : ' ';
+		$show_option_all = $args['show_option_all'] ?? ' ';
 
 		$exclude = is_array( $field['exclude_cat'] ) ? implode( ',', $field['exclude_cat'] ) : $field['exclude_cat'];
 		$exclude = apply_filters( 'frm_exclude_cats', $exclude, $field );

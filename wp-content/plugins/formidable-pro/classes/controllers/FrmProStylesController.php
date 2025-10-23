@@ -56,7 +56,7 @@ class FrmProStylesController extends FrmStylesController {
 		add_action(
 			'admin_print_footer_scripts',
 			function () {
-				remove_action( 'frm_date_field_js', 'FrmProFieldsController::date_field_js' );
+				remove_action( 'frm_date_field_js_config', 'FrmProFieldsController::date_field_js' );
 			},
 			30
 		);
@@ -70,7 +70,7 @@ class FrmProStylesController extends FrmStylesController {
 			return;
 		}
 
-		$version = FrmAppHelper::plugin_version();
+		$version = FrmProDb::$plug_version;
 		wp_register_style( 'formidable-pro-style-settings', FrmProAppHelper::plugin_url() . '/css/settings/style-settings.css', array(), $version );
 		wp_enqueue_style( 'formidable-pro-style-settings' );
 	}
@@ -216,7 +216,7 @@ class FrmProStylesController extends FrmStylesController {
 
 		if ( $theme_css != -1 && ! $is_builder ) {
 			// Without this line, datepickers load without proper styling in the Form Scheduling settings when you set the form status dropdown to "Schedule".
-			wp_enqueue_style( 'jquery-theme', self::jquery_css_url( $theme_css ), array(), FrmAppHelper::plugin_version() );
+			FrmProDatepickerAssetsHelper::load_theme_assets( $theme_css );
 		}
 	}
 
@@ -379,6 +379,11 @@ class FrmProStylesController extends FrmStylesController {
 		readfile( FrmProAppHelper::plugin_path() . '/css/intl-tel-input.css' );
 		include FrmProAppHelper::plugin_path() . '/css/intl-tel-input.css.php';
 
+		if ( ! FrmProAppHelper::use_jquery_datepicker() ) {
+			readfile( FrmProAppHelper::plugin_path() . '/css/flatpickr.css' );
+			include FrmProAppHelper::plugin_path() . '/css/flatpickr.css.php';
+		}
+
 		// Using include on a CSS file causes a fatal error when using the Snuffleupagus security module.
 		// So for the dropzone CSS, use readfile instead of include.
 		readfile( FrmProAppHelper::plugin_path() . '/css/dropzone.css' );
@@ -461,7 +466,7 @@ class FrmProStylesController extends FrmStylesController {
 	private static function set_toggle_date_colors( &$settings ) {
 		$settings['date_head_bg_color'] = $settings['bg_color'];
 		$settings['date_head_color']    = $settings['text_color'];
-		$settings['date_band_color']    = 'ECF5FF';
+		$settings['date_band_color']    = '579AF6';
 	}
 
 	/**
@@ -640,7 +645,7 @@ class FrmProStylesController extends FrmStylesController {
 		$hidden           = empty( $style->post_content['bg_image_id'] );
 		$class            = $hidden ? 'frm_hidden ' : '';
 		$class           .= 'frm_bg_image_additional_settings';
-		$bg_image_opacity = isset( $style->post_content['bg_image_opacity'] ) ? $style->post_content['bg_image_opacity'] : '100%';
+		$bg_image_opacity = $style->post_content['bg_image_opacity'] ?? '100%';
 		include self::view_folder() . '/_bg-image-settings.php';
 	}
 

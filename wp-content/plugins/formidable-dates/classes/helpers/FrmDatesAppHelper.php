@@ -1,7 +1,7 @@
 <?php
 class FrmDatesAppHelper {
 
-	public static $plug_version = '2.0.4';
+	public static $plug_version = '3.0';
 
 	public static function plugin_file() {
 		return dirname( dirname( __DIR__ ) ) . '/formidable-dates.php';
@@ -140,5 +140,17 @@ class FrmDatesAppHelper {
 	 */
 	public static function plugin_version() {
 		return self::$plug_version;
+	}
+
+	/**
+	 * Determine whether the date field is set to render the datepicker inline.
+	 *
+	 * @since 3.0
+	 * @param array $field Field data.
+	 * @return bool
+	 */
+	public static function date_field_display_inline( $field ) {
+		// For the "End Date" field, when "Date Range" enabled, always set inline to false. Its behavior is handled by the "Start Date" field only when inline is enabled.
+		return FrmField::get_option( $field, 'display_inline' ) && ! FrmField::get_option( $field, 'is_range_end_field' );
 	}
 }

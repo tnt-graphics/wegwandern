@@ -16,9 +16,12 @@ use AIOSEO\Plugin\Common\Traits\Helpers as TraitHelpers;
 class Helpers {
 	use TraitHelpers\Api;
 	use TraitHelpers\Arrays;
+	use TraitHelpers\Blocks;
+	use TraitHelpers\Buffer;
 	use TraitHelpers\Constants;
 	use TraitHelpers\Deprecated;
 	use TraitHelpers\DateTime;
+	use TraitHelpers\Images;
 	use TraitHelpers\Language;
 	use TraitHelpers\Numbers;
 	use TraitHelpers\PostType;
@@ -33,6 +36,36 @@ class Helpers {
 	use TraitHelpers\WpContext;
 	use TraitHelpers\WpMultisite;
 	use TraitHelpers\WpUri;
+
+	/**
+	 * Holds the data for Vue.
+	 *
+	 * @since   4.4.9
+	 * @version 4.8.6.1 Moved from Vue trait as it's shared between Lite, Common and Pro.
+	 *
+	 * @var array
+	 */
+	protected $data = [];
+
+	/**
+	 * Optional arguments for setting the data.
+	 *
+	 * @since   4.4.9
+	 * @version 4.8.6.1 Moved from Vue trait as it's shared between Lite, Common and Pro.
+	 *
+	 * @var array
+	 */
+	protected $args = [];
+
+	/**
+	 * Holds the cached data.
+	 *
+	 * @since   4.5.1
+	 * @version 4.8.6.1 Moved from Vue trait as it's shared between Lite, Common and Pro.
+	 *
+	 * @var array
+	 */
+	protected $cache = [];
 
 	/**
 	 * Generate a UTM URL from the url and medium/content passed in.
@@ -236,6 +269,13 @@ class Helpers {
 				}
 
 				return $sanitized;
+			case 'object':
+				$sanitized = [];
+				foreach ( (array) $value as $key => $child ) {
+					$sanitized[ $key ] = aioseo()->helpers->sanitizeOption( $child );
+				}
+
+				return $sanitized;
 			default:
 				return false;
 		}
@@ -343,7 +383,7 @@ class Helpers {
 	 */
 	public function fetchAioseoArticles( $fetchImage = false ) {
 		$items = aioseo()->core->networkCache->get( 'rss_feed' );
-		if ( null !== $items ) {
+		if ( is_array( $items ) ) {
 			return $items;
 		}
 
@@ -353,12 +393,16 @@ class Helpers {
 		];
 		$response = wp_remote_get( 'https://aioseo.com/wp-json/wp/v2/posts?per_page=4', $options );
 		$body     = wp_remote_retrieve_body( $response );
-		if ( ! $body ) {
-			return [];
+		$items    = ! empty( $body ) ? json_decode( $body, true ) : [];
+		$cached   = [];
+
+		if ( ! is_array( $items ) || empty( $items ) ) {
+			// Wait for at least 5 minutes before trying again.
+			aioseo()->core->networkCache->update( 'rss_feed', $cached, 5 * MINUTE_IN_SECONDS );
+
+			return $cached;
 		}
 
-		$cached = [];
-		$items  = json_decode( $body, true );
 		foreach ( $items as $k => $item ) {
 			$cached[ $k ] = [
 				'url'     => $item['link'],
@@ -387,5 +431,18 @@ class Helpers {
 		aioseo()->core->networkCache->update( 'rss_feed', $cached, 24 * HOUR_IN_SECONDS );
 
 		return $cached;
+	}
+
+	/**
+	 * Returns if the admin bar is enabled.
+	 *
+	 * @since 4.8.1
+	 *
+	 * @return bool Whether the admin bar is enabled.
+	 */
+	public function isAdminBarEnabled() {
+		$showAdminBarMenu = aioseo()->options->advanced->adminBarMenu;
+
+		return is_admin_bar_showing() && ( $showAdminBarMenu ?? true );
 	}
 }

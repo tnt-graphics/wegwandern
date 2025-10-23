@@ -104,6 +104,7 @@ class Query extends AbstractGvlPersistance
         $language = $args['language'] ?? $this->getCurrentLanguage();
         $gvlSpecificationVersion = $args['gvlSpecificationVersion'] ?? null;
         $tcfPolicyVersion = $args['tcfPolicyVersion'] ?? null;
+        $fallbackToDefaultLanguage = $args['fallbackToDefaultLanguage'] ?? \true;
         // Query latest versions
         if ($gvlSpecificationVersion === null || $tcfPolicyVersion === null) {
             list($gvlSpecificationVersion, $tcfPolicyVersion) = $this->getLatestVersions();
@@ -113,7 +114,7 @@ class Query extends AbstractGvlPersistance
         $rows = $wpdb->get_results($wpdb->prepare("SELECT *\n                FROM {$table_name}\n                WHERE language = %s\n                    AND gvlSpecificationVersion = %d\n                    AND tcfPolicyVersion = %d", $language, $gvlSpecificationVersion, $tcfPolicyVersion), ARRAY_A);
         // phpcs:enable WordPress.DB.PreparedSQL
         // If no queries found and it is not the default language, let's fallback to default language
-        if (\count($rows) === 0 && $language !== \DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE) {
+        if (\count($rows) === 0 && $language !== \DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE && $fallbackToDefaultLanguage) {
             return $this->stacks(['gvlSpecificationVersion' => $gvlSpecificationVersion, 'tcfPolicyVersion' => $tcfPolicyVersion, 'language' => \DevOwl\RealCookieBanner\lite\tcf\Downloader::TCF_DEFAULT_LANGUAGE]);
         }
         $rows = $this->castReadStacks($rows);
@@ -279,29 +280,6 @@ class Query extends AbstractGvlPersistance
     {
         $compLanguage = $this->getNormalizer()->getCompLanguage();
         return AbstractTcf::fourLetterLanguageCodeToTwoLetterCode($compLanguage !== null && !$compLanguage instanceof None ? $compLanguage->getCurrentLanguage() : \get_locale());
-    }
-    /**
-     * Check if a vendor is corrupt. This can happen when:
-     *
-     * - `deviceStorageDisclosureUrl` is set, but `deviceStorageDisclosure` isn't
-     *
-     * Arguments:
-     *
-     * - [`in`]: (int[]) Only read this vendors (`WHERE IN`)
-     * - [`vendorListVersion`]: (int) Default to latest
-     *
-     * @param array $args Additional arguments, see description
-     */
-    public function hasDefectVendors($args = [])
-    {
-        global $wpdb;
-        $table_name = $this->getNormalizer()->getTableName(\DevOwl\RealCookieBanner\lite\tcf\Persist::TABLE_NAME_VENDORS);
-        $vendorListVersion = $args['vendorListVersion'] ?? $this->getLatestVersions()[2];
-        $inSql = isset($args['in']) ? \sprintf('AND id IN (%s)', \join(',', \array_map('intval', $args['in']))) : '';
-        // Query purposes for current language
-        // phpcs:disable WordPress.DB.PreparedSQL
-        return \intval($wpdb->get_var($wpdb->prepare("SELECT COUNT(*)\n                    FROM {$table_name}\n                    WHERE vendorListVersion = %d\n                    AND deviceStorageDisclosureUrl IS NOT NULL\n                        AND deviceStorageDisclosure IS NULL\n                    {$inSql}", $vendorListVersion))) > 0;
-        // phpcs:enable WordPress.DB.PreparedSQL
     }
     /**
      * When the TCF got updated, invalidate the caches for our next query.

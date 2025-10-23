@@ -76,26 +76,55 @@ class FrmProFieldStar extends FrmFieldType {
 		return FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/front-end/star.php';
 	}
 
+	/**
+	 * Handle logic for the html=1 shortcode display option.
+	 *
+	 * @param array|string $value
+	 * @param array        $atts
+	 * @return array|string
+	 */
 	protected function prepare_display_value( $value, $atts ) {
-		if ( ! isset( $atts['html'] ) || ! $atts['html'] ) {
+		if ( empty( $atts['html'] ) ) {
 			return $value;
 		}
 
 		FrmStylesController::enqueue_style();
 
-		$max     = $this->get_max_star_rating();
-		$numbers = $this->get_rounded_decimal( $value );
+		if ( is_array( $value ) ) {
+			return $this->prepare_display_for_multiple_values( $value, $atts );
+		}
 
-		ob_start();
+		$contents = FrmAppHelper::clip(
+			function () use ( $value ) {
+				$max     = $this->get_max_star_rating();
+				$numbers = $this->get_rounded_decimal( $value );
 
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/star_disabled.php';
-
-		$contents = ob_get_contents();
-		ob_end_clean();
+				include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/star_disabled.php';
+			},
+			false
+		);
 
 		$this->maybe_fix_sanitized_star_svgs( $contents );
 
 		return $contents;
+	}
+
+	/**
+	 * If $value is an array, we're likely using a shortcode for a repeated field
+	 * outside of a [foreach] shortcode. Show the star rating for each value in the array.
+	 *
+	 * @since 6.23
+	 *
+	 * @param array $values
+	 * @param array $atts
+	 * @return string
+	 */
+	private function prepare_display_for_multiple_values( $values, $atts ) {
+		$output = '';
+		foreach ( $values as $value ) {
+			$output .= $this->prepare_display_value( $value, $atts );
+		}
+		return $output;
 	}
 
 	/**

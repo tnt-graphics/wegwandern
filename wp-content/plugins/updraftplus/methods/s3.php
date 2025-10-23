@@ -274,6 +274,9 @@ class UpdraftPlus_BackupModule_s3 extends UpdraftPlus_BackupModule {
 			case 'il-central-1':
 			case 'me-central-1':
 			case 'us-gov-east-1':
+			case 'mx-central-1':
+			case 'ap-southeast-6':
+			case 'ap-east-2':
 			$endpoint = 's3.'.$region.'.amazonaws.com';
 				break;
 			case 'cn-north-1':
@@ -952,9 +955,9 @@ Check your permissions and credentials.','updraftplus'), 'error');
 						}
 					?>
 
-					<a href="<?php echo esc_url(apply_filters("updraftplus_com_link", "https://updraftplus.com/faqs/i-get-ssl-certificate-errors-when-backing-up-andor-restoring/"));?>" target="_blank"><?php esc_html_e('If you see errors about SSL certificates, then please go here for help.', 'updraftplus');?></a>
+					<a href="<?php echo esc_url(apply_filters("updraftplus_com_link", "https://teamupdraft.com/documentation/updraftplus/topics/backing-up/troubleshooting/i-get-ssl-certificate-errors-when-backing-up-and-or-restoring/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=errors-about-ssl-certificates&utm_creative_format=text"));?>" target="_blank"><?php esc_html_e('If you see errors about SSL certificates, then please go here for help.', 'updraftplus');?></a>
 
-					<a href="<?php echo esc_url(apply_filters("updraftplus_com_link", "https://updraftplus.com/faq-category/amazon-s3/"));?>" target="_blank"><?php if ('s3' == $key) echo esc_html(sprintf(__('Other %s FAQs.', 'updraftplus'), 'S3'));?></a>
+					<a href="<?php echo esc_url(apply_filters("updraftplus_com_link", "https://teamupdraft.com/documentation/updraftplus/topics/cloud-storage/amazon-s3/faqs?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=amazon-s3-faqs&utm_creative_format=text"));?>" target="_blank"><?php if ('s3' == $key) echo esc_html(sprintf(__('Other %s FAQs.', 'updraftplus'), 'S3'));?></a>
 				</p>
 			</td>
 		</tr>
@@ -1097,8 +1100,8 @@ Check your permissions and credentials.','updraftplus'), 'error');
 			'xmlwriter_existence_label' => !apply_filters('updraftplus_s3_xmlwriter_exists', 'UpdraftPlus_S3_Compat' != $this->indicate_s3_class() || class_exists('XMLWriter')) ? wp_kses($updraftplus_admin->show_double_warning('<strong>'.__('Warning', 'updraftplus').':</strong> '.sprintf(__("Your web server's PHP installation does not include a required module (%s).", 'updraftplus'), 'XMLWriter').' '.__("Please contact your web hosting provider's support and ask for them to enable it.", 'updraftplus'), $this->get_id(), false), $this->allowed_html_for_content_sanitisation()) : '',
 			'simplexmlelement_existence_label' => !apply_filters('updraftplus_s3_simplexmlelement_exists', class_exists('SimpleXMLElement')) ? wp_kses($updraftplus_admin->show_double_warning('<strong>'.__('Warning', 'updraftplus').':</strong> '.sprintf(__("Your web server's PHP installation does not include a required module (%s).", 'updraftplus'), 'SimpleXMLElement').' '.__("Please contact your web hosting provider's support.", 'updraftplus').' '.sprintf(__("UpdraftPlus's %s module <strong>requires</strong> %s.", 'updraftplus'), $updraftplus->backup_methods[$this->get_id()], 'SimpleXMLElement').' '.__('Please do not file any support requests; there is no alternative.', 'updraftplus'), $this->get_id(), false), $this->allowed_html_for_content_sanitisation()) : '',
 			'curl_existence_label' => wp_kses($updraftplus_admin->curl_check($updraftplus->backup_methods[$this->get_id()], true, $this->get_id().' hide-in-udc', false), $this->allowed_html_for_content_sanitisation()),
-			'ssl_certificates_errors_link_text' => wp_kses('<a href="'.apply_filters("updraftplus_com_link", "https://updraftplus.com/faqs/i-get-ssl-certificate-errors-when-backing-up-andor-restoring/").'" target="_blank">'.__('If you see errors about SSL certificates, then please go here for help.', 'updraftplus').'</a>', $this->allowed_html_for_content_sanitisation()),
-			'faqs' => wp_kses('<a href="'.apply_filters("updraftplus_com_link", "https://updraftplus.com/faq-category/amazon-s3/").'" target="_blank">'.sprintf(__('Other %s FAQs.', 'updraftplus'), $updraftplus->backup_methods[$this->get_id()]).'</a>', $this->allowed_html_for_content_sanitisation()),
+			'ssl_certificates_errors_link_text' => wp_kses('<a href="'.apply_filters("updraftplus_com_link", "https://teamupdraft.com/documentation/updraftplus/topics/backing-up/troubleshooting/i-get-ssl-certificate-errors-when-backing-up-and-or-restoring/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=errors-about-ssl-certificates&utm_creative_format=text").'" target="_blank">'.__('If you see errors about SSL certificates, then please go here for help.', 'updraftplus').'</a>', $this->allowed_html_for_content_sanitisation()),
+			'faqs' => wp_kses('<a href="'.apply_filters("updraftplus_com_link", "https://teamupdraft.com/documentation/updraftplus/topics/cloud-storage/amazon-s3/faqs?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=amazon-s3-faqs&utm_creative_format=text").'" target="_blank">'.sprintf(__('Other %s FAQs.', 'updraftplus'), $updraftplus->backup_methods[$this->get_id()]).'</a>', $this->allowed_html_for_content_sanitisation()),
 			'input_access_key_label' => sprintf(__('%s access key', 'updraftplus'), $updraftplus->backup_methods[$this->get_id()]),
 			'input_secret_key_label' => sprintf(__('%s secret key', 'updraftplus'), $updraftplus->backup_methods[$this->get_id()]),
 			'input_secret_key_type' => apply_filters('updraftplus_admin_secret_field_type', 'password'),
@@ -1183,7 +1186,7 @@ Check your permissions and credentials.','updraftplus'), 'error');
 	 *
 	 * @return Array - N.B. May contain updated versions of $storage and $config
 	 */
-	private function get_bucket_access($storage, $config, $bucket, $path) {
+	protected function get_bucket_access($storage, $config, $bucket, $path) {
 
 		$bucket_exists = false;
 

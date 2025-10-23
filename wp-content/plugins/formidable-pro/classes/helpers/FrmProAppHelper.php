@@ -11,12 +11,19 @@ class FrmProAppHelper {
 	 */
 	private static $included_svg = false;
 
+	/**
+	 * @since 6.22.1
+	 *
+	 * @var string|null
+	 */
+	private static $current_user_email;
+
 	public static function plugin_folder() {
 		return basename( self::plugin_path() );
 	}
 
 	public static function plugin_path() {
-		return dirname( dirname( __DIR__ ) );
+		return dirname( __DIR__, 2 );
 	}
 
 	/**
@@ -44,7 +51,7 @@ class FrmProAppHelper {
 	 *
 	 * @since 2.0
 	 *
-	 * @return object
+	 * @return FrmProSettings
 	 */
 	public static function get_settings() {
 		global $frmpro_settings;
@@ -149,7 +156,7 @@ class FrmProAppHelper {
 	 * @return string
 	 */
 	public static function get_svg_icon( $slug, $classnames, $atts = array() ) {
-		$echo        = isset( $atts['echo'] ) ? $atts['echo'] : false;
+		$echo        = $atts['echo'] ?? false;
 		$inner_html  = ( isset( $classnames ) && '' !== $classnames ) || ! empty( $atts );
 		$svg_context = self::init_svg_by_slug( $slug, $inner_html, $atts );
 
@@ -252,6 +259,24 @@ class FrmProAppHelper {
 	}
 
 	/**
+	 * Update the current user email.
+	 * This fixes the issue where the global $current_user's email is not updated when wp_update_user() is called.
+	 * See Registration issue #366
+	 *
+	 * @since 6.22.1
+	 *
+	 * @param int   $user_id
+	 * @param array $userdata
+	 *
+	 * @return void
+	 */
+	public static function update_current_user_email( $user_id, $userdata ) {
+		if ( get_current_user_id() === $user_id ) {
+			self::$current_user_email = $userdata['user_email'];
+		}
+	}
+
+	/**
 	 * Get a value from the current user profile
 	 *
 	 * @since 2.0
@@ -261,8 +286,11 @@ class FrmProAppHelper {
 	 * @return array|string
 	 */
 	public static function get_current_user_value( $value, $return_array = false ) {
+		if ( 'user_email' === $value && self::$current_user_email ) {
+			return self::$current_user_email;
+		}
 		global $current_user;
-		$new_value = isset( $current_user->{$value} ) ? $current_user->{$value} : '';
+		$new_value = $current_user->{$value} ?? '';
 		if ( is_array( $new_value ) && ! $return_array ) {
 			$new_value = implode( ', ', $new_value );
 		}
@@ -408,12 +436,19 @@ class FrmProAppHelper {
 			$date_str = str_replace( ' 00:00:00', '', $date_str );
 		}
 
-		$date = date_create_from_format( $from_format, $date_str );
+		try {
+			// Try/catch because a ValueError will be thrown if this string contains null bytes.
+			$date = date_create_from_format( $from_format, $date_str );
+		} catch ( Error $e ) {
+			return false;
+		}
+
 		if ( $date ) {
 			$new_date = $date->format( $to_format );
 		} else {
 			$new_date = self::convert_date_fallback( $date_str, $from_format, $to_format );
 		}
+
 		return $new_date;
 	}
 
@@ -435,8 +470,8 @@ class FrmProAppHelper {
 		}
 
 		if ( is_numeric( $date_elements['m'] ) ) {
-			$day  = ( isset( $date_elements['j'] ) ? $date_elements['j'] : $date_elements['d'] );
-			$year = ( isset( $date_elements['Y'] ) ? $date_elements['Y'] : $date_elements['y'] );
+			$day  = ( $date_elements['j'] ?? $date_elements['d'] );
+			$year = ( $date_elements['Y'] ?? $date_elements['y'] );
 
 			if ( is_numeric( $day ) && is_numeric( $year ) ) {
 				$dummy_ts = mktime( 0, 0, 0, $date_elements['m'], $day, $year );
@@ -617,6 +652,10 @@ class FrmProAppHelper {
 			if ( $where_field->type !== 'data' || $where_field->field_options['data_type'] !== 'checkbox' || is_numeric( $args['where_val'] ) ) {
 				// leave $args['where_is'] the same if this is a data from entries checkbox with a numeric value
 				$args['where_is'] = 'LIKE';
+
+				// Set this to flag that the query was changed.
+				// This is checked in double_check_entry_id_matches.
+				$args['was_where_is_equals'] = true;
 			}
 		}
 
@@ -697,7 +736,8 @@ class FrmProAppHelper {
 			return;
 		}
 
-		$linked_id = FrmProField::get_dynamic_field_entry_id( $where_field->field_options['form_select'], $args['where_val'], $args['temp_where_is'] );
+		$where_is  = ! empty( $args['was_where_is_equals'] ) ? '' : $args['temp_where_is'];
+		$linked_id = FrmProField::get_dynamic_field_entry_id( $where_field->field_options['form_select'], $args['where_val'], $where_is );
 
 		// If text doesn't return any entry IDs, get entry IDs from entry key
 		// Note: Keep for reverse compatibility
@@ -781,8 +821,81 @@ class FrmProAppHelper {
 		if ( $args['where_is'] != $args['temp_where_is'] ) {
 			$new_ids = array_diff( (array) $entry_ids, $new_ids );
 		}
+
+		if ( $new_ids && ! empty( $args['was_where_is_equals'] ) && FrmField::is_field_with_multiple_values( $where_field ) && 'address' !== $where_field->type ) {
+			$new_ids = self::double_check_entry_id_matches( $new_ids, $where_statement );
+		}
 	}
 
+	/**
+	 * Do a second pass with the matches to make sure they are actually a match.
+	 * This is because the query is modified to use LIKE instead of =.
+	 * So some of the results might not really be a match.
+	 *
+	 * @since 6.20
+	 *
+	 * @param array<string> $new_ids
+	 * @param array         $where_statement
+	 * @return array
+	 */
+	private static function double_check_entry_id_matches( $new_ids, $where_statement ) {
+		if ( empty( $where_statement['fi.id'] ) || empty( $where_statement[0] ) ) {
+			return $new_ids;
+		}
+
+		$field_id = $where_statement['fi.id'];
+		$value    = reset( $where_statement[0] );
+		$matches  = array();
+		$metas    = FrmDb::get_results(
+			'frm_item_metas',
+			array(
+				'item_id'  => $new_ids,
+				'field_id' => $field_id,
+			),
+			'item_id, meta_value'
+		);
+
+		foreach ( $metas as $row ) {
+			$entry_id   = $row->item_id;
+			$meta_value = $row->meta_value;
+
+			FrmAppHelper::unserialize_or_decode( $meta_value );
+
+			if ( ! is_array( $meta_value ) ) {
+				if ( $meta_value === $value ) {
+					$matches[] = $entry_id;
+				}
+				continue;
+			}
+
+			if ( is_array( $value ) ) {
+				// Handle when value is exploded using frm_filter_where_val.
+				// Only return match if all values match the meta values.
+				$match = true;
+				foreach ( $value as $v ) {
+					if ( ! in_array( $v, $meta_value, true ) ) {
+						$match = false;
+						break;
+					}
+				}
+
+				if ( $match ) {
+					$matches[] = $entry_id;
+				}
+
+				continue;
+			}
+
+			// For better backward compatibility, match anything with a single match.
+			// Even if there are multiple values.
+			if ( in_array( $value, $meta_value, true ) ) {
+				$matches[] = $entry_id;
+			}
+		}
+
+		return $matches;
+	}
+	
 	/**
 	 * @since 6.8
 	 *
@@ -1191,7 +1304,7 @@ class FrmProAppHelper {
 		$all_g = 'ABCDEFGHIJKLMNOPQRSTWXZ';
 		$pass  = '';
 		for ( $i = 0; $i < $length; $i++ ) {
-			$pass .= $all_g[ rand( 0, strlen( $all_g ) - 1 ) ];
+			$pass .= $all_g[ random_int( 0, strlen( $all_g ) - 1 ) ];
 		}
 		return $pass;
 	}
@@ -1213,6 +1326,22 @@ class FrmProAppHelper {
 		 * @param bool $use_chosen_js False by default.
 		 */
 		return (bool) apply_filters( 'frm_use_chosen_js', false );
+	}
+
+	/**
+	 * Check if the jQuery or Flatpickr datepicker is used.
+	 *
+	 * @since 6.19
+	 *
+	 * @return bool
+	 */
+	public static function use_jquery_datepicker() {
+		$frmpro_settings = self::get_settings();
+		if ( 'flatpickr' === $frmpro_settings->datepicker_library ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -1265,5 +1394,16 @@ class FrmProAppHelper {
 			<span class="frm_help frm_icon_font frm_tooltip_icon" title="<?php echo esc_attr( $tooltip_text ); ?>"></span>
 			<?php
 		}
+	}
+
+	/**
+	 * Check if GDPR cookies are disabled.
+	 *
+	 * @since 6.19
+	 *
+	 * @return bool
+	 */
+	public static function no_gdpr_cookies() {
+		return is_callable( 'FrmAppHelper::no_gdpr_cookies' ) ? FrmAppHelper::no_gdpr_cookies() : false;
 	}
 }

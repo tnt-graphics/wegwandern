@@ -4,9 +4,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <p class="frm6 frm_form_field">
-	<label id="for_field_options_autocomplete_<?php echo absint( $field['id'] ); ?>" for="field_options_autocomplete_<?php echo absint( $field['id'] ); ?>">
-		<?php esc_html_e( 'Autocomplete', 'formidable-pro' ); ?>
-		<?php FrmProAppHelper::tooltip_icon( __( 'The autocomplete attribute asks the browser to attempt autocompletion, based on user history.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
+	<label class="frm-h-stack-xs" id="for_field_options_autocomplete_<?php echo absint( $field['id'] ); ?>" for="field_options_autocomplete_<?php echo absint( $field['id'] ); ?>">
+		<span><?php esc_html_e( 'Autocomplete', 'formidable-pro' ); ?></span>
+		<?php
+		FrmProAppHelper::tooltip_icon(
+			__( 'The autocomplete attribute asks the browser to attempt autocompletion, based on user history.', 'formidable-pro' ),
+			array(
+				'data-placement' => 'right',
+				'class'          => 'frm-flex',
+			)
+		);
+        ?>
 	</label>
 
 	<?php

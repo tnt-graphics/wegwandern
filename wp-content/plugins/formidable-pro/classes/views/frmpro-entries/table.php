@@ -50,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
             <td valign="top">
 				<?php
-				echo FrmEntriesHelper::display_value( ( isset( $entry->metas[ $col->id ] ) ? $entry->metas[ $col->id ] : false ), $col, array( 'type' => $col->type, 'post_id' => $entry->post_id, 'entry_id' => $entry->id ) );
+				echo FrmEntriesHelper::display_value( ( $entry->metas[ $col->id ] ?? false ), $col, array( 'type' => $col->type, 'post_id' => $entry->post_id, 'entry_id' => $entry->id ) );
                 ?>
             </td>
 <?php

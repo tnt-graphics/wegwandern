@@ -47,6 +47,11 @@
 	gap: var(--gap-xs);
 }
 
+table.toplevel_page_formidable .column-application:not(.hidden):not(.frm_hidden),
+table.table-view-list .column-application:not(.hidden):not(.frm_hidden) {
+	display: table-cell;
+}
+
 .column-application .frm-meta-tag {
 	font-weight: normal;
 }

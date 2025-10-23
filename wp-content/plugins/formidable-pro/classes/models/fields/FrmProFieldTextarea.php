@@ -17,6 +17,7 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 		$settings['read_only']    = true;
 		$settings['unique']       = true;
 		$settings['invalid']      = true;
+		$settings['format']       = true;
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
 		return $settings;
@@ -36,6 +37,15 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 		}
 
 		$value = $this->get_value();
+
+		if (
+			FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) )
+			&& 'text' !== FrmField::get_option( $this->field, 'calc_type' )
+			&& ! FrmField::get_option( $this->field, 'calc' )
+		) {
+			$value                = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+			$this->field['value'] = $value;
+		}
 
 		$max_limit = intval( FrmField::get_option( $this->field, 'max_limit' ) );
 		if ( $max_limit ) {
@@ -126,5 +136,18 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 			return mb_strlen( $content );
 		}
 		return strlen( $content );
+	}
+
+	/**
+	 * @since 6.20
+	 *
+	 * {@inheritdoc}
+	 */
+	public function set_value_before_save( $value ) {
+		if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) ) ) {
+			$value = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+		}
+
+		return $value;
 	}
 }

@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-<p class="frm6 frm_form_field">
+<p class="frm_form_field">
 	<label for="frm_conf_field_<?php echo absint( $field['id'] ); ?>">
 		<?php esc_html_e( 'Require Confirmation', 'formidable-pro' ); ?>
 	</label>

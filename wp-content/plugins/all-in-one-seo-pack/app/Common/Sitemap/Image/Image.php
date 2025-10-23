@@ -36,7 +36,8 @@ class Image {
 		'png',
 		'svg',
 		'webp',
-		'ico'
+		'ico',
+		'avif',
 	];
 
 	/**
@@ -224,6 +225,13 @@ class Image {
 			$imageUrl = aioseo()->sitemap->helpers->formatUrl( $imageUrl );
 			if ( ! $imageUrl || ! preg_match( $this->getImageExtensionRegexPattern(), (string) $imageUrl ) ) {
 				continue;
+			}
+
+			// If the image URL is not external, make it relative.
+			// This is important for users who scan their sites in a local/staging environment and then
+			// push the data to production.
+			if ( ! aioseo()->helpers->isExternalUrl( $imageUrl ) ) {
+				$imageUrl = aioseo()->helpers->makeUrlRelative( $imageUrl );
 			}
 
 			$entries[ $idOrUrl ] = [ 'image:loc' => $imageUrl ];

@@ -4,30 +4,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <form enctype="multipart/form-data" method="post" id="form_<?php echo esc_attr( $form->form_key ); ?>" class="frm-show-form" <?php FrmProFormsHelper::maybe_echo_antispam_token( $form->id ); ?>>
-<div id="form_entries_page" class="frm_wrap frm_single_entry_page">
+<div id="form_entries_page" class="frm_single_entry_page">
 	<div class="frm_forms" id="frm_form_<?php echo (int) $form->id; ?>_container">
 
-		<?php
-		FrmAppHelper::get_admin_header(
-			array(
-				'label'      => __( 'Edit Entry', 'formidable-pro' ),
-				'link_hook'  => array(
-					'hook'  => 'frm_entry_inside_h2',
-					'param' => $form,
-				),
-				'form'       => $form,
-				'hide_title' => true,
-				'close'      => '?page=formidable-entries&form=' . $form->id,
-				'publish'    => array( 'FrmProEntriesController::edit_entry_button', compact( 'form', 'values', 'entry' ) ),
-			)
-		);
-		?>
+		<div class="frm_wrap">
+			<?php
+			FrmAppHelper::get_admin_header(
+				array(
+					'label'      => __( 'Edit Entry', 'formidable-pro' ),
+					'link_hook'  => array(
+						'hook'  => 'frm_entry_inside_h2',
+						'param' => $form,
+					),
+					'form'       => $form,
+					'hide_title' => true,
+					'close'      => '?page=formidable-entries&form=' . $form->id,
+					'publish'    => array( 'FrmProEntriesController::edit_entry_button', compact( 'form', 'values', 'entry' ) ),
+				)
+			);
+			?>
+		</div>
 
 		<div class="columns-2">
 
 		<div id="post-body-content">
-			<div class="frm-entry-container frm-fields <?php echo FrmFormsHelper::get_form_style_class($values); ?>">
-			<h2 class="frm-entry-title">
+			<div class="frm-entry-container frm-fields <?php echo FrmFormsHelper::get_form_style_class( $values ); ?>">
+			<h2 class="frm_wrap frm-entry-title">
 				<span><?php esc_html_e( 'Edit Entry', 'formidable-pro' ); ?></span>
 				<span class="frm-sub-label">
 					<?php
@@ -50,7 +52,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			<p>
 				<?php echo FrmProFormsHelper::get_prev_button( $form, 'button-secondary' ); ?>
-				<input class="button-primary" type="submit" value="<?php echo esc_attr( $submit ); ?>" <?php do_action('frm_submit_button_action', $form, $form_action); ?> />
+				<input class="button-primary" type="submit" value="<?php echo esc_attr( $submit ); ?>" <?php do_action( 'frm_submit_button_action', $form, $form_action ); ?> />
 			</p>
 			<div class="clear"></div>
 			</div>

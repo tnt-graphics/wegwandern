@@ -17,6 +17,15 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	 */
 	private static $checked;
 
+	/**
+	 * Track if another CAPTCHA field was successfully validated.
+	 *
+	 * @since 6.23
+	 *
+	 * @var bool
+	 */
+	private static $is_valid = false;
+
 	protected function field_settings_for_type() {
 		$settings = parent::field_settings_for_type();
 
@@ -54,11 +63,24 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 		}
 
 		if ( $post_data_includes_token ) {
+			if ( self::$is_valid ) {
+				// A CAPTCHA was already validated, so we don't need to validate this one.
+				return array();
+			}
+
 			$errors = $this->validate_against_api( $args );
 
 			if ( $errors ) {
 				return $errors;
 			}
+
+			/**
+			 * Flag that a CAPTCHA was successfully validated.
+			 * As long as a CAPTCHA field was validated, it does not matter if it was this one.
+			 * This helps to prevent errors where a form with multiple pages
+			 * includes multiple CAPTCHA fields.
+			 */
+			self::$is_valid = true;
 
 			$this->maybe_set_captcha_score_in_form_state();
 
@@ -74,7 +96,38 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 			return array();
 		}
 
-		return array( 'field' . $args['id'] => __( 'The captcha is missing from this form', 'formidable-pro' ) );
+		$error = $this->maybe_change_error_message( __( 'The captcha is missing from this form', 'formidable' ) );
+
+		return array( 'field' . $args['id'] => $error );
+	}
+
+	/**
+	 * @since 6.22
+	 *
+	 * @param string $error The original error message.
+	 *
+	 * @return string
+	 */
+	private function maybe_change_error_message( $error ) {
+		if ( ! current_user_can( 'frm_edit_forms' ) || self::should_include_captcha_nonce_field() ) {
+			return $error;
+		}
+
+		$form_id     = is_object( $this->field ) ? $this->field->form_id : $this->field['form_id'];
+		$page_breaks = FrmProFormsHelper::has_field( 'break', $form_id, false );
+
+		if ( ! $page_breaks || FrmProFormsHelper::has_another_page( $form_id ) ) {
+			return $error;
+		}
+
+		$last_page_break  = end( $page_breaks );
+		$this_field_order = is_object( $this->field ) ? $this->field->field_order : $this->field['field_order'];
+
+		if ( (int) $last_page_break->field_order < (int) $this_field_order ) {
+			return $error;
+		}
+
+		return __( 'The CAPTCHA field is currently on an incorrect page. Move the CAPTCHA field to the last page of the form.', 'formidable-pro' );
 	}
 
 	/**
@@ -123,7 +176,7 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	}
 
 	/**
-	 * Check the catpcha nonce.
+	 * Check the captcha nonce.
 	 *
 	 * @since 4.07
 	 *
@@ -150,13 +203,9 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	 * @return false|string
 	 */
 	public static function checked() {
-		if ( isset( self::$checked ) ) {
-			return self::$checked;
-		}
-
 		// pass along recaptcha_checked even if there is no captcha being validated
 		// (which would happen if we're going to a previous page without a captcha)
-		return self::validate_checked();
+		return self::$checked ?? self::validate_checked();
 	}
 
 	/**
@@ -218,15 +267,17 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	 * But it also means that the nonce can be reused to prevent CAPTCHA validation.
 	 *
 	 * @since 6.17
+	 * @since 6.20 This function was made public.
 	 *
 	 * @return bool
 	 */
-	private static function should_include_captcha_nonce_field() {
+	public static function should_include_captcha_nonce_field() {
 		/**
 		 * @since 6.17
+		 * @since 6.20 This was changed from true to false by default. It makes sites too vulnerable to spam.
 		 *
-		 * @param bool $should_include True by default. Set to false to prevent the captcha nonce field from being included.
+		 * @param bool $should_include False by default. Set to true to include the captcha nonce field when necessary.
 		 */
-		return (bool) apply_filters( 'frm_should_include_captcha_nonce_field', true );
+		return (bool) apply_filters( 'frm_should_include_captcha_nonce_field', false );
 	}
 }

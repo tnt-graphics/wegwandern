@@ -31,7 +31,7 @@ class FrmProDisplaysHelper {
 
 		self::maybe_increase_regex_limit();
 
-		preg_match_all( "/\[(if |foreach )?($tagregexp)\b(.*?)(?:(\/))?\](?:(.+?)\[\/\2\])?/s", $content, $matches, PREG_PATTERN_ORDER );
+		preg_match_all( '/\[(if |foreach )?(' . $tagregexp . ')\b((?:[^"\]]+|"[^"]*"|\'[^\']*\')*?)(\/?)\](?:(.+?)\[\/\2\])?/s', $content, $matches, PREG_PATTERN_ORDER );
 
 		$matches[0] = self::organize_and_filter_shortcodes( $matches[0] );
 
@@ -133,29 +133,6 @@ class FrmProDisplaysHelper {
 		}
 
 		return $shortcodes;
-	}
-
-	/**
-	 * @deprecated 6.11.1
-	 */
-	public static function prepare_duplicate_view( &$post ) {
-		_deprecated_function( __METHOD__, '6.11.1', 'FrmViewsDisplaysHelper::prepare_duplicate_view' );
-		if ( is_callable( 'FrmViewsDisplaysHelper::prepare_duplicate_view' ) ) {
-			FrmViewsDisplaysHelper::prepare_duplicate_view( $post );
-		}
-	}
-
-	/**
-	 * @deprecated 6.11.1
-	 *
-	 * @return array
-	 */
-	public static function get_show_counts() {
-		_deprecated_function( __METHOD__, '6.11.1', 'FrmViewsDisplaysHelper::get_show_counts' );
-		if ( is_callable( 'FrmViewsDisplaysHelper::get_show_counts' ) ) {
-			return FrmViewsDisplaysHelper::get_show_counts();
-		}
-		return array();
 	}
 
 	/**

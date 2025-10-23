@@ -58,7 +58,7 @@ class FrmProFieldPhone extends FrmFieldPhone {
 			return;
 		}
 
-		if ( FrmAppHelper::js_suffix() ) {
+		if ( FrmAppHelper::js_suffix() && FrmProAppController::has_combo_js_file() ) {
 			// If we are using minified scripts, check if the intl phone input is included.
 			// If it is return before we enqueue the scripts.
 			$pro_js_files = FrmProAppController::get_pro_js_files( 'minified' );

@@ -168,8 +168,7 @@ DEFAULT_HTML;
 		} elseif ( ! empty( trim( $price_quantity['parent_field_id'] ) ) ) {
 			if ( ! empty( $frm_products['repeat_quantity_fields'] ) ) {
 				$k        = $price_quantity['parent_field_id'] . '_' . $price_quantity['key_pointer'];
-				$quantity = isset( $frm_products['repeat_quantity_fields'][ $k ] ) ?
-							$frm_products['repeat_quantity_fields'][ $k ] : 1;
+				$quantity = $frm_products['repeat_quantity_fields'][ $k ] ?? 1;
 			}
 		} elseif ( ! empty( $frm_products['quantity_fields'] ) && 1 === count( $frm_products['quantity_fields'] ) ) {
 			$quantity = $frm_products['quantity_fields'][0];
@@ -186,7 +185,15 @@ DEFAULT_HTML;
 	}
 
 	protected function prepare_display_value( $value, $atts ) {
-		return FrmProCurrencyHelper::format_amount_for_currency( $this->get_field_column( 'form_id' ), $value );
+		if ( ! empty( $atts['format'] ) && 'number' === $atts['format'] ) {
+			return $value;
+		}
+
+		$form_id  = $this->get_field_column( 'form_id' );
+		$currency = FrmProCurrencyHelper::get_currency( $form_id );
+		$currency = FrmProCurrencyHelper::apply_shortcode_atts( $currency, $atts );
+
+		return FrmProCurrencyHelper::format_amount_for_currency( $form_id, $value, $currency );
 	}
 
 	public function get_builder_display_value() {

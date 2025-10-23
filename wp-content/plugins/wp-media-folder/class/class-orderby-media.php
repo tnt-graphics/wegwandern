@@ -75,7 +75,7 @@ class WpmfOrderbyMedia
 
             if ($sort_media === 'custom') {
                 $query->set('meta_key', 'wpmf_order');
-                $orderby = 'meta_value_num';
+                $orderby = 'meta_value_num title';
                 $order = 'ASC';
             } else {
                 if ($sort_media !== 'all') {
@@ -304,7 +304,8 @@ class WpmfOrderbyMedia
         $columns['wpmf_iptc'] = __('IPTC Meta', 'wpmf');
         $option_override  = get_option('wpmf_option_override');
         $option_duplicate  = get_option('wpmf_option_duplicate');
-        if ($option_override || $option_duplicate) {
+        $batch_ai_optimization = get_option('wpmf_ai_new_ai_auto_optimization') === '1';
+        if ($option_override || $option_duplicate || $batch_ai_optimization) {
             $columns['wpmf_action'] = __('Actions', 'wpmf');
         }
         return $columns;

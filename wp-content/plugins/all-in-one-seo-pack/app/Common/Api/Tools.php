@@ -25,34 +25,33 @@ class Tools {
 	 * @return \WP_REST_Response          The response.
 	 */
 	public static function importRobotsTxt( $request ) {
-		$body         = $request->get_json_params();
-		$blogId       = ! empty( $body['blogId'] ) ? absint( $body['blogId'] ) : 0;
-		$networkLevel = ! empty( $body['networkLevel'] ) || ! empty( $body['network'] );
-		$source       = ! empty( $body['source'] ) ? $body['source'] : '';
-		$text         = ! empty( $body['text'] ) ? sanitize_textarea_field( $body['text'] ) : '';
-		$url          = ! empty( $body['url'] ) ? sanitize_url( $body['url'], [ 'http', 'https' ] ) : '';
+		$body   = $request->get_json_params();
+		$blogId = ! empty( $body['blogId'] ) ? $body['blogId'] : 0;
+		$source = ! empty( $body['source'] ) ? $body['source'] : '';
+		$text   = ! empty( $body['text'] ) ? sanitize_textarea_field( $body['text'] ) : '';
+		$url    = ! empty( $body['url'] ) ? sanitize_url( $body['url'], [ 'http', 'https' ] ) : '';
 
 		try {
-			if ( 0 < $blogId && ! $networkLevel ) {
+			if ( is_multisite() && 'network' !== $blogId ) {
 				aioseo()->helpers->switchToBlog( $blogId );
 			}
 
 			switch ( $source ) {
 				case 'url':
-					aioseo()->robotsTxt->importRobotsTxtFromUrl( $url, $networkLevel );
+					aioseo()->robotsTxt->importRobotsTxtFromUrl( $url, $blogId );
 
 					break;
 				case 'text':
-					aioseo()->robotsTxt->importRobotsTxtFromText( $text, $networkLevel );
+					aioseo()->robotsTxt->importRobotsTxtFromText( $text, $blogId );
 
 					break;
 				case 'static':
 				default:
-					aioseo()->robotsTxt->importPhysicalRobotsTxt( $networkLevel );
+					aioseo()->robotsTxt->importPhysicalRobotsTxt( $blogId );
 					aioseo()->robotsTxt->deletePhysicalRobotsTxt();
 
 					$options = aioseo()->options;
-					if ( $networkLevel ) {
+					if ( 'network' === $blogId ) {
 						$options = aioseo()->networkOptions;
 					}
 
@@ -251,32 +250,6 @@ class Tools {
 
 		return new \WP_REST_Response( [
 			'success' => true
-		], 200 );
-	}
-
-	/**
-	 * Clear the passed in log.
-	 *
-	 * @since 4.0.0
-	 *
-	 * @param  \WP_REST_Request  $request The REST Request
-	 * @return \WP_REST_Response The response.
-	 */
-	public static function clearLog( $request ) {
-		$body = $request->get_json_params();
-		$log  = ! empty( $body['log'] ) ? $body['log'] : null;
-
-		$logSize = 0;
-		switch ( $log ) {
-			case 'badBotBlockerLog':
-				aioseo()->badBotBlocker->clearLog();
-				$logSize = aioseo()->badBotBlocker->getLogSize();
-				break;
-		}
-
-		return new \WP_REST_Response( [
-			'success' => true,
-			'logSize' => aioseo()->helpers->convertFileSize( $logSize )
 		], 200 );
 	}
 }

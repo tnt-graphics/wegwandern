@@ -322,20 +322,20 @@ class UpdraftPlusAddons2 {
 			$compare_tested_version = $oval->update->extraProperties[$yourversionkey];
 			if (!empty($readme_says) && version_compare($readme_says, $compare_tested_version, '>')) $compare_tested_version = $readme_says;
 			if (version_compare($compare_wp_version, $compare_tested_version, '>')) {
-				$this->admin_notices['yourversiontested'] = '<strong>'.__('Warning', 'updraftplus').':</strong> '.sprintf(__('The installed version of UpdraftPlus Backup/Restore has not been tested on your version of WordPress (%s).', 'updraftplus'), $wp_version).' '.sprintf(__('It has been tested up to version %s.', 'updraftplus'), $compare_tested_version).' <a href="https://updraftplus.com/seeing-warning-versions-wordpress-updraftplus-tested/">'.__('You should update UpdraftPlus to make sure that you have a version that has been tested for compatibility.', 'updraftplus').'</a>';
+				$this->admin_notices['yourversiontested'] = '<strong>'.__('Warning', 'updraftplus').':</strong> '.sprintf(__('The installed version of UpdraftPlus Backup/Restore has not been tested on your version of WordPress (%s).', 'updraftplus'), $wp_version).' '.sprintf(__('It has been tested up to version %s.', 'updraftplus'), $compare_tested_version).' <a href="https://teamupdraft.com/documentation/updraftplus/topics/general/troubleshooting/seeing-warning-versions-wordpress-updraftplus-tested/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=unknown&utm_creative_format=unknown">'.__('You should update UpdraftPlus to make sure that you have a version that has been tested for compatibility.', 'updraftplus').'</a>';
 			}
 		}
 
 		if (!empty($do_expiry_check) && is_object($oval) && !empty($oval->update) && is_object($oval->update) && !empty($oval->update->extraProperties[$updateskey])) {
 			if (preg_match('/(^|)expired_?(\d+)?(,|$)/', $oval->update->extraProperties[$updateskey], $matches)) {
 				if (empty($matches[2])) {
-					$message = __('Your paid access to UpdraftPlus updates for this site has expired.', 'updraftplus').' '.__('You will no longer receive updates to UpdraftPlus.', 'updraftplus').' <a href="https://updraftplus.com/renewing-updraftplus-purchase/">'.__('To regain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>';
+					$message = __('Your paid access to UpdraftPlus updates for this site has expired.', 'updraftplus').' '.__('You will no longer receive updates to UpdraftPlus.', 'updraftplus').' <a href="https://teamupdraft.com/documentation/account-management/orders-and-subscriptions/why-should-i-renew-my-updraftplus-wp-optimize-or-aios-licence-and-how-do-i-do-that/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=to-regain-access&utm_creative_format=notice">'.__('To regain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>';
 					if ($updraftplus->have_addons > 14 && !empty($meta_info['indirect'])) {
 						$message .= ' <br>'.sprintf(__('If you have already renewed, then you need to allocate a licence to this site - %s', 'updraftplus'), '<a href="'.UpdraftPlus_Options::admin_page().'?page=updraftplus&tab=addons">'.__('go here', 'updraftplus').'</a>');
 					}
 					$this->admin_notices['updatesexpired'] = $message.$dismiss;
 				} else {
-					$this->admin_notices['updatesexpired'] = sprintf(__('Your paid access to UpdraftPlus updates for %s add-ons on this site has expired.', 'updraftplus'), $matches[2]).' <a href="https://updraftplus.com/renewing-updraftplus-purchase/">'.__('To regain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>'.$dismiss;
+					$this->admin_notices['updatesexpired'] = sprintf(__('Your paid access to UpdraftPlus updates for %s add-ons on this site has expired.', 'updraftplus'), $matches[2]).' <a href="https://teamupdraft.com/documentation/account-management/orders-and-subscriptions/why-should-i-renew-my-updraftplus-wp-optimize-or-aios-licence-and-how-do-i-do-that/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=to-regain-access&utm_creative_format=notice">'.__('To regain access to updates (including future features and compatibility with future WordPress releases) and support, please renew.', 'updraftplus').'</a>'.$dismiss;
 				}
 			}
 			$subscription_status = apply_filters('udmupdater_subscription_active', isset($oval->update->extraProperties[$subscription_activekey]) ? $oval->update->extraProperties[$subscription_activekey] : false);
@@ -1085,8 +1085,10 @@ class UpdraftPlusAddons2 {
 				delete_site_transient('udaddons_connect_'.$ehash);
 				if (!empty($response['authproblem'])) {
 					if ('invalidpassword' == $response['authproblem']) {
-						$authfail_error = new WP_Error('authfailed', __('Your email address was valid, but your password was not recognised by UpdraftPlus.Com.', 'updraftplus').'<a href="?page=updraftplus&tab=addons"> '.__('Go here to re-enter your password.', 'updraftplus').'</a><br>');
-						$authfail_error->add('authfailed', __('If you have forgotten your password ', 'updraftplus').' <a href="'.$updraftplus->get_url('lost-password').'">'.__('go here to change your password on updraftplus.com.', 'updraftplus').'</a>');
+						$authfail_error = new WP_Error('authfailed', __("Your email is valid, but your password wasn't recognised.", 'updraftplus').'<br>');
+						if (time() < strtotime('2026-01-01 00:00:00')) $authfail_error->add('authfailed', __('Some users were asked to reset their passwords as part of a recent website migration.', 'updraftplus').'<br>');
+						// translators: %s: The reset password link
+						$authfail_error->add('authfailed', sprintf(__('Try again, or %s before connecting again.', 'updraftplus'), '<a href="'.$updraftplus->get_url('lost-password').'">'.__('reset your password', 'updraftplus').'</a>'));
 						return $authfail_error;
 					} elseif ('invaliduser' == $response['authproblem']) {
 						return new WP_Error('authfailed', __('You entered an email address that was not recognised by UpdraftPlus.Com', 'updraftplus'));

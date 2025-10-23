@@ -349,6 +349,27 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
                 </div>
             </div>
         </div>
+
+        <div class="ju-settings-option">
+            <div class="wpmf_row_full">
+                <input type="hidden" name="auto_generate_webp" value="0">
+                <label data-wpmftippy="<?php esc_html_e('Automatically generate WebP version of image when uploading', 'wpmf'); ?>"
+                       class="ju-setting-label text"><?php esc_html_e('Generate WebP image on upload', 'wpmf') ?></label>
+                <div class="ju-switch-button">
+                    <label class="switch">
+                        <input type="checkbox" name="auto_generate_webp"
+                               value="1"
+                            <?php
+                            if (isset($auto_generate_webp) && (int) $auto_generate_webp === 1) {
+                                echo 'checked';
+                            }
+                            ?>
+                        >
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
         <div class="default_featured_image_wrap">
             <div class="featured_image_wrap">
                 <input type="hidden" class="default_featured_image" name="default_featured_image" value="0">
@@ -464,15 +485,15 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
 
                             <div class="wpmf_width_100">
                                     <span
-                                          class="wpmf_width_100 m-t-30 ju-button no-background orange-button waves-effect waves-light add_dimension" data-type="default">
+                                          class="wpmf_width_100 m-t-30 ju-button no-background primary-button waves-effect waves-light add_dimension" data-type="default">
                                         <?php esc_html_e('Add new size', 'wpmf'); ?></span>
                                 <span data-label="dimension" id="edit_dimension"
-                                      class="m-t-10 wpmf_left ju-button orange-button waves-effect waves-light wpmfedit edit_dimension"
+                                      class="m-t-10 wpmf_left ju-button primary-button waves-effect waves-light wpmfedit edit_dimension"
                                       style="display: none;" data-type="default">
                                         <?php esc_html_e('Save', 'wpmf'); ?>
                                     </span>
                                 <span id="can_dimension"
-                                      class="m-t-10 wpmf_right ju-button no-background orange-button waves-effect waves-light wpmf_can"
+                                      class="m-t-10 wpmf_right ju-button no-background primary-button waves-effect waves-light wpmf_can"
                                       data-label="dimension"
                                       style="display: none;"><?php esc_html_e('Cancel', 'wpmf'); ?></span>
                             </div>
@@ -575,14 +596,14 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
 
                             <div class="wpmf_width_100">
                                     <span id="add_weight"
-                                          class="wpmf_width_100 m-t-30 ju-button no-background orange-button waves-effect waves-light add_weight"><?php esc_html_e('Add weight', 'wpmf'); ?></span>
+                                          class="wpmf_width_100 m-t-30 ju-button no-background primary-button waves-effect waves-light add_weight"><?php esc_html_e('Add weight', 'wpmf'); ?></span>
                                 <span data-label="weight" id="edit_weight"
-                                      class="m-t-10 wpmf_left ju-button orange-button waves-effect waves-light wpmfedit edit_weight"
+                                      class="m-t-10 wpmf_left ju-button primary-button waves-effect waves-light wpmfedit edit_weight"
                                       style="display: none;">
                                         <?php esc_html_e('Save', 'wpmf'); ?>
                                     </span>
                                 <span id="can_dimension"
-                                      class="m-t-10 wpmf_right ju-button no-background orange-button waves-effect waves-light wpmf_can"
+                                      class="m-t-10 wpmf_right ju-button no-background primary-button waves-effect waves-light wpmf_can"
                                       data-label="weight"
                                       style="display: none">
                                         <?php esc_html_e('Cancel', 'wpmf'); ?></span>

@@ -34,6 +34,20 @@ class FrmProSettingsController {
 	}
 
 	/**
+	 * Adds the Global Settings currency settings.
+	 *
+	 * @since 6.18
+	 *
+	 * @return void
+	 */
+	public static function add_currency_settings() {
+		$settings   = FrmProAppHelper::get_settings();
+		$currencies = FrmProCurrencyHelper::get_currencies();
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-settings/_currency.php';
+	}
+
+	/**
 	 * Display license errors, but without messages from the frm_message_list filter.
 	 *
 	 * @since 6.0
@@ -66,7 +80,12 @@ class FrmProSettingsController {
 	 * @since 4.0
 	 */
 	public static function add_settings_section( $sections ) {
-		add_action( 'frm_settings_form', 'FrmProSettingsController::general_style_settings' );
+		// TODO: Backward compatibility, remove in a future safe version.
+		add_action(
+			is_callable( 'FrmCurrencyHelper::is_currency_format' ) ? 'frm_other_settings_form' : 'frm_settings_form',
+			'FrmProSettingsController::general_style_settings'
+		);
+
 		add_action( 'frm_messages_settings_form', 'FrmProSettingsController::message_settings' );
 		add_action( 'frm_settings_form', 'FrmProSettingsController::more_settings', 1 );
 
@@ -75,14 +94,14 @@ class FrmProSettingsController {
 		}
 
 		$sections['white_label'] = array(
-			'class'    => __CLASS__,
+			'class'    => self::class,
 			'function' => 'white_label_settings',
 			'name'     => isset( $sections['white_label'] ) ? $sections['white_label']['name'] : __( 'White Labeling', 'formidable' ),
 			'icon'     => isset( $sections['white_label'] ) ? $sections['white_label']['icon'] : 'frm_icon_font frm_ghost_icon',
 		);
 
 		$sections['inbox'] = array(
-			'class'    => __CLASS__,
+			'class'    => self::class,
 			'function' => 'inbox_settings',
 			'name'     => isset( $sections['inbox'] ) ? $sections['inbox']['name'] : __( 'Inbox', 'formidable' ),
 			'icon'     => isset( $sections['inbox'] ) ? $sections['inbox']['icon'] : 'frm_icon_font frm_email_icon',
@@ -111,7 +130,12 @@ class FrmProSettingsController {
 	 * @return void
 	 */
 	public static function more_settings( $frm_settings ) {
-		$frmpro_settings = FrmProAppHelper::get_settings();
+		$frmpro_settings      = FrmProAppHelper::get_settings();
+		$datepicker_libraries = array(
+			'default'   => __( 'Default', 'formidable-pro' ),
+			'jquery'    => 'jQuery',
+			'flatpickr' => 'Flatpickr (Beta)',
+		);
 		require FrmProAppHelper::plugin_path() . '/classes/views/settings/form.php';
 	}
 
@@ -302,5 +326,46 @@ class FrmProSettingsController {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Enqueues scripts for global settings page.
+	 *
+	 * @since 6.25
+	 */
+	public static function enqueue_scripts() {
+		wp_enqueue_media();
+
+		wp_enqueue_style( 'wp-color-picker' );
+		wp_enqueue_style( 'formidable_pro_settings', FrmProAppHelper::plugin_url() . '/css/settings/global-settings.css', array(), FrmProDb::$plug_version );
+
+		wp_enqueue_script( 'wp-color-picker-alpha', FrmProAppHelper::plugin_url() . '/js/admin/settings/wp-color-picker-alpha.js', array( 'wp-color-picker' ), '3.0.2', true );
+		wp_enqueue_script( 'formidable_pro_settings', FrmProAppHelper::plugin_url() . '/js/admin/settings.js', array( 'wp-color-picker' ), FrmProDb::$plug_version, true );
+	}
+
+	/**
+	 * Shows image uploader.
+	 *
+	 * @since 6.25
+	 *
+	 * @param array $args {
+	 *     Args
+	 *
+	 *     @type string $name Input name.
+	 *     @type string $img_id Image ID.
+	 * }
+	 *
+	 * @return void
+	 */
+	public static function image_uploader( $args ) {
+		$args = wp_parse_args(
+			$args,
+			array(
+				'name'   => '',
+				'img_id' => '',
+			)
+		);
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/shared/image-uploader.php';
 	}
 }

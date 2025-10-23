@@ -79,7 +79,22 @@
 		const formData = new FormData();
 		formData.append( 'plugin', frmProApplicationsVars.viewsIsUpdated ? 'formidable-views/formidable-views.php' : frmProApplicationsVars.viewsInstallUrl );
 		formData.append( 'action', 'frm_' + action );
-		doInstallOrActivate( formData ).then( data => alert( data ) );
+		doInstallOrActivate( formData ).then(
+			data => {
+				if ( ! data?.data?.message && ! data?.message ) {
+					return;
+				}
+
+				let message = data.data?.message || data.message;
+				message += ' ';
+				message += __( 'Please close this modal to refresh the data.', 'formidable-pro' );
+
+				alert( message );
+				frmProApplicationsVars.viewsExists    = true;
+				frmProApplicationsVars.viewsIsUpdated = true;
+				frmProApplicationsVars.canAddViews    = true;
+			}
+		 );
 
 		async function doInstallOrActivate( formData ) {
 			formData.append( 'nonce', frmGlobal.nonce );
@@ -300,7 +315,7 @@
 	}
 
 	function removeLockIconFromCard( card ) {
-		const cardTitle = card.querySelector( 'h4' );
+		const cardTitle = card.querySelector( 'h3' );
 		if ( ! cardTitle ) {
 			return;
 		}

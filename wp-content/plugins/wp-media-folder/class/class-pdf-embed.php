@@ -149,7 +149,9 @@ class WpmfPdfEmbed
     {
         $cloud_type = get_post_meta((int)$id, 'wpmf_drive_type', true);
         $drive_id = get_post_meta((int)$id, 'wpmf_drive_id', true);
+        $aws3_info = get_post_meta((int)$id, 'wpmf_awsS3_info', true);
         $baseUrl = admin_url('admin-ajax.php');
+   
         if ($cloud_type && $drive_id) {
             switch ($cloud_type) {
                 case 'dropbox':
@@ -167,6 +169,9 @@ class WpmfPdfEmbed
                 case 'nextcloud':
                     $action = '?action=wpmf_nextcloud_get_content&url=' . urlencode($url) . '/download';
                     break;
+                case 'owncloud':
+                    $action = '?action=wpmf_owncloud_get_content&url=' . urlencode($url) . '/download';
+                    break;
                 default:
                     $action = '';
                     $offload_infos = get_post_meta($id, 'wpmf_awsS3_info', true);
@@ -175,9 +180,11 @@ class WpmfPdfEmbed
                     }
                     break;
             }
+        } elseif (!empty($aws3_info)) {
+            $action = '?action=wpmf_offload_get_content&url=' . urlencode($url);
         }
 
-        if ($action) {
+        if (isset($action) && $action) {
             $url = $baseUrl . $action;
         }
 

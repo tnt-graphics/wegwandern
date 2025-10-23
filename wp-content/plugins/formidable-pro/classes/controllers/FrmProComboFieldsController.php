@@ -40,17 +40,17 @@ class FrmProComboFieldsController {
 			return;
 		}
 
-		$placeholder = isset( $default_value[ $sub_field ] ) ? $default_value[ $sub_field ] : '';
+		$placeholder = $default_value[ $sub_field ] ?? '';
 		echo ' placeholder="' . esc_attr( $placeholder ) . '" data-placeholder="' . esc_attr( $placeholder ) . '"';
 	}
 
 	public static function get_dropdown_label( $atts ) {
-		$default = isset( $atts['sub_field']['placeholder'] ) ? $atts['sub_field']['placeholder'] : ' ';
+		$default = $atts['sub_field']['placeholder'] ?? ' ';
 		return apply_filters( 'frm_combo_dropdown_label', $default, $atts );
 	}
 
 	public static function add_atts_to_input( $atts ) {
-		$placeholder   = isset( $atts['field']['placeholder'] ) ? $atts['field']['placeholder'] : '';
+		$placeholder   = $atts['field']['placeholder'] ?? '';
 		$default_value = $atts['field']['default_value'];
 
 		$field_obj = FrmFieldFactory::get_field_type( $atts['field']['type'], $atts['field'] );

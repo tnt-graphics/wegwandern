@@ -32,8 +32,8 @@ class FrmProXMLHelper {
 				'name'           => (string) $item->name,
 				'description'    => FrmAppHelper::maybe_json_decode( (string) $item->description ),
 				'ip'             => (string) $item->ip,
-				'form_id'        => ( isset( $imported['forms'][ (int) $item->form_id ] ) ? $imported['forms'][ (int) $item->form_id ] : (int) $item->form_id ),
-				'post_id'        => ( isset( $imported['posts'][ (int) $item->post_id ] ) ? $imported['posts'][ (int) $item->post_id ] : (int) $item->post_id ),
+				'form_id'        => ( $imported['forms'][ (int) $item->form_id ] ?? (int) $item->form_id ),
+				'post_id'        => ( $imported['posts'][ (int) $item->post_id ] ?? (int) $item->post_id ),
 				'user_id'        => FrmAppHelper::get_user_id_param( (string) $item->user_id ),
 				'parent_item_id' => (int) $item->parent_item_id,
 				'is_draft'       => (int) $item->is_draft,
@@ -333,7 +333,7 @@ class FrmProXMLHelper {
 	}
 
 	private static function csv_to_entry_value( $key, $field_id, $data, &$values ) {
-		$data[ $key ] = isset( $data[ $key ] ) ? $data[ $key ] : '';
+		$data[ $key ] = $data[ $key ] ?? '';
 
 		if ( is_numeric( $field_id ) ) {
 			self::set_values_for_fields( $key, $field_id, $data, $values );
@@ -640,13 +640,13 @@ class FrmProXMLHelper {
 	 * @return void
 	 */
 	private static function set_values_for_data_fields( $key, $field_id, $data, &$values ) {
-		$field_type = isset( $field_id['type'] ) ? $field_id['type'] : false;
+		$field_type = $field_id['type'] ?? false;
 
 		if ( $field_type !== 'data' ) {
 			return;
 		}
 
-		$linked   = isset( $field_id['linked'] ) ? $field_id['linked'] : false;
+		$linked   = $field_id['linked'] ?? false;
 		$field_id = $field_id['field_id'];
 
 		if ( $linked ) {

@@ -99,7 +99,7 @@ var wpmfReplaceModule;
                                 var src_thumbnail = $thumb.attr('src');
                                 var $img = $('.attachment-details').find('.thumbnail img');
                                 var src_detail = $img.attr('src');
-                                if (ob.cloud_file_type === 'google_drive' || ob.cloud_file_type === 'onedrive_business' || ob.cloud_file_type === 'nextcloud') {
+                                if (ob.cloud_file_type === 'google_drive' || ob.cloud_file_type === 'onedrive_business' || ob.cloud_file_type === 'nextcloud' || ob.cloud_file_type === 'owncloud') {
                                     $thumb.attr('src', src_thumbnail + '&ver=' + n);
                                     $img.attr('src', src_detail + '&ver=' + n);
                                 } else {

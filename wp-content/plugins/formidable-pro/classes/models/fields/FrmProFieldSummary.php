@@ -50,9 +50,10 @@ DEFAULT_HTML;
 		return array_merge(
 			parent::extra_field_opts(),
 			array(
-				'exclude_fields' => '',
-				'include_extras' => array(),
-				'label'          => 'none',
+				'exclude_fields'      => '',
+				'include_extras'      => array(),
+				'label'               => 'none',
+				'file_display_format' => 'thumbnail+filename',
 			)
 		);
 	}
@@ -88,11 +89,10 @@ DEFAULT_HTML;
 			return;
 		}
 
-		$atts['excluded_ids']   = $this->get_excluded_ids();
-		$atts['excluded_types'] = array_merge(
-			self::excluded_field_types(),
-			$this->get_auto_excluded_types()
-		);
+		$atts['excluded_ids']        = $this->get_excluded_ids();
+		$atts['excluded_types']      = array_merge( self::excluded_field_types(), $this->get_auto_excluded_types() );
+		$atts['file_display_format'] = FrmField::get_option( $this->field, 'file_display_format' );
+		$atts['file_display_format'] = $atts['file_display_format'] ? $atts['file_display_format'] : 'thumbnail+filename';
 
 		$formatter = new FrmProSummaryFormatter( FrmAppHelper::get_post_param( 'form_id', '', 'absint' ), $atts );
 		return $formatter->get_formatted_entry_values();

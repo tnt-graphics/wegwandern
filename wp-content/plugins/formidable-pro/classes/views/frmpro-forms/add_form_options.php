@@ -17,35 +17,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm8 frm_form_field frm_select_with_label">
 		<select name="options[logged_in_role][]" id="logged_in_role" class="frm_multiselect hide_logged_in <?php echo esc_attr( $values['logged_in'] ? '' : 'frm_invisible' ); ?>" multiple="multiple">
 			<option value="" <?php FrmProAppHelper::selected( $values['logged_in_role'], '' ); ?>><?php esc_html_e( 'Logged-in Users', 'formidable-pro' ); ?></option>
-			<?php FrmAppHelper::roles_options($values['logged_in_role']); ?>
+			<?php FrmAppHelper::roles_options( $values['logged_in_role'] ); ?>
 		</select>
 	</p>
-
 	<p class="frm4 frm_form_field">
 		<label for="single_entry">
 			<input type="checkbox" name="options[single_entry]" id="single_entry" value="1" <?php checked( $values['single_entry'], 1 ); ?> />
 			<?php printf( esc_html__( 'Limit number of entries %1$sto one per%2$s', 'formidable-pro' ), '<span class="frm-single-entry-setting' . esc_attr( $values['single_entry'] ? '' : ' frm_invisible' ) . '">', '</span>' ); ?>
 		</label>
 	</p>
-	<p class="frm8 frm_form_field frm_select_with_label">
-		<select id="frm_single_entry_type" name="options[single_entry_type][]" class="frm_multiselect frm-single-entry-setting<?php echo esc_attr( $values['single_entry'] ? '' : ' frm_invisible' ); ?>" multiple="multiple">
-			<option value="user" <?php selected( in_array( 'user', $values['single_entry_type'], true ) ); ?>>
-				<?php esc_html_e( 'Logged-in User', 'formidable-pro' ); ?>
-			</option>
-			<?php if ( FrmAppHelper::ips_saved() ) { ?>
-			<option value="ip" <?php selected( in_array( 'ip', $values['single_entry_type'], true ) ); ?>>
-				<?php esc_html_e( 'IP Address', 'formidable-pro' ); ?>
-			</option>
-			<?php } ?>
-			<option value="cookie" <?php selected( in_array( 'cookie', $values['single_entry_type'], true ) ); ?>>
-				<?php esc_html_e( 'Saved Cookie', 'formidable-pro' ); ?>
-			</option>
-			<?php if ( $email_fields ) { ?>
-			<option value="email" <?php selected( in_array( 'email', $values['single_entry_type'], true ) ); ?>>
-				<?php esc_html_e( 'Email Address', 'formidable-pro' ); ?>
-			</option>
-			<?php } ?>
-		</select>
+	<p
+		class="frm8 frm_form_field frm_select_with_label frm-gdpr-related-setting"
+		data-frm-gdpr-disabled-message="<?php esc_attr_e( 'This option is disabled due to the GDPR setting enabled in %1$sFormidable Settings%2$s.', 'formidable-pro' ); ?>">
+			<select id="frm_single_entry_type" name="options[single_entry_type][]" class="frm_multiselect frm-single-entry-setting<?php echo esc_attr( $values['single_entry'] ? '' : ' frm_invisible' ); ?>" multiple="multiple">
+				<option value="user" <?php selected( in_array( 'user', $values['single_entry_type'], true ) ); ?>>
+					<?php esc_html_e( 'Logged-in User', 'formidable-pro' ); ?>
+				</option>
+				<option <?php disabled( FrmAppHelper::ips_saved(), false ); ?> value="ip" <?php selected( in_array( 'ip', $values['single_entry_type'], true ) && FrmAppHelper::ips_saved() ); ?>>
+					<?php esc_html_e( 'IP Address', 'formidable-pro' ); ?>
+				</option>
+				<option <?php disabled( FrmProAppHelper::no_gdpr_cookies(), true ); ?> value="cookie" <?php selected( in_array( 'cookie', $values['single_entry_type'], true ) && ! FrmProAppHelper::no_gdpr_cookies() ); ?>>
+					<?php esc_html_e( 'Saved Cookie', 'formidable-pro' ); ?>
+				</option>
+				<?php if ( $email_fields ) { ?>
+				<option value="email" <?php selected( in_array( 'email', $values['single_entry_type'], true ) ); ?>>
+					<?php esc_html_e( 'Email Address', 'formidable-pro' ); ?>
+				</option>
+				<?php } ?>
+			</select>
 	</p>
 
 	<div id="frm_cookie_expiration" class="frm-single-entry-type-cookie-setting frm_grid_container <?php echo FrmProFormsHelper::check_single_entry_type( $values, 'cookie' ) ? '' : 'frm_hidden'; ?>">
@@ -57,6 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<p class="frm8">
 			<input type="text" id="cookie_expiration" name="options[cookie_expiration]" value="<?php echo esc_attr( $values['cookie_expiration'] ); ?>" size="6" class="frm-w-auto">
 			<span class="howto"><?php esc_html_e( 'hours', 'formidable-pro' ); ?></span>
+			<i style="color:var(--grey-400);"><?php esc_html_e( '(eg. .25, 5, 200)', 'formidable-pro' ); ?></i>
 		</p>
 	</div>
 
@@ -82,7 +82,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p <?php FrmAppHelper::array_to_html_params( $single_entry_email_wrapper_params, true ); ?>>
 		<select id="frm_unique_email_id" name="options[unique_email_id]">
 			<option value="">
-				<?php echo esc_html_e( '&mdash; Select Field &mdash;', 'formidable-pro' ); ?>
+				<?php esc_html_e( 'Select Field', 'formidable-pro' ); ?>
 			</option>
 			<?php
 			foreach ( $email_fields as $email_field ) {
@@ -104,6 +104,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <?php
 require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/file-protection-options.php';
+
+/**
+ * Fires after the file protection options are displayed.
+ *
+ * @since 6.24
+ *
+ * @param array $values Form values.
+ */
+do_action( 'frm_form_permissions_options_after_file_protection', $values );
 
 if ( is_multisite() ) {
 	if ( current_user_can( 'setup_network' ) ) {

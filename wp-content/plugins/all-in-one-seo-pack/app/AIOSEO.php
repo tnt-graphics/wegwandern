@@ -60,6 +60,15 @@ namespace AIOSEO\Plugin {
 		public $isDev = false;
 
 		/**
+		 * Uninstall class instance.
+		 *
+		 * @since 4.8.1
+		 *
+		 * @var Common\Main\Uninstall
+		 */
+		public $uninstall = null;
+
+		/**
 		 * Main AIOSEO Instance.
 		 *
 		 * Insures that only one instance of AIOSEO exists in memory at any one
@@ -144,8 +153,7 @@ namespace AIOSEO\Plugin {
 			$dependencies = [
 				'/vendor/autoload.php'                                      => true,
 				'/vendor/woocommerce/action-scheduler/action-scheduler.php' => true,
-				'/vendor/jwhennessey/phpinsight/autoload.php'               => false,
-				'/vendor_prefixed/monolog/monolog/src/Monolog/Logger.php'   => false
+				'/vendor/jwhennessey/phpinsight/autoload.php'               => false
 			];
 
 			foreach ( $dependencies as $path => $shouldRequire ) {
@@ -219,6 +227,7 @@ namespace AIOSEO\Plugin {
 			$this->helpers                = $this->pro ? new Pro\Utils\Helpers() : new Lite\Utils\Helpers();
 			$this->internalNetworkOptions = ( $this->pro && $this->helpers->isPluginNetworkActivated() ) ? new Pro\Options\InternalNetworkOptions() : new Common\Options\InternalNetworkOptions();
 			$this->internalOptions        = $this->pro ? new Pro\Options\InternalOptions() : new Lite\Options\InternalOptions();
+			$this->uninstall              = new Common\Main\Uninstall();
 
 			// Run pre-updates.
 			$this->preUpdates = $this->pro ? new Pro\Main\PreUpdates() : new Common\Main\PreUpdates();
@@ -281,7 +290,6 @@ namespace AIOSEO\Plugin {
 			$this->features           = $this->pro ? new Pro\Utils\Features() : new Common\Utils\Features();
 			$this->tags               = $this->pro ? new Pro\Utils\Tags() : new Common\Utils\Tags();
 			$this->blocks             = new Common\Utils\Blocks();
-			$this->badBotBlocker      = new Common\Tools\BadBotBlocker();
 			$this->breadcrumbs        = $this->pro ? new Pro\Breadcrumbs\Breadcrumbs() : new Common\Breadcrumbs\Breadcrumbs();
 			$this->dynamicBackup      = $this->pro ? new Pro\Options\DynamicBackup() : new Common\Options\DynamicBackup();
 			$this->options            = $this->pro ? new Pro\Options\Options() : new Lite\Options\Options();
@@ -319,12 +327,15 @@ namespace AIOSEO\Plugin {
 			$this->schema             = $this->pro ? new Pro\Schema\Schema() : new Common\Schema\Schema();
 			$this->actionScheduler    = new Common\Utils\ActionScheduler();
 			$this->seoRevisions       = $this->pro ? new Pro\SeoRevisions\SeoRevisions() : new Common\SeoRevisions\SeoRevisions();
-			$this->ai                 = $this->pro ? new Pro\Ai\Ai() : null;
+			$this->ai                 = $this->pro ? new Pro\Ai\Ai() : new Common\Ai\Ai();
 			$this->filters            = $this->pro ? new Pro\Main\Filters() : new Lite\Main\Filters();
 			$this->crawlCleanup       = new Common\QueryArgs\CrawlCleanup();
+			$this->searchCleanup      = new Common\SearchCleanup\SearchCleanup();
 			$this->emailReports       = new Common\EmailReports\EmailReports();
+			$this->seoAnalysis        = $this->pro ? new Pro\SeoAnalysis\SeoAnalysis() : new Common\SeoAnalysis\SeoAnalysis();
 			$this->thirdParty         = new Common\ThirdParty\ThirdParty();
 			$this->writingAssistant   = new Common\WritingAssistant\WritingAssistant();
+			$this->llms               = $this->pro ? new Pro\Llms\Llms() : new Common\Llms\Llms();
 
 			if ( ! wp_doing_ajax() && ! wp_doing_cron() ) {
 				$this->rss       = new Common\Rss();
@@ -350,8 +361,6 @@ namespace AIOSEO\Plugin {
 		public function loadInit() {
 			$this->settings = new Common\Utils\VueSettings( '_aioseo_settings' );
 			$this->sitemap->init();
-
-			$this->badBotBlocker->init();
 
 			// We call this again to reset any post types/taxonomies that have not yet been set up.
 			$this->dynamicOptions->refresh();

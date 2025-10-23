@@ -170,7 +170,7 @@ class FrmProFieldRte extends FrmFieldType {
 				'form_id' => $forms_loaded,
 				'type'    => 'rte',
 			),
-			'id' 
+			'id'
 		);
 		if ( ! $rte_fields ) {
 			return;
@@ -255,7 +255,7 @@ class FrmProFieldRte extends FrmFieldType {
 
 		$e_args = array(
 			'textarea_name' => $default_name,
-			'textarea_rows' => 3,
+			'textarea_rows' => 7,
 		);
 		wp_editor( $field['default_value'], 'frm_default_value_' . absint( $field['id'] ), $e_args );
 
@@ -278,7 +278,7 @@ class FrmProFieldRte extends FrmFieldType {
 			return;
 		}
 
-		$action = __CLASS__ . '::print_media_templates';
+		$action = self::class . '::print_media_templates';
 		if ( ! empty( $e_args['media_buttons'] ) && ! has_action( 'wp_enqueue_editor', $action ) ) {
 			add_action( 'wp_enqueue_editor', $action );
 		}
@@ -291,5 +291,34 @@ class FrmProFieldRte extends FrmFieldType {
 	 */
 	public static function print_media_templates() {
 		wp_print_media_templates();
+	}
+
+	/**
+	 * We should hide the link button for RTE fields when the user does not have permission to submit
+	 * links.
+	 *
+	 * @since 6.23
+	 *
+	 * @return bool
+	 */
+	public static function should_hide_link_button() {
+		if ( current_user_can( 'frm_edit_entries' ) ) {
+			return false;
+		}
+
+		// Check if anchor tags are allowed using the frm_allowed_form_input_html filter.
+		$allowed_html = array(
+			'b'      => array(),
+			'br'     => array(),
+			'strong' => array(),
+			'p'      => array(),
+			'i'      => array(),
+			'ul'     => array(),
+			'ol'     => array(),
+			'li'     => array(),
+		);
+		$allowed_html = apply_filters( 'frm_allowed_form_input_html', $allowed_html );
+
+		return ! array_key_exists( 'a', $allowed_html );
 	}
 }

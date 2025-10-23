@@ -142,7 +142,13 @@ class FrmProFieldValue extends FrmFieldValue {
 			$atts['fields'] = '';
 		}
 
-		foreach ( $this->saved_value as $child_id ) {
+		foreach ( $this->saved_value as $key => $child_id ) {
+			if ( 'form' === $key ) {
+				// We expect $child_id to be an entry ID.
+				// Skip the form ID to avoid issues with data from other forms appearing.
+				continue;
+			}
+
 			if ( is_numeric( $child_id ) ) {
 				$child_values                       = new FrmProEntryValues( $child_id, $atts );
 				$this->displayed_value[ $child_id ] = $child_values->get_field_values();

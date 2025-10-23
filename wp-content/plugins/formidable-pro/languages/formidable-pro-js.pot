@@ -3,6 +3,71 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "X-Generator: babel-plugin-makepot\n"
 
+#: js/src/builder/builder.js:108
+msgid "Choose type of slider"
+msgstr ""
+
+#: js/src/builder/builder.js:193
+msgid "Single"
+msgstr ""
+
+#: js/src/builder/builder.js:194
+msgid "Range"
+msgstr ""
+
+#: js/src/builder/builder.js:1990
+msgid "Page %d"
+msgstr ""
+
+#: js/src/builder/builder.js:572
+msgid "Please enter a valid number."
+msgstr ""
+
+#: js/src/builder/builder.js:578
+msgid "Minimum size cannot be greater than maximum size."
+msgstr ""
+
+#: js/src/builder/builder.js:611
+msgid "Minimum value cannot be greater than maximum value."
+msgstr ""
+
+#: js/src/builder/builder.js:622
+msgid "Minimum gap cannot be greater than maximum gap."
+msgstr ""
+
+#: js/src/builder/builder.js:625
+msgid ""
+"Maximum gap cannot be greater than the difference between minimum and "
+"maximum values."
+msgstr ""
+
+#: js/src/builder/builder.js:631
+msgid "Step value must be greater than 0."
+msgstr ""
+
+#: js/src/builder/builder.js:634
+msgid "Step value must be less than maximum value."
+msgstr ""
+
+#: js/src/builder/builder.js:852
+#. %s: type of the field (date or time)
+msgid ""
+"Disabling the %s range will delete the end %s field. Are you sure you want "
+"to continue?"
+msgstr ""
+
+#: js/src/builder/builder.js:878
+msgid "%s"
+msgstr ""
+
+#: js/src/builder/builder.js:945
+msgid "Start %s"
+msgstr ""
+
+#: js/src/builder/builder.js:946
+msgid "End %s"
+msgstr ""
+
 #: js/src/calculator/block.js:35
 msgid "Display a Calculator Form"
 msgstr ""

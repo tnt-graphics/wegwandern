@@ -80,9 +80,17 @@ class FrmProAppController {
 				self::register_js( $js_key, $js );
 			}
 		} else {
+			$version = FrmProDb::$plug_version;
+
+			if ( FrmProAppHelper::use_jquery_datepicker() ) {
+				$version .= '-jquery';
+			} else {
+				$version .= '-flatpickr';
+			}
+
 			global $pagenow;
 			wp_deregister_script( 'formidable' );
-			wp_register_script( 'formidable', FrmProAppHelper::plugin_url() . '/js/frm.min.js', array( 'jquery' ), FrmProDb::$plug_version, true );
+			wp_register_script( 'formidable', FrmProAppHelper::plugin_url() . '/js/frm.min.js', array( 'jquery' ), $version, true );
 
 			$additional_js = self::additional_js_files( 'unminified' );
 			foreach ( $additional_js as $js_key => $js ) {
@@ -92,6 +100,7 @@ class FrmProAppController {
 		FrmAppHelper::localize_script( 'front' );
 
 		self::localize_global_messages();
+		self::set_datepicker_library_type_js();
 		self::add_password_checks_data_to_js();
 		FrmProStrpLiteController::maybe_register_stripe_scripts();
 
@@ -130,6 +139,20 @@ class FrmProAppController {
 	}
 
 	/**
+	 * Sets the datepicker library type in JS. Possible values are 'flatpickr' or 'jquery'.
+	 *
+	 * @since 6.19
+	 *
+	 * @return void
+	 */
+	private static function set_datepicker_library_type_js() {
+		$frmpro_settings = FrmProAppHelper::get_settings();
+		if ( ! empty( $frmpro_settings->datepicker_library ) ) {
+			wp_add_inline_script( 'formidable', 'window.frm_js.datepickerLibrary = "' . esc_js( $frmpro_settings->datepicker_library ) . '";', 'after' );
+		}
+	}
+
+	/**
 	 * Adds password checks data to JS.
 	 *
 	 * @since 5.5.3
@@ -163,7 +186,7 @@ class FrmProAppController {
 	 * @since 5.0.15 renamed $include_dropzone to $include_excluded as dropzone is no longer the only script that can be excluded.
 	 *
 	 * @param string $suffix
-	 * @param bool   $include_excluded if true it will include dropzone and maskedinput js in the list even if excluded from the minified js.
+	 * @param bool   $include_excluded if true it will include dropzone and imask js in the list even if excluded from the minified js.
 	 * @return array
 	 */
 	public static function get_pro_js_files( $suffix = '', $include_excluded = false ) {
@@ -172,12 +195,22 @@ class FrmProAppController {
 			$suffix = FrmAppHelper::js_suffix();
 		}
 
-		$files = array(
-			'formidablepro' => array(
-				'file'     => '/js/formidablepro' . $suffix . '.js',
-				'requires' => array( 'jquery', 'formidable' ),
+		$files               = array();
+		$pro_js_dependencies = array( 'jquery', 'formidable' );
+
+		if ( ! FrmProAppHelper::use_jquery_datepicker() ) {
+			$files['flatpickr'] = array(
+				'file'     => '/js/utils/flatpickr/flatpickr.min.js',
+				'requires' => array(),
 				'version'  => $version,
-			),
+			);
+
+		}
+
+		$files['formidablepro'] = array(
+			'file'     => '/js/formidablepro' . $suffix . '.js',
+			'requires' => $pro_js_dependencies,
+			'version'  => $version,
 		);
 
 		if ( FrmProAppHelper::use_chosen_js() ) {
@@ -207,22 +240,22 @@ class FrmProAppController {
 	 */
 	private static function additional_js_files( $filter_type ) {
 		if ( 'all' === $filter_type ) {
-			$include_dropzone    = true;
-			$include_maskedinput = true;
-			$include_intl_phone  = false;
+			$include_dropzone   = true;
+			$include_imask      = true;
+			$include_intl_phone = false;
 		} else {
-			$dropzone_is_in_minified_js    = apply_filters( 'frm_include_dropzone_in_minified_js', ! self::dropzone_conflict_detected() );
-			$maskedinput_is_in_minified_js = apply_filters( 'frm_include_maskedinput_in_minified_js', ! self::maskedinput_conflict_detected() );
-			$intlphone_is_in_minified_js   = apply_filters( 'frm_include_intlphone_in_minified_js', ! self::intlphone_conflict_detected() );
+			$dropzone_is_in_minified_js  = apply_filters( 'frm_include_dropzone_in_minified_js', ! self::dropzone_conflict_detected() );
+			$imask_is_in_minified_js     = apply_filters( 'frm_include_imask_in_minified_js', ! self::imask_conflict_detected() );
+			$intlphone_is_in_minified_js = apply_filters( 'frm_include_intlphone_in_minified_js', ! self::intlphone_conflict_detected() );
 
 			if ( 'minified' === $filter_type ) {
-				$include_dropzone    = $dropzone_is_in_minified_js;
-				$include_maskedinput = $maskedinput_is_in_minified_js;
-				$include_intl_phone  = $intlphone_is_in_minified_js;
+				$include_dropzone   = $dropzone_is_in_minified_js;
+				$include_imask      = $imask_is_in_minified_js;
+				$include_intl_phone = $intlphone_is_in_minified_js;
 			} else {
-				$include_dropzone    = ! $dropzone_is_in_minified_js;
-				$include_maskedinput = ! $maskedinput_is_in_minified_js;
-				$include_intl_phone  = false;
+				$include_dropzone   = ! $dropzone_is_in_minified_js;
+				$include_imask      = ! $imask_is_in_minified_js;
+				$include_intl_phone = false;
 			}
 		}
 
@@ -231,11 +264,11 @@ class FrmProAppController {
 			$files['dropzone'] = self::get_dropzone_js_details();
 		}
 
-		if ( $include_maskedinput ) {
-			$files['jquery-maskedinput'] = array(
-				'file'     => '/js/jquery.maskedinput.min.js',
-				'requires' => array( 'jquery' ),
-				'version'  => '1.4',
+		if ( $include_imask ) {
+			$files['imask'] = array(
+				'file'     => '/js/imask.min.js',
+				'requires' => array(),
+				'version'  => '7.6.1',
 			);
 		}
 
@@ -296,13 +329,12 @@ class FrmProAppController {
 	}
 
 	/**
-	 * @since 5.0.15
+	 * @since 6.23
 	 *
 	 * @return bool
 	 */
-	private static function maskedinput_conflict_detected() {
-		$woocommerce_stripe_gateway_active = function_exists( 'woocommerce_gateway_stripe' );
-		return $woocommerce_stripe_gateway_active;
+	private static function imask_conflict_detected() {
+		return false;
 	}
 
 	/**
@@ -411,14 +443,13 @@ class FrmProAppController {
 
 		$has_entries = FrmDb::get_var( 'frm_items', array( 'form_id' => $form_id ) );
 		if ( $has_entries ) {
-			$reports = array(
+			$nav[] = array(
 				'link'       => admin_url( 'admin.php?page=formidable&frm_action=reports&form=' . $form_id . '&show_nav=1' ),
 				'label'      => __( 'Reports', 'formidable-pro' ),
 				'current'    => array( 'reports' ),
 				'page'       => 'formidable',
 				'permission' => 'frm_view_reports',
 			);
-			$nav[]   = $reports;
 		}
 
 		return $nav;
@@ -449,9 +480,7 @@ class FrmProAppController {
 	}
 
 	private static function whitelabel_svg() {
-		return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-<path fill="currentColor" d="M18.1 1.3H2C.9 1.3 0 2 0 3V17c0 1 .8 1.9 1.9 1.9H18c1 0 1.9-.9 1.9-2V3.2c0-1-.8-1.9-1.9-1.9zM18 16.9H2a.2.2 0 0 1-.2-.3V3.4c0-.2 0-.3.2-.3H18c.1 0 .2.1.2.3v13.2c0 .2 0 .3-.2.3zm-1.6-3.6v1c0 .2-.3.4-.5.4H8a.5.5 0 0 1-.5-.5v-1c0-.2.2-.4.5-.4h7.8c.2 0 .4.2.4.5zm0-3.8v1c0 .2-.3.4-.5.4H8a.5.5 0 0 1-.5-.4v-1c0-.2.2-.4.5-.4h7.8c.2 0 .4.2.4.4zm0-3.7v1c0 .2-.3.4-.5.4H8a.5.5 0 0 1-.5-.5v-1c0-.2.2-.4.5-.4h7.8c.2 0 .4.2.4.5zm-9.9.5a1.4 1.4 0 1 1-2.8 0 1.4 1.4 0 0 1 2.8 0zm0 3.7a1.4 1.4 0 1 1-2.8 0 1.4 1.4 0 0 1 2.8 0zm0 3.8a1.4 1.4 0 1 1-2.8 0 1.4 1.4 0 0 1 2.8 0z"/>
-</svg>';
+		return '<svg xmlns="http://www.w3.org/2000/svg" fill="#929699" width="25" height="25"><path d="M2.777 0A2.776 2.776 0 0 0 0 2.777v19.446A2.796 2.796 0 0 0 2.777 25h19.446A2.796 2.796 0 0 0 25 22.223V2.777A2.776 2.776 0 0 0 22.223 0Zm1.391 2.777a1.388 1.388 0 0 1 0 2.778 1.388 1.388 0 1 1 0-2.778Zm4.164 0a1.389 1.389 0 1 1 .004 2.778 1.389 1.389 0 0 1-.004-2.778Zm4.168 0h9.723v2.778H12.5ZM2.777 8.332h19.446v13.89H2.777Zm2.778 2.777v2.782h13.613v-2.782Zm0 5.559v2.777H12.5v-2.777Zm0 0" style="stroke:none;fill-rule:nonzero;fill:#1b2023;fill-opacity:1"/></svg>';
 	}
 
 	/**
@@ -553,7 +582,7 @@ class FrmProAppController {
 		} else {
 			global $shortcode_tags;
 			if ( isset( $shortcode_tags[ $source ] ) && is_callable( $shortcode_tags[ $source ] ) ) {
-				$content = isset( $atts['content'] ) ? $atts['content'] : '';
+				$content = $atts['content'] ?? '';
 				$value   = call_user_func( $shortcode_tags[ $source ], $processing_atts, $content, $source );
 			}
 		}
@@ -624,6 +653,7 @@ class FrmProAppController {
 
 		self::maybe_load_admin_js();
 		self::remove_upsells();
+		self::set_inbox_notice_for_flatpickr();
 	}
 
 	/**
@@ -696,6 +726,13 @@ class FrmProAppController {
 
 		// Exit if not on a Formidable admin page.
 		if ( ! FrmAppHelper::is_admin_page( 'formidable' ) ) {
+			if ( FrmAppHelper::is_admin_page( 'formidable-import' ) ) {
+				self::register_admin_script( 'import', array( 'formidable_admin' ) );
+				self::enqueue_script( 'import' );
+			} elseif ( FrmAppHelper::is_admin_page( 'formidable-settings' ) ) {
+				self::register_admin_script( 'global-settings', array( 'formidable_admin' ) );
+				self::enqueue_script( 'global-settings' );
+			}
 			return;
 		}
 
@@ -709,8 +746,17 @@ class FrmProAppController {
 
 			$form_id = FrmAppHelper::simple_get( 'id', 'absint' );
 			$form    = FrmForm::getOne( $form_id );
-			$vars    = array(
-				'currency' => FrmProCurrencyHelper::get_currency( $form ),
+
+			$currency                 = FrmProCurrencyHelper::get_currency( $form );
+			$currency['symbol_left']  = html_entity_decode( $currency['symbol_left'], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+			$currency['symbol_right'] = html_entity_decode( $currency['symbol_right'], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+			$vars = array(
+				'currency' => $currency,
+				'i18n'     => array(
+					'and' => __( 'And', 'formidable-pro' ),
+					'or'  => __( 'Or', 'formidable-pro' ),
+				),
 			);
 			wp_localize_script( 'formidable_pro_builder', 'frmProBuilderVars', $vars );
 
@@ -883,9 +929,41 @@ class FrmProAppController {
 	}
 
 	/**
+	 * Add an inbox notice if the user is using the "Default" Date Picker Library.
+	 * This encourages people to try the Flatpickr beta.
+	 *
+	 * @since 6.19
+	 *
+	 * @return void
+	 */
+	public static function set_inbox_notice_for_flatpickr() {
+		if ( ! FrmAppHelper::is_formidable_admin() ) {
+			return;
+		}
+
+		$frmpro_settings = FrmProAppHelper::get_settings();
+		if ( ! empty( $frmpro_settings->datepicker_library ) && 'flatpickr' === $frmpro_settings->datepicker_library ) {
+			return;
+		}
+
+		$message = array(
+			'key'     => 'try-flatpickr-date-ranges',
+			'subject' => 'New! - Date Ranges!',
+			'message' => __( 'New! Date fields now support a new Date Range option. This requires that Flatpickr is selected as the active Date Picker Library in Global Settings.', 'formidable-pro' ),
+			'cta'     => '<a href="' . esc_url( admin_url( 'admin.php?page=formidable-settings' ) ) . '">' . esc_html__( 'Update Now', 'formidable-pro' ) . '</a>',
+			'type'    => 'news',
+		);
+
+		$inbox = new FrmInbox();
+		$inbox->add_message( $message );
+	}
+
+	/**
 	 * Show a message if Pro is installed but not activated.
 	 *
 	 * @since 3.06.02
+	 *
+	 * @return void
 	 */
 	public static function admin_notices() {
 		$is_settings_page = FrmAppHelper::simple_get( 'page', 'sanitize_text_field' ) === 'formidable-settings';

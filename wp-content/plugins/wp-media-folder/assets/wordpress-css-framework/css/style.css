@@ -581,7 +581,7 @@ input.ju-radiobox:focus {
 
 .ju-main-wrapper .ju-right-panel .tabs.ju-top-tabs li.tab {
     text-transform: capitalize;
-    min-width: 200px;
+    min-width: 150px;
     background-color: #fff;
     flex-grow: inherit;
 }

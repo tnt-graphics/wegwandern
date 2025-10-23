@@ -8,6 +8,7 @@ FrmAppHelper::show_search_box(
 		'input_id'    => 'default-value-field',
 		'placeholder' => __( 'Search Smart Tags', 'formidable-pro' ),
 		'tosearch'    => 'search-smart-tags',
+		'class'       => 'frm-mt-sm',
 	)
 );
 ?>
@@ -18,8 +19,8 @@ FrmAppHelper::show_search_box(
 		foreach ( $tags as $tag => $label ) {
 			$title = '';
 			if ( is_array( $label ) ) {
-				$title = isset( $label['title'] ) ? $label['title'] : '';
-				$label = isset( $label['label'] ) ? $label['label'] : reset( $label );
+				$title = $label['title'] ?? '';
+				$label = $label['label'] ?? reset( $label );
 			}
 
 			?>
@@ -30,8 +31,8 @@ FrmAppHelper::show_search_box(
 						echo ' frm_help" title="' . esc_attr( $title );
 					}
 					?>">
-					<?php echo esc_html( $label ); ?>
-					<span>[<?php echo esc_html( $tag ); ?>]</span>
+					<span><?php echo esc_html( $label ); ?></span>
+					<span class="frm-text-grey-500">[<?php echo esc_html( $tag ); ?>]</span>
 				</a>
 			</li>
 			<?php
@@ -39,7 +40,7 @@ FrmAppHelper::show_search_box(
 		}
 		?>
 	</ul>
-	<p class="howto">
+	<p class="howto frm-italic frm-mt-sm">
 		<?php esc_html_e( 'Click smart value to dynamically populate this field. Smart values are not used when editing entries.', 'formidable-pro' ); ?>
 	</p>
 </div>

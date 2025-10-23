@@ -6,5 +6,8 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
+    'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
+    'League\\HTMLToMarkdown\\' => array($vendorDir . '/league/html-to-markdown/src'),
     'AIOSEO\\Plugin\\' => array($baseDir . '/app'),
 );

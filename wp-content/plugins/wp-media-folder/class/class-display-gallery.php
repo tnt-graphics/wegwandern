@@ -371,7 +371,7 @@ class WpmfDisplayGallery
         $custom_class = trim($class);
         if (isset($wpmf_autoinsert) && ((int)$wpmf_autoinsert === 1 || $wpmf_autoinsert === 'on') && !empty($wpmf_folder_id)) {
             if ($wpmf_orderby === 'post__in') {
-                $wpmf_orderby = 'meta_value_num';
+                $wpmf_orderby = 'meta_value_num title';
                 $wpmf_order = 'ASC';
                 $meta_key = 'wpmf_order';
             }
@@ -720,6 +720,7 @@ class WpmfDisplayGallery
             'portfolio' => __('Portfolio', 'wpmf'),
             'slider' => __('Slider', 'wpmf'),
         );
+        $auto_insert_image_in_folder = apply_filters('auto_insert_image_in_folder_yes', false);
         ?>
 
         <script type="text/html" id="tmpl-wpmf-gallery-settings">
@@ -834,8 +835,8 @@ class WpmfDisplayGallery
 
             <label class="setting">
                 <select class="wpmf_autoinsert" name="wpmf_autoinsert" data-setting="wpmf_autoinsert">
-                    <option value="0" selected><?php esc_html_e('No', 'wpmf'); ?></option>
-                    <option value="1"><?php esc_html_e('Yes', 'wpmf'); ?></option>
+                    <option value="0" <?php echo !$auto_insert_image_in_folder ? 'selected' : ''; ?>><?php esc_html_e('No', 'wpmf'); ?></option>
+                    <option value="1" <?php echo $auto_insert_image_in_folder ? 'selected' : ''; ?>><?php esc_html_e('Yes', 'wpmf'); ?></option>
                 </select>
             </label>
 

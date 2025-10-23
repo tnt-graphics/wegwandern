@@ -75,7 +75,7 @@ class FrmProFieldOption extends FrmFieldOption {
 			if ( $this->use_separate_values && isset( $this->option['value'] ) ) {
 				$this->saved_value = $this->option['value'];
 			} else {
-				$this->saved_value = isset( $this->option['label'] ) ? $this->option['label'] : reset( $this->option );
+				$this->saved_value = $this->option['label'] ?? reset( $this->option );
 			}
 		} else {
 			$this->saved_value = $this->option;

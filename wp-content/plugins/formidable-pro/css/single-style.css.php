@@ -289,15 +289,18 @@ $thumb      .= 'color:' . esc_html( $settings['progress_active_color'] . $import
 	color: var(--date-head-color) !important;
 	background-color: var(--date-head-bg-color) !important;
 }
+.<?php echo esc_html( $settings['style_class'] ); ?> .flatpickr-day,
 .<?php echo esc_html( $settings['style_class'] ); ?> .ui-datepicker td, /* Sample form selector */
 .<?php echo esc_html( $settings['style_class'] ); ?>.ui-datepicker td {
 	border: 0;
 	border-radius: var(--border-radius);
 	overflow: hidden;
 }
+.<?php echo esc_html( $settings['style_class'] ); ?> .flatpickr-day.today:not(.inRange),
 .<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-today {
 	background-color: var(--date-band-color) !important;
 }
+.<?php echo esc_html( $settings['style_class'] ); ?> .flatpickr-day.today,
 .<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-today > a {
 	color: var(--date-head-color)<?php echo esc_html( $important ); ?>;
 }
@@ -305,9 +308,11 @@ $thumb      .= 'color:' . esc_html( $settings['progress_active_color'] . $import
 .<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-current-day .ui-state-hover {
 	background-color: var(--border-color-active) !important;
 }
+
 .<?php echo esc_html( $settings['style_class'] ); ?> td.ui-datepicker-current-day .ui-state-default:not(.ui-state-hover) {
 	color: #fff;
 }
+.<?php echo esc_html( $settings['style_class'] ); ?> .flatpickr-day.today:hover,
 .<?php echo esc_html( $settings['style_class'] ); ?> td:not(.ui-datepicker-current-day) .ui-state-hover {
 	color: var(--text-color)<?php echo esc_html( $important ); ?>;
 	background: #F2F4F7 !important;
@@ -329,3 +334,13 @@ $thumb      .= 'color:' . esc_html( $settings['progress_active_color'] . $import
 }
 <?php endif; ?>
 /* End Submit Buttons */
+
+<?php
+if ( ! empty( $settings['field_border_width'] ) && false !== strpos( $settings['field_border_width'], ' ' ) ) {
+	$border_width = explode( ' ', str_replace( 'px', '', esc_html( $settings['field_border_width'] ) ) );
+	$border_width = max( $border_width ) . 'px';
+	?>
+	.<?php echo esc_html( $settings['style_class'] ); ?> .frm_image_options .frm_image_option_container {
+		border-width:<?php echo esc_html( $border_width . $important ); ?>;
+	}
+<?php } ?>

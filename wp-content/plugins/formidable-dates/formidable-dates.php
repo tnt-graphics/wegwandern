@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Formidable Datepicker Options
  * Description: Set blackout dates, days of the week, dynamic minimum and maximum dates, and calculate dates.
- * Version: 2.0.4
+ * Version: 3.0
  * Plugin URI: https://formidableforms.com
  * Author URI: https://formidableforms.com
  * Author: Strategy11

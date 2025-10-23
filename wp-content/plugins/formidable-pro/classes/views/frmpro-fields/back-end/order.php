@@ -10,9 +10,17 @@ if ( isset( $field['option_order'] ) ) {
 }
 ?>
 <p class="frm6 frm_form_field">
-	<label>
-		<?php esc_html_e( 'Option order', 'formidable-pro' ); ?>
-		<?php FrmProAppHelper::tooltip_icon( __( 'Set the order for the values in your field.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
+	<label class="frm-h-stack-xs">
+		<span><?php esc_html_e( 'Option order', 'formidable-pro' ); ?></span>
+		<?php
+		FrmProAppHelper::tooltip_icon(
+			__( 'Set the order for the values in your field.', 'formidable-pro' ),
+			array(
+				'data-placement' => 'right',
+				'class'          => 'frm-flex',
+			)
+		);
+		?>
 	</label>
 	<select name="field_options[<?php echo esc_attr( $field_option_order ) . '_' . esc_attr( $field['id'] ); ?>]">
 		<option value="ascending" <?php selected( $field[ $field_option_order ], 'ascending' ); ?>>

@@ -165,17 +165,20 @@ class FrmProFormsHelper {
 			$custom_options = self::get_custom_date_js( $date_field_id, $options );
 
 			$date_options = array(
-				'triggerID'     => $trigger_id,
-				'locale'        => $options['locale'],
-				'options'       => array(
+				'triggerID'           => $trigger_id,
+				'locale'              => $options['locale'],
+				'options'             => array(
 					'dateFormat'    => $frmpro_settings->cal_date_format,
+					'fpDateFormat'  => $frmpro_settings->date_format,
 					'changeMonth'   => 'true',
 					'changeYear'    => 'true',
 					'yearRange'     => $options['start_year'] . ':' . $options['end_year'],
 					'defaultDate'   => empty( $options['default_date'] ) ? '' : $options['default_date'],
 					'beforeShowDay' => null,
+					'datesDisabled' => ! empty( $options['field_id'] ) ? wp_cache_get( $options['field_id'], 'frm_used_dates' ) : null, // the cache is always set in self::get_custom_date_js() -> frm_date_field_js_config action hook -> FrmFieldsController::date_field_js()
 				),
-				'customOptions' => $custom_options,
+				'datepickerJsOptions' => array(),
+				'customOptions'       => $custom_options,
 			);
 
 			self::maybe_set_first_day_option( $date_options );
@@ -189,25 +192,11 @@ class FrmProFormsHelper {
 				)
 			);
 
-			if ( empty( $custom_options ) ) {
-				$datepicker_js[] = $date_options;
-			} else {
-				$custom_options .= ',beforeShow:frmProForm.addFormidableClassToDatepicker';
-				$custom_options .= ',onClose:frmProForm.removeFormidableClassFromDatepicker';
+			$date_options['datepickerJsOptions'] = wp_json_encode( $date_options['datepickerJsOptions'] );
 
-				$change_month = self::adjust_value_for_js_boolean( $date_options['options'], 'changeMonth' );
-				$change_year  = self::adjust_value_for_js_boolean( $date_options['options'], 'changeYear' );
-				?>
-jQuery(document).ready(function($){
-$('<?php echo $trigger_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>').addClass('frm_custom_date');
-$(document).on('focusin','<?php echo $trigger_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>', function(){
-$.datepicker.setDefaults($.datepicker.regional['']);
-$(this).datepicker($.extend($.datepicker.regional['<?php echo esc_js( $options['locale'] ); ?>'],{dateFormat:'<?php echo esc_js( $frmpro_settings->cal_date_format ); ?>',changeMonth:<?php echo esc_html( $change_month ); ?>,changeYear:<?php echo esc_html( $change_year ); ?>,yearRange:'<?php echo esc_js( $date_options['options']['yearRange'] ); ?>',defaultDate:'<?php echo esc_js( $date_options['options']['defaultDate'] ); ?>'<?php
-echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-?>}));
-});
-});
-<?php
+			// TO DO: remove legacy_datepicker_compatibility_handler and assign $date_options to $datepicker_js directly when switching to Flatpickr only
+			if ( ! self::legacy_datepicker_compatibility_handler( $custom_options, $date_options, $trigger_id, $options, $frmpro_settings ) ) {
+				$datepicker_js[] = $date_options;
 			}
 
 			if ( ! empty( $options['locale'] ) && ! in_array( $options['locale'], $loaded_langs, true ) ) {
@@ -218,7 +207,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 				}
 
 				$loaded_langs[] = $options['locale'];
-				wp_enqueue_script( 'jquery-ui-i18n-' . $options['locale'], FrmProAppHelper::plugin_url() . '/js/jquery-ui-i18n/datepicker-' . $options['locale'] . '.min.js', array( 'jquery-ui-core', 'jquery-ui-datepicker' ), '1.13.2' );
+				self::init_datepicker_locale( $options['locale'] );
 			}
 		}
 
@@ -229,6 +218,64 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		}
 
 		FrmProTimeFieldsController::load_timepicker_js( $datepicker );
+	}
+
+	/**
+	 * @since 6.19
+	 *
+	 * @param string $locale
+	 * @return void
+	 */
+	private static function init_datepicker_locale( $locale ) {
+		if ( FrmProAppHelper::use_jquery_datepicker() ) {
+			wp_enqueue_script( 'jquery-ui-i18n-' . $locale, FrmProAppHelper::plugin_url() . '/js/jquery-ui-i18n/datepicker-' . $locale . '.min.js', array( 'jquery-ui-core', 'jquery-ui-datepicker' ), '1.13.2' );
+			return;
+		}
+
+		$dependencies = array();
+		if ( FrmAppHelper::js_suffix() && FrmProAppController::has_combo_js_file() ) {
+			$dependencies[] = 'formidable';
+		} else {
+			$dependencies[] = 'flatpickr';
+		}
+
+		wp_enqueue_script( 'flatpickr-locale-' . $locale, FrmProAppHelper::plugin_url() . '/js/utils/flatpickr/l10n/' . $locale . '.js', $dependencies, FrmProDb::$plug_version );
+	}
+
+	/**
+	 * TO DO: remove this function when jQuery Datepicker is not supported anymore.
+	 *
+	 * @since 6.19
+	 *
+	 * @param string $custom_options
+	 * @param array $date_options
+	 * @param string $trigger_id
+	 * @param array $options
+	 * @param object $frmpro_settings
+	 * @return bool
+	 */
+	private static function legacy_datepicker_compatibility_handler( $custom_options, $date_options, $trigger_id, $options, $frmpro_settings ) {
+		if ( ! FrmProAppHelper::use_jquery_datepicker() || empty( $custom_options ) ) {
+			return false;
+		}
+
+		$custom_options .= ',beforeShow:frmProForm.addFormidableClassToDatepicker';
+		$custom_options .= ',onClose:frmProForm.removeFormidableClassFromDatepicker';
+
+		$change_month = self::adjust_value_for_js_boolean( $date_options['options'], 'changeMonth' );
+		$change_year  = self::adjust_value_for_js_boolean( $date_options['options'], 'changeYear' );
+		?>
+jQuery(document).ready(function($){
+$('<?php echo $trigger_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>').addClass('frm_custom_date');
+$(document).on('focusin','<?php echo $trigger_id; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>', function(){
+$.datepicker.setDefaults($.datepicker.regional['']);
+$(this).datepicker($.extend($.datepicker.regional['<?php echo esc_js( $options['locale'] ); ?>'],{dateFormat:'<?php echo esc_js( $frmpro_settings->cal_date_format ); ?>',changeMonth:<?php echo esc_html( $change_month ); ?>,changeYear:<?php echo esc_html( $change_year ); ?>,yearRange:'<?php echo esc_js( $date_options['options']['yearRange'] ); ?>',defaultDate:'<?php echo esc_js( $date_options['options']['defaultDate'] ); ?>'<?php
+echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+?>}));
+});
+});
+<?php
+		return true;
 	}
 
 	/**
@@ -269,7 +316,10 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 */
 	private static function get_custom_date_js( $date_field_id, $options ) {
 		ob_start();
+		do_action( 'frm_date_field_js_config', $date_field_id, $options );
+		// TO DO: deprecate this when Flatpickr is the only datepicker option
 		do_action( 'frm_date_field_js', $date_field_id, $options );
+
 		$custom_options = ob_get_contents();
 		ob_end_clean();
 
@@ -469,13 +519,13 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		$field = $atts['field'];
 
 		$rule = array(
-			'calc'          => isset( $atts['calc'] ) ? $atts['calc'] : $field['calc'],
+			'calc'          => $atts['calc'] ?? $field['calc'],
 			'calc_dec'      => $field['calc_dec'],
 			'calc_type'     => $field['calc_type'],
 			'form_id'       => $atts['form_id'],
-			'field_id'      => isset( $atts['field_id'] ) ? $atts['field_id'] : $field['id'],
-			'in_section'    => isset( $field['in_section'] ) ? $field['in_section'] : '0',
-			'in_embed_form' => isset( $field['in_embed_form'] ) ? $field['in_embed_form'] : '0',
+			'field_id'      => $atts['field_id'] ?? $field['id'],
+			'in_section'    => $field['in_section'] ?? '0',
+			'in_embed_form' => $field['in_embed_form'] ?? '0',
 		);
 
 		$rule['inSection']   = $rule['in_section'];
@@ -499,7 +549,9 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @param array $field Field array.
 	 */
 	private static function add_is_currency_calc_rule_for_field( &$rule, $field ) {
-		if ( empty( $field['is_currency'] ) ) {
+		$format = $field['format'] ?? '';
+
+		if ( empty( $field['is_currency'] ) && ! FrmProCurrencyHelper::is_currency_format( $format ) ) {
 			return;
 		}
 
@@ -509,7 +561,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		}
 
 		$rule['is_currency'] = true;
-		if ( ! empty( $field['custom_currency'] ) ) {
+		if ( ! empty( $field['custom_currency'] ) || FrmProCurrencyHelper::is_currency_format( $format ) ) {
 			$rule['custom_currency'] = self::prepare_custom_currency( $field );
 		}
 	}
@@ -736,7 +788,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 			'success_page_id'      => '',
 			'success_url'          => '',
 			'ajax_submit'          => 0,
-			'cookie_expiration'    => 8000,
+			'cookie_expiration'    => 720,
 			'draft_label'          => __( 'Save Draft', 'formidable-pro' ),
 			'transition'           => '',
 			'submit_align'         => '',
@@ -1153,7 +1205,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 			return;
 		}
 
-		$message = isset( $form->options['draft_msg'] ) ? $form->options['draft_msg'] : __( 'Your draft has been saved.', 'formidable-pro' );
+		$message = $form->options['draft_msg'] ?? __( 'Your draft has been saved.', 'formidable-pro' );
 	}
 
 	/**
@@ -1243,7 +1295,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 				array(
 					'form_id' => $form_id,
 					'type'    => $type,
-				) 
+				)
 			);
 			if ( $included ) {
 				$included = FrmField::getOne( $included );
@@ -1347,17 +1399,6 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	}
 
 	/**
-	 * Check if Lite has been updated to support AJAX Submit (v6.2+).
-	 *
-	 * @since 6.2
-	 *
-	 * @return bool
-	 */
-	public static function lite_supports_ajax_submit() {
-		return is_callable( 'FrmForm::is_ajax_on' );
-	}
-
-	/**
 	 * Gets form option.
 	 *
 	 * @since 6.9
@@ -1434,20 +1475,16 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		}
 	}
 
-	public static function get_sub_form( $field_name, $field, $args = array() ) {
-		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
-		FrmProNestedFormsController::display_front_end_nested_form( $field, $field_name, $args );
-	}
-
-	public static function repeat_field_set() {
-		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
-	}
-
-	public static function repeat_buttons() {
-		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
-	}
-
-	public static function repeat_button_html() {
-		_deprecated_function( __FUNCTION__, '2.02.06', 'FrmProNestedFormsController::display_front_end_nested_form' );
+	/**
+	 * Check if Lite has been updated to support AJAX Submit (v6.2+).
+	 *
+	 * @since 6.2
+	 * @deprecated 6.20
+	 *
+	 * @return bool
+	 */
+	public static function lite_supports_ajax_submit() {
+		_deprecated_function( __METHOD__, '6.20' );
+		return true;
 	}
 }

@@ -102,6 +102,7 @@ class FrmProEntryMeta {
 
 			// Check confirmation field if saving a draft
 			self::validate_confirmation_field( $errors, $field, $value, $args );
+			self::validate_gdpr_field( $errors, $field, $value );
 
 			return $errors;
 		}
@@ -159,10 +160,12 @@ class FrmProEntryMeta {
 	/**
 	 * Check if this form has form state data passed from the exclude_fields/fields shortcode attributes.
 	 *
+	 * @since 6.22.1 This was made public.
+	 *
 	 * @param stdClass $field
 	 * @return bool
 	 */
-	private static function field_is_hidden_by_form_state( $field ) {
+	public static function field_is_hidden_by_form_state( $field ) {
 		$exclude_fields = FrmProFormState::get_from_request( 'exclude_fields', array() );
 		if ( $exclude_fields ) {
 			foreach ( $exclude_fields as $exclude_field ) {
@@ -195,7 +198,7 @@ class FrmProEntryMeta {
 	 * @return array errors.
 	 */
 	private static function check_for_required_field_after_sanitizing( $field, $value, $errors ) {
-		if ( ! in_array( $field->type, array( 'file', 'text', 'textarea' ), true ) || $field->required !== '1' || $value !== '' || self::has_invisible_errors( $field ) ) {
+		if ( ! in_array( $field->type, array( 'file', 'text', 'textarea' ), true ) || $field->required !== '1' || ( $value !== '' && $value !== array() ) || self::has_invisible_errors( $field ) ) {
 			return $errors;
 		}
 
@@ -266,6 +269,10 @@ class FrmProEntryMeta {
 	}
 
 	private static function validate_subfields( &$errors, $field, $subfields, $subforms ) {
+		if ( self::skip_required_validation( $field ) ) {
+			return;
+		}
+
 		$repeat_minimum = FrmField::get_option_in_object( $field, 'repeat_min' );
 		$repeat_limit   = absint( FrmField::get_option_in_object( $field, 'repeat_limit' ) );
 
@@ -305,7 +312,7 @@ class FrmProEntryMeta {
 				FrmEntryValidate::validate_field(
 					$subfield,
 					$errors,
-					isset( $values[ $subfield->id ] ) ? $values[ $subfield->id ] : '',
+					$values[ $subfield->id ] ?? '',
 					array(
 						'parent_field_id' => $field->id,
 						'key_pointer'     => $k,
@@ -703,6 +710,26 @@ class FrmProEntryMeta {
 			//If creating entry
 			$errors[ 'fieldconf_' . $field->temp_id ] = FrmFieldsHelper::get_error_msg( $field, 'conf_msg' );
 			$errors[ 'field' . $field->temp_id ]      = '';
+		}
+	}
+
+	/**
+	 * Validate the GDPR field
+	 *
+	 * @since 6.19
+	 *
+	 * @param array $errors
+	 * @param stdClass $field
+	 * @param mixed $value
+	 * @return void
+	 */
+	private static function validate_gdpr_field( &$errors, $field, $value ) {
+		if ( 'gdpr' !== $field->type ) {
+			return;
+		}
+
+		if ( empty( $value ) ) {
+			$errors[ 'field' . $field->id ] = FrmFieldsHelper::get_error_msg( $field, 'blank' );
 		}
 	}
 
@@ -1210,7 +1237,7 @@ class FrmProEntryMeta {
 					'form_id'     => $entry->form_id,
 					'field'       => $field,
 					'type'        => $field->type,
-					'exclude_cat' => ( isset( $field->field_options['exclude_cat'] ) ? $field->field_options['exclude_cat'] : 0 ),
+					'exclude_cat' => ( $field->field_options['exclude_cat'] ?? 0 ),
 				)
 			);
 			if ( $p_val != '' ) {

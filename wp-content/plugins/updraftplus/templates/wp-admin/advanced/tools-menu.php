@@ -24,8 +24,12 @@ if (!defined('UPDRAFTPLUS_DIR')) {
 	<?php esc_html_e('Site size', 'updraftplus'); ?>
 </div>
 <div tabindex="0" class="advanced_tools_button" id="db_size">
-	<span class="advanced_tools_text dashicons dashicons-database-view"></span>
+	<span class="advanced_tools_text dashicons udp-dashicons-database-view"></span>
 	<?php esc_html_e('Database size', 'updraftplus'); ?>
+</div>
+<div tabindex="0" class="advanced_tools_button" id="cron_events">
+	<span class="advanced_tools_text dashicons dashicons-list-view"></span>
+	<?php esc_html_e('Cron events', 'updraftplus'); ?>
 </div>
 <div tabindex="0" class="advanced_tools_button" id="export_settings">
 	<span class="advanced_tools_text dashicons dashicons-media-default"></span>

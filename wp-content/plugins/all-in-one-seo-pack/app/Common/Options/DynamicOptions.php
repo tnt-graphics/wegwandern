@@ -42,6 +42,22 @@ class DynamicOptions {
 			'postTypes'  => [],
 			'taxonomies' => [],
 			'archives'   => []
+		],
+		'seoAnalysis'      => [
+			'postTypes'    => [
+				'all'      => [ 'type' => 'boolean', 'default' => true ],
+				'included' => [ 'type' => 'array', 'default' => [ 'post', 'page' ] ],
+			],
+			'postStatuses' => [
+				'all'      => [ 'type' => 'boolean', 'default' => false ],
+				'included' => [ 'type' => 'array', 'default' => [ 'publish', 'draft', 'private' ] ],
+			],
+			'taxonomies'   => [
+				'all'      => [ 'type' => 'boolean', 'default' => true ],
+				'included' => [ 'type' => 'array', 'default' => [] ],
+			],
+			'excludePosts' => [ 'type' => 'array', 'default' => [] ],
+			'excludeTerms' => [ 'type' => 'array', 'default' => [] ]
 		]
 		// phpcs:enable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 	];
@@ -91,10 +107,6 @@ class DynamicOptions {
 			$this->defaultsMerged,
 			$this->addValueToValuesArray( $this->defaultsMerged, $dbOptions )
 		);
-
-		// Remove any post types/taxonomies that are stored in the DB but that aren't active currently.
-		// We only have to do this for the dynamic options.
-		$dbOptions = $this->filterOptions( $this->defaultsMerged, $dbOptions );
 
 		aioseo()->core->optionsCache->setOptions( $this->optionsName, $dbOptions );
 

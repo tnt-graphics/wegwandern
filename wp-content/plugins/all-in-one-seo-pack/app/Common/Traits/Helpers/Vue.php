@@ -17,33 +17,6 @@ use AIOSEO\Plugin\Common\Tools;
  */
 trait Vue {
 	/**
-	 * Holds the data for Vue.
-	 *
-	 * @since 4.4.9
-	 *
-	 * @var array
-	 */
-	private $data = [];
-
-	/**
-	 * Optional arguments for setting the data.
-	 *
-	 * @since 4.4.9
-	 *
-	 * @var array
-	 */
-	private $args = [];
-
-	/**
-	 * Holds the cached data.
-	 *
-	 * @since 4.5.1
-	 *
-	 * @var array
-	 */
-	private $cache = [];
-
-	/**
 	 * Returns the data for Vue.
 	 *
 	 * @since   4.0.0
@@ -77,6 +50,8 @@ trait Vue {
 		$this->setToolsOrSettingsData();
 		$this->setPageBuilderData();
 		$this->setWritingAssistantData();
+		$this->setBreadcrumbsData();
+		$this->setSeoAnalyzerData();
 
 		$this->cache[ $hash ] = $this->data;
 
@@ -122,9 +97,10 @@ trait Vue {
 				'assetsPath'        => aioseo()->core->assets->getAssetsPath(),
 				'generalSitemapUrl' => aioseo()->sitemap->helpers->getUrl( 'general' ),
 				'rssSitemapUrl'     => aioseo()->sitemap->helpers->getUrl( 'rss' ),
+				'llmsUrl'           => aioseo()->helpers->getLlmsUrl(),
 				'robotsTxtUrl'      => $this->getSiteUrl() . '/robots.txt',
-				'blockedBotsLogUrl' => wp_upload_dir()['baseurl'] . '/aioseo/logs/aioseo-bad-bot-blocker.log',
-				'upgradeUrl'        => apply_filters( 'aioseo_upgrade_link', AIOSEO_MARKETING_URL ),
+				'marketingSiteUrl'  => $this->getMarketingSiteUrl(),
+				'upgradeUrl'        => apply_filters( 'aioseo_upgrade_link', AIOSEO_MARKETING_URL . 'lite-upgrade/' ),
 				'staticHomePage'    => 'page' === get_option( 'show_on_front' ) ? get_edit_post_link( get_option( 'page_on_front' ), 'url' ) : null,
 				'feeds'             => [
 					'rdf'            => get_bloginfo( 'rdf_url' ),
@@ -176,9 +152,6 @@ trait Vue {
 					'rewriteExists'     => null,
 					'sitemapUrls'       => []
 				],
-				'logSizes'              => [
-					'badBotBlockerLog' => null
-				],
 				'status'                => [],
 				'htaccess'              => '',
 				'isMultisite'           => is_multisite(),
@@ -197,6 +170,7 @@ trait Vue {
 				'isSsl'                 => is_ssl(),
 				'hasUrlTrailingSlash'   => '/' === user_trailingslashit( '' ),
 				'permalinkStructure'    => get_option( 'permalink_structure' ),
+				'usingPermalinks'       => aioseo()->helpers->usingPermalinks(),
 				'dateFormat'            => get_option( 'date_format' ),
 				'timeFormat'            => get_option( 'time_format' ),
 				'siteName'              => aioseo()->helpers->getWebsiteName(),
@@ -205,7 +179,8 @@ trait Vue {
 					'toc' => [
 						'hashPrefix' => apply_filters( 'aioseo_toc_hash_prefix', 'aioseo-' )
 					]
-				]
+				],
+				'vueComponentsDefaults' => $this->getVueComponentsDefaults(),
 			],
 			'user'               => [
 				'canManage'      => aioseo()->access->canManage(),
@@ -218,12 +193,12 @@ trait Vue {
 			],
 			'plugins'            => $this->getPluginData(),
 			'postData'           => [
-				'postTypes'    => $this->getPublicPostTypes( false, false, true ),
-				'taxonomies'   => $this->getPublicTaxonomies( false, true ),
-				'archives'     => $this->getPublicPostTypes( false, true, true ),
-				'postStatuses' => $this->getPublicPostStatuses()
+				'postTypes'    => array_values( $this->getPublicPostTypes( false, false, true ) ),
+				'taxonomies'   => array_values( $this->getPublicTaxonomies( false, true ) ),
+				'archives'     => array_values( $this->getPublicPostTypes( false, true, true ) ),
+				'postStatuses' => array_values( $this->getPublicPostStatuses() )
 			],
-			'notifications'      => array_merge( Models\Notification::getNotifications( false ), [
+			'notifications'      => array_merge( Models\Notification::getNotifications( true ), [
 				'force' => $this->showNotificationsDrawer()
 			] ),
 			'addons'             => aioseo()->addons->getAddons(),
@@ -335,6 +310,7 @@ trait Vue {
 			'twitter_image_type'             => $post->twitter_image_type,
 			'twitter_title'                  => $post->twitter_title,
 			'twitter_description'            => $post->twitter_description,
+			'ai'                             => Models\Post::getDefaultAiOptions( $post->ai ),
 			'schema'                         => Models\Post::getDefaultSchemaOptions( $post->schema, aioseo()->helpers->getPost( $postId ) ),
 			'metaDefaults'                   => [
 				'title'       => aioseo()->meta->title->getPostTypeTitle( $postTypeObj->name ),
@@ -408,6 +384,7 @@ trait Vue {
 			$this->data['seoOverview']        = aioseo()->postSettings->getPostTypesOverview();
 			$this->data['searchStatistics']   = array_merge( $this->data['searchStatistics'], aioseo()->searchStatistics->getVueData() );
 			$this->data['keywordRankTracker'] = aioseo()->searchStatistics->keywordRankTracker->getVueData();
+			$this->data['indexStatus']        = aioseo()->searchStatistics->indexStatus->getVueData();
 		}
 	}
 
@@ -511,7 +488,7 @@ trait Vue {
 	 */
 	private function setSeoRevisionsData() {
 		if ( 'post' === $this->args['page'] ) {
-			$this->data['seoRevisions'] = aioseo()->seoRevisions->getVueDataEdit();
+			$this->data['seoRevisions'] = aioseo()->seoRevisions->getVueDataEdit( $this->args['staticPostId'] ?? null );
 		}
 
 		if ( 'seo-revisions' === $this->args['page'] ) {
@@ -542,9 +519,6 @@ trait Vue {
 				'hasPhysicalRobots' => aioseo()->robotsTxt->hasPhysicalRobotsTxt(),
 				'rewriteExists'     => aioseo()->robotsTxt->rewriteRulesExist(),
 				'sitemapUrls'       => array_merge( aioseo()->sitemap->helpers->getSitemapUrlsPrefixed(), aioseo()->sitemap->helpers->extractSitemapUrlsFromRobotsTxt() )
-			];
-			$this->data['data']['logSizes']       = [
-				'badBotBlockerLog' => $this->convertFileSize( aioseo()->badBotBlocker->getLogSize() )
 			];
 			$this->data['data']['status']         = Tools\SystemStatus::getSystemStatusInfo();
 			$this->data['data']['htaccess']       = aioseo()->htaccess->getContents();
@@ -606,7 +580,7 @@ trait Vue {
 		$locale = [
 			'' => [
 				'domain' => $domain,
-				'lang'   => is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale(),
+				'lang'   => is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale()
 			],
 		];
 
@@ -621,7 +595,7 @@ trait Vue {
 
 			foreach ( $entry->translations as $translation ) {
 				// If any of the translated strings contains an HTML line break, we need to ignore it. Otherwise, logging into the admin breaks.
-				// https://github.com/awesomemotive/aioseo/issues/2074
+
 				if ( preg_match( '/<br[\s\/\\\\]*>/', (string) $translation ) ) {
 					continue 2;
 				}
@@ -672,5 +646,112 @@ trait Vue {
 		}
 
 		return $showNotificationsDrawer;
+	}
+
+	/**
+	 * Set Vue breadcrumbs data.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	private function setBreadcrumbsData() {
+		$isPostOrTermPage              = aioseo()->helpers->isScreenBase( 'post' ) || aioseo()->helpers->isScreenBase( 'term' );
+		$isCurrentPageUsingPageBuilder = 'post' === $this->args['page'] && ! empty( $this->args['integration'] );
+		$isSettingsPage                = ! empty( $this->args['page'] ) && 'settings' === $this->args['page'];
+		if ( ! $isSettingsPage && ! $isCurrentPageUsingPageBuilder && ! $isPostOrTermPage ) {
+			return;
+		}
+
+		$this->data['breadcrumbs']['defaultTemplate'] = aioseo()->helpers->encodeOutputHtml( aioseo()->breadcrumbs->frontend->getDefaultTemplate() );
+	}
+
+	/**
+	 * Set Vue SEO Analyzer data.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	private function setSeoAnalyzerData() {
+		if ( 'seo-analysis' !== $this->args['page'] ) {
+			return;
+		}
+
+		$this->data['analyzer'] = aioseo()->seoAnalysis->getVueData();
+	}
+
+	/**
+	 * Returns the marketing site URL.
+	 *
+	 * @since 4.8.4
+	 *
+	 * @return string The marketing site URL.
+	 */
+	private function getMarketingSiteUrl() {
+		if ( defined( 'AIOSEO_MARKETING_SITE_URL' ) && AIOSEO_MARKETING_SITE_URL ) {
+			return AIOSEO_MARKETING_SITE_URL;
+		}
+
+		return 'https://aioseo.com/';
+	}
+
+	/**
+	 * Clean sensitive data.
+	 *
+	 * @since 4.8.7
+	 *
+	 * @return void
+	 */
+	protected function cleanSensitiveData() {
+		// Hide Semrush tokens.
+		if ( ! empty( $this->data['internalOptions']['integrations']['semrush']['accessToken'] ) ) {
+			$this->data['internalOptions']['integrations']['semrush']['accessToken'] = '*****************';
+		}
+
+		if ( ! empty( $this->data['internalOptions']['integrations']['semrush']['refreshToken'] ) ) {
+			$this->data['internalOptions']['integrations']['semrush']['refreshToken'] = '*****************';
+		}
+
+		// Hide AI tokens.
+		if ( ! empty( $this->data['internalOptions']['internal']['ai']['accessToken'] ) ) {
+			$this->data['internalOptions']['internal']['ai']['accessToken'] = '*****************';
+		}
+
+		// Hide Search Statistics tokens.
+		if ( ! empty( $this->data['internalOptions']['internal']['searchStatistics']['profile']['key'] ) ) {
+			$this->data['internalOptions']['internal']['searchStatistics']['profile']['key'] = '*****************';
+		}
+
+		if ( ! empty( $this->data['internalOptions']['internal']['searchStatistics']['profile']['token'] ) ) {
+			$this->data['internalOptions']['internal']['searchStatistics']['profile']['token'] = '*****************';
+		}
+
+		if ( ! empty( $this->data['internalOptions']['internal']['searchStatistics']['trustToken'] ) ) {
+			$this->data['internalOptions']['internal']['searchStatistics']['trustToken'] = '*****************';
+		}
+
+		// Hide connect token.
+		if ( ! empty( $this->data['internalOptions']['internal']['siteAnalysis']['connectToken'] ) ) {
+			$this->data['internalOptions']['internal']['siteAnalysis']['connectToken'] = '*****************';
+		}
+	}
+
+	/**
+	 * Returns default values and settings for Vue components. These settings can be customized
+	 * by a filter.
+	 *
+	 * @since 4.8.7
+	 *
+	 * @return array The default values for Vue components.
+	 */
+	private function getVueComponentsDefaults() {
+		$defaults = [
+			'fieldGroupRepeater' => [
+				'maxGroups' => 50
+			]
+		];
+
+		return apply_filters( 'aioseo_vue_components_defaults', $defaults );
 	}
 }

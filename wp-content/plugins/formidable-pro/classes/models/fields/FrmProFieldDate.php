@@ -175,6 +175,9 @@ class FrmProFieldDate extends FrmFieldType {
 		if ( ! FrmField::is_read_only( $this->field ) ) {
 			$class = 'frm_date';
 		}
+
+		$class .= FrmField::get_option( $this->field, 'range_field' ) || FrmField::get_option( $this->field, 'is_range_end_field' ) ? ' frm_date_range' : '';
+
 		return $class;
 	}
 
@@ -195,7 +198,7 @@ class FrmProFieldDate extends FrmFieldType {
 				}
 			}
 
-			$entry_id = isset( $frm_vars['editing_entry'] ) ? $frm_vars['editing_entry'] : 0;
+			$entry_id = $frm_vars['editing_entry'] ?? 0;
 			FrmProFieldsHelper::set_field_js( $this->field, $entry_id );
 		}
 	}
@@ -291,7 +294,7 @@ class FrmProFieldDate extends FrmFieldType {
 			} elseif ( empty( $atts['format'] ) ) {
 				$atts['format'] = get_option( 'date_format' );
 			}
-			$value = FrmProFieldsHelper::get_date( gmdate( 'Y-m-d', strtotime( $atts['offset'], strtotime( $value ) ) ), $atts['format'] );
+			$value = FrmProFieldsHelper::get_date( gmdate( 'Y-m-d H:i:s', strtotime( $atts['offset'], strtotime( $value ) ) ), $atts['format'] );
 		}
 
 		if ( isset( $atts['time_ago'] ) ) {
@@ -331,5 +334,24 @@ class FrmProFieldDate extends FrmFieldType {
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
+	}
+
+	/**
+	 * Add extra HTML attributes to the input.
+	 *
+	 * @param mixed $args       Field arguments.
+	 * @param mixed $input_html HTML input.
+	 *
+	 * @return void
+	 */
+	protected function add_extra_html_atts( $args, &$input_html ) {
+
+		if ( ! empty( $this->field['range_field'] ) ) {
+			$input_html .= ' data-field-id="' . (int) $this->field['id'] . '"';
+		}
+
+		if ( ! empty( $this->field['range_start_field'] ) ) {
+			$input_html .= ' data-range-start-field-id="' . (int) $this->field['range_start_field'] . '"';
+		}
 	}
 }

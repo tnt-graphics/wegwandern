@@ -10,10 +10,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProEntryFormatter extends FrmEntryFormatter {
 
 	/**
+	 * Track the field index in the field values. This is used when generating table content.
+	 *
+	 * @since 6.25
+	 *
+	 * @var int
+	 */
+	protected static $current_field_index = 0;
+
+	/**
 	 * @var FrmProEntryValues
 	 * @since 2.04
 	 */
 	protected $entry_values;
+
+	/**
+	 * Table style.
+	 *
+	 * @var string
+	 */
+	protected $table_style;
 
 	/**
 	 * Set the entry_values property
@@ -82,6 +98,29 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 		$this->single_cell_fields = array_merge( $this->single_cell_fields, $single_cell_fields );
 	}
 
+	protected function init_table_generator( $atts ) {
+		if ( empty( $atts['table_style'] ) || 'classic' === $atts['table_style'] ) {
+			parent::init_table_generator( $atts );
+		} else {
+			$this->table_style     = $atts['table_style'];
+			$this->table_generator = FrmEmailStylesController::get_table_generator( $this->table_style );
+		}
+	}
+
+	/**
+	 * Adds field values to content.
+	 *
+	 * @since 6.25
+	 *
+	 * @param string $content The content.
+	 */
+	protected function add_field_values_to_content( &$content ) {
+		// Reset the current field index tracking.
+		self::$current_field_index = 0;
+
+		parent::add_field_values_to_content( $content );
+	}
+
 	/**
 	 * Add a field value to the HTML table or plain text content
 	 *
@@ -105,6 +144,8 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 		} else {
 			parent::add_field_value_to_content( $field_value, $content );
 		}
+
+		self::$current_field_index++;
 	}
 
 	/**
@@ -479,7 +520,33 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 
 	protected function add_html_row( $value_args, &$content ) {
 		$value_args['label'] = $this->maybe_process_shortcodes_in_label( $value_args['label'] );
-		parent::add_html_row( $value_args, $content );
+
+		if ( ! $this->table_style ) {
+			parent::add_html_row( $value_args, $content );
+			return;
+		}
+
+		if ( ! self::$current_field_index ) {
+			// Remove the bottom border of <table> tag.
+			$content = $this->table_generator->remove_border( $content, 'bottom' );
+		}
+
+		$display_value = $this->prepare_display_value_for_html_table( $value_args['value'], $value_args['field_type'] );
+
+		if ( 'compact' === $this->table_style ) {
+			$row = $this->table_generator->generate_two_cell_table_row( $value_args['label'], $display_value );
+		} else {
+			$row = $this->table_generator->generate_single_cell_table_row(
+				FrmEmailStylesController::get_content_for_one_column_cell( $value_args['label'], $display_value )
+			);
+		}
+
+		// Remove border for all rows in Sleek style, or the first row for other styles.
+		if ( ! self::$current_field_index || 'sleek' === $this->table_style ) {
+			$row = $this->table_generator->remove_border( $row, 'top' );
+		}
+
+		$content .= $row;
 	}
 
 	protected function maybe_process_shortcodes_in_label( $label ) {

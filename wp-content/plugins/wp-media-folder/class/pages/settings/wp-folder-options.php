@@ -25,7 +25,7 @@ $tabs_data = array(
     array(
         'id'       => 'gallery_addon',
         'title'    => __('Galleries Addon', 'wpmf'),
-        'icon'     => 'add_photo_alternate',
+        'icon'     => 'gallery-add',
         'sub_tabs' => array(
             'galleryadd_default_settings' => __('Default settings', 'wpmf'),
             'gallery_shortcode_generator' => __('Shortcode generator', 'wpmf'),
@@ -35,12 +35,12 @@ $tabs_data = array(
     array(
         'id'       => 'gallery_photographer_addon',
         'title'    => __('Photographer', 'wpmf'),
-        'icon'     => 'camera_alt'
+        'icon'     => 'photo'
     ),
     array(
         'id'       => 'media_access',
         'title'    => __('Access & design', 'wpmf'),
-        'icon'     => 'format_color_fill',
+        'icon'     => 'design-services',
         'sub_tabs' => array(
             'user_media_access' => __('Media access', 'wpmf'),
             'file_design'       => __('File Design', 'wpmf')
@@ -49,16 +49,25 @@ $tabs_data = array(
     array(
         'id'       => 'files_folders',
         'title'    => __('Rename & Watermark', 'wpmf'),
-        'icon'     => 'picture_in_picture_alt',
+        'icon'     => 'abc',
         'sub_tabs' => array(
             'rename_on_upload' => __('Rename on upload', 'wpmf'),
             'watermark'        => __('Watermark', 'wpmf'),
         )
     ),
     array(
+        'id'       => 'ai_tools',
+        'title'    => __('AI tools', 'wpmf'),
+        'icon'     => 'AI',
+        'sub_tabs' => array(
+            'ai_settings'  => __('Settings', 'wpmf'),
+            'ai_subscribe' => __('Subscribe', 'wpmf')
+        )
+    ),
+    array(
         'id'       => 'import_export',
         'title'    => __('Import/Export', 'wpmf'),
-        'icon'     => 'import_export',
+        'icon'     => 'import-export',
         'sub_tabs' => array(
             'wordpress_import' => __('Wordpress', 'wpmf'),
             'other_plugin_import' => __('Other plugins', 'wpmf')
@@ -67,7 +76,7 @@ $tabs_data = array(
     array(
         'id'       => 'server_sync',
         'title'    => __('Server Folder Sync', 'wpmf'),
-        'icon'     => 'import_export',
+        'icon'     => 'sync',
         'sub_tabs' => array(
             'server_folder_sync'   => __('Folder Sync', 'wpmf'),
             'server_sync_settings'   => __('Filters', 'wpmf')
@@ -76,7 +85,7 @@ $tabs_data = array(
     array(
         'id'       => 'regenerate_thumbnails',
         'title'    => __('Regenerate Thumb', 'wpmf'),
-        'icon'     => 'update',
+        'icon'     => 'refresh',
         'sub_tabs' => array()
     ),
     array(
@@ -88,7 +97,7 @@ $tabs_data = array(
     array(
         'id'       => 'image_compression',
         'title'    => __('Image compression', 'wpmf'),
-        'icon'     => 'compare',
+        'icon'     => 'img-compression',
         'sub_tabs' => array()
     )
 );
@@ -101,15 +110,11 @@ if (!is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-add
 if (is_plugin_active('wp-media-folder-addon/wp-media-folder-addon.php')) {
     $tabs_data[] = array(
         'id'       => 'cloud',
-        'title'    => __('Cloud', 'wpmf'),
-        'icon'     => 'cloud_queue',
+        'title'    => __('Cloud & Media offload', 'wpmf'),
+        'icon'     => 'cloud',
         'sub_tabs' => array(
-            'google_drive_box' => __('Google Drive', 'wpmf'),
-            'google_photo'     => __('Google Photo', 'wpmf'),
-            'dropbox_box'      => __('Dropbox', 'wpmf'),
-            'one_drive_box'    => __('OneDrive', 'wpmf'),
-            'nextcloud'        => __('Nextcloud', 'wpmf'),
-            'storage_provider' => __('Offload Media', 'wpmf'),
+            'cloud_connector'  => __('Cloud connectors', 'wpmf'),
+            'storage_provider' => __('Media offload', 'wpmf'),
             'synchronization'  => __('Synchronization', 'wpmf')
         )
     );
@@ -117,17 +122,22 @@ if (is_plugin_active('wp-media-folder-addon/wp-media-folder-addon.php')) {
 $tabs_data[] = array(
     'id'       => 'jutranslation',
     'title'    => __('Translation', 'wpmf'),
-    'icon'     => 'format_color_text',
+    'icon'     => 'translate',
     'sub_tabs' => array()
 );
 
 $tabs_data[] = array(
-    'id' => 'system_check',
-    'title' => __('System Check', 'wpmf'),
+    'id' => 'system_license',
+    'title' => __('System and License', 'wpmf'),
     'content' => 'system-check',
-    'icon' => 'verified_user',
-    'sub_tabs' => array()
+    'icon' => 'shield',
+    'sub_tabs' => array(
+        'system_check'      => __('System check', 'wpmf'),
+        'account_license'   => __('Account license', 'wpmf')
+    )
 );
+
+$excluded_tabs = array('files_folders', 'ai_tools', 'image_compression', 'cloud', 'import_export', 'server_sync', 'system_license');
 
 $dropbox_config = get_option('_wpmfAddon_dropbox_config');
 $google_config = get_option('_wpmfAddon_cloud_config');
@@ -135,48 +145,72 @@ $onedrive_config = get_option('_wpmfAddon_onedrive_config');
 $onedrive_business_config = get_option('_wpmfAddon_onedrive_business_config');
 
 ?>
-<div class="ju-main-wrapper">
-    <div class="ju-left-panel-toggle">
-        <i class="dashicons dashicons-leftright ju-left-panel-toggle-icon"></i>
-    </div>
-    <div class="ju-left-panel">
-        <div class="ju-logo">
-            <a href="https://www.joomunited.com/" target="_blank">
-                <img src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/wordpress-css-framework/images/logo-joomUnited-white.png') ?>"
-                     alt="<?php esc_html_e('JoomUnited logo', 'wpmf') ?>">
-            </a>
-        </div>
-        <div class="ju-menu-search">
-            <i class="material-icons ju-menu-search-icon">
-                search
-            </i>
-
-            <input type="text" class="ju-menu-search-input"
-                   placeholder="<?php esc_html_e('Search settings', 'wpmf') ?>"
-            >
-        </div>
-        <ul class="tabs ju-menu-tabs">
-            <?php foreach ($tabs_data as $ju_tab) : ?>
-                <li class="tab" data-tab-title="<?php echo esc_attr($ju_tab['title']) ?>">
-                    <a href="#<?php echo esc_attr($ju_tab['id']) ?>"
-                       class="link-tab white-text <?php echo (empty($ju_tab['sub_tabs'])) ? 'no-submenus' : 'with-submenus' ?>"
-                    >
-                        <i class="material-icons menu-tab-icon"><?php echo esc_html($ju_tab['icon']) ?></i>
-                        <span class="tab-title" title="<?php echo esc_attr($ju_tab['title']) ?>"><?php echo esc_html($ju_tab['title']) ?></span>
-
-                        <?php
-                        if ($ju_tab['id'] === 'system_check') {
-                            if (version_compare(PHP_VERSION, '7.2.0', '<') || !in_array('curl', get_loaded_extensions()) || !function_exists('gd_info')) {
-                                echo '<i class="material-icons system-checkbox material-icons-menu-alert" style="float: right;vertical-align: text-bottom;">info</i>';
-                            }
-                        }
+<div class="wpmf-settings-wrapper ju-main-wrapper">
+    <div class="wpmf-settings-sidebar">
+        <div class="wpmf-settings-sidebar-menu">
+            <div>
+                <div class="wpmf-settings-sidebar-logo">
+                    <h2><?php esc_html_e('WP Media Folder', 'wpmf') ?></h2>
+                    <img class="wpmf-logo-expanded" src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/joomunited.svg'); ?>" alt="<?php esc_attr_e('JoomUnited logo', 'wpmf') ?>">
+                    <img class="wpmf-logo-collapsed" src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/joomunited-collapsed.svg'); ?>" alt="<?php esc_attr_e('JoomUnited logo', 'wpmf') ?>">
+                </div>
+                <div class="wpmf-settings-search">
+                    <img class="wpmf-search-icon" src="<?php echo esc_url(WPMF_PLUGIN_URL . 'assets/images/icons/search-icon.svg'); ?>" alt="<?php esc_attr_e('Search icon', 'wpmf') ?>">
+                    <div class="wpmf-search-input-wrapper">
+                        <input type="text" placeholder="<?php esc_attr_e('Search settings', 'wpmf') ?>" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="ju-custom-scroll">
+                <ul class="wpmf-settings-sidebar-menu-items">
+                    <?php foreach ($tabs_data as $ju_tab) :
+                        $has_sub_tabs = !empty($ju_tab['sub_tabs']);
                         ?>
-                    </a>
-                </li>
-            <?php endforeach; ?>
-        </ul>
+                        <li class="sidebar-menu-item<?php echo $has_sub_tabs ? ' has-submenu' : ''; ?>" <?php if ($has_sub_tabs) {
+                            echo 'data-parent-id="' . esc_attr($ju_tab['id']) . '"';
+                                                    } ?>>
+                            <a <?php if ($has_sub_tabs) :
+                                ?>href="javascript:void(0);"<?php
+                               else :
+                                    ?>href="#<?php echo esc_attr($ju_tab['id']); ?>"<?php
+                               endif; ?> class="link-tab">
+                                <div>
+                                    <span class="ju-sidebar-icon ju-icon-<?php echo esc_attr($ju_tab['icon']) ?>"></span>
+                                    <span><?php echo esc_html($ju_tab['title']); ?></span>
+                                </div>
+                                <?php if ($has_sub_tabs) : ?>
+                                    <span class="ju-icon-chevron-down wpmf-toggle-icon"></span>
+                                <?php endif; ?>
+                            </a>
+                            <?php if ($has_sub_tabs) : ?>
+                                <div class="sidebar-sub-wrapper">
+                                    <ul class="sidebar-sub-menu">
+                                        <?php foreach ($ju_tab['sub_tabs'] as $sub_id => $sub_title) : ?>
+                                            <li class="sidebar-sub-item">
+                                                <a href="#<?php echo esc_attr($sub_id); ?>" class="link-sub-tab">
+                                                    <?php echo esc_html($sub_title); ?>
+                                                </a>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+        <div class="wpmf-settings-sidebar-toggle">
+            <button class="wpmf-sidebar-collapse-btn">
+                <span class="ju-icon-collapse"></span>
+                <span>Collapse</span>
+            </button>
+            <button class="wpmf-sidebar-expand-btn">
+                <span class="ju-icon-expand"></span>
+            </button>
+        </div>
     </div>
-    <div class="ju-right-panel">
+    <div class="wpmf-settings-content">
         <div id="profiles-container">
             <?php
             if (!get_option('wpmf_cloud_connection_notice', false)) :
@@ -200,31 +234,7 @@ $onedrive_business_config = get_option('_wpmfAddon_onedrive_business_config');
                        value="<?php echo esc_html(wp_create_nonce('wpmf_nonce')) ?>">
                 <?php foreach ($tabs_data as $ju_tab) : ?>
                     <div class="ju-content-wrapper" id="<?php echo esc_attr($ju_tab['id']) ?>" style="display: none">
-                        <?php
-                        if (!empty($ju_tab['sub_tabs'])) :
-                            ?>
-                            <div class="ju-top-tabs-wrapper">
-                                <ul class="tabs ju-top-tabs">
-                                    <?php
-                                    foreach ($ju_tab['sub_tabs'] as $tab_id => $tab_label) :
-                                        ?>
-
-                                        <li class="tab">
-                                            <a href="#<?php echo esc_html($tab_id) ?>"
-                                               class="link-tab waves-effect waves-light">
-                                                <?php echo esc_html($tab_label) ?>
-                                            </a>
-                                        </li>
-
-                                        <?php
-                                    endforeach;
-                                    ?>
-                                </ul>
-                            </div>
-                            <?php
-                        endif;
-                        ?>
-                        <?php if ($ju_tab['id'] !== 'image_compression' && $ju_tab['id'] !== 'cloud' && $ju_tab['id'] !== 'import_export' && $ju_tab['id'] !== 'server_sync') : ?>
+                        <?php if (!in_array($ju_tab['id'], $excluded_tabs, true)) : ?>
                             <div class="wpmf_width_100 top_bar">
                                 <h1><?php echo esc_html($ju_tab['title']) ?></h1>
                                 <?php

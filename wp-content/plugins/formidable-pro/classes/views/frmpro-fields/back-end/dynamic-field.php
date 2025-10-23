@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 
-<p class="frm6 frm_form_field">
+<p class="frm_form_field">
 	<label><?php esc_html_e( 'Display Type', 'formidable-pro' ); ?></label>
 	<select name="field_options[data_type_<?php echo absint( $field['id'] ); ?>]">
 		<?php

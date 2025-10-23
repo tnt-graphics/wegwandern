@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		foreach ( $comments as $comment ) {
             $meta = $comment->meta_value;
-            if ( ! isset($meta['comment']) ) {
+            if ( ! isset( $meta['comment'] ) ) {
                 continue;
             }
         ?>
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <input type="hidden" name="frm_action" value="show" />
             <input type="hidden" name="field_id" value="0" />
 			<input type="hidden" name="item_id" value="<?php echo absint( $entry->id ); ?>" />
-            <?php wp_nonce_field('add-option'); ?>
+            <?php wp_nonce_field( 'add-option' ); ?>
 
             <table class="form-table"><tbody>
                 <tr>

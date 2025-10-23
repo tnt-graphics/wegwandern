@@ -13,7 +13,7 @@ class FrmProFormsController {
 		wp_register_style( 'formidable-pro-form-settings', FrmProAppHelper::plugin_url() . '/css/settings/form-settings.css', array(), $version );
 
 		$frm_settings = FrmAppHelper::get_settings();
-		$unread_count = is_callable( 'FrmEntriesHelper::get_visible_unread_inbox_count' ) ? FrmEntriesHelper::get_visible_unread_inbox_count() : 0;
+		$unread_count = self::get_visible_unread_inbox_count();
 
 		add_filter( 'manage_' . sanitize_title( $frm_settings->menu ) . ( $unread_count ? '-' . $unread_count : '' ) . '_page_formidable-entries_columns', 'FrmProEntriesController::manage_columns', 25 );
 
@@ -33,11 +33,15 @@ class FrmProFormsController {
 			}
 		}
 
+		// Initialize datepicker on the style settings page. It's used for the style preview only
+		if ( FrmAppHelper::is_admin_page( 'formidable-styles' ) ) {
+			FrmProDatepickerAssetsHelper::init_admin_js_and_css();
+		}
+
 		if ( ! FrmAppHelper::is_admin_page( 'formidable-entries' ) ) {
 			return;
 		}
 
-		wp_enqueue_script( 'jquery-ui-datepicker' );
 		wp_enqueue_style( 'formidable-pro-fields' );
 
 		$theme_css = FrmStylesController::get_style_val( 'theme_css' );
@@ -45,7 +49,19 @@ class FrmProFormsController {
 			return;
 		}
 
-		wp_enqueue_style( $theme_css, FrmProStylesController::jquery_css_url( $theme_css ), array(), FrmAppHelper::plugin_version() );
+		wp_enqueue_style( $theme_css, FrmProStylesController::jquery_css_url( $theme_css ), array(), FrmProDb::$plug_version );
+	}
+
+	/**
+	 * @since 6.18
+	 *
+	 * @return int
+	 */
+	private static function get_visible_unread_inbox_count() {
+		if ( is_callable( 'FrmEntriesHelper::get_visible_unread_inbox_count' ) ) {
+			return FrmEntriesHelper::get_visible_unread_inbox_count();
+		}
+		return 0;
 	}
 
 	/**
@@ -82,10 +98,7 @@ class FrmProFormsController {
 				}
 			}
 
-			if ( ! empty( $frm_vars['datepicker_loaded'] ) ) {
-				wp_enqueue_script( 'jquery-ui-datepicker' );
-				FrmProStylesController::enqueue_jquery_css();
-			}
+			self::load_datepicker_scripts();
 		}
 
 		if ( ! empty( $frm_vars['autocomplete_loaded'] ) ) {
@@ -108,13 +121,28 @@ class FrmProFormsController {
 			unset( $fid, $o );
 		}
 
-		if ( ! empty( $frm_input_masks ) ) {
-			wp_enqueue_script( 'jquery-maskedinput' );
+		if ( $frm_input_masks ) {
+			wp_enqueue_script( 'imask' );
 		}
 
 		if ( ! empty( $frm_vars['google_graphs'] ) ) {
-			wp_enqueue_script( 'google_jsapi', 'https://www.gstatic.com/charts/loader.js', array(), FrmAppHelper::plugin_version() );
+			wp_enqueue_script( 'google_jsapi', 'https://www.gstatic.com/charts/loader.js', array(), FrmProDb::$plug_version );
 		}
+	}
+
+	/**
+	 * Load the datepicker scripts.
+	 *
+	 * @return void
+	 */
+	private static function load_datepicker_scripts() {
+		global $frm_vars;
+		// If there are no date fields, don't load the datepicker scripts.
+		if ( empty( $frm_vars['datepicker_loaded'] ) ) {
+			return;
+		}
+
+		FrmProDatepickerAssetsHelper::enqueue_datepicker_assets();
 	}
 
 	/**
@@ -128,6 +156,8 @@ class FrmProFormsController {
 		if ( empty( $frm_vars['forms_loaded'] ) ) {
 			return;
 		}
+
+		do_action( 'frm_pro_before_footer_js' );
 
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-entries/footer_js.php';
 
@@ -160,7 +190,7 @@ class FrmProFormsController {
 					'slimselect',
 					'google_jsapi',
 					'dropzone',
-					'jquery-maskedinput',
+					'imask',
 				);
 				$keep_styles  = array(
 					'dashicons',
@@ -250,14 +280,14 @@ class FrmProFormsController {
 	 */
 	public static function form_settings_sections( $sections ) {
 		$sections['permissions'] = array(
-			'function' => array( __CLASS__, 'add_form_options' ),
+			'function' => array( self::class, 'add_form_options' ),
 			'name'     => isset( $sections['permissions'] ) ? $sections['permissions']['name'] : __( 'Form Permissions', 'formidable' ),
 			'icon'     => isset( $sections['permissions'] ) ? $sections['permissions']['icon'] : 'frm_icon_font frm_lock_icon',
 			'anchor'   => 'permissions_settings',
 		);
 
 		$sections['scheduling'] = array(
-			'function' => array( __CLASS__, 'add_form_status_options' ),
+			'function' => array( self::class, 'add_form_status_options' ),
 			'name'     => isset( $sections['scheduling'] ) ? $sections['scheduling']['name'] : __( 'Form Scheduling', 'formidable' ),
 			'icon'     => isset( $sections['scheduling'] ) ? $sections['scheduling']['icon'] : 'frm_icon_font frm_calendar_icon',
 			'anchor'   => 'scheduling_settings',
@@ -386,17 +416,6 @@ class FrmProFormsController {
 	}
 
 	/**
-	 * @param array $values
-	 * @return void
-	 */
-	public static function add_form_ajax_options( $values ) {
-		if ( ! FrmProFormsHelper::lite_supports_ajax_submit() ) {
-			// Only show the option when Lite doesn't support AJAX submit.
-			require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/add_form_ajax_options.php';
-		}
-	}
-
-	/**
 	 * Remove the noallow class on pro fields
 	 *
 	 * @param string $class_name
@@ -457,8 +476,9 @@ class FrmProFormsController {
 	 * @return void
 	 */
 	public static function add_form_status_options( $values ) {
-		FrmProStylesController::enqueue_jquery_css();
-		wp_enqueue_script( 'jquery-ui-datepicker' );
+
+		FrmProDatepickerAssetsHelper::enqueue_datepicker_assets();
+
 		$values['open_date']  = empty( $values['open_date'] ) ? '' : gmdate( 'Y-m-d H:i', strtotime( $values['open_date'] ) );
 		$values['close_date'] = empty( $values['close_date'] ) ? '' : gmdate( 'Y-m-d H:i', strtotime( $values['close_date'] ) );
 
@@ -644,10 +664,6 @@ class FrmProFormsController {
 	public static function add_form_classes( $form ) {
 		echo ' frm_pro_form ';
 
-		if ( ! FrmProFormsHelper::lite_supports_ajax_submit() && FrmProForm::is_ajax_on( $form ) ) {
-			echo ' frm_ajax_submit ';
-		}
-
 		self::maybe_add_hide_class( $form );
 
 		if ( current_user_can( 'activate_plugins' ) && current_user_can( 'frm_edit_forms' ) ) {
@@ -680,7 +696,7 @@ class FrmProFormsController {
 	 * @return void
 	 */
 	private static function add_transitions( $form ) {
-		$transition = isset( $form->options['transition'] ) ? $form->options['transition'] : '';
+		$transition = $form->options['transition'] ?? '';
 		if ( empty( $transition ) ) {
 			return;
 		}
@@ -773,7 +789,7 @@ class FrmProFormsController {
 					$replace_with = esc_html( ! empty( $form->options['draft_label'] ) ? $form->options['draft_label'] : __( 'Save Draft', 'formidable-pro' ) );
 					break;
 				case 'save_draft':
-					if ( ! self::is_draft_visible_to_user( $form ) || ! isset( $form->options['save_draft'] ) || $form->options['save_draft'] != 1 || ( isset( $values['is_draft'] ) && ! $values['is_draft'] ) ) {
+					if ( ! self::is_draft_visible_to_user( $form ) || ! isset( $form->options['save_draft'] ) || $form->options['save_draft'] != 1 || ( isset( $values['is_draft'] ) && ! $values['is_draft'] ) || self::is_editing_submitted_entry( $form ) ) {
 						//remove button if user is not logged in, drafts are not allowed, or editing an entry that is not a draft
 						unset( $replace_with );
 					} else {
@@ -808,6 +824,28 @@ class FrmProFormsController {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * Check if we're currently editing a submitted entry. If we are, do not show a save draft button.
+	 *
+	 * @since 6.23
+	 *
+	 * @param stdClass $form
+	 * @return bool
+	 */
+	private static function is_editing_submitted_entry( $form ) {
+		global $frm_vars;
+		if ( empty( $frm_vars['editing_entry'] ) ) {
+			return false;
+		}
+
+		$entry = FrmDb::get_row( 'frm_items', array( 'id' => $frm_vars['editing_entry'] ), 'form_id,is_draft' );
+		if ( ! is_object( $entry ) ) {
+			return false;
+		}
+
+		return (int) $entry->is_draft === FrmEntriesHelper::SUBMITTED_ENTRY_STATUS && (int) $form->id === (int) $entry->form_id;
 	}
 
 	public static function replace_content_shortcodes( $content, $entry, $shortcodes ) {
@@ -955,13 +993,11 @@ class FrmProFormsController {
 			$frm_vars['honeypot'] = array();
 		}
 
-		if ( class_exists( 'FrmHoneypot' ) ) {
-			$honeypot = isset( $form->options['honeypot'] ) ? $form->options['honeypot'] : 'basic';
-		} else {
-			$honeypot = 'strict';
+		if ( ! class_exists( 'FrmHoneypot' ) ) {
+			return;
 		}
 
-		$frm_vars['honeypot'][ $form->id ] = $honeypot;
+		$frm_vars['honeypot'][ $form->id ] = $form->options['honeypot'] ?? 'basic';
 	}
 
 	/**
@@ -984,34 +1020,6 @@ class FrmProFormsController {
 		}
 
 		return preg_replace( '/frm_button_submit/', 'frm_button_submit frm_hidden', $button, 1 );
-	}
-
-	/**
-	 * Adds a row to Conditional Logic for the submit button
-	 */
-	public static function _submit_logic_row() {
-		FrmAppHelper::permission_check( 'frm_edit_forms' );
-		check_ajax_referer( 'frm_ajax', 'nonce' );
-
-		$meta_name   = FrmAppHelper::get_post_param( 'meta_name', '', 'absint' );
-		$hide_field  = '';
-		$form_id     = FrmAppHelper::get_param( 'form_id', '', 'get', 'absint' );
-		$form        = FrmForm::getOne( $form_id );
-		$form_fields = FrmField::get_all_for_form( $form_id );
-		if ( ! $form_fields ) {
-			wp_die();
-		}
-		$exclude_fields = array_merge( FrmField::no_save_fields(), array( 'file', 'rte', 'date' ) );
-
-		$condition         = array(
-			'hide_field'      => '',
-			'hide_field_cond' => '==',
-		);
-		$submit_conditions = array( $condition );
-
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/_submit_logic_row.php';
-
-		wp_die();
 	}
 
 	/**
@@ -1503,7 +1511,7 @@ class FrmProFormsController {
 
 		foreach ( array( 'before', 'after', 'submit' ) as $h ) {
 			if ( ! isset( $values[ $h . '_html' ] ) ) {
-				$values[ $h . '_html' ] = ( isset( $post_values['options'][ $h . '_html' ] ) ? $post_values['options'][ $h . '_html' ] : FrmFormsHelper::get_default_html( $h ) );
+				$values[ $h . '_html' ] = ( $post_values['options'][ $h . '_html' ] ?? FrmFormsHelper::get_default_html( $h ) );
 			}
 		}
 		unset( $h );
@@ -1548,6 +1556,7 @@ class FrmProFormsController {
 		}
 
 		self::clear_field_transient_for_parent_forms( $id );
+		FrmProApplicationsHelper::maybe_update_form_applications( $values );
 	}
 
 	/**
@@ -1810,9 +1819,91 @@ class FrmProFormsController {
 	}
 
 	/**
+	 * Show a note in the builder if the CAPTCHA field is incofrectly placed before the last page break.
+	 *
+	 * @since 6.20
+	 *
+	 * @param array<string> $messages
+	 * @return array<string>
+	 */
+	public static function maybe_show_captcha_message( $messages ) {
+		if ( self::should_show_captcha_message() ) {
+			$messages[] = __( 'The CAPTCHA field must be placed on the the last page or it will fail to validate.', 'formidable-pro' );
+		}
+
+		return $messages;
+	}
+
+	/**
+	 * @return bool
+	 */
+	private static function should_show_captcha_message() {
+		if ( ! FrmAppHelper::is_admin_page() || 'edit' !== FrmAppHelper::simple_get( 'frm_action' ) ) {
+			return false;
+		}
+
+		$form_id = FrmAppHelper::simple_get( 'id' );
+		if ( ! $form_id ) {
+			return false;
+		}
+
+		$page_breaks = FrmProFormsHelper::has_field( 'break', $form_id, false );
+		if ( ! $page_breaks ) {
+			return false;
+		}
+
+		$captcha = FrmProFormsHelper::has_field( 'captcha', $form_id, true );
+		if ( ! $captcha ) {
+			return false;
+		}
+
+		if ( FrmProFieldCaptcha::should_include_captcha_nonce_field() ) {
+			// If the user has opted into the captcha nonce then there is no need for this message.
+			return false;
+		}
+
+		$last_page_break = end( $page_breaks );
+		return (int) $last_page_break->field_order > (int) $captcha->field_order;
+	}
+
+	/**
+	 * @since 6.21
+	 *
+	 * @param array $classes
+	 * @return array
+	 */
+	public static function add_layout_classes( $classes ) {
+		// This is only shown for divider fields. It's hidden with CSS.
+		$classes['frm_no_border_top'] = array(
+			'label' => __( 'No Border Top', 'formidable-pro' ),
+			'title' => __( 'Removes the border-top from the section heading.', 'formidable-pro' ),
+		);
+		return $classes;
+	}
+	/**
 	 * @deprecated 6.12
 	 */
 	public static function add_js() {
 		_deprecated_function( __METHOD__, '6.12' );
+	}
+
+	/**
+	 * @deprecated 6.20
+	 *
+	 * @param array $values
+	 * @return void
+	 */
+	public static function add_form_ajax_options( $values ) {
+		_deprecated_function( __METHOD__, '6.20' );
+	}
+
+	/**
+	 * Adds a row to Conditional Logic for the submit button
+	 *
+	 * @deprecated 6.20.1
+	 */
+	public static function _submit_logic_row() {
+		_deprecated_function( __METHOD__, '6.20.1' );
+		wp_die();
 	}
 }

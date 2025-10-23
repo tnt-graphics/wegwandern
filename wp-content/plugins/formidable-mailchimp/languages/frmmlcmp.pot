@@ -1,15 +1,15 @@
-# Copyright (C) 2024 Strategy11
+# Copyright (C) 2025 Strategy11
 # This file is distributed under the same license as the Formidable Mailchimp plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Formidable Mailchimp 2.09\n"
+"Project-Id-Version: Formidable Mailchimp 2.10\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/formidable-mailchimp\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2024-11-05T14:45:53+00:00\n"
+"POT-Creation-Date: 2025-06-18T16:20:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: frmmlcmp\n"
@@ -39,16 +39,16 @@ msgstr ""
 msgid "You are running an outdated version of Formidable. This plugin may not work correctly if you do not update Formidable."
 msgstr ""
 
-#: controllers/FrmMlcmpAppController.php:622
-#: controllers/FrmMlcmpAppController.php:626
+#: controllers/FrmMlcmpAppController.php:669
+#: controllers/FrmMlcmpAppController.php:673
 msgid "You had an error communicating with the Mailchimp API."
 msgstr ""
 
-#: controllers/FrmMlcmpAppController.php:700
+#: controllers/FrmMlcmpAppController.php:747
 msgid "Mailchimp:"
 msgstr ""
 
-#: controllers/FrmMlcmpAppController.php:723
+#: controllers/FrmMlcmpAppController.php:770
 msgid "You had an HTTP connection error"
 msgstr ""
 

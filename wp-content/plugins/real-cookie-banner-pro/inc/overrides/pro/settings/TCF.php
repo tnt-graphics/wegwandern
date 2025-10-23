@@ -63,6 +63,12 @@ trait TCF
     public function updateGvl($force = \false)
     {
         if ($this->isActive() || $force) {
+            // Before the download starts, we set the next download time to 1 hour in the future
+            // This is to avoid that the download is started multiple times at once and when the
+            // download takes longer than expected (e.g. multiple calls to the WordPress instance).
+            // When the download is successful, the next download time will be set accordingly.
+            // When the download fails, it will be retried in 1 hour.
+            \update_option(SettingsTCF::OPTION_TCF_GVL_NEXT_DOWNLOAD_TIME, \strtotime('+1 hour'));
             $license = Core::getInstance()->getRpmInitiator()->getPluginUpdater()->getCurrentBlogLicense();
             $normalizer = Core::getInstance()->getTcfVendorListNormalizer();
             $normalizer->setFetchQueryArgs(['licenseKey' => $license->getActivation()->getCode(), 'clientUuid' => $license->getUuid()]);
@@ -79,8 +85,7 @@ trait TCF
             if ($result === \true) {
                 \update_option(SettingsTCF::SETTING_TCF_GVL_DOWNLOAD_TIME, \current_time('mysql'));
                 // Determine next update
-                $hasDefectVendors = $normalizer->getQuery()->hasDefectVendors();
-                \update_option(SettingsTCF::OPTION_TCF_GVL_NEXT_DOWNLOAD_TIME, $hasDefectVendors ? \strtotime('+6 hours') : AbstractTcf::getNextUpdateTime());
+                \update_option(SettingsTCF::OPTION_TCF_GVL_NEXT_DOWNLOAD_TIME, AbstractTcf::getNextUpdateTime());
                 // Automatically request new consent
                 Revision::getInstance()->getRevision()->create(\true);
             }

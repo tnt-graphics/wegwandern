@@ -57,7 +57,7 @@ $size = size_format($bytes);
                 <a href="#open_export_tree_folders"
                    class="ju-button no-background  open_export_tree_folders <?php echo ($export_folder_type === 'selection_folder') ? 'show' : 'hide' ?>"><?php esc_html_e('Select folders', 'wpmf'); ?></a>
                 <a href="<?php echo esc_url(admin_url('options-general.php?page=option-folder&action=wpmf_export&wpmf_nonce=' . wp_create_nonce('wpmf_nonce') . '#server_export')) ?>"
-                   class="ju-button export_folder_btn no-background orange-button waves-effect waves-light"><?php esc_html_e('Run export', 'wpmf'); ?></a>
+                   class="ju-button export_folder_btn no-background primary-button waves-effect waves-light"><?php esc_html_e('Run export', 'wpmf'); ?></a>
             </div>
 
             <div class="ju-settings-option wpmf_width_100 p-tb-20">
@@ -67,7 +67,7 @@ $size = size_format($bytes);
                     <input type="file" name="import" class="wpmf_import_folders">
                     <input type="hidden" name="max_file_size" value="<?php echo esc_attr($bytes); ?>"/>
                     <button name="import_folders_btn" type="submit"
-                            class="ju-button import_folder_btn no-background orange-button waves-effect waves-light"
+                            class="ju-button import_folder_btn no-background primary-button waves-effect waves-light"
                             data-path="<?php echo (!empty($path)) ? esc_attr($path) : '' ?>"
                             data-id="<?php echo (!empty($id)) ? esc_attr($id) : '' ?>"
                             data-import_only_folder="<?php echo (!empty($import_only_folder)) ? esc_attr($import_only_folder) : '' ?>">
@@ -101,7 +101,7 @@ $size = size_format($bytes);
 
             <div class="white-popup mfp-hide" id="open_export_tree_folders">
                 <div class="export_tree_folders"></div>
-                <button class="ju-button save_export_folders orange-button"><?php esc_html_e('Save', 'wpmf'); ?></button>
+                <button class="ju-button save_export_folders primary-button"><?php esc_html_e('Save', 'wpmf'); ?></button>
                 <span class="spinner save_export_folders_spinner"></span>
             </div>
         </div>
@@ -116,7 +116,7 @@ $size = size_format($bytes);
                 <p class="description">
                     <?php esc_html_e('Import folder structure and media from your
      server in the standard WordPress media manager', 'wpmf'); ?>
-                    <br><span class="text-orange"
+                    <br><span class="text-primary"
                               style="word-break: break-all;"><?php echo esc_html($allow_sync_extensions) ?></span>
                 </p>
                 <div class="wpmf_row_full">
@@ -126,10 +126,14 @@ $size = size_format($bytes);
                     </div>
                     <div class="wpmf-setting-only-file-import">
                         <input type="checkbox" id="only_file">
-                        <span>Import folders without their subdirectories</span>
+                        <span><?php esc_html_e('Import folders without their subdirectories', 'wpmf'); ?></span>
+                    </div>
+                    <div class="wpmf-setting-only-file-import">
+                        <input type="checkbox" id="keep_root_directory">
+                        <span><?php esc_html_e("Use original media paths (Don't copy)", 'wpmf'); ?></span>
                     </div>
                     <button type="button"
-                            class="ju-button no-background orange-button waves-effect waves-light import_ftp_button"
+                            class="ju-button no-background primary-button waves-effect waves-light import_ftp_button"
                             style="padding: 8.5px 15px">
                         <label style="line-height: 20px"><?php esc_html_e('Import Folder', 'wpmf'); ?></label>
                         <span class="spinner" style="display:none; margin: 0; vertical-align: middle"></span>
@@ -166,7 +170,7 @@ $size = size_format($bytes);
                     </p>
                     <p>
                         <button type="button"
-                                class="ju-button no-background orange-button waves-effect waves-light wmpf_import_category"
+                                class="ju-button no-background primary-button waves-effect waves-light wmpf_import_category"
                                 style="padding: 8.5px 15px">
                             <label style="line-height: 20px"><?php esc_html_e('Import Now', 'wpmf'); ?></label>
                             <span class="spinner" style="display:none; margin: 0; vertical-align: middle"></span>
@@ -202,7 +206,7 @@ $folders = array();
                     </p>
                     <p>
                         <button type="button"
-                                class="ju-button no-background orange-button waves-effect waves-light open_import_eml open_import_external_cats"
+                                class="ju-button no-background primary-button waves-effect waves-light open_import_eml open_import_external_cats"
                                 style="margin-left: 0 !important;" data-cat-name="media_category"><?php esc_html_e('Import Now', 'wpmf'); ?></button>
                     </p>
                 </div>
@@ -230,7 +234,7 @@ $folders = array();
                     </p>
                     <p>
                         <button type="button"
-                                class="ju-button no-background orange-button waves-effect waves-light open_import_eml open_import_external_cats"
+                                class="ju-button no-background primary-button waves-effect waves-light open_import_eml open_import_external_cats"
                                 style="margin-left: 0 !important;" data-cat-name="happyfiles_category"><?php esc_html_e('Import Now', 'wpmf'); ?></button>
                     </p>
                 </div>
@@ -258,7 +262,7 @@ $folders = array();
                         <p class="description">
                             <?php echo sprintf(esc_html__('We found that you have %d media folders in Real Media Library plugin. Would you like to import media and folders in your media library?', 'wpmf'), esc_html($total)) ?>
                         </p>
-                        <p><button type="button" class="ju-button no-background orange-button waves-effect waves-light open_import_fbv open_import_external_cats" data-cat-name="rml_category" style="margin-left: 0 !important;"><?php esc_html_e('Import Now', 'wpmf'); ?></button></p>
+                        <p><button type="button" class="ju-button no-background primary-button waves-effect waves-light open_import_fbv open_import_external_cats" data-cat-name="rml_category" style="margin-left: 0 !important;"><?php esc_html_e('Import Now', 'wpmf'); ?></button></p>
                     </div>
                 </div>
             </div>
@@ -284,7 +288,7 @@ $folders = array();
                         <p class="description">
                             <?php echo sprintf(esc_html__('We found that you have %d media folders in FileBird plugin. Would you like to import media and folders in your media library?', 'wpmf'), esc_html($total)) ?>
                         </p>
-                        <p><button type="button" class="ju-button no-background orange-button waves-effect waves-light open_import_fbv open_import_external_cats" data-cat-name="filebird" style="margin-left: 0 !important;"><?php esc_html_e('Import Now', 'wpmf'); ?></button></p>
+                        <p><button type="button" class="ju-button no-background primary-button waves-effect waves-light open_import_fbv open_import_external_cats" data-cat-name="filebird" style="margin-left: 0 !important;"><?php esc_html_e('Import Now', 'wpmf'); ?></button></p>
                     </div>
                 </div>
             </div>
@@ -308,7 +312,7 @@ $folders = array();
                     <p class="description">
                         <?php echo sprintf(esc_html__('We found that you have %d media folders in Folders plugin. Would you like to import media and folders in your media library?', 'wpmf'), esc_html($total)) ?>
                     </p>
-                    <p><button type="button" class="ju-button no-background orange-button waves-effect waves-light open_import_fbv open_import_external_cats" data-cat-name="media_folder" style="margin-left: 0 !important;"><?php esc_html_e('Import Now', 'wpmf'); ?></button></p>
+                    <p><button type="button" class="ju-button no-background primary-button waves-effect waves-light open_import_fbv open_import_external_cats" data-cat-name="media_folder" style="margin-left: 0 !important;"><?php esc_html_e('Import Now', 'wpmf'); ?></button></p>
                 </div>
             </div>
         </div>
@@ -341,7 +345,7 @@ $folders = array();
                     </p>
                     <p>
                         <button type="button"
-                                class="ju-button no-background orange-button waves-effect waves-light btn_import_gallery"
+                                class="ju-button no-background primary-button waves-effect waves-light btn_import_gallery"
                                 style="padding: 8.5px 15px">
                             <label style="line-height: 20px"><?php esc_html_e('Import Now', 'wpmf'); ?></label>
                             <span class="spinner" style="display:none; margin: 0; vertical-align: middle"></span>

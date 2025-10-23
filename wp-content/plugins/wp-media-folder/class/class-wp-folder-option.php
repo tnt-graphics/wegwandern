@@ -245,41 +245,80 @@ class WpmfMediaFolderOption
      */
     public function importSizeFiletype()
     {
-        if (empty($_POST['wpmf_nonce'])
-            || !wp_verify_nonce($_POST['wpmf_nonce'], 'wpmf_nonce')) {
+        if (empty($_POST['wpmf_nonce']) || ! wp_verify_nonce($_POST['wpmf_nonce'], 'wpmf_nonce')) {
             die();
         }
 
         /**
-         * Filter check capability of current user to import file infos (size and filetype)
-         *
-         * @param boolean The current user has the given capability
-         * @param string  Action name
-         *
-         * @return boolean
-         *
-         * @ignore Hook already documented
+         * Check user capability
          */
-        $wpmf_capability = apply_filters('wpmf_user_can', current_user_can('manage_options'), 'import_size_filetype');
+        $wpmf_capability = apply_filters(
+            'wpmf_user_can',
+            current_user_can('manage_options'),
+            'import_size_filetype'
+        );
         if (!$wpmf_capability) {
             wp_send_json(false);
         }
-        global $wpdb;
-        $current_page = (int) $_POST['wpmf_current_page'];
-        $limit        = 50;
-        $offset       = $current_page * $limit;
-        $attachments  = $wpdb->get_results($wpdb->prepare('SELECT ID FROM ' . $wpdb->prefix . 'posts as posts
-               WHERE   posts.post_type     = %s LIMIT %d OFFSET %d', array('attachment', $limit, $offset)));
 
+        global $wpdb;
+
+        // Total number of attachments
+        $total = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                'SELECT COUNT(posts.ID)
+                FROM ' . $wpdb->prefix . 'posts AS posts
+                WHERE posts.post_type = %s',
+                array('attachment')
+            )
+        );
+
+        // Number of processed attachments (already have wpmf_size)
+        $done = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                'SELECT COUNT(DISTINCT pm.post_id)
+                FROM ' . $wpdb->prefix . 'postmeta AS pm
+                WHERE pm.meta_key = %s',
+                array('wpmf_size')
+            )
+        );
+
+        $limit   = 50;
+        $last_id = isset($_POST['wpmf_last_id']) ? (int) $_POST['wpmf_last_id'] : 0;
+
+        // Fetch next batch: only attachments without wpmf_size
+        $attachments = $wpdb->get_results(
+            $wpdb->prepare(
+                'SELECT posts.ID
+                FROM ' . $wpdb->prefix . 'posts AS posts
+                LEFT JOIN ' . $wpdb->prefix . 'postmeta AS pm 
+                        ON (posts.ID = pm.post_id AND pm.meta_key = %s)
+                WHERE posts.post_type = %s
+                AND posts.ID > %d
+                AND pm.post_id IS NULL
+                ORDER BY posts.ID ASC
+                LIMIT %d',
+                array('wpmf_size', 'attachment', $last_id, $limit)
+            )
+        );
+
+        // No more data → finish
         if (empty($attachments)) {
             update_option('_wpmf_import_size_notice_flag', 1);
-            wp_send_json(array('status' => true, 'continue' => false));
+            wp_send_json(array(
+                'status'   => true,
+                'continue' => false,
+                'progress' => '100%'
+            ));
         }
+
+        $new_last_id = $last_id;
 
         foreach ($attachments as $attachment) {
             $wpmf_size_filetype = wpmfGetSizeFiletype($attachment->ID);
             $size               = $wpmf_size_filetype['size'];
             $ext                = $wpmf_size_filetype['ext'];
+
             if (!get_post_meta($attachment->ID, 'wpmf_size')) {
                 update_post_meta($attachment->ID, 'wpmf_size', $size);
             }
@@ -291,22 +330,45 @@ class WpmfMediaFolderOption
             if (!get_post_meta($attachment->ID, 'wpmf_order')) {
                 update_post_meta($attachment->ID, 'wpmf_order', 0);
             }
+
+            if ($attachment->ID > $new_last_id) {
+                $new_last_id = $attachment->ID;
+            }
         }
 
-        wp_send_json(array('status' => true, 'continue' => true));
+        // Recalculate $done after processing this batch
+        $done = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                'SELECT COUNT(DISTINCT pm.post_id)
+                FROM ' . $wpdb->prefix . 'postmeta AS pm
+                WHERE pm.meta_key = %s',
+                array('wpmf_size')
+            )
+        );
+
+        // Calculate progress
+        $progress = ($total > 0) ? intval(($done / $total) * 100) . '%' : '100%';
+
+        wp_send_json(array(
+            'status'   => true,
+            'continue' => true,
+            'progress' => $progress,
+            'last_id'  => $new_last_id
+        ));
     }
 
     /**
      * Create attachment and insert attachment to database
      *
-     * @param string  $upload_path Path of file
-     * @param string  $upload_url  URL of file
-     * @param string  $file_title  Title of tile
-     * @param string  $file        File name
-     * @param string  $form_file   Path of file need copy
-     * @param string  $mime_type   Mime type of file
-     * @param string  $ext         Extension of file
-     * @param integer $term_id     Folder id
+     * @param string  $upload_path    Path of file
+     * @param string  $upload_url     URL of file
+     * @param string  $file_title     Title of tile
+     * @param string  $file           File name
+     * @param string  $form_file      Path of file need copy
+     * @param string  $mime_type      Mime type of file
+     * @param string  $ext            Extension of file
+     * @param integer $term_id        Folder id
+     * @param string  $root_directory Keep root directory
      *
      * @return boolean|integer
      */
@@ -318,14 +380,21 @@ class WpmfMediaFolderOption
         $form_file,
         $mime_type,
         $ext,
-        $term_id
+        $term_id,
+        $root_directory = false
     ) {
-        if (file_exists($upload_path . '/' . $file)) {
-            $file   = wp_unique_filename($upload_path, $file);
+        if ($root_directory) {
+            $image_path = preg_replace('#/+#', '/', $root_directory . '//' . $file);
+                $this->setFolderPermissions(rtrim($root_directory, '/'));
+        } else {
+            if (file_exists($upload_path . '/' . $file)) {
+                $file   = wp_unique_filename($upload_path, $file);
+            }
+            $image_path = preg_replace('#/+#', '/', $upload_path . '//' . $file);
+            $upload = copy($form_file, $upload_path . '/' . $file);
         }
 
-        $upload = copy($form_file, $upload_path . '/' . $file);
-        if ($upload) {
+        if ($upload || $root_directory) {
             $attachment = array(
                 'guid'           => $upload_url . '/' . $file,
                 'post_mime_type' => $mime_type,
@@ -358,7 +427,16 @@ class WpmfMediaFolderOption
                 }
             }
 
-            $image_path = preg_replace('#/+#', '/', $upload_path . '//' . $file);
+            if ($root_directory) {
+                $image_path = preg_replace('#/+#', '/', $root_directory . '//' . $file);
+            } else {
+                $image_path = preg_replace('#/+#', '/', $upload_path . '//' . $file);
+            }
+
+            // Set permissions
+            if ($root_directory) {
+                $this->setFolderPermissions(rtrim($root_directory, '/'));
+            }
 
             // Insert attachment
             $attach_id   = wp_insert_attachment($attachment, $image_path);
@@ -390,6 +468,35 @@ class WpmfMediaFolderOption
             return $attach_id;
         }
         return false;
+    }
+
+    /**
+     * Set permissions to folder import
+     *
+     * @param string $folder Folder path
+     *
+     * @return void
+     */
+    public function setFolderPermissions($folder)
+    {
+        if (!file_exists($folder)) {
+            return;
+        }
+
+        chmod($folder, 0777);
+    
+        $items = scandir($folder);
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+    
+            $path = $folder . DIRECTORY_SEPARATOR . $item;
+    
+            if (is_dir($path)) {
+                $this->setFolderPermissions($path);
+            }
+        }
     }
 
     /**
@@ -511,7 +618,7 @@ class WpmfMediaFolderOption
             $wpmfQueue = JuMainQueue::getInstance('wpmf');
             $wpmfQueue->updateQueueTermMeta((int)$responses['folder_id'], (int)$element_id);
             $wpmfQueue->updateResponses((int)$element_id, $responses);
-            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $datas['only_file']);
+            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $datas['only_file'], $datas['root_directory']);
         } else {
             $upload_dir = wp_upload_dir();
             $info_file  = wp_check_filetype($datas['path']);
@@ -520,10 +627,19 @@ class WpmfMediaFolderOption
                 return false;
             }
 
-            $file       = sanitize_file_name($datas['name']);
-            // check file exist , if not exist then insert file
-            $file_exists = $this->checkExistPost('/' . $file, $datas['folder_parent'], $upload_dir);
-            if (!empty($file_exists)) {
+            if ($datas['root_directory']) {
+                $file = $datas['name'];
+            } else {
+                $file       = sanitize_file_name($datas['name']);
+                // check file exist , if not exist then insert file
+                $file_exists = $this->checkExistPost('/' . $file, $datas['folder_parent'], $upload_dir);
+                if (!empty($file_exists)) {
+                    return false;
+                }
+            }
+
+            $is_thumb_or_scaled = preg_match('/(-scaled|[_-]\d+x\d+)|@[2-6]\x(?=\.[a-z]{3,4}$)/im', $file);
+            if ($is_thumb_or_scaled) {
                 return false;
             }
 
@@ -536,6 +652,11 @@ class WpmfMediaFolderOption
                     $info_file['ext']
                 );
             } else {
+                if ($datas['root_directory']) {
+                    $root_directory = $datas['server_parent'];
+                } else {
+                    $root_directory = false;
+                }
                 $file_id = $this->insertAttachmentMetadata(
                     $upload_dir['path'],
                     $upload_dir['url'],
@@ -544,7 +665,8 @@ class WpmfMediaFolderOption
                     $datas['path'],
                     $info_file['type'],
                     $info_file['ext'],
-                    $datas['folder_parent']
+                    $datas['folder_parent'],
+                    $root_directory
                 );
             }
 
@@ -701,10 +823,33 @@ class WpmfMediaFolderOption
                     return false;
                 }
 
-                $file       = sanitize_file_name($datas['name']);
-                // check file exist , if not exist then insert file
-                $file_exists = $this->checkExistPost('/' . $file, $datas['folder_parent'], $upload_dir);
-                if (!empty($file_exists)) {
+                if ($datas['root_directory']) {
+                    $root_directory = $datas['server_parent'];
+                    $file = $datas['name'];
+                } else {
+                    $file       = sanitize_file_name($datas['name']);
+                    // check file exist , if not exist then insert file
+                    $file_exists = $this->checkExistPost('/' . $file, $datas['folder_parent'], $upload_dir);
+                    if (!empty($file_exists)) {
+                        return false;
+                    }
+                    $root_directory = false;
+                }
+
+                //check if this file is already in the media library (created by other plugin)
+                if (strpos($datas['path'], $upload_dir['basedir']) !== false) {
+                    $meta_attached_file = str_replace($upload_dir['basedir'], '', $datas['path']);
+                    // remove the left \ in the path $meta_attached_file
+                    $meta_attached_file = ltrim($meta_attached_file, DIRECTORY_SEPARATOR);
+                    if (!empty($file_id) && get_post($file_id)) {
+                        // Set folder parent for this attachment
+                        wp_set_object_terms((int) $file_id, (int) $datas['folder_parent'], WPMF_TAXO);
+                        return true;
+                    }
+                }
+
+                $is_thumb_or_scaled = preg_match('/(-scaled|[_-]\d+x\d+)|@[2-6]\x(?=\.[a-z]{3,4}$)/im', $file);
+                if ($is_thumb_or_scaled) {
                     return false;
                 }
 
@@ -725,7 +870,8 @@ class WpmfMediaFolderOption
                         $datas['path'],
                         $info_file['type'],
                         $info_file['ext'],
-                        $datas['folder_parent']
+                        $datas['folder_parent'],
+                        $root_directory,
                     );
                 }
 
@@ -871,7 +1017,7 @@ class WpmfMediaFolderOption
                     if (!in_array(strtolower($info_file['ext']), $this->type_import)) {
                         continue;
                     }
-                    $is_thumb_or_scaled = preg_match('/(-scaled|[_-]\d+x\d+)|@[2-6]\x(?=\.[a-z]{3,4}$)/im', $name) === true;
+                    $is_thumb_or_scaled = preg_match('/(-scaled|[_-]\d+x\d+)|@[2-6]\x(?=\.[a-z]{3,4}$)/im', $name);
                     if ($is_thumb_or_scaled) {
                         continue;
                     }
@@ -906,13 +1052,14 @@ class WpmfMediaFolderOption
     /**
      * Add sync FTP item to queue
      *
-     * @param string  $directory     Directory
-     * @param integer $folder_parent ID of folder parent on media library
-     * @param integer $only_file     Import file without subdirectories
+     * @param string  $directory      Directory
+     * @param integer $folder_parent  ID of folder parent on media library
+     * @param integer $only_file      Import file without subdirectories
+     * @param boolean $root_directory Import file and keep root directory
      *
      * @return void
      */
-    public function doAddImportFtpQueue($directory, $folder_parent = 0, $only_file = null)
+    public function doAddImportFtpQueue($directory, $folder_parent = 0, $only_file = null, $root_directory = false)
     {
         if (file_exists($directory)) {
             $dir_files = glob($directory . '*');
@@ -928,7 +1075,8 @@ class WpmfMediaFolderOption
                     'path' => $validate_path,
                     'server_parent' => $directory,
                     'folder_parent' => $folder_parent,
-                    'action' => 'wpmf_import_ftp_to_library'
+                    'action' => 'wpmf_import_ftp_to_library',
+                    'root_directory' => $root_directory
                 );
                 if (is_dir($dir_file) && empty($only_file)) {
                     $datas['name'] = $name;
@@ -953,7 +1101,7 @@ class WpmfMediaFolderOption
                 if (is_dir($dir_file) && $row) {
                     $responses = json_decode($row->responses, true);
                     if (isset($responses['folder_id'])) {
-                        $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id']);
+                        $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $only_file, $root_directory);
                     }
                 } else {
                     $wpmfQueue->addToQueue($datas);
@@ -1261,9 +1409,11 @@ class WpmfMediaFolderOption
                 break;
         }
 
-        foreach ($folders as $k => $folder) {
-            if (in_array($folder->parent, $include_folders)) {
-                unset($folders[$k]);
+        if ($export_type === 'selection_folder' && !empty($include_folders)) {
+            foreach ($folders as $k => $folder) {
+                if (in_array($folder->parent, $include_folders)) {
+                    unset($folders[$k]);
+                }
             }
         }
 
@@ -1272,15 +1422,30 @@ class WpmfMediaFolderOption
             $only_folder = true;
         }
         $export_items = array();
-        foreach ($folders as $folder) {
-            if ((int) $folder->parent === 0 || !array_key_exists($folder->parent, $export_items)) {
-                $items = array();
-                $items['id'] = $folder->term_id;
-                $items['name'] = $folder->name;
-                $items['parent'] = 0;
-                $items['type'] = 'folder';
-                $items['childs'] = $this->getExportItems($folder, $only_folder, array());
-                $export_items[$folder->term_id] = $items;
+        if ($export_type ==='all' || $export_type === 'only_folder') {
+            foreach ($folders as $folder) {
+                if ((int) $folder->parent === 0) {
+                    $items = array();
+                    $items['id'] = $folder->term_id;
+                    $items['name'] = $folder->name;
+                    $items['parent'] = 0;
+                    $items['type'] = 'folder';
+                    $items['childs'] = $this->getExportItems($folder, $only_folder, array());
+                    $export_items[$folder->term_id] = $items;
+                }
+            }
+        } else { // folder slection
+            //todo: fix later the case of folders selection with more than 3 levels
+            foreach ($folders as $folder) {
+                if ((int) $folder->parent === 0 || !array_key_exists($folder->parent, $export_items)) {
+                    $items = array();
+                    $items['id'] = $folder->term_id;
+                    $items['name'] = $folder->name;
+                    $items['parent'] = 0;
+                    $items['type'] = 'folder';
+                    $items['childs'] = $this->getExportItems($folder, $only_folder, array());
+                    $export_items[$folder->term_id] = $items;
+                }
             }
         }
 
@@ -1317,6 +1482,8 @@ class WpmfMediaFolderOption
 
         $list_import = $_POST['wpmf_list_import'];
         $only_file = $_POST['wpmf_only_file'];
+        $root_directory = $_POST['wpmf_root_directory'];
+        ;
         if ($list_import !== '') {
             $lists = explode(',', $list_import);
             if (in_array('', $lists)) {
@@ -1340,7 +1507,8 @@ class WpmfMediaFolderOption
                         'action' => 'wpmf_import_ftp_to_library',
                         'name' => basename($validate_path),
                         'type' => 'folder',
-                        'only_file' => $only_file
+                        'only_file' => $only_file,
+                        'root_directory' => $root_directory
                     );
 
                     $wpmfQueue = JuMainQueue::getInstance('wpmf');
@@ -1350,7 +1518,7 @@ class WpmfMediaFolderOption
                     } else {
                         $responses = json_decode($row->responses, true);
                         if (isset($responses['folder_id'])) {
-                            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $only_file);
+                            $this->doAddImportFtpQueue($datas['path'] . DIRECTORY_SEPARATOR, (int)$responses['folder_id'], $only_file, $root_directory);
                         }
                     }
                 }
@@ -1463,6 +1631,11 @@ class WpmfMediaFolderOption
     public function addSettingsOption()
     {
         update_option('wpmf_version', WPMF_VERSION);
+
+        if (get_option('wpmf_first_installed', false) === false) {
+            add_option('wpmf_first_installed', 1);
+        }
+
         if (!get_option('wpmf_gallery_image_size_value', false)) {
             add_option('wpmf_gallery_image_size_value', '["thumbnail","medium","large","full"]');
         }
@@ -1716,6 +1889,25 @@ class WpmfMediaFolderOption
                 }
             }
         }
+
+        $ai_defaults = array(
+            'batch_ai_optimization'    => '1',
+            'new_ai_auto_optimization' => '0',
+            'force_override_metadata'  => '1',
+            'ai_image_title'           => '1',
+            'ai_image_alt'             => '1',
+            'ai_image_description'     => '1',
+            'ai_image_caption'         => '0',
+            'rename_image_upload'      => '0',
+            'send_image_file_fallback' => '0',
+            'admin_bar'                => '1'
+        );
+
+        foreach ($ai_defaults as $key => $val) {
+            if (get_option('wpmf_ai_' . $key, false) === false) {
+                add_option('wpmf_ai_' . $key, $val, '', 'yes');
+            }
+        }
     }
 
     /**
@@ -1764,31 +1956,31 @@ class WpmfMediaFolderOption
                 WPMF_VERSION
             );
 
-            wp_enqueue_script(
-                'wpmf_ju_velocity_js',
-                plugins_url('assets/wordpress-css-framework/js/velocity.min.js', dirname(__FILE__)),
-                array(),
-                WPMF_VERSION
-            );
-            wp_enqueue_script(
-                'wpmf_ju_waves_js',
-                plugins_url('assets/wordpress-css-framework/js/waves.js', dirname(__FILE__)),
-                array(),
-                WPMF_VERSION
-            );
-            wp_enqueue_script(
-                'wpmf_ju_tabs_js',
-                plugins_url('assets/wordpress-css-framework/js/tabs.js', dirname(__FILE__)),
-                array(),
-                WPMF_VERSION
-            );
+            // wp_enqueue_script(
+            //     'wpmf_ju_velocity_js',
+            //     plugins_url('assets/wordpress-css-framework/js/velocity.min.js', dirname(__FILE__)),
+            //     array(),
+            //     WPMF_VERSION
+            // );
+            // wp_enqueue_script(
+            //     'wpmf_ju_waves_js',
+            //     plugins_url('assets/wordpress-css-framework/js/waves.js', dirname(__FILE__)),
+            //     array(),
+            //     WPMF_VERSION
+            // );
+            // wp_enqueue_script(
+            //     'wpmf_ju_tabs_js',
+            //     plugins_url('assets/wordpress-css-framework/js/tabs.js', dirname(__FILE__)),
+            //     array(),
+            //     WPMF_VERSION
+            // );
 
-            wp_enqueue_script(
-                'wpmf_ju_framework_js',
-                plugins_url('assets/wordpress-css-framework/js/script.js', dirname(__FILE__)),
-                array('wpmf_ju_tabs_js'),
-                WPMF_VERSION
-            );
+            // wp_enqueue_script(
+            //     'wpmf_ju_framework_js',
+            //     plugins_url('assets/wordpress-css-framework/js/script.js', dirname(__FILE__)),
+            //     array('wpmf_ju_tabs_js'),
+            //     WPMF_VERSION
+            // );
 
             wp_enqueue_script(
                 'wpmf-magnific-popup-script',
@@ -1871,6 +2063,13 @@ class WpmfMediaFolderOption
                 'wpmf-style-tippy',
                 plugins_url('/assets/js/tippy/tippy.css', dirname(__FILE__)),
                 array(),
+                WPMF_VERSION
+            );
+
+            wp_enqueue_script(
+                'wpmf_ju_sidebar',
+                plugins_url('assets/js/sidebar.js', dirname(__FILE__)),
+                array('jquery'),
                 WPMF_VERSION
             );
         }
@@ -2470,6 +2669,7 @@ class WpmfMediaFolderOption
             'hide_tree',
             'enable_folders',
             'hide_remote_video',
+            'auto_generate_webp',
             'enable_download_media',
             'default_featured_image_type',
             'default_featured_image',
@@ -2498,6 +2698,7 @@ class WpmfMediaFolderOption
             'watermark_exclude_public_gallery',
             'watermark_exclude_photograph_gallery',
             'connect_nextcloud',
+            'connect_owncloud',
             'wpmf_minimize_folder_tree_post_type'
         );
         if (isset($_POST['btn_wpmf_save'])) {
@@ -2833,6 +3034,37 @@ class WpmfMediaFolderOption
                 }
             }
 
+            $wpmf_ai_keys = array(
+                'batch_ai_optimization',
+                'new_ai_auto_optimization',
+                'force_override_metadata',
+                'ai_image_title',
+                'ai_image_alt',
+                'ai_image_description',
+                'ai_image_caption',
+                'rename_image_upload',
+                'send_image_file_fallback',
+                'admin_bar'
+            );
+
+            if (isset($_POST['wpmf_ai']) && is_array($_POST['wpmf_ai'])) {
+                $wpmf_ai_input = $_POST['wpmf_ai'];
+                foreach ($wpmf_ai_keys as $key) {
+                    $value = isset($wpmf_ai_input[$key]) ? $wpmf_ai_input[$key] : 0;
+                    update_option('wpmf_ai_' . $key, $value);
+                }
+
+                if (array_key_exists('system_prompt_context', $wpmf_ai_input)) {
+                    $text = trim(wp_unslash($wpmf_ai_input['system_prompt_context']));
+                    update_option('wpmf_ai_system_prompt_context', sanitize_textarea_field($text));
+                }
+
+                if (array_key_exists('image_ai_language', $wpmf_ai_input)) {
+                    $lang = sanitize_text_field(wp_unslash($wpmf_ai_input['image_ai_language']));
+                    update_option('wpmf_ai_image_language', $lang);
+                }
+            }
+
             /**
              * Save settings
              *
@@ -3109,6 +3341,18 @@ class WpmfMediaFolderOption
              * @internal
              */
             $html_nextcloud = apply_filters('wpmfaddon_nextcloud_settings', '');
+
+            /**
+             * Filter render owncloud settings
+             *
+             * @param string HTML default
+             *
+             * @return string
+             *
+             * @internal
+             */
+            $html_owncloud = apply_filters('wpmfaddon_owncloud_settings', '');
+
 
             /**
              * Filter render Amazon s3 settings
@@ -4364,6 +4608,13 @@ class WpmfMediaFolderOption
 
         foreach ($attachments as $image) {
             $fullsizepath = get_attached_file($image->ID);
+            if (false === $fullsizepath) {
+                $parsed = parse_url(wp_get_attachment_url($image->ID));
+                $relativePath = ltrim(dirname($parsed [ 'path' ]) . '/' . rawurlencode(basename($parsed[ 'path' ])), '/');
+                if (file_exists(ABSPATH . $relativePath)) {
+                    $fullsizepath = ABSPATH . $relativePath;
+                }
+            }
             $path_info = pathinfo($fullsizepath);
             $wpmf_size_filetype = wpmfGetSizeFiletype($image->ID);
             $size               = $wpmf_size_filetype['size'];
@@ -4374,7 +4625,7 @@ class WpmfMediaFolderOption
                     '<code>' . esc_html($fullsizepath) . '</code>'
                 );
                 $this->result_gennerate_thumb .= sprintf(
-                    __('<p>%1$s (ID %2$s) failed to resize. The error message was: %3$s</p>', 'wpmf'), // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
+                    '<p>%1$s (ID %2$s)'.  __('failed to resize. The error message was:', 'wpmf'). ' %3$s</p>', // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
                     esc_html($path_info['basename']),
                     $image->ID,
                     $message
@@ -4393,7 +4644,7 @@ class WpmfMediaFolderOption
             if (is_wp_error($metadata)) {
                 $message                      = $metadata->get_error_message();
                 $this->result_gennerate_thumb .= sprintf(
-                    __('<p>%1$s (ID %2$s) failed to resize. The error message was: %3$s</p>', 'wpmf'), // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
+                    '<p>%1$s (ID %2$s)'.  __('failed to resize. The error message was:', 'wpmf'). ' %3$s</p>', // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
                     esc_html($path_info['basename']),
                     $image->ID,
                     $message
@@ -4409,7 +4660,7 @@ class WpmfMediaFolderOption
             if (empty($metadata)) {
                 $message                      = __('Unknown failure reason.', 'wpmf');
                 $this->result_gennerate_thumb .= sprintf(
-                    __('<p>%1$s (ID %2$s) failed to resize. The error message was: %3$s</p>', 'wpmf'), // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
+                    '<p>%1$s (ID %2$s)'.  __('failed to resize. The error message was:', 'wpmf'). ' %3$s</p>', // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
                     esc_html($path_info['basename']),
                     $image->ID,
                     $message
@@ -4424,7 +4675,7 @@ class WpmfMediaFolderOption
 
             wp_update_attachment_metadata($image->ID, $metadata);
             $this->result_gennerate_thumb .= sprintf(
-                __('<p>%1$s (ID %2$s) was successfully resized in %3$s seconds.</p>', 'wpmf'), // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
+                '<p>%1$s (ID %2$s) ' .__('was successfully resized', 'wpmf'). ' in %3$s seconds.</p>', // phpcs:ignore WordPress.WP.I18n.NoHtmlWrappedStrings -- String wraped in <p>
                 esc_html($path_info['basename']),
                 $image->ID,
                 timer_stop()

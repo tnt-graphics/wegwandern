@@ -251,24 +251,26 @@ trait Strings {
 	 * Strips punctuation from a given string.
 	 *
 	 * @since 4.0.0
+	 * @version 4.7.9 Added the $keepSpaces parameter.
 	 *
 	 * @param  string $string           The string.
 	 * @param  array  $charactersToKeep The characters that can't be stripped (optional).
+	 * @param  bool   $keepSpaces       Whether to keep spaces.
 	 * @return string                   The string without punctuation.
 	 */
-	public function stripPunctuation( $string, $charactersToKeep = [] ) {
+	public function stripPunctuation( $string, $charactersToKeep = [], $keepSpaces = false ) {
 		$characterRegexPattern = '';
 		if ( ! empty( $charactersToKeep ) ) {
 			$characterString       = implode( '', $charactersToKeep );
 			$characterRegexPattern = "(?![$characterString])";
 		}
 
-		$string = aioseo()->helpers->decodeHtmlEntities( $string );
-		$string = preg_replace( "/{$characterRegexPattern}[\p{P}\d+]/u", '', (string) $string );
+		$string = aioseo()->helpers->decodeHtmlEntities( (string) $string );
+		$string = preg_replace( "/{$characterRegexPattern}[\p{P}\d+]/u", '', $string );
 		$string = aioseo()->helpers->encodeOutputHtml( $string );
 
 		// Trim both internal and external whitespace.
-		return preg_replace( '/\s\s+/u', ' ', (string) trim( $string ) );
+		return $keepSpaces ? $string : preg_replace( '/\s\s+/u', ' ', trim( $string ) );
 	}
 
 	/**
@@ -306,6 +308,32 @@ trait Strings {
 		$decodeHtmlEntities[ $string ] = html_entity_decode( (string) $string, ENT_QUOTES );
 
 		return $decodeHtmlEntities[ $string ];
+	}
+
+	/**
+	 * Recursively decode HTML entities until no more decoding is possible.
+	 *
+	 * @since 4.8.7
+	 *
+	 * @param  string $string        The string to decode.
+	 * @param  int    $maxIterations The maximum number of iterations.
+	 * @return string                The decoded string.
+	 */
+	public function decodeHtmlEntitiesRecursive( $string, $maxIterations = 10 ) {
+		if ( ! is_string( $string ) ) {
+			return '';
+		}
+
+		$decodedValue = $string;
+		$iterations   = 0;
+		do {
+			$previousValue = $decodedValue;
+			$decodedValue  = $this->decodeHtmlEntities( $decodedValue );
+
+			$iterations++;
+		} while ( $previousValue !== $decodedValue && $iterations < $maxIterations );
+
+		return $decodedValue;
 	}
 
 	/**
@@ -646,5 +674,56 @@ trait Strings {
 	 */
 	public function createHash( ...$args ) {
 		return sha1( wp_json_encode( $args ) );
+	}
+
+	/**
+	 * Extracts URLs from a given string.
+	 *
+	 * @since 4.8.1
+	 *
+	 * @param  string $string The string.
+	 * @return array          The extracted URLs.
+	 */
+	public function extractUrls( $string ) {
+		$urls = wp_extract_urls( $string );
+
+		if ( empty( $urls ) ) {
+			return [];
+		}
+
+		$allUrls = [];
+
+		// Attempt to split multiple URLs. Elementor does not always separate them properly.
+		foreach ( $urls as $url ) {
+			$splitUrls = preg_split( '/(?=https?:\/\/)/', $url, - 1, PREG_SPLIT_NO_EMPTY );
+			$allUrls   = array_merge( $allUrls, $splitUrls );
+		}
+
+		return $allUrls;
+	}
+
+	/**
+	 * Determines if a text string contains an emoji or not.
+	 *
+	 * @since 4.8.0
+	 *
+	 * @param  string $string The text string to detect emoji in.
+	 * @return bool
+	 */
+	public function hasEmojis( $string ) {
+		$emojisRegexPattern = '/[\x{1F600}-\x{1F64F}' . // Emoticons
+							'\x{1F300}-\x{1F5FF}' . // Misc Symbols and Pictographs
+							'\x{1F680}-\x{1F6FF}' . // Transport and Map Symbols
+							'\x{1F1E0}-\x{1F1FF}' . // Flags (iOS)
+							'\x{2600}-\x{26FF}' . // Misc symbols
+							'\x{2700}-\x{27BF}' . // Dingbats
+							'\x{FE00}-\x{FE0F}' . // Variation Selectors
+							'\x{1F900}-\x{1F9FF}' . // Supplemental Symbols and Pictographs
+							'\x{1F018}-\x{1F270}' . // Various Asian characters
+							'\x{238C}-\x{2454}' . // Misc items
+							'\x{20D0}-\x{20FF}' . // Combining Diacritical Marks for Symbols
+							']/u';
+
+		return preg_match( $emojisRegexPattern, $string );
 	}
 }

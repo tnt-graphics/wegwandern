@@ -37,8 +37,8 @@ class FrmProApplicationsHelper {
 		$summary = array();
 		$types   = array( 'form', 'view', 'page' );
 		foreach ( $types as $type ) {
-			$summary[ $type ]  = isset( $page_data_summary[ $type ] ) ? $page_data_summary[ $type ] : array();
-			$summary[ $type ] += isset( $field_data_summary[ $type ] ) ? $field_data_summary[ $type ] : array();
+			$summary[ $type ]  = $page_data_summary[ $type ] ?? array();
+			$summary[ $type ] += $field_data_summary[ $type ] ?? array();
 		}
 
 		return $summary;
@@ -64,7 +64,7 @@ class FrmProApplicationsHelper {
 		foreach ( $page_data as $page ) {
 			$page_id = absint( $page->ID );
 			$string  = $page->post_content;
-			$result  = self::get_shortcode_matches_from_string( $string, array( __CLASS__, 'handle_shortcode' ) );
+			$result  = self::get_shortcode_matches_from_string( $string, array( self::class, 'handle_shortcode' ) );
 
 			if ( ! is_array( $result ) ) {
 				continue;
@@ -341,6 +341,43 @@ class FrmProApplicationsHelper {
 				);
 		}
 		return false;
+	}
+
+	/**
+	 * Update form applications when a form is updated.
+	 *
+	 * @since 6.19
+	 *
+	 * @param array $values
+	 * @return void
+	 */
+	public static function maybe_update_form_applications( $values ) {
+		$lite_version_is_met = version_compare( FrmAppHelper::plugin_version(), '6.18', '>=' );
+		if ( empty( $values['id'] ) || ! isset( $values['form_applications'] ) && ! $lite_version_is_met ) {
+			return;
+		}
+
+		if ( ! isset( $values['frm_action'] ) || 'update_settings' !== $values['frm_action'] ) {
+			// Avoid unsetting application on builder page.
+			return;
+		}
+
+		$form_id = absint( $values['id'] );
+		if ( ! $form_id ) {
+			return;
+		}
+
+		$selected_application_ids = ! empty( $values['form_applications'] ) ? array_map( 'absint', $values['form_applications'] ) : array();
+		$form_application_ids     = self::get_application_ids_for_form( $form_id );
+		$old_application_ids      = array_diff( $form_application_ids, $selected_application_ids );
+		foreach ( $old_application_ids as $application_id ) {
+			FrmProApplication::remove_form_from_application( $application_id, $form_id );
+		}
+		$new_application_ids = array_diff( $selected_application_ids, $form_application_ids );
+		foreach ( $new_application_ids as $application_id ) {
+			FrmProApplication::add_form_to_application( $application_id, $form_id );
+		}
+		FrmDb::cache_delete_group( 'termmeta' ); // Clear cache to get the latest application data when settings page is reloaded.
 	}
 
 	/**

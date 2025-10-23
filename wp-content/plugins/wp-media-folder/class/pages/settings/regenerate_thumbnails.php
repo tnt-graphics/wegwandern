@@ -11,9 +11,9 @@ defined('ABSPATH') || die('No direct script access allowed!');
 
         <div class="right_wrap_render_thumbnail wpmf_width_100 wpmf-no-margin">
             <button type="button"
-                    class="ju-button orange-button waves-effect wpmf_width_100 waves-light btn_regenerate_thumbnails stop"><?php esc_html_e('Regenerate all image thumbnails', 'wpmf') ?></button>
+                    class="ju-button primary-button waves-effect wpmf_width_100 waves-light btn_regenerate_thumbnails stop"><?php esc_html_e('Regenerate all image thumbnails', 'wpmf') ?></button>
             <button type="button"
-                    class="ju-button orange-button no-background waves-effect waves-light btn_stop_regenerate_thumbnails"
+                    class="ju-button primary-button no-background waves-effect waves-light btn_stop_regenerate_thumbnails"
             ><?php esc_html_e('Stop the process', 'wpmf') ?></button>
 
             <div class="wpmf-process-bar-full process_gennerate_thumb_full" style="">

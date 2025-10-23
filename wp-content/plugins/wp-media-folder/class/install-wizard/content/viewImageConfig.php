@@ -57,6 +57,6 @@ $next_link = $wizard->getNextLink($step);
                    name="wpmf_save_step"/>
         </div>
 
-        <a href="<?php echo esc_url(admin_url('options-general.php?page=option-folder'))?>" class="go-to-dash"><span><?php esc_html_e('I know what I\'m doing, skip wizard', 'wpmf'); ?></span></a>
+        <a href="<?php echo esc_url(add_query_arg('skip_wizard', 1, admin_url('index.php?page=wpmf-setup'))) ?>" class="go-to-dash"><span><?php esc_html_e('I know what I\'m doing, skip wizard', 'wpmf'); ?></span></a>
     </div>
 </form>

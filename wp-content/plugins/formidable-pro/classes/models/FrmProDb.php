@@ -11,7 +11,7 @@ class FrmProDb {
 	/**
 	 * @since 3.0.02
 	 */
-	public static $plug_version = '6.17.2';
+	public static $plug_version = '6.25';
 
 	/**
 	 * @since 2.3
@@ -58,7 +58,7 @@ class FrmProDb {
 			$migrations = array( 16, 17, 25, 27, 28, 29, 30, 31, 32, 34, 36, 37, 39, 43, 44, 50, 62, 65, 66, 71, 78, 79, 81, 83 );
 			foreach ( $migrations as $migration ) {
 				if ( $db_version >= $migration && $old_db_version < $migration ) {
-					call_user_func( array( __CLASS__, 'migrate_to_' . $migration ) );
+					call_user_func( array( self::class, 'migrate_to_' . $migration ) );
 				}
 			}
 		}

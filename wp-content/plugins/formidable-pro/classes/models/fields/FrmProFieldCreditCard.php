@@ -138,7 +138,17 @@ class FrmProFieldCreditCard extends FrmFieldType {
 			'html_id'  => $args['html_id'],
 			'field_id' => $args['field_id'],
 		);
-		$callback  = apply_filters( 'frm_pro_show_card_callback', 'FrmProCreditCardsController::show_in_form' );
+
+		/**
+		 * Filters the callback function used to display the credit card fields in the front-end.
+		 *
+		 * @since 6.21 Added the $field parameter.
+		 *
+		 * @param string       $callback The callback function.
+		 * @param array|object $field    The field data.
+		 */
+		$callback = apply_filters( 'frm_pro_show_card_callback', 'FrmProCreditCardsController::show_in_form', $this->field );
+
 		ob_start();
 		call_user_func( $callback, $this->field, $args['field_name'], $pass_args );
 		$input_html = ob_get_contents();
@@ -168,7 +178,7 @@ class FrmProFieldCreditCard extends FrmFieldType {
 	 * @since 4.0
 	 */
 	private function all_default_labels() {
-		$labels = $this->default_labels();
+		$labels = self::default_labels();
 		return array(
 			'cc'    => $labels['cc'],
 			'month' => __( 'Month', 'formidable-pro' ),

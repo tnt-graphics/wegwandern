@@ -38,7 +38,7 @@ class FrmProFieldTag extends FrmFieldType {
 	public function front_field_input( $args, $shortcode_atts ) {
 		if ( is_array( $this->field['value'] ) ) {
 			global $frm_vars;
-			$entry_id = isset( $frm_vars['editing_entry'] ) ? $frm_vars['editing_entry'] : 0;
+			$entry_id = $frm_vars['editing_entry'] ?? 0;
 			FrmProFieldsHelper::tags_to_list( $this->field, $entry_id );
 		}
 

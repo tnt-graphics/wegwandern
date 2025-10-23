@@ -1,13 +1,13 @@
 <?php
 defined('ABSPATH') || die('No direct script access allowed!');
 
-if (!class_exists('JuUpdater', false)) :
+if (!class_exists('JuUpdaterWPMF', false)) :
 
     /**
-     * Class JuUpdater
+     * Class JuUpdaterWPMF
      * This class that holds most of the update plugin functionality for Media Folder.
      */
-    class JuUpdater
+    class JuUpdaterWPMF
     {
 
         /**
@@ -99,10 +99,17 @@ if (!class_exists('JuUpdater', false)) :
          *
          * @var string
          */
-        public $juversion = '1.0.0';
+        public $juversion = '2.0.0';
 
         /**
-         * JuUpdater constructor.
+         * WP tested version
+         *
+         * @var string
+         */
+        public $tested;
+
+        /**
+         * JuUpdaterWPMF constructor.
          *
          * @param string  $metadataUrl  Meta data URL
          * @param string  $pluginFile   Plugin file
@@ -214,11 +221,141 @@ if (!class_exists('JuUpdater', false)) :
             //Rename the update directory to be the same as the existing directory.
             add_filter('upgrader_source_selection', array($this, 'fixDirectoryName'), 10, 3);
             add_action('admin_enqueue_scripts', array($this, 'juLoadCustomWpAdminScript'), 0);
-            add_action('wp_ajax_ju_add_token', array($this, 'juAddToken'));
-            add_action('wp_ajax_ju_logout', array($this, 'juLogout'));
-
-            add_action('admin_init', array($this, 'juAddButton'));
+            add_action('wp_ajax_wpmf_remove_license', array($this, 'removeLicense'));
             add_filter('http_response', array($this, 'httpResponse'), 10, 3);
+            //multisite
+            if (is_multisite()) {
+                add_action('network_admin_menu', array($this, 'addConnectButton'));
+            }
+        }
+
+        /**
+         * Add JU license button in network setting page of multisite
+         *
+         * @return void
+         */
+        public function addConnectButton()
+        {
+            add_action('wpmu_options', array($this, 'outputJUConnectButton'));
+        }
+
+        /**
+         * Output the field HTML
+         *
+         * @return void
+         */
+        public function outputJUConnectButton()
+        {
+            $wpmf_token = get_site_option('wpmf_license_token', '');
+            $params = array(
+                'ajaxurl'        => admin_url('admin-ajax.php'),
+                'ju_base'        => JU_BASE,
+                'ju_content_url' => admin_url(),
+                'site_url' => site_url(),
+                'ju_updater_nonce'            => wp_create_nonce('ju_updater_nonce')
+            );
+
+            if (empty($wpmf_token)) {
+                $ext_name = 'wp-media-folder';
+                $ju_update_link = JU_BASE . 'index.php?option=com_juupdater&view=connect&tmpl=component&ext_name='.$ext_name.'&site=' . site_url() . '&TB_iframe=true&width=400&height=520';
+
+                // Include the thickbox styles
+                wp_enqueue_script('thickbox', null, array('jquery'));
+                wp_enqueue_style('thickbox.css', '/'.WPINC.'/js/thickbox/thickbox.css', null, '1.0');
+
+                wp_register_script(
+                    'ju_update_core',
+                    plugins_url('/juupdater/js/ju_update_core.js', dirname(__FILE__)),
+                    array(),
+                    $this->juversion
+                );
+                wp_enqueue_script('ju_update_core');
+                wp_localize_script('ju_update_core', 'updaterV2params', $params);
+                ?>
+
+                <div class="wpmf-license">
+                    <h3><?php esc_html_e('WP Media Folder plugin license', 'wpmf') ?></h3>
+                    <div class="description">
+                        <?php esc_html_e('Simply click the login button below and use your JoomUnited account credentials to get started.', 'wpmf'); ?>
+                    </div>
+                    <div class="joomunited-login-wrapper">
+                        <a href="<?php echo esc_url_raw($ju_update_link); ?>" class="thickbox ju-button ju-license-button" type="button"><?php esc_html_e('LOGIN NOW >>>', 'wpmf'); ?></a>
+                    </div>
+                    <div class="description">
+                        <?php esc_html_e('Note: Use the same email and password as your JoomUnited website account.', 'wpmf'); ?>
+                    </div>
+                </div>
+                <style>
+                    .joomunited-login-wrapper {padding: 25px 0;}
+                    .ju-license-button {
+                        display: inline-flex;
+                        height: 2rem;
+                        min-height: 2rem;
+                        flex-shrink: 0;
+                        cursor: pointer;
+                        flex-wrap: wrap;
+                        align-items: center;
+                        justify-content: center;
+                        border-radius: .5rem;
+                        border-color: #0173ab;
+                        padding-left: 1rem;
+                        padding-right: 1rem;
+                        text-align: center;
+                        font-size: .875rem;
+                        line-height: 1em;
+                        gap: .5rem;
+                        font-weight: 600;
+                        text-decoration-line: none;
+                        transition-duration: .2s;
+                        transition-timing-function: cubic-bezier(0,0,.2,1);
+                        border-width: 1px;
+                        background-color: #0173ab;
+                        color: white;
+                    }
+                </style>
+                <?php
+            } else {
+                wp_register_script(
+                    'check_tokenWPMF',
+                    plugins_url('/juupdater/js/check_token.js', dirname(__FILE__)),
+                    array(),
+                    $this->juversion
+                );
+                wp_enqueue_script('check_tokenWPMF');
+                wp_localize_script('check_tokenWPMF', 'updaterWPMFparams', $params);
+                ?>
+                <h3><?php esc_html_e('WP Media Folder plugin license', 'wpmf') ?></h3>
+                <div class="description">
+                    <button data-slug="wpmf" class="button button-primary ju-btn-disconnect"><?php esc_html_e('Disconnect WP Media Folder license', 'wpmf') ?></button>
+                </div>
+                <?php
+            }
+        }
+
+        /**
+         * Remove license
+         *
+         * @return void
+         */
+        public function removeLicense()
+        {
+            if (empty($_POST['ju_updater_nonce']) || !wp_verify_nonce($_POST['ju_updater_nonce'], 'ju_updater_nonce')) {
+                die();
+            }
+
+            if (is_multisite() && current_user_can('manage_network')) {
+                delete_site_option('ju_user_token');
+                update_site_option('wpmf_license_token', '');
+                delete_site_option('wpmf_ai_quota_info');
+                delete_site_option('wpmf_ai_plan_status');
+                delete_site_option('wpmf_ai_quota_initialized');
+            } else {
+                delete_option('ju_user_token');
+                update_option('wpmf_license_token', '');
+                delete_option('wpmf_ai_quota_info');
+                delete_option('wpmf_ai_plan_status');
+                delete_option('wpmf_ai_quota_initialized');
+            }
         }
 
         /**
@@ -238,90 +375,7 @@ if (!class_exists('JuUpdater', false)) :
             return $response;
         }
 
-        /**
-         * Add a connect button in settings page
-         *
-         * @return void
-         */
-        public function juAddButton()
-        {
-            global $pagenow;
-            if ($pagenow === 'options-general.php') {
-                register_setting('JoomUnited live updates', '_ju_settings');
-                add_settings_section('juupdater-connect', '', array($this, 'showSettings'), 'general');
-                add_settings_field(
-                    'joom_live_update',
-                    'Live updates status',
-                    array($this, 'joomConnect'),
-                    'general',
-                    'juupdater-connect'
-                );
-                add_thickbox();
-            }
-        }
 
-        /**
-         * Show setting title
-         *
-         * @return void
-         */
-        public function showSettings()
-        {
-            echo '<h3>Joomunited live updates</h3>';
-        }
-
-        /**
-         * Show connect or disconnect button
-         *
-         * @return void
-         */
-        public function joomConnect()
-        {
-            $token = get_option('ju_user_token');
-            if (empty($token)) {
-                echo '<p>To enable live update please link your joomunited account</p>';
-                $link = JU_BASE . 'index.php?option=com_juupdater&view=login&tmpl=component&site=' . admin_url() . '&TB_iframe=true&width=600&height=550';
-                echo '<a href="' . esc_html($link) . '" class="thickbox button">Link my Joomunited account</a>';
-            } else {
-                echo '<p>Live update are enabled click here if you want to disable it</p>';
-                echo '<span class="button button-primary ju-btn-disconnect">
-Disconnect my Joomunited account</span>';
-            }
-        }
-
-        /**
-         * Update token
-         *
-         * @return void
-         */
-        public function juAddToken()
-        {
-            if (empty($_POST['ju_updater_nonce'])
-                || !wp_verify_nonce($_POST['ju_updater_nonce'], 'ju_updater_nonce')) {
-                die();
-            }
-
-            if (!current_user_can('manage_options')) {
-                wp_send_json(array('status' => false, 'msg' => esc_html__('Not have permission!', 'wpmf')));
-            }
-
-            if (isset($_POST['token'])) {
-                update_option('ju_user_token', $_POST['token']);
-            }
-        }
-
-        /**
-         * Remove token
-         *
-         * @return void
-         */
-        public function juLogout()
-        {
-            if (empty($_POST['ju_updater_nonce']) || !wp_verify_nonce($_POST['ju_updater_nonce'], 'ju_updater_nonce')) {
-                die();
-            }
-            update_option('ju_user_token', '');
-        }
 
         /**
          * Add script file
@@ -333,12 +387,12 @@ Disconnect my Joomunited account</span>';
             global $pagenow;
             if ($pagenow === 'plugins.php' || $pagenow === 'options-general.php') {
                 wp_register_script(
-                    'check_token',
+                    'check_tokenWPMF',
                     plugins_url('/juupdater/js/check_token.js', dirname(__FILE__)),
                     array(),
                     $this->juversion
                 );
-                wp_enqueue_script('check_token');
+                wp_enqueue_script('check_tokenWPMF');
             }
 
             if ($pagenow === 'update-core.php') {
@@ -352,8 +406,10 @@ Disconnect my Joomunited account</span>';
             }
 
             $params = $this->localizeScript();
-            wp_localize_script('check_token', 'updaterparams', $params);
-            wp_localize_script('ju_update_core', 'updaterparams', $params);
+            wp_localize_script('check_tokenWPMF', 'updaterWPMFparams', $params);
+            wp_add_inline_script('ju_update_core', 'if (typeof juTokens == "undefined") {var juTokens = {}; } ; juTokens["wp-media-folder"]="'. $params['token'].'"');
+            unset($params['token']);
+            wp_localize_script('ju_update_core', 'updaterV2params', $params);
         }
 
         /**
@@ -364,20 +420,14 @@ Disconnect my Joomunited account</span>';
         public function localizeScript()
         {
             global $wp_version;
-            if (version_compare($wp_version, '4.8', '>=')) {
-                $version = '4.8.0';
-            } elseif (version_compare($wp_version, '4.6', '>=')) {
-                $version = '4.6.0';
-            } else {
-                $version = 'old';
-            }
-            $token = get_option('ju_user_token');
+            $token = get_site_option('wpmf_license_token');
             return array(
                 'ajaxurl'        => admin_url('admin-ajax.php'),
                 'token'          => $token,
                 'ju_base'        => JU_BASE,
                 'ju_content_url' => admin_url(),
-                'version'        => $version,
+                'site_url' => site_url(),
+                'wp_version'        => $wp_version,
                 'ju_updater_nonce'            => wp_create_nonce('ju_updater_nonce')
             );
         }
@@ -461,7 +511,7 @@ Disconnect my Joomunited account</span>';
             $pluginInfo = null;
             if (!is_wp_error($result) && isset($result['response']['code'])
                 && ($result['response']['code'] === 200) && !empty($result['body'])) {
-                $pluginInfo           = JuPluginInfo::fromJson($result['body'], $this->debugMode);
+                $pluginInfo           = JuPluginInfoV2::fromJson($result['body'], $this->debugMode);
                 if (empty($pluginInfo)) {
                     return null;
                 }
@@ -488,7 +538,7 @@ Disconnect my Joomunited account</span>';
             if ($pluginInfo === null) {
                 return null;
             }
-            return JuPluginUpdate::fromPluginInfo($pluginInfo);
+            return JuPluginUpdateWPMF::fromPluginInfo($pluginInfo);
         }
 
         /**
@@ -638,7 +688,7 @@ Disconnect my Joomunited account</span>';
             }
 
             if (!empty($state) && isset($state->update) && is_object($state->update)) {
-                $state->update = JuPluginUpdate::fromObject($state->update);
+                $state->update = JuPluginUpdateWPMF::fromObject($state->update);
             }
             return $state;
         }
@@ -834,7 +884,8 @@ Disconnect my Joomunited account</span>';
                                  All plugin files should be inside ' .
                                 'a directory named <span class="code">%s</span>,
                                  not at the root of the ZIP file.',
-                                htmlentities($this->slug, ENT_COMPAT, 'UTF-8')
+                                //phpcs:ignore PHPCompatibility.Constants.NewConstants.ent_html401Found -- no support php5.3
+                                htmlentities($this->slug, ENT_COMPAT | ENT_HTML401, 'UTF-8')
                             )
                         );
                     }
@@ -932,14 +983,13 @@ Disconnect my Joomunited account</span>';
                     $pluginMeta[] = sprintf('<a href="%s">%s</a>', esc_attr($linkUrl), $linkText);
                 }
 
-                $ju_token = get_option('ju_user_token');
-                $link     = JU_BASE . 'index.php?option=com_juupdater&view=login&tmpl=component&site=' . admin_url() . '
-                &TB_iframe=true&width=300&height=305';
-
+                $ju_token = get_site_option('wpmf_license_token');
                 if (empty($ju_token)) {
+                    $ext_name = 'wp-media-folder';
+                    $ju_update_link = JU_BASE . 'index.php?option=com_juupdater&view=connect&tmpl=component&ext_name='.$ext_name.'&site=' . site_url() . '&TB_iframe=true&width=400&height=520';
                     $pluginMeta[] = sprintf(
                         '<span style="color: #ff6200" class="dashicons dashicons-warning"></span>In order to access updates please link your account : <a class="thickbox ju_update" href="%s">%s</a>',
-                        esc_attr($link),
+                        esc_attr($ju_update_link),
                         'JoomUnited Login'
                     );
                 }
@@ -1003,7 +1053,8 @@ Disconnect my Joomunited account</span>';
                 } elseif ($status === 'update_available') {
                     $message = 'A new version of this plugin is available.';
                 } else {
-                    $message = sprintf('Unknown update checker status "%s"', htmlentities($status, ENT_COMPAT, 'UTF-8'));
+                    //phpcs:ignore PHPCompatibility.Constants.NewConstants.ent_html401Found -- no support php5.3
+                    $message = sprintf('Unknown update checker status "%s"', htmlentities($status, ENT_COMPAT | ENT_HTML401, 'UTF-8'));
                 }
                 printf(
                     '<div class="updated"><p>%s</p></div>',
@@ -1121,13 +1172,12 @@ Disconnect my Joomunited account</span>';
 
 endif;
 
-if (!class_exists('JuPluginInfo', false)) :
+if (!class_exists('JuPluginInfoV2', false)) :
 
     /**
      * A container class for holding and transforming various plugin metadata.
      */
-    #[AllowDynamicProperties]
-    class JuPluginInfo // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
+    class JuPluginInfoV2 // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 
         /**
@@ -1151,13 +1201,6 @@ if (!class_exists('JuPluginInfo', false)) :
          */
         public $version;
 
-        /**
-         * Plugin icon
-         *
-         * @var array
-         */
-        public $icons = array();
-        
         /**
          * Plugin homepage
          *
@@ -1208,11 +1251,24 @@ if (!class_exists('JuPluginInfo', false)) :
         public $requires;
 
         /**
+         * Plugin requires
+         *
+         * @var string
+         */
+        public $requires_php;
+
+        /**
          * Plugin testted
          *
          * @var string
          */
         public $tested;
+        /**
+         * Plugin icons
+         *
+         * @var string
+         */
+        public $icons;
 
         /**
          * Plugin upgrade notice
@@ -1277,7 +1333,7 @@ if (!class_exists('JuPluginInfo', false)) :
          * @param string  $json          Valid JSON string representing plugin info.
          * @param boolean $triggerErrors Trigger rrrors
          *
-         * @return JuPluginInfo|null|PluginInfo
+         * @return JuPluginInfoV2|null|PluginInfo
          */
         public static function fromJson($json, $triggerErrors = false)
         {
@@ -1364,12 +1420,12 @@ if (!class_exists('JuPluginInfo', false)) :
 
 endif;
 
-if (!class_exists('JuPluginUpdate', false)) :
+if (!class_exists('JuPluginUpdateWPMF', false)) :
 
     /**
      * A simple container class for holding information about an available update.
      */
-    class JuPluginUpdate // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
+    class JuPluginUpdateWPMF // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 
         /**
@@ -1392,13 +1448,6 @@ if (!class_exists('JuPluginUpdate', false)) :
          * @var string
          */
         public $version;
-
-        /**
-         * WP tested version
-         *
-         * @var string
-         */
-        public $tested;
 
         /**
          * Plugin homepage
@@ -1436,6 +1485,13 @@ if (!class_exists('JuPluginUpdate', false)) :
         public $filename;
 
         /**
+         * Tested with WordPress version
+         *
+         * @var string
+         */
+        public $tested ;
+
+        /**
          * Plugin default fields
          *
          * @var array
@@ -1444,10 +1500,10 @@ if (!class_exists('JuPluginUpdate', false)) :
             'id',
             'slug',
             'version',
-            'tested',
             'homepage',
             'download_url',
             'upgrade_notice',
+            'tested',
             'filename',
             'icons'
         );
@@ -1465,7 +1521,7 @@ if (!class_exists('JuPluginUpdate', false)) :
             //Since update-related information is simply a subset of the full plugin info,
             //we can parse the update JSON as if it was a plugin info string, then copy over
             //the parts that we care about.
-            $pluginInfo = JuPluginInfo::fromJson($json, $triggerErrors);
+            $pluginInfo = JuPluginInfoV2::fromJson($json, $triggerErrors);
             if ($pluginInfo !== null) {
                 return self::fromPluginInfo($pluginInfo);
             } else {
@@ -1492,7 +1548,7 @@ if (!class_exists('JuPluginUpdate', false)) :
          *
          * @param StdClass|PluginInfo|PluginUpdate $object The source object.
          *
-         * @return JuPluginUpdate|PluginUpdate
+         * @return JuPluginUpdateWPMF|PluginUpdate
          */
         public static function fromObject($object)
         {
@@ -1542,7 +1598,7 @@ if (!class_exists('JuPluginUpdate', false)) :
         public function toWpFormat()
         {
             $update              = new stdClass;
-            $token               = get_option('ju_user_token');
+            $token               = get_site_option('wpmf_license_token');
             $update->id          = $this->id;
             $update->slug        = $this->slug;
             $update->new_version = $this->version;
@@ -1692,9 +1748,9 @@ if (!class_exists('Jufactory', false)) :
 endif;
 
 //Register classes defined in this file with the factory.
-Jufactory::addVersion('PluginUpdateChecker', 'JuUpdater', '2.1');
-Jufactory::addVersion('PluginUpdate', 'JuPluginUpdate', '2.1');
-Jufactory::addVersion('PluginInfo', 'JuPluginInfo', '2.1');
+Jufactory::addVersion('PluginUpdateChecker', 'JuUpdaterWPMF', '2.1');
+Jufactory::addVersion('PluginUpdate', 'JuPluginUpdateWPMF', '2.1');
+Jufactory::addVersion('PluginInfo', 'JuPluginInfoV2', '2.1');
 
 /**
  * Create non-versioned variants of the update checker classes. This allows for backwards
@@ -1705,7 +1761,7 @@ if (!class_exists('PluginUpdateChecker', false)) {
     /**
      * Class PluginUpdateChecker
      */
-    class PluginUpdateChecker extends JuUpdater // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
+    class PluginUpdateChecker extends JuUpdaterWPMF // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 
     }
@@ -1717,7 +1773,7 @@ if (!class_exists('PluginUpdate', false)) {
     /**
      * Class PluginUpdate
      */
-    class PluginUpdate extends JuPluginUpdate // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
+    class PluginUpdate extends JuPluginUpdateWPMF // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 
     }
@@ -1729,7 +1785,7 @@ if (!class_exists('PluginInfo', false)) {
     /**
      * Class PluginInfo
      */
-    class PluginInfo extends JuPluginInfo // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
+    class PluginInfo extends JuPluginInfoV2 // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 
     }

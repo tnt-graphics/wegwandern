@@ -4,12 +4,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <?php
-$div_class    = isset( $args['div_class'] ) ? $args['div_class'] : false;
-$show_labels  = isset( $args['show_labels'] ) ? $args['show_labels'] : false;
-$off_label    = isset( $args['off_label'] ) ? $args['off_label'] : '';
-$on_label     = isset( $args['on_label'] ) ? $args['on_label'] : 1;
+$div_class    = $args['div_class'] ?? false;
+$show_labels  = $args['show_labels'] ?? false;
+$off_label    = $args['off_label'] ?? '';
+$on_label     = $args['on_label'] ?? 1;
 $checked      = isset( $args['checked'] ) && ( true === $args['checked'] || false !== strpos( $args['checked'], 'checked="checked"' ) );
-$input_html   = isset( $args['input_html'] ) ? $args['input_html'] : '';
+$input_html   = $args['input_html'] ?? '';
 $aria_checked = $checked ? 'true' : 'false';
 $name         = $name ? $name . '[]' : '';
 ?>
@@ -40,6 +40,6 @@ $name         = $name ? $name . '[]' : '';
 
 		<?php if ( $show_labels && $on_label != 1 ) { ?>
 			<span class="frm_on_label frm_switch_opt"><?php echo FrmAppHelper::kses( $on_label, 'all' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
-		<?php } ?>
+<?php } ?>
 	</label>
 </div>

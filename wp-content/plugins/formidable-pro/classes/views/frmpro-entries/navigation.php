@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		printf(
 			/* translators: 1: current entry count, 2: total entries count */
-			esc_html__( '%1$s of %2$s', 'formidable-pro' ),
+			esc_html__( 'Entry %1$s of %2$s', 'formidable-pro' ),
 			'<span class="current-page">' . esc_html( $current_entry_position + 1 ) . '</span>',
 			'<span class="total-pages">' . esc_html( $total_entries_count ) . '</span>'
 		);

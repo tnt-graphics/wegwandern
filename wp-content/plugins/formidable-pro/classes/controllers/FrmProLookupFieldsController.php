@@ -62,7 +62,7 @@ class FrmProLookupFieldsController {
 	 */
 	public static function add_autopopulate_value_field_options( $values, $field, &$opts ) {
 		if ( $field ) {
-			$field_type = isset( $field->field_options['original_type'] ) ? $field->field_options['original_type'] : $field->type;
+			$field_type = $field->field_options['original_type'] ?? $field->type;
 		} else {
 			$field_type = $values['type'];
 		}
@@ -107,15 +107,21 @@ class FrmProLookupFieldsController {
 	 * @since 2.01.0
 	 * @param array $field
 	 */
-	public static function show_autopopulate_value_section_in_form_builder( $field ) {
+	public static function show_autopopulate_value_section_in_form_builder( $field, $args = array() ) {
 		if ( ! isset( $field['data_type'] ) ) {
 			$field['data_type'] = 'text';
 		}
+
 		$lookup_fields = self::get_lookup_fields_for_watch_row( $field );
+		$field_obj     = FrmFieldFactory::get_field_type( 'lookup', $field );
+		$class_attr    = $args['class_attr'] ?? '';
 
-		$field_obj = FrmFieldFactory::get_field_type( 'lookup', $field );
-
-		require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/autopopulate-values.php';
+		if ( class_exists( 'FrmTextToggleStyleComponent' ) ) {
+			require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/autopopulate-values.php';
+		} else {
+			// Backwards compatibility. @since 6.24
+			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/backwards-compatibility/autopopulate-values.php';
+		}
 	}
 
 	/**
@@ -126,7 +132,7 @@ class FrmProLookupFieldsController {
 	 * @return array $lookup_fields
 	 */
 	public static function get_lookup_fields_for_watch_row( $field ) {
-		$parent_form_id = isset( $field['parent_form_id'] ) ? $field['parent_form_id'] : $field['form_id'];
+		$parent_form_id = $field['parent_form_id'] ?? $field['form_id'];
 		$lookup_fields  = self::get_limited_lookup_fields_in_form( $parent_form_id, $field['form_id'] );
 		return $lookup_fields;
 	}
@@ -157,7 +163,7 @@ class FrmProLookupFieldsController {
 	 * @param array $field ($field is not empty on page load)
 	 */
 	public static function show_options_for_get_values_field( $form_fields, $field = array() ) {
-		$select_field_text = __( '&mdash; Select Field &mdash;', 'formidable-pro' );
+		$select_field_text = __( 'Select Field', 'formidable-pro' );
 		echo '<option value="">' . esc_html( $select_field_text ) . '</option>';
 
 		$selected_value = empty( $field ) || ! isset( $field['get_values_field'] ) ? '' : $field['get_values_field'];
@@ -285,7 +291,7 @@ class FrmProLookupFieldsController {
 	 * @return array
 	 */
 	public static function get_lookup_field_values_for_conditional_logic( $field ) {
-		$linked_field_id = isset( $field->field_options['get_values_field'] ) ? $field->field_options['get_values_field'] : '';
+		$linked_field_id = $field->field_options['get_values_field'] ?? '';
 
 		if ( is_numeric( $linked_field_id ) ) {
 			$field_array = array(
@@ -369,7 +375,7 @@ class FrmProLookupFieldsController {
 		$options = self::get_independent_lookup_field_values( $linked_field_id, $values );
 
 		if ( in_array( $values['data_type'], array( 'select', 'dropdown' ), true ) ) {
-			$placeholder    = isset( $values['placeholder'] ) ? $values['placeholder'] : '';
+			$placeholder    = $values['placeholder'] ?? '';
 			$default_option = array( $placeholder );
 			$options        = array_merge( $default_option, $options );
 		}
@@ -412,9 +418,86 @@ class FrmProLookupFieldsController {
 
 		$options = self::get_filtered_lookup_options( $linked_field, $args );
 
-		self::order_values( $values['lookup_option_order'], $options );
+		if ( 'label' === FrmField::get_option( $values, 'lookup_saved_value' ) || 'label' === FrmField::get_option( $values, 'lookup_displayed_value' ) ) {
+			self::add_lookup_option_filters( $linked_field, $values );
+		}
+
+		self::order_values( $values['lookup_option_order'], $options, $values );
 
 		return $options;
+	}
+
+	/**
+	 * Maybe use labels instead of values.
+	 *
+	 * @since 6.21
+	 *
+	 * @param object       $linked_field
+	 * @param array|object $child_field
+	 * @return void
+	 */
+	private static function add_lookup_option_filters( $linked_field, $child_field ) {
+		if ( 'data' === $linked_field->type ) {
+			self::add_option_filters_for_dynamic_field( $linked_field, $child_field );
+			return;
+		}
+
+		if ( empty( $linked_field->options ) || ! is_array( $linked_field->options ) ) {
+			return;
+		}
+
+		$first_field_option = reset( $linked_field->options );
+		if ( ! is_array( $first_field_option ) ) {
+			return;
+		}
+
+		$label_by_value = array();
+		foreach ( $linked_field->options as $field_option ) {
+			$label_by_value[ $field_option['value'] ] = $field_option['label'];
+		}
+
+		$field_id = (int) ( is_object( $child_field ) ? $child_field->id : $child_field['id'] );
+		$callback = function ( $value, $filter_field ) use ( $label_by_value, $field_id ) {
+			if ( (int) $filter_field['id'] === $field_id && isset( $label_by_value[ $value ] ) ) {
+				return $label_by_value[ $value ];
+			}
+			return $value;
+		};
+
+		if ( 'label' === FrmField::get_option( $child_field, 'lookup_saved_value' ) ) {
+			add_filter( 'frm_lookup_option_value', $callback, 10, 2 );
+		}
+
+		if ( 'label' === FrmField::get_option( $child_field, 'lookup_displayed_value' ) ) {
+			add_filter( 'frm_lookup_option_label', $callback, 10, 2 );
+		}
+	}
+
+	/**
+	 * Maybe use labels instead of values for dynamic fields.
+	 *
+	 * @since 6.21
+	 *
+	 * @param object       $linked_field
+	 * @param array|object $child_field
+	 * @return void
+	 */
+	private static function add_option_filters_for_dynamic_field( $linked_field, $child_field ) {
+		$field_id = (int) ( is_object( $child_field ) ? $child_field->id : $child_field['id'] );
+		$callback = function ( $value, $filter_field ) use ( $field_id, $linked_field ) {
+			if ( (int) $filter_field['id'] === $field_id ) {
+				return FrmProFieldsHelper::get_data_value( $value, $linked_field );
+			}
+			return $value;
+		};
+
+		if ( 'label' === FrmField::get_option( $child_field, 'lookup_saved_value' ) ) {
+			add_filter( 'frm_lookup_option_value', $callback, 10, 2 );
+		}
+
+		if ( 'label' === FrmField::get_option( $child_field, 'lookup_displayed_value' ) ) {
+			add_filter( 'frm_lookup_option_label', $callback, 10, 2 );
+		}
 	}
 
 	/**
@@ -539,8 +622,8 @@ class FrmProLookupFieldsController {
 			$lookup_logic['parents']       = $lookup_parents;
 			$lookup_logic['fieldType']     = $values['original_type'];
 			$lookup_logic['formId']        = $values['parent_form_id'];
-			$lookup_logic['inSection']     = isset( $values['in_section'] ) ? $values['in_section'] : '0';
-			$lookup_logic['inEmbedForm']   = isset( $values['in_embed_form'] ) ? $values['in_embed_form'] : '0';
+			$lookup_logic['inSection']     = $values['in_section'] ?? '0';
+			$lookup_logic['inEmbedForm']   = $values['in_embed_form'] ?? '0';
 			$lookup_logic['isRepeating']   = $values['form_id'] != $values['parent_form_id'];
 			$lookup_logic['isMultiSelect'] = FrmField::is_multiple_select( $values );
 			$lookup_logic['isReadOnly']    = isset( $values['read_only'] ) ? (bool) $values['read_only'] : 0;
@@ -652,8 +735,8 @@ class FrmProLookupFieldsController {
 
 			$unique_key  = absint( $lookup['unique'] );
 			$field_id    = isset( $lookup['fieldId'] ) ? absint( $lookup['fieldId'] ) : 0;
-			$parents     = isset( $lookup['parents'] ) ? $lookup['parents'] : '';
-			$parent_vals = isset( $lookup['parentVals'] ) ? $lookup['parentVals'] : '';
+			$parents     = $lookup['parents'] ?? '';
+			$parent_vals = $lookup['parentVals'] ?? '';
 
 			FrmAppHelper::sanitize_value( 'absint', $parents );
 			FrmAppHelper::sanitize_value( 'wp_kses_post', $parent_vals );
@@ -667,6 +750,22 @@ class FrmProLookupFieldsController {
 
 			$child_field             = FrmField::getOne( $field_id );
 			$response[ $unique_key ] = self::get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field );
+
+			$lookup_saved_value     = FrmField::get_option( $child_field, 'lookup_saved_value' );
+			$lookup_displayed_value = FrmField::get_option( $child_field, 'lookup_displayed_value' );
+
+			if ( 'label' === $lookup_saved_value ) {
+				$new_response = array();
+				foreach ( $response[ $unique_key ] as $key => $value ) {
+					$new_response[ $key ] = FrmProFieldLookup::filter_lookup_displayed_value( $value, (array) $child_field );
+				}
+				$response[ $unique_key ] = $new_response;
+			} elseif ( 'value' === $lookup_saved_value && 'label' === $lookup_displayed_value ) {
+				$response[ $unique_key . '_label' ] = array();
+				foreach ( $response[ $unique_key ] as $value ) {
+					$response[ $unique_key . '_label' ][] = FrmProFieldLookup::filter_lookup_displayed_value( $value, (array) $child_field );
+				}
+			}
 		}
 
 		echo json_encode( $response );
@@ -716,9 +815,17 @@ class FrmProLookupFieldsController {
 	public static function get_filtered_values_for_dependent_lookup_field( $parent_args, $child_field ) {
 		$entry_ids   = self::get_entry_ids_from_parent_vals( $parent_args['parent_field_ids'], $parent_args['parent_vals'], $child_field );
 		$meta_values = self::get_meta_values_filtered_by_entry_ids( $entry_ids, $child_field );
-		$order       = isset( $child_field->field_options['lookup_option_order'] ) ? $child_field->field_options['lookup_option_order'] : 'ascending';
+		$order       = $child_field->field_options['lookup_option_order'] ?? 'ascending';
 
-		self::order_values( $order, $meta_values );
+		if ( 'label' === FrmField::get_option( $child_field, 'lookup_saved_value' ) || 'label' === FrmField::get_option( $child_field, 'lookup_displayed_value' ) ) {
+			$linked_field = FrmField::getOne( $child_field->field_options['get_values_field'] );
+
+			if ( $linked_field ) {
+				self::add_lookup_option_filters( $linked_field, $child_field );
+			}
+		}
+
+		self::order_values( $order, $meta_values, $child_field );
 
 		return $meta_values;
 	}
@@ -743,7 +850,7 @@ class FrmProLookupFieldsController {
 
 		$disabled = FrmField::is_read_only( $child_field ) && ! FrmAppHelper::is_admin() ? ' disabled="disabled"' : '';
 
-		if ( 'checkbox' == $field['data_type'] ) {
+		if ( 'checkbox' === $field['data_type'] ) {
 			$field_name .= '[]';
 			require FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/front-end/checkbox-rows.php';
 		} else {
@@ -1065,13 +1172,52 @@ class FrmProLookupFieldsController {
 	 * Order the values in a Lookup Field
 	 *
 	 * @since 2.01.0
-	 * @param string $order
-	 * @param array $options
+	 *
+	 * @param string       $order
+	 * @param array        $options
+	 * @param array|object $field
+	 * @return void
 	 */
-	private static function order_values( $order, &$options ) {
+	private static function order_values( $order, &$options, $field ) {
+		$displayed_value_setting = FrmField::get_option( $field, 'lookup_displayed_value' );
+		$map_to_labels           = 'label' === $displayed_value_setting;
+
+		if ( $map_to_labels ) {
+			// Sort the options as labels.
+			$options          = array_reduce(
+				$options,
+				function ( $total, $option ) use ( $field ) {
+					$total[ $option ] = FrmProFieldLookup::filter_lookup_displayed_value( $option, (array) $field );
+					return $total;
+				},
+				array()
+			);
+			$options_by_label = array_flip( $options );
+		}
+
 		$options = FrmProFieldsController::order_values( $options, array( 'dynamic_field' => array( 'option_order' => $order ) ) );
 		$options = array_values( $options );
-		$options = apply_filters( 'frm_order_lookup_options', $options, $order );
+
+		if ( $map_to_labels ) {
+			// Change the sorted option labels back to their values.
+			$options = array_map(
+				function ( $option ) use ( $options_by_label ) {
+					return $options_by_label[ $option ];
+				},
+				$options
+			);
+		}
+
+		/**
+		 * Allow custom code to change the order of the options.
+		 *
+		 * @since 6.22.1 Added the $field parameter.
+		 *
+		 * @param array        $options
+		 * @param string       $order
+		 * @param array|object $field
+		 */
+		$options = apply_filters( 'frm_order_lookup_options', $options, $order, $field );
 	}
 
 	/**

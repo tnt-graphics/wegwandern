@@ -46,7 +46,7 @@ class FrmProSiteHealthController {
 	public static function site_status_tests( $tests ) {
 		$tests['direct']['formidable-pro'] = array(
 			'label' => self::get_name(),
-			'test'  => array( __CLASS__, 'license_test' ),
+			'test'  => array( self::class, 'license_test' ),
 		);
 		return $tests;
 	}

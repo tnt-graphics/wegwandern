@@ -56,10 +56,43 @@ class FrmProFieldAddress extends FrmFieldType {
 	 * @param array $args - Includes 'field', 'display', and 'values'.
 	 */
 	public function show_primary_options( $args ) {
-		$field = $args['field'];
+		$field                            = $args['field'];
+		$should_show_address_type_warning = self::should_show_address_type_warning( $field );
+
 		include FrmProAppHelper::plugin_path() . '/classes/views/combo-fields/addresses/back-end-field-opts.php';
 
 		parent::show_primary_options( $args );
+	}
+
+	/**
+	 * @since 6.25
+	 *
+	 * @param array $field
+	 * @return bool
+	 */
+	private static function should_show_address_type_warning( $field ) {
+		if ( ! isset( $field['address_type'] ) || 'generic' !== $field['address_type'] ) {
+			return false;
+		}
+
+		$parent_form_id = $field['parent_form_id'] ?? $field['form_id'] ?? 0;
+		if ( ! $parent_form_id ) {
+			return false;
+		}
+
+		if ( ! is_callable( array( 'FrmSquareLiteActionsController', 'get_actions_before_submit' ) ) ) {
+			return false;
+		}
+
+		// Get all square actions that have this address field assigned.
+		$assigned_square_actions = array_filter(
+			FrmSquareLiteActionsController::get_actions_before_submit( $parent_form_id ),
+			function ( $action ) use ( $field ) {
+				return ! empty( $action->post_content['billing_address'] ) && (int) $action->post_content['billing_address'] === (int) $field['id'];
+			}
+		);
+
+		return (bool) $assigned_square_actions;
 	}
 
 	/**

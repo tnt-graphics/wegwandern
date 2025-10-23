@@ -38,6 +38,8 @@ class FrmMlcmpHooksController {
 
 		// Importing
 		add_action( 'frm_after_import_form', 'FrmMlcmpActionController::migrate_settings_to_action_after_import', 10, 2 );
+
+		add_filter( 'frm_autoresponder_allowed_actions', 'FrmMlcmpAppController::add_mailchimp_to_automation' );
 	}
 
 	/**

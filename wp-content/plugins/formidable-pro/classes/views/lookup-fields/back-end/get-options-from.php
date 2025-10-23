@@ -4,27 +4,28 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <p class="frm6 frm_form_field">
-<?php if ( isset( $opt_label ) ) { ?>
-	<label>
-		<?php echo esc_html( $opt_label ); ?>
-	</label>
-<?php } ?>
+	<?php if ( isset( $opt_label ) ) { ?>
+		<label>
+			<?php echo esc_html( $opt_label ); ?>
+		</label>
+	<?php } ?>
 
-<select class="frm_get_values_form" id="get_values_form_<?php echo absint( $field['id'] ); ?>" name="field_options[get_values_form_<?php echo esc_attr( $field['id'] ); ?>]" data-fieldtype="<?php echo esc_attr( $field['type'] ); ?>">
-	<option value="">&mdash; <?php esc_html_e( 'Select Form', 'formidable-pro' ); ?> &mdash;</option>
-	<?php
-	foreach ( $lookup_args['form_list'] as $form_opts ) {
-		FrmProHtmlHelper::echo_dropdown_option(
-			FrmAppHelper::truncate( $form_opts->name, 30 ),
-			(string) $form_opts->id === (string) ( isset( $field['get_values_form'] ) ? $field['get_values_form'] : '' ),
-			array(
-				'value' => $form_opts->id,
-			)
-		);
-	}
-	?>
-</select>
+	<select class="frm_get_values_form" id="get_values_form_<?php echo absint( $field['id'] ); ?>" name="field_options[get_values_form_<?php echo esc_attr( $field['id'] ); ?>]" data-fieldtype="<?php echo esc_attr( $field['type'] ); ?>">
+		<option value=""><?php esc_html_e( 'Select Form', 'formidable-pro' ); ?></option>
+		<?php
+		foreach ( $lookup_args['form_list'] as $form_opts ) {
+			FrmProHtmlHelper::echo_dropdown_option(
+				FrmAppHelper::truncate( $form_opts->name, 30 ),
+				(string) $form_opts->id === (string) ( $field['get_values_form'] ?? '' ),
+				array(
+					'value' => $form_opts->id,
+				)
+			);
+		}
+		?>
+	</select>
 </p>
+
 <p class="frm6 frm_form_field">
 	<label for="get_values_field_<?php echo absint( $field['id'] ); ?>" class="frm_invisible">
 		<?php esc_html_e( 'Select a Field', 'formidable-pro' ); ?>

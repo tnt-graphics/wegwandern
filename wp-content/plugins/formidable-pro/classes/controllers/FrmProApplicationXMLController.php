@@ -32,7 +32,7 @@ class FrmProApplicationXMLController {
 
 		$frm_inc_tax[] = $application_id; // Do not export application taxonomy with each view.
 
-		add_filter( 'wp_get_object_terms', array( __CLASS__, 'remove_applications_from_object_terms_results' ) );
+		add_filter( 'wp_get_object_terms', array( self::class, 'remove_applications_from_object_terms_results' ) );
 
 		add_action(
 			'frm_xml_export_before_types_loop',

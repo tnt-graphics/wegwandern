@@ -116,7 +116,7 @@ class FrmProReportsHelper {
 		$exclude_types = FrmField::no_save_fields();
 		$exclude_types = array_merge(
 			$exclude_types,
-			array( 'file', 'grid', 'password', 'credit_card', 'address', 'signature', 'form', 'table', 'name' )
+			array( 'file', 'grid', 'password', 'credit_card', 'gateway', 'address', 'signature', 'form', 'table', 'name' )
 		);
 
 		$fields = FrmField::getAll(
@@ -170,7 +170,7 @@ class FrmProReportsHelper {
 			'height'         => 'auto',
 			'bg_color'       => 'transparent',
 			'title'          => '',
-			'chart_area'     => 'top:30;height:90%',
+			'chart_area'     => 'top:30,height:90%',
 			'x_slanted_text' => 1,
 			'x_order'        => 'field_opts',
 			'include_zero'   => 1,
@@ -243,7 +243,7 @@ class FrmProReportsHelper {
 		if ( is_array( $filtered_types ) ) {
 			$types = $filtered_types;
 		} else {
-			_doing_it_wrong( __METHOD__, esc_html__( 'Field types to use in tables should be an array.', 'formidable-pro' ), '6.8.3' );
+			_doing_it_wrong( __METHOD__, 'Field types to use in tables should be an array.', '6.8.3' );
 		}
 
 		return $types;
@@ -361,7 +361,7 @@ class FrmProReportsHelper {
 			'width'      => '100%',
 			'y_min'      => 0,
 			'title'      => '',
-			'chart_area' => 'top:30;height:90%',
+			'chart_area' => 'top:30,height:90%',
 			'colors'     => '#3177c7',
 		);
 		self::add_status_filter( $common_atts );
@@ -433,7 +433,7 @@ class FrmProReportsHelper {
 			return array();
 		}
 
-		$entry_statuses = array( '' => __( 'All', 'formidable-pro' ) ) + FrmEntriesHelper::get_entry_statuses();
+		$entry_statuses = array( 'all' => __( 'All', 'formidable-pro' ) ) + FrmEntriesHelper::get_entry_statuses();
 		self::maybe_remove_extra_statuses( $form_id, $entry_statuses );
 
 		return $entry_statuses;
@@ -476,7 +476,11 @@ class FrmProReportsHelper {
 	 */
 	private static function get_selected_status( $entry_statuses ) {
 		$selected_status = FrmAppHelper::simple_get( 'entry_status' );
-		if ( '' !== $selected_status ) {
+
+		if ( '' === $selected_status ) {
+			// Default to submitted when there is no URL param filter.
+			$selected_status = 0;
+		} elseif ( 'all' !== $selected_status ) {
 			$selected_status = (int) $selected_status;
 		}
 
@@ -485,6 +489,7 @@ class FrmProReportsHelper {
 			$selected_status      = '';
 			$_GET['entry_status'] = '';
 		}
+
 		return $selected_status;
 	}
 
@@ -658,7 +663,7 @@ class FrmProReportsHelper {
 	 * @return void
 	 */
 	private static function add_status_filter( &$args ) {
-		$entry_status   = FrmAppHelper::simple_get( 'entry_status' );
+		$entry_status   = FrmAppHelper::simple_get( 'entry_status', 'sanitize_text_field', 0 );
 		$args['drafts'] = is_numeric( $entry_status ) ? $entry_status : 'both';
 	}
 }

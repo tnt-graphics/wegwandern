@@ -45,6 +45,7 @@ class FrmProFieldTime extends FrmFieldType {
 			'unique'       => true,
 			'read_only'    => true,
 			'invalid'      => true,
+			'range_field'  => true,
 		);
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
@@ -86,6 +87,7 @@ class FrmProFieldTime extends FrmFieldType {
 	 * @since 4.0
 	 */
 	public function default_value_to_string( &$default_value ) {
+		FrmAppHelper::unserialize_or_decode( $default_value ); // Value may be serialized in FrmEntryMeta::add_entry_meta() just before set_value_before_save is called.
 		if ( is_array( $default_value ) ) {
 			$this->time_array_to_string( $default_value );
 		}
@@ -421,9 +423,9 @@ class FrmProFieldTime extends FrmFieldType {
 	}
 
 	private function fill_start_end_times( &$values ) {
-		$values['clock']      = isset( $values['clock'] ) ? $values['clock'] : 12;
-		$values['start_time'] = isset( $values['start_time'] ) ? $values['start_time'] : '';
-		$values['end_time']   = isset( $values['end_time'] ) ? $values['end_time'] : '';
+		$values['clock']      = $values['clock'] ?? 12;
+		$values['start_time'] = $values['start_time'] ?? '';
+		$values['end_time']   = $values['end_time'] ?? '';
 		$step_unit            = FrmProTimeFieldsController::get_step_unit( $values );
 		$this->format_time( $this->get_default_time_str( $step_unit ), $values['start_time'], $step_unit );
 		$this->format_time( $this->get_default_time_str( $step_unit, true ), $values['end_time'], $step_unit );
@@ -471,7 +473,8 @@ class FrmProFieldTime extends FrmFieldType {
 	 * @param array $values
 	 */
 	protected function load_field_scripts( $values ) {
-		if ( $this->field['unique'] && $this->field['single_time'] && isset( $values['html_id'] ) ) {
+
+		if ( $this->field['unique'] && isset( $values['html_id'] ) ) {
 			global $frm_vars;
 
 			if ( ! isset( $frm_vars['timepicker_loaded'] ) || ! is_array( $frm_vars['timepicker_loaded'] ) ) {
@@ -479,7 +482,9 @@ class FrmProFieldTime extends FrmFieldType {
 			}
 
 			if ( ! isset( $frm_vars['timepicker_loaded'][ $values['html_id'] ] ) ) {
-				$frm_vars['timepicker_loaded'][ $values['html_id'] ] = true;
+				$frm_vars['timepicker_loaded'][ $values['html_id'] ] = array(
+					'linked_date_field' => $this->field['linked_date_field'],
+				);
 			}
 		}
 	}
@@ -591,9 +596,9 @@ class FrmProFieldTime extends FrmFieldType {
 		$step      = explode( $separator, $step );
 
 		$hour      = $step[0];
-		$min       = isset( $step[1] ) ? $step[1] : 0;
-		$sec       = isset( $step[2] ) ? $step[2] : 0;
-		$milli_sec = isset( $step[3] ) ? $step[3] : 0;
+		$min       = $step[1] ?? 0;
+		$sec       = $step[2] ?? 0;
+		$milli_sec = $step[3] ?? 0;
 
 		if ( FrmProTimeFieldsController::STEP_UNIT_MILLISECOND === $step_unit ) {
 			$step = $milli_sec + 1000 * $sec + 60000 * $min + 3600000 * $hour;
@@ -875,7 +880,7 @@ class FrmProFieldTime extends FrmFieldType {
 
 			// Get am/pm.
 			$parts           = explode( ' ', $value );
-			$time_array['A'] = isset( $parts[1] ) ? $parts[1] : '';
+			$time_array['A'] = $parts[1] ?? '';
 
 			// Get H, m, s, ms.
 			$parts = explode( ':', $parts[0] );

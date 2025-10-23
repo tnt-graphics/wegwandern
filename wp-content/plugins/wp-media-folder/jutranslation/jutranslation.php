@@ -692,7 +692,7 @@ class Jutranslation
             $strings[$entry->singular] = $entry->translations[0];
         }
         $strings = json_encode($strings);
-        $ju_user_token = get_option('ju_user_token');
+        $ju_user_token = get_site_option('wpmf_license_token');
         //Get the current extension version
         $plugin_data = get_plugin_data($addons[$plugin]->main_plugin_file);
         $version = $plugin_data['Version'];
@@ -718,25 +718,6 @@ class Jutranslation
         echo '</body>';
         echo '</html>';
         wp_die();
-    }
-
-    /**
-     * Save Ju Token
-     *
-     * @return void
-     */
-    protected static function saveJuToken()
-    {
-        //Security check
-        if (!wp_verify_nonce($_REQUEST['wp_nonce'], 'jutranslation')) {
-            echo json_encode(array('status' => 'error', 'message' => 'nonce error'));
-            die();
-        }
-
-
-        if (isset($_POST['token'])) {
-            update_option('ju_user_token', $_POST['token']);
-        }
     }
 
     /**

@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-<?php $sanitized_name = sanitize_title_with_dashes($custom_data['meta_name']); ?>
+<?php $sanitized_name = sanitize_title_with_dashes( $custom_data['meta_name'] ); ?>
 
 <div id="frm_postmeta_<?php echo esc_attr( $sanitized_name ); ?>" class="frm_postmeta_row frm_grid_container">
 	<div class="frm4 frm_form_field">
@@ -22,9 +22,9 @@ if ( ! defined( 'ABSPATH' ) ) {
     <select name="<?php echo esc_attr( $action_control->get_field_name( 'post_custom_fields' ) ); ?>[<?php echo esc_attr( $sanitized_name ); ?>][meta_name]" class="frm_cancelnew frm_custom_field_key">
 		<option value=""><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
 		<?php foreach ( $cf_keys as $cf_key ) { ?>
-    	<option value="<?php echo esc_attr($cf_key); ?>"><?php echo esc_html($cf_key); ?></option>
+    	<option value="<?php echo esc_attr( $cf_key ); ?>"><?php echo esc_html( $cf_key ); ?></option>
     	<?php
-    		unset($cf_key);
+    		unset( $cf_key );
     	}
         ?>
     </select>
@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="frm7 frm_form_field">
 		<label class="screen-reader-text"><?php esc_html_e( 'Value', 'formidable-pro' ); ?></label>
 		<select name="<?php echo esc_attr( $action_control->get_field_name( 'post_custom_fields' ) ); ?>[<?php echo esc_attr( $sanitized_name ); ?>][field_id]" class="frm_single_post_field">
-		<option value=""><?php esc_html_e( '&mdash; Select Field &mdash;', 'formidable-pro' ); ?></option>
+		<option value=""><?php esc_html_e( 'Select Field', 'formidable-pro' ); ?></option>
         <?php
         if ( ! empty( $values['fields'] ) ) {
             if ( ! isset( $custom_data['field_id'] ) ) {

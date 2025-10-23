@@ -329,6 +329,9 @@ class WpmfWatermark
         if (empty($watermark_apply)) {
             wp_send_json(array('status' => false));
         }
+
+        $option_image_watermark = get_option('wpmf_option_image_watermark');
+
         if (!empty($attachments)) {
             foreach ($attachments as $attachment) {
                 $isWoo = false;
@@ -451,7 +454,8 @@ class WpmfWatermark
 
                             $pathinfo  = pathinfo($path);
                             $imageInfo = getimagesize($path);
-                            if ((int) $value === 1) {
+
+                            if ((int) $value === 1 && $option_image_watermark) {
                                 try {
                                     $this->generatePicture($pathinfo['basename'], $imageInfo, $pathinfo['dirname'], $imageSize, '', $isWoo);
                                 } catch (Exception $e) {

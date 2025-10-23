@@ -119,6 +119,17 @@ This file is added to the visual styler admin page, accessed from the style tab.
 #frm_style_preview .with_frm_style .frm-show-form {
 	overflow-x:visible;
 }
+#frm_style_preview .with_frm_style select.flatpickr-monthDropdown-months {
+	width: 53%;
+}
+#frm_style_preview .frm-datepicker.flatpickr-calendar.inline.frm-datepicker-inline-small {
+	width: 300px;
+}
+
+.multiselect-container input[name="frm_style_setting[post_content][collapse_icon]"] + span > svg:last-child,
+.multiselect-container input[name="frm_style_setting[post_content][repeat_icon]"] + span > svg:last-child {
+	margin-left: var(--gap-xs);
+}
 
 @media only screen and (min-width: 1250px) {
 	#frm_style_preview ul.frm_rootline.frm_rootline_6:not(.frm_show_titles) .frm_rootline_show_hidden_steps_btn,

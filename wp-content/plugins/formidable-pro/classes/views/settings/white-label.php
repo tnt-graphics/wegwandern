@@ -17,28 +17,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php } ?>
 </p>
 
-<p class="frm_insert_form">
-	<label class="frm_left_label">
-		<?php esc_html_e( 'Plugin Icon', 'formidable-pro' ); ?>
-	</label>
-	<?php foreach ( array( '', 'frmfont frm_white_label_icon', 'dashicons dashicons-feedback' ) as $icon ) { ?>
-		<label class="frm-example-icon">
-			<input type="radio" name="frm_menu_icon" value="<?php echo esc_attr( $icon ); ?>" <?php checked( $frmpro_settings->menu_icon, $icon ); ?> />
-			<?php
-			if ( empty( $icon ) ) {
-				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-				echo FrmAppHelper::svg_logo(
-					array(
-						'height' => 22,
-						'width'  => 22,
-					)
-				);
-			} else {
-				FrmProAppHelper::icon_by_class( $icon );
-			}
-			?>
-		</label>
-	<?php } ?>
+<p class="frm_insert_form frm_form_field">
+	<?php
+	FrmProHtmlHelper::admin_toggle(
+		'frm_menu_icon',
+		'frm_menu_icon',
+		array(
+			'checked'     => ! empty( $frmpro_settings->menu_icon ),
+			'echo'        => true,
+			'show_labels' => true,
+			'value'       => 'frm_white_label_icon',
+			'on_label'    => __( 'Remove Logo', 'formidable-pro' ),
+		)
+	);
+	?>
 </p>
 <p id="frm_hide_dashboard_videos_wrapper" class="<?php echo '' === $frmpro_settings->menu_icon || FrmAddonsController::is_license_expired() ? 'frm_hidden' : ''; ?> ">
 	<label for="frm_hide_dashboard_videos">

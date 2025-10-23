@@ -3,60 +3,88 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-<a href="javascript:void(0)" id="logic_<?php echo absint( $field['id'] ); ?>" class="frm_add_logic_row frm_add_logic_link frm-collapsed frm-flex-justify <?php
-echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || reset( $field['hide_field'] ) != '' ) ? ' frm_hidden' : '';
-?>" aria-expanded="false" tabindex="0" role="button" aria-label="<?php esc_attr_e( 'Collapsible Conditional Logic Settings', 'formidable-pro' ); ?>" aria-controls="collapsible-section">
+<a
+	href="javascript:void(0)"
+	id="logic_<?php echo absint( $field['id'] ); ?>"
+	class="frm_add_logic_row frm_add_logic_link frm-collapsed frm-flex-justify <?php echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || reset( $field['hide_field'] ) != '' ) ? ' frm_hidden' : ''; ?>"
+	role="button" aria-expanded="false" tabindex="0" aria-controls="collapsible-section" aria-label="<?php esc_attr_e( 'Collapsible Conditional Logic Settings', 'formidable-pro' ); ?>"
+>
 	<?php esc_html_e( 'Conditional Logic', 'formidable-pro' ); ?>
-	<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown6_icon', array( 'aria-hidden' => 'true' ) ); ?>
+	<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown8_icon', array( 'aria-hidden' => 'true' ) ); ?>
 </a>
-<div class="frm_logic_rows frm_add_remove<?php echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || reset( $field['hide_field'] ) != '' ) ? '' : ' frm_hidden'; ?>" id="frm_logic_rows_<?php echo absint( $field['id'] ); ?>">
+
+<div class="frm_logic_rows frm_add_remove frm-toggle-group<?php echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || reset( $field['hide_field'] ) != '' ) ? '' : ' frm_hidden'; ?>" id="frm_logic_rows_<?php echo absint( $field['id'] ); ?>">
 	<h3 aria-expanded="true" tabindex="0" role="button" aria-label="<?php esc_attr_e( 'Collapsible Conditional Logic Settings', 'formidable-pro' ); ?>" aria-controls="collapsible-section">
 		<?php esc_html_e( 'Conditional Logic', 'formidable-pro' ); ?>
-		<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown6_icon', array( 'aria-hidden' => 'true' ) ); ?>
+		<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown8_icon', array( 'aria-hidden' => 'true' ) ); ?>
 	</h3>
+
 	<div class="frm-collapse-me" role="group">
-	<div id="frm_logic_row_<?php echo absint( $field['id'] ); ?>" class="frm-mb-sm">
-		<select name="field_options[show_hide_<?php echo absint( $field['id'] ); ?>]" class="auto_width">
-			<?php
-			if ( 'submit' === $field['type'] ) {
-				?>
-				<option value="show" <?php selected( $field['show_hide'], 'show' ); ?>><?php esc_html_e( 'Show this button', 'formidable-pro' ); ?></option>
-				<option value="hide" <?php selected( $field['show_hide'], 'hide' ); ?>><?php esc_html_e( 'Hide this button', 'formidable-pro' ); ?></option>
-				<option value="enable" <?php selected( $field['show_hide'], 'enable' ); ?>><?php esc_html_e( 'Enable this button', 'formidable-pro' ); ?></option>
-				<option value="disable" <?php selected( $field['show_hide'], 'disable' ); ?>><?php esc_html_e( 'Disable this button', 'formidable-pro' ); ?></option>
-				<?php
-			} else {
-				?>
-				<option value="show" <?php selected( $field['show_hide'], 'show' ); ?>><?php echo $field['type'] === 'break' ? esc_html__( 'Do not skip next page', 'formidable-pro' ) : esc_html__( 'Show', 'formidable-pro' ); ?></option>
-				<option value="hide" <?php selected( $field['show_hide'], 'hide' ); ?>><?php echo $field['type'] === 'break' ? esc_html__( 'Skip next page', 'formidable-pro' ) : esc_html__( 'Hide', 'formidable-pro' ); ?></option>
-				<?php
-			}
-			?>
-		</select>
-
 		<?php
-		$all_select =
-			'<select name="field_options[any_all_' . absint( $field['id'] ) . ']" class="auto_width">' .
-			'<option value="any" ' . selected( $field['any_all'], 'any', false ) . '>' . __( 'any', 'formidable-pro' ) . '</option>' .
-			'<option value="all" ' . selected( $field['any_all'], 'all', false ) . '>' . __( 'all', 'formidable-pro' ) . '</option>' .
-			'</select>';
-
-		printf( esc_html__( 'this field, if %s of the following match:', 'formidable-pro' ), '<br>' . $all_select ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		unset( $all_select );
-
-		if ( ! empty( $field['hide_field'] ) ) {
-			foreach ( (array) $field['hide_field'] as $meta_name => $hide_field ) {
-				include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/_logic_row.php';
-			}
+		if ( class_exists( 'FrmTextToggleStyleComponent' ) ) { // Backwards compatibility "@since 6.24".
+			?>
+			<input type="hidden" name="field_options[enable_conditional_logic_<?php echo esc_attr( $field['id'] ); ?>]" value="1" />
+			<?php
+			FrmHtmlHelper::toggle(
+				'frm-enable-conditional-logic[' . $field['id'] . ']',
+				'frm-enable-conditional-logic[' . $field['id'] . ']',
+				array(
+					'echo'        => true,
+					'show_labels' => true,
+					'on_label'    => __( 'Enable Conditional Logic', 'formidable-pro' ),
+					'value'       => '1',
+					'checked'     => true,
+					'div_class'   => 'frm-leading-none frm-my-sm',
+					'input_html'  => array(
+						'data-group-name' => 'conditional-logic',
+						'data-enable'     => '#frm_logic_row_{id},#frm_logic_rows_{id} .frm_add_logic_row',
+					),
+				)
+			);
 		}
 		?>
-	</div>
-	<a href="javascript:void(0)" class="frm_add_logic_row button frm-button-secondary">
-		<?php
-		FrmProAppHelper::icon_by_class( 'frmfont frm_plus_icon' );
-		echo ' ';
-		esc_html_e( 'Add', 'formidable-pro' );
-		?>
-	</a>
+		<div id="frm_logic_row_<?php echo absint( $field['id'] ); ?>" class="frm-mb-sm">
+			<div class="frm-flex frm-flex-wrap frm-gap-xs frm-items-center frm-mt-md frm-mb-sm">
+				<select class="frm-grow frm-w-fit frm-m-0" name="field_options[show_hide_<?php echo absint( $field['id'] ); ?>]">
+					<?php
+					foreach ( FrmProConditionalLogicController::get_show_hide_options( $field ) as $value => $label ) {
+						FrmProHtmlHelper::echo_dropdown_option( $label, $value === $field['show_hide'], array( 'value' => $value ) );
+					}
+					?>
+				</select>
+
+				<span class="frm-white-space-nowrap frm-text-grey-700 frm-pr-lg">
+					<?php
+					if ( in_array( $field['type'], array( 'submit', 'break' ), true ) ) {
+						echo esc_html__( 'if the following match:', 'formidable-pro' );
+					} else {
+						echo esc_html__( 'this field if the following match:', 'formidable-pro' );
+					}
+					?>
+				</span>
+			</div>
+
+			<?php
+			FrmProHtmlHelper::echo_radio_group(
+				'field_options[any_all_' . absint( $field['id'] ) . ']',
+				array(
+					'any' => esc_html__( 'Any', 'formidable-pro' ),
+					'all' => esc_html__( 'All', 'formidable-pro' ),
+				),
+				$field['any_all']
+			);
+
+			if ( ! empty( $field['hide_field'] ) ) {
+				foreach ( (array) $field['hide_field'] as $meta_name => $hide_field ) {
+					include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/_logic_row.php';
+				}
+			}
+			?>
+		</div>
+
+		<a href="javascript:void(0)" class="frm-flex-center frm-gap-2xs frm_add_logic_row button frm-button-secondary">
+			<?php FrmProAppHelper::icon_by_class( 'frmfont frm_plus1_icon frm_svg12' ); ?>
+			<span><?php esc_html_e( 'Add Condition', 'formidable-pro' ); ?></span>
+		</a>
 	</div>
 </div>

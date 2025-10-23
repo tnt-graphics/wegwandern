@@ -35,9 +35,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</p>
 
 	<p class="frm_form_field">
-		<label for="frm_date_calc_diff_<?php echo esc_attr( $field['id'] ); ?>">
-			<?php esc_html_e( 'Date Difference', 'frmdates' ); ?>
-			<span class="frm_help frm_icon_font frm_tooltip_icon frm_tooltip_expand" data-placement="right" title="<?php esc_attr_e( 'Difference between start date and desired date. Can be in days, weeks, months, or years.', 'frmdates' ); ?>"></span>
+		<label class="frm-h-stack-xs" for="frm_date_calc_diff_<?php echo esc_attr( $field['id'] ); ?>">
+			<span><?php esc_html_e( 'Date Difference', 'frmdates' ); ?></span>
+			<?php
+			FrmDatesAppController::show_svg_tooltip(
+				__( 'Difference between start date and desired date. Can be in days, weeks, months, or years.', 'frmdates' ),
+				array(
+					'data-placement' => 'right',
+					'class'          => 'frm-flex',
+				)
+			);
+			?>
 		</label>
 		<span class="frm-with-right-icon">
 			<?php
@@ -58,10 +66,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</span>
 	</p>
 </div>
-
-<p class="howto frm_no_bottom_margin">
-	<?php esc_html_e( 'Dynamically set the value of this field from another date.', 'frmdates' ); ?>
-</p>
 
 <?php
 FrmDatesCalculationHelper::maybe_print_shortcodes_modal( $field );

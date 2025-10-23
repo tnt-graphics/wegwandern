@@ -9,13 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 			name="<?php echo esc_attr( $names['hide_field'] ); ?>"
 			<?php if ( ! empty( $onchange ) ) { ?>
 				onchange="<?php echo $onchange; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>"
-			<?php } ?>
+<?php } ?>
 			>
 			<option value=""><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
 			<?php
 			foreach ( $form_fields as $ff ) {
 				if ( is_array( $ff ) ) {
 					$ff = (object) $ff;
+				}
+
+				if ( $ff->type === 'range' && FrmField::get_option( $ff, 'is_range_slider' ) ) {
+					continue;
 				}
 
 				if ( in_array( $ff->type, $exclude_fields, true ) || FrmProField::is_list_field( $ff ) ) {
@@ -70,7 +74,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			$selector_field_id = $condition['hide_field'] && is_numeric( $condition['hide_field'] ) ? (int) $condition['hide_field'] : 0;
 			$selector_args     = array(
 				'html_name' => $names['hide_opt'],
-				'value'     => isset( $condition['hide_opt'] ) ? $condition['hide_opt'] : '',
+				'value'     => $condition['hide_opt'] ?? '',
 				'source'    => 'form_actions',
 			);
 

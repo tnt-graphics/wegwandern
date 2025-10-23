@@ -56,9 +56,21 @@ if ( FrmAppHelper::is_admin() ) { ?>
 		}
 	}
 
+	if ( FrmProFieldRte::should_hide_link_button() ) {
+		$hide_link_button_callback = function ( $mce_init ) {
+			$mce_init['toolbar1'] = str_replace( ',link,', ',', $mce_init['toolbar1'] );
+			return $mce_init;
+		};
+		add_filter( 'tiny_mce_before_init', $hide_link_button_callback );
+	}
+
 	add_filter( 'format_for_editor', 'FrmProFieldRte::encode_all_quote_types' );
 	wp_editor( FrmAppHelper::esc_textarea( $field['value'], true ), $html_id, $e_args );
 	remove_filter( 'format_for_editor', 'FrmProFieldRte::encode_all_quote_types' );
+
+	if ( isset( $hide_link_button_callback ) ) {
+		remove_filter( 'tiny_mce_before_init', $hide_link_button_callback );
+	}
 
 	// If submitting with Ajax or on preview page and tinymce is not loaded yet, load it now
 

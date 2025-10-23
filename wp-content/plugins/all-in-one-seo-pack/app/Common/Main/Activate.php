@@ -110,7 +110,7 @@ class Activate {
 			return;
 		}
 
-		if ( isset( $_GET['activate-multi'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended	
+		if ( isset( $_GET['activate-multi'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -121,8 +121,8 @@ class Activate {
 	/**
 	 * Adds our capabilities to all roles on the next request and the installing user on the current request after upgrading to Pro.
 	 *
-	 * @link https://github.com/awesomemotive/aioseo/issues/2267
-	 * @link https://github.com/awesomemotive/aioseo/issues/2288
+
+
 	 *
 	 * @since 4.1.4.4
 	 *
@@ -138,7 +138,7 @@ class Activate {
 			? get_current_user_id() // If there is a logged in user, the user is switching from Lite to Pro via the Plugins menu.
 			: aioseo()->core->cache->get( 'connect_active_user' ); // If there is no logged in user, we're upgrading via AIOSEO Connect.
 
-		$user = get_userdata( $userId );
+		$user = aioseo()->helpers->getUserData( $userId );
 		if ( is_object( $user ) ) {
 			$capabilities = aioseo()->access->getCapabilityList();
 			foreach ( $capabilities as $capability ) {

@@ -76,6 +76,7 @@ class FrmProApplication {
 	 */
 	public static function add_form_to_application( $application_id, $form_id ) {
 		add_term_meta( $application_id, '_frm_form_id', $form_id );
+		FrmDb::cache_delete_group( 'termmeta' );
 		self::update_form_count( $application_id );
 	}
 
@@ -86,6 +87,7 @@ class FrmProApplication {
 	 */
 	public static function remove_form_from_application( $application_id, $form_id ) {
 		delete_term_meta( $application_id, '_frm_form_id', $form_id );
+		FrmDb::cache_delete_group( 'termmeta' );
 		self::update_form_count( $application_id );
 	}
 

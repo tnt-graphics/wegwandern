@@ -103,8 +103,9 @@ class FrmDatesField extends FrmProFieldDate {
 	}
 
 	protected function field_settings_for_type() {
-		$settings              = parent::field_settings_for_type();
-		$settings['date_calc'] = true;
+		$settings                = parent::field_settings_for_type();
+		$settings['date_calc']   = true;
+		$settings['range_field'] = true;
 		return $settings;
 	}
 
@@ -138,7 +139,7 @@ class FrmDatesField extends FrmProFieldDate {
 		}
 
 		if ( ! empty( $this->field->field_options['blackout_dates'] ) && in_array( $entry_date, $this->field->field_options['blackout_dates'], true ) ) {
-			$errors[ 'field' . $args['id'] ] = __( 'The date selected is not allowed. Please select another day.', 'formidable-dates' );
+			$errors[ 'field' . $args['id'] ] = __( 'The date selected is not allowed. Please select another day.', 'frmdates' );
 			return $errors;
 		}
 
@@ -147,18 +148,18 @@ class FrmDatesField extends FrmProFieldDate {
 
 		if ( $min_date && ( $min_date > $entry_date ) ) {
 			/* translators: %s: Minimum date */
-			$errors[ 'field' . $args['id'] ] = sprintf( __( 'Date cannot be before %s', 'formidable-dates' ), date_i18n( 'F j, Y', strtotime( $min_date ) ) );
+			$errors[ 'field' . $args['id'] ] = sprintf( __( 'Date cannot be before %s', 'frmdates' ), date_i18n( 'F j, Y', strtotime( $min_date ) ) );
 			return $errors;
 		}
 
 		if ( $max_date && ( $max_date < $entry_date ) ) {
 			/* translators: %s: Maximum date */
-			$errors[ 'field' . $args['id'] ] = sprintf( __( 'Date cannot be after %s', 'formidable-dates' ), date_i18n( 'F j, Y', strtotime( $max_date ) ) );
+			$errors[ 'field' . $args['id'] ] = sprintf( __( 'Date cannot be after %s', 'frmdates' ), date_i18n( 'F j, Y', strtotime( $max_date ) ) );
 			return $errors;
 		}
 
 		if ( ! self::all_days_of_the_week_are_allowed( $this->field ) && ! in_array( (int) gmdate( 'w', strtotime( $entry_date ) ), $this->field->field_options['days_of_the_week'], true ) ) {
-			$errors[ 'field' . $args['id'] ] = __( 'The date selected is not allowed. Please select another day.', 'formidable-dates' );
+			$errors[ 'field' . $args['id'] ] = __( 'The date selected is not allowed. Please select another day.', 'frmdates' );
 			return $errors;
 		}
 
@@ -207,29 +208,34 @@ class FrmDatesField extends FrmProFieldDate {
 	}
 
 	public static function field_has_custom_opts( $field ) {
-		$display_inline    = FrmField::get_option( $field, 'display_inline' );
-		$days              = FrmField::get_option( $field, 'days_of_the_week' );
-		$blackout_dates    = FrmField::get_option( $field, 'blackout_dates' );
-		$minimum_date_cond = FrmField::get_option( $field, 'minimum_date_cond' );
-		$maximum_date_cond = FrmField::get_option( $field, 'maximum_date_cond' );
+		$display_inline                  = FrmField::get_option( $field, 'display_inline' );
+		$days                            = FrmField::get_option( $field, 'days_of_the_week' );
+		$blackout_dates                  = FrmField::get_option( $field, 'blackout_dates' );
+		$minimum_date_cond               = FrmField::get_option( $field, 'minimum_date_cond' );
+		$maximum_date_cond               = FrmField::get_option( $field, 'maximum_date_cond' );
+		$is_part_of_calendar_range_field = FrmField::get_option( $field, 'range_field' ) || FrmField::get_option( $field, 'is_range_end_field' );
 
 		$custom_days = is_array( $days ) && ! empty( $days ) && 7 > count( $days );
 
-		return ( $custom_days || $display_inline || $blackout_dates || $minimum_date_cond || $maximum_date_cond );
+		return ( $custom_days || $display_inline || $blackout_dates || $minimum_date_cond || $maximum_date_cond || $is_part_of_calendar_range_field );
 	}
 
 	public function extra_field_opts() {
 		$new_options = array(
-			'days_of_the_week'  => array( 0, 1, 2, 3, 4, 5, 6 ),
-			'blackout_dates'    => array(),
-			'excepted_dates'    => array(),
-			'display_inline'    => false,
-			'minimum_date_cond' => '',
-			'minimum_date_val'  => '',
-			'maximum_date_cond' => '',
-			'maximum_date_val'  => '',
-			'date_calc'         => '',
-			'date_calc_diff'    => '',
+			'days_of_the_week'     => array( 0, 1, 2, 3, 4, 5, 6 ),
+			'blackout_dates'       => array(),
+			'excepted_dates'       => array(),
+			'display_inline'       => false,
+			'minimum_date_cond'    => '',
+			'minimum_date_val'     => '',
+			'maximum_date_cond'    => '',
+			'maximum_date_val'     => '',
+			'date_calc'            => '',
+			'date_calc_diff'       => '',
+			'range_end_field'      => 0,
+			'is_range_start_field' => 0,
+			'is_range_end_field'   => 0,
+			'range_start_field'    => 0,
 		);
 
 		return array_merge( parent::extra_field_opts(), $new_options );
@@ -242,7 +248,7 @@ class FrmDatesField extends FrmProFieldDate {
 			return parent::front_field_input( $args, $shortcode_atts );
 		}
 
-		$display_inline = FrmField::get_option( $this->field, 'display_inline' );
+		$display_inline = FrmDatesAppHelper::date_field_display_inline( $this->field );
 		if ( $display_inline ) {
 			if ( isset( $this->field['original_default'] ) ) {
 				$shortcode_atts = shortcode_parse_atts( trim( $this->field['original_default'], '[]' ) );
@@ -259,7 +265,7 @@ class FrmDatesField extends FrmProFieldDate {
 			$html = '<input type="hidden" name="' . esc_attr( $args['field_name'] ) . '" value="' . esc_attr( $date ) . '" id="' . esc_attr( $args['html_id'] ) . '_alt" ';
 			$html .= FrmFieldsController::input_html( $this->field, false );
 			$html .= ' />';
-			$html .= '<div id="' . esc_attr( $args['html_id'] ) . '" class="frm_date_inline"></div>';
+			$html .= '<div id="' . esc_attr( $args['html_id'] ) . '" data-field-id="' . (int) $this->field['id'] . '" class="frm_date_inline"></div>';
 		} else {
 			$html = parent::front_field_input( $args, $shortcode_atts );
 		}
@@ -312,5 +318,16 @@ class FrmDatesField extends FrmProFieldDate {
 			$entry_id = isset( $frm_vars['editing_entry'] ) ? $frm_vars['editing_entry'] : 0;
 			FrmProFieldsHelper::set_field_js( $this->field, $entry_id );
 		}
+	}
+
+	public function get_new_field_defaults() {
+		$field = parent::get_new_field_defaults();
+
+		$field['field_options']['is_range_start_field'] = 0;
+		$field['field_options']['range_end_field']      = 0;
+		$field['field_options']['is_range_end_field']   = 0;
+		$field['field_options']['range_start_field']    = 0;
+
+		return $field;
 	}
 }

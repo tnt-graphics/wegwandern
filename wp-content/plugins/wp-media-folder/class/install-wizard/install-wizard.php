@@ -75,6 +75,12 @@ class WpmfInstallWizard
     public function runWizard()
     {
         // phpcs:disable WordPress.Security.NonceVerification.Recommended -- View request, no action
+        if (isset($_GET['skip_wizard']) && $_GET['skip_wizard'] == 1) {
+            update_option('wpmf_first_installed', 0);
+            wp_safe_redirect(admin_url('options-general.php?page=option-folder'));
+            exit;
+        }
+        
         wp_enqueue_style(
             'wpmf_wizard',
             WPMF_PLUGIN_URL  . 'class/install-wizard/install-wizard.css',
@@ -84,7 +90,7 @@ class WpmfInstallWizard
 
         // Get step
         $this->steps = apply_filters('wpmf_setup_wizard_steps', $this->steps);
-        $this->current_step  = isset($_GET['step']) ? sanitize_key($_GET['step']) : current(array_keys($this->steps));
+        $this->current_step  = isset($_GET['step']) ? sanitize_key($_GET['step']) : '';
 
         // Save action
         // phpcs:ignore WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
@@ -92,20 +98,57 @@ class WpmfInstallWizard
             call_user_func(array('WpmfHandlerWizard', $this->steps[$this->current_step]['action']), $this->current_step);
         }
 
+        // juLicense
+        if (!isset($_GET['step'])) {
+            // Include the javascript
+            wp_enqueue_script('jquery');
+            wp_enqueue_script('thickbox', null, array('jquery'));
+
+            // Include the thickbox styles
+            wp_enqueue_style('thickbox.css', '/'.WPINC.'/js/thickbox/thickbox.css', null, '1.0');
+            wp_enqueue_script('wpmf_install', WPMF_PLUGIN_URL  . 'class/install-wizard/script.js', array('jquery'));
+            $params = $this->localizeScript();
+            wp_localize_script('wpmf_install', 'updaterV2params', $params);
+        }
+
         // Render
         $this->setHeader();
         if (!isset($_GET['step'])) {
+            require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/install-wizard/content/license.php');
+        } elseif (isset($_GET['step']) && $_GET['step'] === 'wizard_start') {
             require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/install-wizard/content/viewWizard.php');
         } elseif (isset($_GET['step']) && $_GET['step'] === 'wizard_done') {
+            update_option('wpmf_first_installed', 0);
             require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/install-wizard/content/viewDone.php');
         } else {
             $this->setMenu();
             $this->setContent();
         }
+        $this->setFooter();
         // phpcs:enable
         exit();
     }
 
+    /**
+     * Localize script
+     *
+     * @return array
+     */
+    public function localizeScript()
+    {
+        global $wp_version;
+
+        $token = get_site_option('wpmf_license_token');
+        return array(
+            'ajaxurl'        => admin_url('admin-ajax.php'),
+            'token'          => $token,
+            'ju_base'        => JU_BASE,
+            'ju_content_url' => admin_url(),
+            'site_url' => site_url(),
+            'version'        => $wp_version,
+            'ju_updater_nonce'            => wp_create_nonce('ju_updater_nonce')
+        );
+    }
 
     /**
      * Get next link step
@@ -197,6 +240,10 @@ class WpmfInstallWizard
      */
     public function setHeader()
     {
+        $cls = 'juLicense';
+        if (!empty($this->steps[$this->current_step]['view'])) {
+            $cls = 'wpmf-wizard-setup-' . $this->current_step;
+        }
         ?>
         <!DOCTYPE html>
         <html <?php language_attributes(); ?>>
@@ -207,7 +254,7 @@ class WpmfInstallWizard
             <?php  wp_admin_css('dashicons', true); ?>
             <?php  wp_admin_css('wpmf_wizard', true); ?>
         </head>
-        <body class="wpmf-wizard-setup wp-core-ui">
+        <body class="wpmf-wizard-setup wp-core-ui <?php echo esc_attr($cls); ?>">
         <div class="wpmf-wizard-content p-d-20">
         <?php
     }

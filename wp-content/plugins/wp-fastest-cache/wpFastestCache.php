@@ -3,7 +3,7 @@
 Plugin Name: WP Fastest Cache
 Plugin URI: http://wordpress.org/plugins/wp-fastest-cache/
 Description: The simplest and fastest WP Cache system
-Version: 1.3.3
+Version: 1.4.1
 Author: Emre Vona
 Author URI: https://www.wpfastestcache.com/
 Text Domain: wp-fastest-cache
@@ -537,18 +537,27 @@ GNU General Public License for more details.
 		}
 
 		public function wpfc_db_fix_callback(){
-			if($this->isPluginActive("wp-fastest-cache-premium/wpFastestCachePremium.php")){
-				include_once $this->get_premium_path("db.php");
-
-				if(class_exists("WpFastestCacheDatabaseCleanup")){
-					WpFastestCacheDatabaseCleanup::clean($_GET["type"]);
-				}else{
-					die(json_encode(array("success" => false, "showupdatewarning" => true, "message" => "Only available in Premium version")));
-				}
-
-			}else{
-				die(json_encode(array("success" => false, "message" => "Only available in Premium version")));
+			if(!wp_verify_nonce($_REQUEST["nonce"], 'wpfc')){
+				die( 'Security check' );
 			}
+
+			if(current_user_can('manage_options')){
+				if($this->isPluginActive("wp-fastest-cache-premium/wpFastestCachePremium.php")){
+					include_once $this->get_premium_path("db.php");
+
+					if(class_exists("WpFastestCacheDatabaseCleanup")){
+						WpFastestCacheDatabaseCleanup::clean($_GET["type"]);
+					}else{
+						die(json_encode(array("success" => false, "showupdatewarning" => true, "message" => "Only available in Premium version")));
+					}
+
+				}else{
+					die(json_encode(array("success" => false, "message" => "Only available in Premium version")));
+				}
+			}else{
+				wp_die("Must be admin");
+			}
+
 		}
 
 		public function wpfc_db_statics_callback(){
@@ -563,7 +572,12 @@ GNU General Public License for more details.
                              "trashed_contents" => 0,
                              "trashed_spam_comments" => 0,
                              "trackback_pingback" => 0,
-                             "transient_options" => 0
+                             "transient_options" => 0,
+                             "orphaned_post_meta" => 0,
+                             "orphaned_comment_meta" => 0,
+                             "orphaned_user_meta" => 0,
+                             "orphaned_term_meta" => 0,
+                             "orphaned_term_relationships" => 0
                             );
 
 
@@ -582,6 +596,26 @@ GNU General Public License for more details.
             $element = "SELECT COUNT(*) FROM `$wpdb->options` WHERE option_name LIKE '%\_transient\_%' ;";
             $statics["transient_options"] = $wpdb->get_var( $element ) > 100 ? $wpdb->get_var( $element ) : 0;
             $statics["all_warnings"] = $statics["all_warnings"] + $statics["transient_options"];
+
+
+
+            $statics["orphaned_post_meta"] = $wpdb->get_var("SELECT COUNT(pm.meta_id) FROM {$wpdb->postmeta} pm LEFT JOIN {$wpdb->posts} p ON p.ID = pm.post_id WHERE p.ID IS NULL");
+			$statics["all_warnings"] += $statics["orphaned_post_meta"];
+
+			$statics["orphaned_comment_meta"] = $wpdb->get_var("SELECT COUNT(cm.meta_id) FROM {$wpdb->commentmeta} cm LEFT JOIN {$wpdb->comments} c ON c.comment_ID = cm.comment_id WHERE c.comment_ID IS NULL");
+			$statics["all_warnings"] += $statics["orphaned_comment_meta"];
+
+			$statics["orphaned_user_meta"] = $wpdb->get_var("SELECT COUNT(um.umeta_id) FROM {$wpdb->usermeta} um LEFT JOIN {$wpdb->users} u ON u.ID = um.user_id WHERE u.ID IS NULL");
+			$statics["all_warnings"] += $statics["orphaned_user_meta"];
+
+			$statics["orphaned_term_meta"] = $wpdb->get_var("SELECT COUNT(tm.meta_id) FROM {$wpdb->termmeta} tm LEFT JOIN {$wpdb->terms} t ON t.term_id = tm.term_id WHERE t.term_id IS NULL");
+			$statics["all_warnings"] += $statics["orphaned_term_meta"];
+
+			$statics["orphaned_term_relationships"] = $wpdb->get_var("SELECT COUNT(tr.object_id) FROM {$wpdb->term_relationships} tr LEFT JOIN {$wpdb->posts} p ON p.ID = tr.object_id WHERE p.ID IS NULL");
+			$statics["all_warnings"] += $statics["orphaned_term_relationships"];
+
+
+
 
             die(json_encode($statics));
 		}
@@ -1346,13 +1380,33 @@ GNU General Public License for more details.
 
 		protected function commentHooks(){
 			//it works when the status of a comment changes
-			add_action('wp_set_comment_status', array($this, 'singleDeleteCache'), 10, 1);
+			add_action('wp_set_comment_status', array($this, 'detect_comment_status_change'), 10, 2);
 
 			//it works when a comment is saved in the database
 			add_action('comment_post', array($this, 'detectNewComment'), 10, 2);
 
 			// it work when a commens is updated
 			add_action('edit_comment', array($this, 'detectEditComment'), 10, 2);
+		}
+
+		public function detect_comment_status_change($comment_id, $new_status) {
+		    $comment = get_comment($comment_id);
+		    
+		    if (!$comment) {
+		        return; // Exit if the comment doesn't exist
+		    }
+
+		    // Check if the comment was pending and is now marked as spam
+		    if($comment->comment_status == 'open' && $new_status === 'spam'){
+		    	return;
+		    }
+
+		    // Check if the comment was pending and is now marked as trash
+		    if($comment->comment_status == 'open' && $new_status === 'trash'){
+		    	return;
+		    }
+
+		    $this->singleDeleteCache($comment_id);
 		}
 
 		public function detectEditComment($comment_id, $comment_data){
@@ -1471,7 +1525,7 @@ GNU General Public License for more details.
 
 
 				//for trash contents
-				if(preg_match("/\/\?p\=\d+/i", $permalink)){
+				if(preg_match("/\/\?(p|page_id)\=\d+/i", $permalink)){
 					$post = get_post($post_id);
 
 					$clone_post = clone $post;

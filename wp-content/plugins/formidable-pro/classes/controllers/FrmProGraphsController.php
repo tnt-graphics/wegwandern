@@ -13,6 +13,7 @@ class FrmProGraphsController {
 	 * @return string
 	 */
 	public static function graph_shortcode( $atts ) {
+		$original_atts = $atts;
 		self::convert_old_atts_to_new_atts( $atts );
 
 		self::combine_defaults_and_user_defined_attributes( $atts );
@@ -24,6 +25,19 @@ class FrmProGraphsController {
 		}
 
 		$graph_data = self::generate_google_graph_data( $atts );
+
+		/**
+		 * Short-circuit to return custom HTML for graph shortcode.
+		 *
+		 * @since 6.22.1
+		 *
+		 * @param false|string $custom_html Graph custom HTML. Return `false` will skip this.
+		 * @param array        $args        Contains `atts` (shortcode atts) and `graph_data`.
+		 */
+		$custom_html = apply_filters( 'frm_graph_shortcode_custom_html', false, compact( 'atts', 'graph_data', 'original_atts' ) );
+		if ( false !== $custom_html ) {
+			return $custom_html;
+		}
 
 		$html = self::get_graph_html( $graph_data, $atts );
 
@@ -319,9 +333,24 @@ class FrmProGraphsController {
 			'pie_hole'                => '',
 			'curve_type'              => '',
 			'no_data'                 => __( 'No data', 'formidable-pro' ),
+			'animate'                 => 0,
+			'animation_duration'      => 1000,
+			'animation_easing'        => 'out',
+			'format'                  => '',
+			'x_title_margin'          => '',
+			'y_title_margin'          => '',
+			'legend_columns'          => '',
+			'output_image'            => '', // This flag is used to output the image directly to the browser.
 		);
 
-		return $defaults;
+		/**
+		 * Filters the default atts of the graph shortcode.
+		 *
+		 * @since 6.22.1
+		 *
+		 * @param array $defaults Default atts.
+		 */
+		return apply_filters( 'frm_pro_graph_defaults', $defaults );
 	}
 
 	/**
@@ -638,11 +667,63 @@ class FrmProGraphsController {
 		}
 
 		self::filter_graph_data_to_match_graph( $data, $atts );
-
 		self::apply_deprecated_filters();
+		self::maybe_change_numbers_to_strings( $data );
+
 		$data = apply_filters( 'frm_graph_data', $data, $atts );
 
 		return $data;
+	}
+
+	/**
+	 * Avoid issues with mixed data sets.
+	 * When Google Graphs detects numbers it will try to format the numbers.
+	 * If some of the data is not numeric, that data will appear as NaN.
+	 *
+	 * @since 6.19
+	 *
+	 * @param array $data
+	 * @return void
+	 */
+	private static function maybe_change_numbers_to_strings( &$data ) {
+		$length                            = count( $data );
+		$found_int_value                   = false;
+		$found_string_value                = false;
+		$should_convert_numbers_to_strings = false;
+
+		for ( $i = 1; $i < $length; $i++ ) {
+			if ( ! isset( $data[ $i ] ) ) {
+				return;
+			}
+
+			$set = $data[ $i ];
+			if ( ! $set || ! isset( $set[0] ) ) {
+				continue;
+			}
+
+			$set_value = $set[0];
+			if ( is_int( $set_value ) ) {
+				$found_int_value = true;
+			} elseif ( is_string( $set_value ) ) {
+				$found_string_value = true;
+			}
+
+			if ( $found_int_value && $found_string_value ) {
+				$should_convert_numbers_to_strings = true;
+				break;
+			}
+		}
+
+		if ( ! $should_convert_numbers_to_strings ) {
+			// Conflicting mixed data types not detected.
+			return;
+		}
+
+		for ( $i = 1; $i < $length; ++$i ) {
+			if ( isset( $data[ $i ][0] ) && is_int( $data[ $i ][0] ) ) {
+				$data[ $i ][0] = (string) $data[ $i ][0];
+			}
+		}
 	}
 
 	/**
@@ -738,13 +819,15 @@ class FrmProGraphsController {
 			self::add_axis_options( $atts, $options );
 		}
 
+		self::add_animation_options( $atts, $options );
+
 		$options = apply_filters(
 			'frm_google_chart',
 			$options,
 			array(
 				'atts' => $atts,
 				'type' => $type,
-			) 
+			)
 		);
 
 		return $options;
@@ -1015,6 +1098,29 @@ class FrmProGraphsController {
 	}
 
 	/**
+	 * Add animation options.
+	 * animate=1 will enable animation. By default uses 1000ms duration and 'out' easing (start fast and end slow).
+	 * animation_duration=500 halves the animation time.
+	 * animation_easing=in changes the easing type so it starts slow and ends fast.
+	 *
+	 * @since 6.20.1
+	 *
+	 * @param array $atts
+	 * @param array $options
+	 */
+	private static function add_animation_options( $atts, &$options ) {
+		if ( empty( $atts['animate'] ) ) {
+			return;
+		}
+
+		$options['animation'] = array(
+			'startup'  => true,
+			'duration' => $atts['animation_duration'],
+			'easing'   => $atts['animation_easing'],
+		);
+	}
+
+	/**
 	 * Set up the x-axis options
 	 *
 	 * @since 2.02.05
@@ -1239,7 +1345,7 @@ class FrmProGraphsController {
 			'val'         => $value,
 			'entry_ids'   => $args['entry_ids'],
 			'after_where' => $args['after_where'],
-			'drafts'      => isset( $args['is_draft'] ) ? $args['is_draft'] : 0,
+			'drafts'      => $args['is_draft'] ?? 0,
 			'form_id'     => $args['form_id'],
 			'form_posts'  => self::get_form_posts( $args ),
 		);
@@ -1504,7 +1610,7 @@ class FrmProGraphsController {
 	 */
 	private static function get_default_start_date_for_form_graph( &$atts ) {
 		if ( ! isset( $atts['created_at_greater_than'] ) || ! $atts['created_at_greater_than'] ) {
-			$group_by = isset( $atts['group_by'] ) ? $atts['group_by'] : '';
+			$group_by = $atts['group_by'] ?? '';
 
 			if ( $group_by === 'month' ) {
 				$atts['created_at_greater_than'] = '-1 year';
@@ -1552,7 +1658,7 @@ class FrmProGraphsController {
 
 		$start_date     = self::get_start_date_for_x_axis_date_include_zero_graph( $atts, $graph_data );
 		$end_date       = self::get_end_date_for_x_axis_date_include_zero_graph( $atts, $graph_data );
-		$group_by       = isset( $atts['group_by'] ) ? $atts['group_by'] : '';
+		$group_by       = $atts['group_by'] ?? '';
 		$all_dates      = self::get_all_dates_for_period( $start_date, $end_date, $group_by, $atts );
 		$new_graph_data = array();
 		$count          = 0;

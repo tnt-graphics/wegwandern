@@ -124,9 +124,10 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 	 */
 	private static function get_entry_search_options( $field_list ) {
 		$options = array(
-			''           => '&mdash; ' . __( 'All Fields', 'formidable-pro' ) . ' &mdash;',
-			'created_at' => __( 'Entry creation date', 'formidable-pro' ),
-			'id'         => __( 'Entry ID', 'formidable-pro' ),
+			''            => '&mdash; ' . __( 'All Fields', 'formidable-pro' ) . ' &mdash;',
+			'created_at'  => __( 'Entry creation date', 'formidable-pro' ),
+			'id'          => __( 'Entry ID', 'formidable-pro' ),
+			'description' => __( 'Entry description', 'formidable-pro' ),
 		);
 
 		foreach ( $field_list as $f ) {

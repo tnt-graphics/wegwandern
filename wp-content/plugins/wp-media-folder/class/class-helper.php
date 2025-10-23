@@ -380,6 +380,28 @@ class WpmfHelper
      */
     public static function createThumbs($filepath, $extimage, $metadata, $post_id, $isOffload = false)
     {
+        if (!file_exists($filepath)) {
+            return;
+        }
+
+        $real_type = exif_imagetype($filepath);
+        switch ($real_type) {
+            case IMAGETYPE_JPEG:
+                $extimage = 'jpg';
+                break;
+            case IMAGETYPE_PNG:
+                $extimage = 'png';
+                break;
+            case IMAGETYPE_GIF:
+                $extimage = 'gif';
+                break;
+            case IMAGETYPE_WEBP:
+                $extimage = 'webp';
+                break;
+            default:
+                return;
+        }
+        
         if (isset($metadata['sizes']) && is_array($metadata['sizes'])) {
             $uploadpath = wp_upload_dir();
             foreach ($metadata['sizes'] as $size => $sizeinfo) {
@@ -427,6 +449,17 @@ class WpmfHelper
 
                     default:
                         $source = imagecreatefromjpeg($filepath);
+                }
+
+                if ($source === false) {
+                    $img_data = file_get_contents($filepath);
+                    if ($img_data !== false) {
+                        $source = imagecreatefromstring($img_data);
+                    }
+                }
+
+                if ($source === false) {
+                    continue;
                 }
 
                 imagealphablending($source, true);
@@ -560,36 +593,61 @@ class WpmfHelper
     public static function getCountFiles($term_id)
     {
         global $wpdb;
+
+        $post_type = 'attachment';
+        $params    = [$post_type, (int) $term_id];
+
+        // Base SQL
+        $sql = '
+            SELECT COUNT(DISTINCT p.ID)
+            FROM ' . $wpdb->posts . ' p
+            INNER JOIN ' . $wpdb->term_relationships . ' tr ON p.ID = tr.object_id
+            INNER JOIN ' . $wpdb->term_taxonomy . ' tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+            WHERE p.post_type = %s
+            AND p.post_status IN ("publish", "inherit")
+            AND tt.term_id = %d
+        ';
+
+        // WPML support
         if (defined('ICL_SITEPRESS_VERSION') && ICL_SITEPRESS_VERSION) {
             global $sitepress;
             $settings = $sitepress->get_settings();
-            if (isset($settings['custom_posts_sync_option']['attachment']) && (int) $settings['custom_posts_sync_option']['attachment'] === 1) {
-                $language = $sitepress->get_current_language();
-                $count = (int)$wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM ' . $wpdb->prefix . 'icl_translations AS wpml 
-            INNER JOIN ' . $wpdb->term_relationships . ' AS term_rela ON term_rela.object_id = wpml.element_id 
-            WHERE wpml.element_type = "post_attachment" AND term_rela.term_taxonomy_id = %d 
-            AND wpml.language_code = %s', array($term_id, $language)));
-            } else {
-                $folder = get_term($term_id, WPMF_TAXO);
-                return $folder->count;
+            if (!empty($settings['custom_posts_sync_option']['attachment'])) {
+                $current_lang = $sitepress->get_current_language();
+                $sql .= '
+                    AND EXISTS (
+                        SELECT 1
+                        FROM ' . $wpdb->prefix . 'icl_translations wpml
+                        WHERE wpml.element_id = p.ID
+                        AND wpml.element_type = "post_attachment"
+                        AND wpml.language_code = %s
+                    )
+                ';
+                $params[] = $current_lang;
             }
-        } elseif (is_plugin_active('polylang/polylang.php') || is_plugin_active('polylang-pro/polylang.php')) {
-            global $polylang;
-            $all_objects = get_objects_in_term($term_id, WPMF_TAXO);
-            if ($polylang->curlang && $polylang->model->is_translated_post_type('attachment')) {
-                $my_current_lang = $polylang->curlang->slug;
-                $lang_term = get_term_by('slug', $my_current_lang, 'language');
-                $lang_object = get_objects_in_term($lang_term->term_id, 'language', array('post_type' => 'attachment'));
-                $count = array_intersect($all_objects, $lang_object);
-                return count($count);
-            } else {
-                return count($all_objects);
-            }
-        } else {
-            $count = $wpdb->get_var($wpdb->prepare('SELECT COUNT(ID) FROM ' . $wpdb->posts . ' as p, ' . $wpdb->term_relationships . ' as tr, ' . $wpdb->term_taxonomy . ' as tt, ' . $wpdb->terms . ' as t WHERE p.ID = tr.object_id AND post_type = %s AND (post_status = %s OR post_status = %s) AND tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.term_id=t.term_id AND t.term_id = %d', array('attachment', 'publish', 'inherit', (int)$term_id)));
         }
 
-        return (int) $count;
+        // Polylang support
+        if (is_plugin_active('polylang/polylang.php') || is_plugin_active('polylang-pro/polylang.php')) {
+            global $polylang;
+            if ($polylang->curlang && $polylang->model->is_translated_post_type('attachment')) {
+                $lang_slug = $polylang->curlang->slug;
+                $sql .= '
+                    AND EXISTS (
+                        SELECT 1
+                        FROM ' . $wpdb->term_relationships . ' tr2
+                        INNER JOIN ' . $wpdb->term_taxonomy . ' tt2 ON tr2.term_taxonomy_id = tt2.term_taxonomy_id
+                        INNER JOIN ' . $wpdb->terms . ' t2 ON tt2.term_id = t2.term_id
+                        WHERE tr2.object_id = p.ID
+                        AND tt2.taxonomy = "language"
+                        AND t2.slug = %s
+                    )
+                ';
+                $params[] = $lang_slug;
+            }
+        }
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- dynamic SQL built securely above with placeholders
+        return (int) $wpdb->get_var($wpdb->prepare($sql, ...$params));
     }
 
     /**
@@ -835,6 +893,13 @@ class WpmfHelper
                 $options = get_option('_wpmfAddon_nextcloud_config');
                 $connect_nextcloud = wpmfGetOption('connect_nextcloud');
                 if (!empty($options['username']) && !empty($options['password']) && !empty($options['nextcloudurl']) && !empty($options['rootfoldername']) && !empty($connect_nextcloud) && !empty($options['media_access'])) {
+                    $connected = true;
+                }
+                break;
+            case 'owncloud':
+                $options = get_option('_wpmfAddon_owncloud_config');
+                $connect_owncloud = wpmfGetOption('connect_owncloud');
+                if (!empty($options['username']) && !empty($options['password']) && !empty($options['owncloudurl']) && !empty($options['rootfoldername']) && !empty($connect_owncloud) && !empty($options['media_access'])) {
                     $connected = true;
                 }
                 break;
@@ -2379,5 +2444,65 @@ class WpmfHelper
         }
 
         return in_array($post_type, $post_types);
+    }
+
+    /**
+     * Check cloud connected
+     *
+     * @param string $cloud_type Cloud type
+     *
+     * @return boolean
+     */
+    public static function isCloudConnected($cloud_type)
+    {
+        $connected = false;
+        switch ($cloud_type) {
+            case 'google_drive':
+                $options = get_option('_wpmfAddon_cloud_config');
+                if (!empty($options['connected'])) {
+                    $connected = true;
+                }
+                break;
+            case 'google_photo':
+                $options = get_option('_wpmfAddon_google_photo_config');
+                if (!empty($options['googleCredentials'])) {
+                    $connected = true;
+                }
+                break;
+            case 'dropbox':
+                $options = get_option('_wpmfAddon_dropbox_config');
+                if (!empty($options['dropboxToken'])) {
+                    $connected = true;
+                }
+                break;
+            case 'onedrive':
+                $options = get_option('_wpmfAddon_onedrive_config');
+                if (!empty($options['connected'])) {
+                    $connected = true;
+                }
+                break;
+            case 'onedrive_business':
+                $options = get_option('_wpmfAddon_onedrive_business_config');
+                if (!empty($options['connected'])) {
+                    $connected = true;
+                }
+                break;
+            case 'nextcloud':
+                $options = get_option('_wpmfAddon_nextcloud_config');
+                $connect_nextcloud = wpmfGetOption('connect_nextcloud');
+                if (!empty($options['username']) && !empty($options['password']) && !empty($options['nextcloudurl']) && !empty($options['rootfoldername']) && !empty($connect_nextcloud)) {
+                    $connected = true;
+                }
+                break;
+            case 'owncloud':
+                $options = get_option('_wpmfAddon_owncloud_config');
+                $connect_owncloud = wpmfGetOption('connect_owncloud');
+                if (!empty($options['username']) && !empty($options['password']) && !empty($options['owncloudurl']) && !empty($options['rootfoldername']) && !empty($connect_owncloud)) {
+                    $connected = true;
+                }
+                break;
+        }
+
+        return $connected;
     }
 }

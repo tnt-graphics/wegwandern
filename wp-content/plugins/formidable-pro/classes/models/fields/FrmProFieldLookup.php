@@ -80,10 +80,42 @@ class FrmProFieldLookup extends FrmFieldType {
 		// Filter options.
 		require FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/filter.php';
 
+		// Label setting.
+		if ( $this->should_include_label_settings( $field ) ) {
+			require FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/label-setting.php';
+		}
+
 		if ( $data_type === 'select' ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php';
 			$this->auto_width_setting( $args );
 		}
+	}
+
+	/**
+	 * Only include label settings for lookup fields where the source field has options that have
+	 * separated values and labels.
+	 *
+	 * @since 6.21
+	 *
+	 * @param array $field
+	 * @return bool
+	 */
+	private function should_include_label_settings( $field ) {
+		if ( $field['data_type'] === 'text' || empty( $field['get_values_field'] ) ) {
+			return false;
+		}
+
+		$get_values_field = FrmField::getOne( $field['get_values_field'] );
+		if ( ! $get_values_field ) {
+			return false;
+		}
+
+		if ( 'data' === $get_values_field->type ) {
+			// Always include for dynamic fields.
+			return true;
+		}
+
+		return ! empty( $get_values_field->field_options['separate_value'] ) && ! empty( $get_values_field->options );
 	}
 
 	/**
@@ -305,6 +337,109 @@ class FrmProFieldLookup extends FrmFieldType {
 			'get_values_field'           => '',
 			'lookup_filter_current_user' => false,
 			'lookup_option_order'        => 'ascending',
+			'lookup_displayed_value'     => 'value',
+			'lookup_saved_value'         => 'value',
 		);
+	}
+
+	/**
+	 * Prepare the value to display.
+	 *
+	 * @param array|string $value
+	 * @param array        $atts
+	 * @return array|string
+	 */
+	protected function prepare_display_value( $value, $atts = array() ) {
+		$display_value_type = $this->get_display_value_type( $atts );
+		if ( 'label' === $display_value_type && 'label' !== FrmField::get_option( $this->field, 'lookup_saved_value' ) ) {
+			return $this->display_option_label( $value );
+		}
+		return $value;
+	}
+
+	/**
+	 * Determine how the value will be displayed. This is based on the shortcode show option,
+	 * or the "Display Value" setting if no shortcode option is passed.
+	 *
+	 * @since 6.21
+	 *
+	 * @param array $atts
+	 * @return string 'label' or 'value'.
+	 */
+	private function get_display_value_type( $atts ) {
+		if ( isset( $atts['show'] ) && in_array( $atts['show'], array( 'value', 'label' ), true ) ) {
+			return $atts['show'];
+		}
+		return 'label' === FrmField::get_option( $this->field, 'lookup_displayed_value' ) ? 'label' : 'value';
+	}
+
+	/**
+	 * @since 6.21
+	 *
+	 * @param array|string $value
+	 * @return array|string
+	 */
+	private function display_option_label( $value ) {
+		$linked_field = FrmField::getOne( FrmField::get_option( $this->field, 'get_values_field' ) );
+		if ( ! $linked_field || empty( $linked_field->options ) || ! is_array( $linked_field->options ) ) {
+			return $value;
+		}
+
+		$first_option = reset( $linked_field->options );
+		if ( ! is_array( $first_option ) ) {
+			return $value;
+		}
+
+		if ( is_array( $value ) ) {
+			$display_value = array();
+			foreach ( $linked_field->options as $option ) {
+				foreach ( $value as $check_value ) {
+					if ( $option['value'] === $check_value ) {
+						$display_value[] = is_array( $option ) ? $option['label'] : $option;
+						break;
+					}
+				}
+			}
+			return implode( ', ', $display_value );
+		}
+
+		foreach ( $linked_field->options as $option ) {
+			if ( $option['value'] === $value ) {
+				return is_array( $option ) ? $option['label'] : $option;
+				break;
+			}
+		}
+
+		return $value;
+	}
+
+	/**
+	 * @since 6.21
+	 *
+	 * @param string $value
+	 * @param array  $field
+	 * @return string
+	 */
+	public static function filter_lookup_saved_value( $value, $field ) {
+		$filtered_value = apply_filters( 'frm_lookup_option_value', $value, $field );
+		if ( ! is_string( $filtered_value ) ) {
+			return $value;
+		}
+		return $filtered_value;
+	}
+
+	/**
+	 * @since 6.21
+	 *
+	 * @param string $value
+	 * @param array  $field
+	 * @return string
+	 */
+	public static function filter_lookup_displayed_value( $value, $field ) {
+		$filtered_value = apply_filters( 'frm_lookup_option_label', $value, $field );
+		if ( ! is_string( $filtered_value ) ) {
+			return $value;
+		}
+		return $filtered_value;
 	}
 }

@@ -338,4 +338,39 @@ class FrmProTimeOptions {
 		sort( $options );
 		return $options;
 	}
+
+	/**
+	 * Gets the linked date field options.
+	 *
+	 * @since 6.24
+	 *
+	 * @return array
+	 */
+	public static function get_linked_date_field_options() {
+		$form_id = FrmAppHelper::get_param( 'id', 0, 'get', 'absint' );
+		$options = array();
+		$fields  = FrmProFieldsController::get_field_selection_fields( $form_id );
+
+		$date_fields = array_filter(
+			$fields,
+			function ( $field ) {
+				return isset( $field->type ) && 'date' === $field->type;
+			}
+		);
+
+		$no_title_text = is_callable( 'FrmFormsHelper::get_no_title_text' ) ? FrmFormsHelper::get_no_title_text() : __( '(no title)', 'formidable' );
+
+		foreach ( $date_fields as $date_field ) {
+			if ( empty( $date_field->id ) ) {
+				continue;
+			}
+
+			$options[] = array(
+				'value' => $date_field->id,
+				'label' => ! empty( $date_field->name ) ? $date_field->name : $no_title_text,
+			);
+		}
+
+		return $options;
+	}
 }

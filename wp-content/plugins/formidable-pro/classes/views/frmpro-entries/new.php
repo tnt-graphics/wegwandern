@@ -4,20 +4,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <form enctype="multipart/form-data" method="post" id="form_<?php echo esc_attr( $form->form_key ); ?>" class="frm-show-form" <?php FrmProFormsHelper::maybe_echo_antispam_token( $form->id ); ?>>
-<div id="form_entries_page" class="frm_wrap frm_single_entry_page frm-new-entry">
+<div id="form_entries_page" class="frm_single_entry_page frm-new-entry">
 	<div class="frm_forms" id="frm_form_<?php echo (int) $form->id; ?>_container">
 
-		<?php
-		FrmAppHelper::get_admin_header(
-			array(
-				'label'      => __( 'Add New Entry', 'formidable-pro' ),
-				'form'       => $form,
-				'hide_title' => true,
-				'close'      => '?page=formidable-entries&form=' . $form->id,
-				'publish'    => array( 'FrmProEntriesController::save_new_entry_button', compact( 'form', 'values' ) ),
-			)
-		);
-		?>
+		<div class="frm_wrap">
+			<?php
+			FrmAppHelper::get_admin_header(
+				array(
+					'label'      => __( 'Add New Entry', 'formidable-pro' ),
+					'form'       => $form,
+					'hide_title' => true,
+					'close'      => '?page=formidable-entries&form=' . $form->id,
+					'publish'    => array( 'FrmProEntriesController::save_new_entry_button', compact( 'form', 'values' ) ),
+				)
+			);
+			?>
+		</div>
 
 		<div class="columns-2">
 
@@ -27,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php if ( empty( $values ) ) { ?>
 				<p class="frm_error_style frm_form_fields">
 					<strong><?php esc_html_e( 'Oops!', 'formidable-pro' ); ?></strong>
-					<?php printf( esc_html__( 'You did not add any fields to your form. %1$sGo back%2$s and add some.', 'formidable-pro' ), '<br/><a href="' . esc_url( admin_url('?page=formidable&frm_action=edit&id=' . $form->id ) ) . '">', '</a>'); ?>
+					<?php printf( esc_html__( 'You did not add any fields to your form. %1$sGo back%2$s and add some.', 'formidable-pro' ), '<br/><a href="' . esc_url( admin_url( '?page=formidable&frm_action=edit&id=' . $form->id ) ) . '">', '</a>' ); ?>
 				</p>
 				<?php
         	} else {

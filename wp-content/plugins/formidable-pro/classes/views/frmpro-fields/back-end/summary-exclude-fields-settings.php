@@ -3,12 +3,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-<p class="howto">
+<p class="howto frm-my-sm">
 	<?php
 		printf(
 			/* translators: %1$s: HTML open link, %2$s: HTML close link */
 			esc_html__( 'Select a field from the list below to exclude it from the summary OR %1$sLearn which fields are automatically included%2$s.', 'formidable-pro' ),
-			'<a href="https://formidableforms.com/knowledgebase/" target="_blank" class="frm-summary-learn-more">',
+			'<a href="https://formidableforms.com/knowledgebase/" target="_blank" class="frm-summary-learn-more frm-force-inline">',
 			'</a>'
 		);
 	?>

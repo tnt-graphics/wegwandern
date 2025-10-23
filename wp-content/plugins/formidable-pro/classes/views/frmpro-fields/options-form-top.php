@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <?php if ( empty( $field['repeat'] ) ) { ?>
-<p>
+<p class="frm_form_field frm-mb-0">
 	<?php include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/collapsible-option.php'; ?>
 </p>
 <?php } ?>

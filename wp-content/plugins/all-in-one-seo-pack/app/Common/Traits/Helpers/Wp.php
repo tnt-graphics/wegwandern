@@ -781,13 +781,13 @@ trait Wp {
 
 		$post = aioseo()->helpers->getPost( $postId );
 		if ( ! is_a( $post, 'WP_Post' ) ) {
-			$titles[ $postId ] = __( '(no title)' ); // phpcs:ignore AIOSEO.Wp.I18n.MissingArgDomain
+			$titles[ $postId ] = __( '(no title)', 'default' ); // phpcs:ignore AIOSEO.Wp.I18n.TextDomainMismatch, WordPress.WP.I18n.TextDomainMismatch
 
 			return $titles[ $postId ];
 		}
 
 		$title = $post->post_title;
-		$title = $title ? $title : __( '(no title)' ); // phpcs:ignore AIOSEO.Wp.I18n.MissingArgDomain
+		$title = $title ? $title : __( '(no title)', 'default' ); // phpcs:ignore AIOSEO.Wp.I18n.TextDomainMismatch, WordPress.WP.I18n.TextDomainMismatch
 
 		$titles[ $postId ] = aioseo()->helpers->decodeHtmlEntities( $title );
 
@@ -944,5 +944,110 @@ trait Wp {
 		}
 
 		return 'classic' === get_option( 'classic-editor-replace' );
+	}
+
+	/**
+	 * Redirects to a 404 Not Found page if the sitemap is disabled.
+	 *
+	 * @since 4.0.0
+	 * @version 4.8.0 Moved from the Sitemap class.
+	 *
+	 * @return void
+	 */
+	public function notFoundPage() {
+		global $wp_query; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		$wp_query->set_404(); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		status_header( 404 );
+		include_once get_404_template();
+		exit;
+	}
+
+	/**
+	 * Retrieves the post type labels for the given post type.
+	 *
+	 * @since 4.8.2
+	 *
+	 * @param  string $postType The name of a registered post type.
+	 * @return object           Object with all the labels as member variables.
+	 */
+	public function getPostTypeLabels( $postType ) {
+		static $postTypeLabels = [];
+		if ( ! isset( $postTypeLabels[ $postType ] ) ) {
+			$postTypeObject = get_post_type_object( $postType );
+			if ( ! is_a( $postTypeObject, 'WP_Post_Type' ) ) {
+				return null;
+			}
+
+			$postTypeLabels[ $postType ] = get_post_type_labels( $postTypeObject );
+		}
+
+		return $postTypeLabels[ $postType ];
+	}
+
+	/**
+	 * Cleans the slug of the current request before we use it.
+	 *
+	 * @since 4.8.4
+	 *
+	 * @param  string $slug The slug.
+	 * @return string       The cleaned slug.
+	 */
+	public function cleanSlug( $slug ) {
+		$slug = strtolower( $slug );
+		$slug = aioseo()->helpers->unleadingSlashIt( $slug );
+		$slug = untrailingslashit( $slug );
+
+		return $slug;
+	}
+
+	/**
+	 * Returns the scannable post types.
+	 *
+	 * @since 4.8.6
+	 *
+	 * @return array The scannable post types.
+	 */
+	public function getScannablePostTypes() {
+		static $scannablePostTypes = null;
+		if ( null !== $scannablePostTypes ) {
+			return $scannablePostTypes;
+		}
+
+		// We exclude these post types to optimize performance.
+		$nonSupportedPostTypes = [ 'attachment' ];
+		$scannablePostTypes    = array_diff(
+			$this->getPublicPostTypes( true ),
+			$nonSupportedPostTypes
+		);
+
+		return $scannablePostTypes;
+	}
+
+	/**
+	 * Returns the user data.
+	 *
+	 * @since 4.8.7
+	 *
+	 * @param  int $userId The user ID.
+	 * @return \WP_User|null The user data.
+	 */
+	public function getUserData( $userId ) {
+		$userData = get_userdata( $userId );
+		if ( ! is_a( $userData, 'WP_User' ) ) {
+			return null;
+		}
+
+		$toUnset = [
+			'user_pass',
+			'user_activation_key'
+		];
+
+		foreach ( $toUnset as $key ) {
+			if ( isset( $userData->$key ) ) {
+				unset( $userData->$key );
+			}
+		}
+
+		return $userData;
 	}
 }

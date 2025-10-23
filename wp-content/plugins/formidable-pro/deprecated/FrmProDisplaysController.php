@@ -26,14 +26,16 @@ class FrmProDisplaysController {
 		}
 	}
 
+	/**
+	 * @param string $method
+	 * @return bool
+	 */
 	private static function silently_handle_deprecation( $method ) {
 		return in_array( $method, self::silent_deprecation_methods(), true );
 	}
 
 	private static function silent_deprecation_methods() {
 		return array(
-			'FrmProDisplay::getOne',
-			'FrmProDisplay::getAll',
 			'FrmProDisplay::get_auto_custom_display',
 			'FrmProDisplaysController::get_shortcode',
 		);
@@ -44,22 +46,6 @@ class FrmProDisplaysController {
 	 */
 	public static function get_shortcode( $atts ) {
 		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_shortcode', $atts );
-	}
-
-	/**
-	 * @deprecated 4.09 But deprecated messages were not being logged.
-	 * @since 6.9.1 Deprecated messages are no longer silenced.
-	 */
-	public static function get_before_content_for_listing_page( $view, $args ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_before_content_for_listing_page', $view, $args );
-	}
-
-	/**
-	 * @deprecated 4.09 But deprecated messages were not being logged.
-	 * @since 6.9.1 Deprecated messages are no longer silenced.
-	 */
-	public static function get_inner_content_for_listing_page( $view, $args ) {
-		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_inner_content_for_listing_page', $view, $args );
 	}
 
 	/**

@@ -27,7 +27,7 @@ class FrmProPostAction extends FrmFormAction {
         }
 
         $post_type      = FrmProFormsHelper::post_type( $args['values']['id'] );
-        $taxonomies     = get_object_taxonomies($post_type);
+        $taxonomies     = get_object_taxonomies( $post_type );
         $action_control = $this;
         $echo           = true;
 		$form_id        = $form->id;
@@ -60,7 +60,7 @@ class FrmProPostAction extends FrmFormAction {
 
 					$form_action->post_content['post_category'][ $fo['taxonomy'] . $tax_count ] = array(
 						'field_id'    => $fo['id'],
-						'exclude_cat' => isset( $fo['exclude_cat'] ) ? $fo['exclude_cat'] : 0,
+						'exclude_cat' => $fo['exclude_cat'] ?? 0,
 						'meta_name'   => $fo['taxonomy'],
 					);
 					unset( $tax_count );
@@ -125,7 +125,7 @@ class FrmProPostAction extends FrmFormAction {
 		}
 		$link                  = $this->get_views_placeholder_link( $form_id );
 		$display_id_field_name = $this->get_field_name( 'display_id' );
-		$display_id            = isset( $form_action->post_content['display_id'] ) ? $form_action->post_content['display_id'] : '';
+		$display_id            = $form_action->post_content['display_id'] ?? '';
 		require __DIR__ . '/post_options_for_views_placeholder.php';
 	}
 

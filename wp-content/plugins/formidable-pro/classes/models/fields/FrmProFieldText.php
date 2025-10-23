@@ -32,4 +32,45 @@ class FrmProFieldText extends FrmFieldText {
 		$field = parent::builder_text_field( $name );
 		return str_replace( '[input]', $field, $html );
 	}
+
+	/**
+	 * @since 6.18
+	 *
+	 * {@inheritdoc}
+	 */
+	public function front_field_input( $args, $shortcode_atts ) {
+		$input_html = $this->get_field_input_html_hook( $this->field );
+		$this->add_aria_description( $args, $input_html );
+		$this->add_extra_html_atts( $args, $input_html );
+
+		if (
+			FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) )
+			&& 'text' !== FrmField::get_option( $this->field, 'calc_type' )
+			&& ! FrmField::get_option( $this->field, 'calc' )
+		) {
+			$this->field['value'] = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $this->field['value'] );
+		}
+
+		$input_atts = array(
+			'type'  => $this->html5_input_type(),
+			'id'    => $args['html_id'],
+			'name'  => $args['field_name'],
+			'value' => $this->prepare_esc_value(),
+		);
+
+		return '<input ' . FrmAppHelper::array_to_html_params( $input_atts ) . ' ' . $input_html . ' />';
+	}
+
+	/**
+	 * @since 6.20
+	 *
+	 * {@inheritdoc}
+	 */
+	public function set_value_before_save( $value ) {
+		if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) ) ) {
+			$value = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+		}
+
+		return $value;
+	}
 }

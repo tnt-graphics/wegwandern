@@ -63,10 +63,7 @@ class FrmProFormState {
 	 * @return mixed
 	 */
 	public function get( $key, $default ) {
-		if ( isset( $this->state[ $key ] ) ) {
-			return $this->state[ $key ];
-		}
-		return $default;
+		return $this->state[ $key ] ?? $default;
 	}
 
 	/**
@@ -156,6 +153,9 @@ class FrmProFormState {
 		if ( 'global_post' === $key ) {
 			return 'gp';
 		}
+		if ( 'testmode' === $key ) {
+			return 'test';
+		}
 		return $key[0];
 	}
 
@@ -186,6 +186,10 @@ class FrmProFormState {
 				return 'inplace_edit';
 			case 'gp':
 				return 'global_post';
+			case 'h':
+				return 'honeypot_field_id';
+			case 'test':
+				return 'testmode';
 		}
 		return $key;
 	}

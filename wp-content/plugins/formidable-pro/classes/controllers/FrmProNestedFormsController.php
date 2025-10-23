@@ -315,7 +315,7 @@ class FrmProNestedFormsController {
 		$args = array(
 			'i'            => FrmAppHelper::get_post_param( 'i', 0, 'absint' ),
 			'parent_field' => $field->id,
-			'form'         => ( isset( $field->field_options['form_select'] ) ? $field->field_options['form_select'] : 0 ),
+			'form'         => ( $field->field_options['form_select'] ?? 0 ),
 			'repeat'       => 1,
 			'repeat_min'   => $repeat_min,
 		);
@@ -453,7 +453,7 @@ class FrmProNestedFormsController {
 			$field['value'][ $row_id ] = array( 0 => '' );
 			$entry                     = FrmEntry::getOne( $entry_id, true );
 			foreach ( $child_fields as $child ) {
-				$field['value'][ $row_id ][ $child->id ] = isset( $entry->metas[ $child->id ] ) ? $entry->metas[ $child->id ] : '';
+				$field['value'][ $row_id ][ $child->id ] = $entry->metas[ $child->id ] ?? '';
 
 				if ( $child->type === 'date' ) {
 					$current_value                           = $field['value'][ $row_id ][ $child->id ];
@@ -604,7 +604,7 @@ class FrmProNestedFormsController {
 
 			if ( $field ) {
 				$field                  = (array) $field;
-				$field['original_type'] = isset( $field['original_type'] ) ? $field['original_type'] : $field['type'];
+				$field['original_type'] = $field['original_type'] ?? $field['type'];
 				$field['type']          = 'hidden';
 				$field['value']         = $value;
 				FrmProFieldsController::add_currency_field_attributes( $field, $html, $args['field'] );
@@ -763,7 +763,7 @@ class FrmProNestedFormsController {
 
 		if ( is_numeric( $args['parent_field'] ) ) {
 			$args['parent_field']           = (array) FrmField::getOne( $args['parent_field'] );
-			$args['parent_field']['format'] = isset( $args['parent_field']['field_options']['format'] ) ? $args['parent_field']['field_options']['format'] : '';
+			$args['parent_field']['format'] = $args['parent_field']['field_options']['format'] ?? '';
 		}
 
 		FrmForm::maybe_get_form( $args['form'] );
@@ -799,7 +799,7 @@ class FrmProNestedFormsController {
 			}
 		}
 
-		$format = isset( $args['parent_field']['format'] ) ? $args['parent_field']['format'] : '';
+		$format = $args['parent_field']['format'] ?? '';
 		$end    = false;
 		$count  = 0;
 		foreach ( $values['fields'] as $subfield ) {
@@ -1065,7 +1065,7 @@ class FrmProNestedFormsController {
 		if ( 'text' !== $args['end_format'] ) {
 			$form_style     = FrmStylesController::get_form_style( $args['form'] );
 			$style_settings = FrmStylesHelper::get_settings_for_output( $form_style );
-			$repeat_icon    = isset( $style_settings['repeat_icon'] ) ? $style_settings['repeat_icon'] : 1;
+			$repeat_icon    = $style_settings['repeat_icon'] ?? 1;
 			$svg_args       = array(
 				'echo'   => false,
 				'width'  => '1em',

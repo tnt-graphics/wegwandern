@@ -99,6 +99,19 @@ class FrmMlcmpAppController {
 		}
 	}
 
+	/**
+	 * Allow MailChimp to be triggered by the automation.
+	 *
+	 * @since 2.10
+	 *
+	 * @param array $actions Actions supporting automation.
+	 * @return array
+	 */
+	public static function add_mailchimp_to_automation( $actions ) {
+		$actions[] = 'mailchimp';
+		return $actions;
+	}
+
 	public static function trigger_mailchimp( $action, $entry, $form ) {
 		$settings     = $action->post_content;
 		self::$action = $action;
@@ -139,13 +152,13 @@ class FrmMlcmpAppController {
 
 		$action = isset( $settings['address_action'] ) ? $settings['address_action'] : 'subscribe';
 		if ( $action === 'unsubscribe' ) {
-			$sending_data['method']     = 'PATCH';
-			$sending_data['status']     = 'unsubscribed';
+			$sending_data['method'] = 'PATCH';
+			$sending_data['status'] = 'unsubscribed';
 		} else {
-			$sending_data['method']        = 'PUT';
-			$sending_data['status'] = self::get_status_for_new_subscribers( $settings );
-			$sending_data['merge_fields']  = $vars;
-			$sending_data['email_type']    = 'html';
+			$sending_data['method']       = 'PUT';
+			$sending_data['status']       = self::get_status_for_subscribers( $settings, $sending_data );
+			$sending_data['merge_fields'] = $vars;
+			$sending_data['email_type']   = 'html';
 
 			$interests = self::package_selected_group_interests( $entry, $settings );
 
@@ -163,15 +176,45 @@ class FrmMlcmpAppController {
 	}
 
 	/**
+	 * @since 2.10
+	 *
+	 * @param array $sending_data
+	 * @return bool
+	 */
+	private static function subscriber_exists( $sending_data ) {
+		$subscriber = self::get_subscriber( $sending_data );
+		return ! empty( $subscriber['id'] );
+	}
+
+	/**
+	 * @since 2.10
+	 *
+	 * @param array $sending_data
+	 * @return array
+	 */
+	private static function get_subscriber( $sending_data ) {
+		return self::decode_call( '/lists/' . $sending_data['id'] . '/members/' . $sending_data['subscriber_id'], array( 'method' => 'GET' ) );
+	}
+
+	/**
 	 * Determine the status that will be used for new subscribers
 	 *
 	 * @since 2.03
+	 * @since 2.10   Added the second param
 	 *
 	 * @param array $settings
+	 * @param array $sending_data
 	 *
 	 * @return string
 	 */
-	private static function get_status_for_new_subscribers( $settings ) {
+	private static function get_status_for_subscribers( $settings, $sending_data ) {
+		if ( ! empty( $settings['optin'] ) ) {
+			$subscriber_exists = self::subscriber_exists( $sending_data );
+			if ( $subscriber_exists ) {
+				return 'subscribed';
+			}
+		}
+
 		$double_optin = isset( $settings['optin'] ) ? $settings['optin'] : false;
 
 		return $double_optin ? 'pending' : 'subscribed';
@@ -604,7 +647,11 @@ class FrmMlcmpAppController {
 		$url       = self::get_endpoint_url( $apikey, $endpoint );
 		$post_args = self::setup_post_body( $apikey, $args );
 
-		$res  = wp_remote_post( $url, $post_args );
+		if ( isset( $args['method'] ) && 'GET' === $args['method'] ) {
+			$res = wp_remote_get( $url, $post_args );
+		} else {
+			$res = wp_remote_post( $url, $post_args );
+		}
 		$body = wp_remote_retrieve_body( $res );
 
 		self::log_results(

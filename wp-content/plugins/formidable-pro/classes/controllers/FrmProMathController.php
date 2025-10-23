@@ -402,4 +402,108 @@ class FrmProMathController {
 
 		return $result;
 	}
+
+	/**
+	 * Maybe force calculation during form validation.
+	 *
+	 * @since 6.21
+	 *
+	 * @param array    $errors
+	 * @param stdClass $posted_field
+	 * @return array
+	 */
+	public static function maybe_force_calculation( $errors, $posted_field ) {
+		if ( empty( $posted_field->field_options['calc'] ) ) {
+			return $errors;
+		}
+
+		/**
+		 * This is still experimental and disabled by default.
+		 * It's built in to help with testing, and offers our customers an option.
+		 *
+		 * @since 6.21
+		 *
+		 * @param bool     $should_force_calculation
+		 * @param stdClass $posted_field
+		 */
+		$should_force_calculation = apply_filters( 'frm_force_calculation_on_validate', false, $posted_field );
+		if ( ! $should_force_calculation ) {
+			return $errors;
+		}
+
+		if ( FrmProEntryMeta::is_field_conditionally_hidden( $posted_field ) || FrmProEntryMeta::field_is_hidden_by_form_state( $posted_field ) ) {
+			return $errors;
+		}
+
+		$calc_type = $posted_field->field_options['calc_type'];
+		if ( $calc_type && 'text' !== $calc_type ) {
+			// Skip date calculations.
+			return $errors;
+		}
+
+		$calculation = $posted_field->field_options['calc'];
+		$shortcodes  = self::get_shortcodes_from_string( $calculation );
+		foreach ( $shortcodes as $shortcode ) {
+			$field = FrmField::getOne( $shortcode );
+			if ( ! $field ) {
+				continue;
+			}
+
+			$field_id      = $field->id;
+			$replace_value = isset( $_POST['item_meta'][ $field_id ] ) ? FrmAppHelper::strip_most_html( $_POST['item_meta'][ $field_id ] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, SlevomatCodingStandard.Files.LineLength.LineTooLong
+
+			if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) ) ) {
+				$replace_value = FrmProCurrencyHelper::normalize_formatted_numbers( $field, $replace_value );
+			}
+
+			if ( ! $calc_type ) {
+				$replace_value = floatval( $replace_value );
+			}
+
+			$calculation = str_replace( '[' . $shortcode . ']', $replace_value, $calculation );
+		}
+
+		if ( 'text' === $calc_type ) {
+			$_POST['item_meta'][ $posted_field->id ] = $calculation;
+		} else {
+			$trim           = false;
+			$shortcode_atts = array(
+				'thousands_sep' => '',
+			);
+
+			if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $posted_field, 'format' ) ) ) {
+				$currency                  = FrmProCurrencyHelper::get_custom_currency( $posted_field->field_options );
+				$shortcode_atts['decimal'] = $currency['decimals'];
+			} else {
+				$shortcode_atts['decimal'] = 10;
+				$trim                      = true;
+			}
+
+			$result = self::math_shortcode( $shortcode_atts, $calculation );
+
+			if ( $trim ) {
+				$result = rtrim( rtrim( $result, '0' ), '.' );
+			}
+
+			$_POST['item_meta'][ $posted_field->id ] = $result;
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Get shortcodes from string.
+	 *
+	 * @since 6.21
+	 *
+	 * @param string $string
+	 * @return array
+	 */
+	private static function get_shortcodes_from_string( $string ) {
+		preg_match_all( '/\[(\d+|[\w\s]+)\]/', $string, $matches );
+		if ( empty( $matches[1] ) ) {
+			return array();
+		}
+		return array_unique( $matches[1] );
+	}
 }

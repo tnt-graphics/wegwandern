@@ -5,6 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $option_index = 0;
 foreach ( $field['options'] as $opt_key => $opt_value ) {
+	// Get label first so we do not pass the filtered $opt_value to the label filter.
+	$opt_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt_value, $field );
+	$opt_value = FrmProFieldLookup::filter_lookup_saved_value( $opt_value, $field );
+
 	$checked = in_array( $opt_value, $saved_value_array ) ? ' checked="checked"' : '';
 	?>
 	<div class="<?php echo esc_attr( apply_filters( 'frm_checkbox_class', 'frm_checkbox', $field, $opt_value ) ); ?>" id="frm_checkbox_<?php echo esc_attr( $field['id'] ); ?>-<?php echo esc_attr( $opt_key ); ?>">
@@ -15,11 +19,11 @@ foreach ( $field['options'] as $opt_key => $opt_value ) {
 			echo $checked . $disabled . ' '; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 			if ( 0 === $option_index && FrmField::is_required( $field ) ) {
-						echo ' aria-required="true" ';
+				echo ' aria-required="true" ';
 			}
 
 			do_action( 'frm_field_input_html', $field );
-			?> /> <?php echo $opt_value; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			?> /> <?php echo $opt_label; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</label>
 	</div>
 	<?php

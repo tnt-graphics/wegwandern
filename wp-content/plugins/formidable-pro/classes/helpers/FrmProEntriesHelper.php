@@ -154,6 +154,12 @@ class FrmProEntriesHelper {
 		$where = array( 'fr.id' => $form->id );
 
 		if ( self::user_can_only_edit_draft( $form ) ) {
+			if ( ! FrmProForm::is_open( $form ) ) {
+				// Do not allow users to edit their draft if the form is not editable
+				// and the form is closed.
+				return false;
+			}
+
 			//only allow editing of drafts
 			$where['user_id']  = $user_ID;
 			$where['is_draft'] = 1;
@@ -464,13 +470,21 @@ class FrmProEntriesHelper {
 			$child_entries_limit = apply_filters( 'frm_pro_repeated_entries_display_limit', 5, compact( 'field', 'atts' ) );
 
 			return array(
-				'child_entries'       => FrmEntry::getAll( array( 'it.parent_item_id' => $entry->id ), '', $child_entries_limit + 1, true ),
+				'child_entries'       => FrmEntry::getAll(
+					array(
+						'it.parent_item_id' => $entry->id,
+						'form_id'           => $field->form_id,
+					),
+					'',
+					$child_entries_limit + 1,
+					true
+				),
 				'child_entries_limit' => $child_entries_limit,
 			);
 		}
 
 		// This is an embedded form. Get all values for this field.
-		$child_values = isset( $entry->metas[ $atts['embedded_field_id'] ] ) ? $entry->metas[ $atts['embedded_field_id'] ] : false;
+		$child_values = $entry->metas[ $atts['embedded_field_id'] ] ?? false;
 
 		if ( $child_values ) {
 			return FrmEntry::getAll( array( 'it.id' => (array) $child_values ) );
@@ -493,7 +507,7 @@ class FrmProEntriesHelper {
 	 * @return string
 	 */
 	private static function maybe_append_ellipses( $val ) {
-		if ( substr( $val, -3 ) === '...' ) {
+		if ( '' === $val || substr( $val, -3 ) === '...' ) {
 			return $val;
 		}
 
@@ -547,8 +561,8 @@ class FrmProEntriesHelper {
 			return;
 		}
 
-		$entries_count = ( isset( $args['entries_count'] ) ? $args['entries_count'] : 0 );
-		$verify        = ( isset( $args['bulk_delete_confirmation_message'] ) ? $args['bulk_delete_confirmation_message'] : '' );
+		$entries_count = ( $args['entries_count'] ?? 0 );
+		$verify        = ( $args['bulk_delete_confirmation_message'] ?? '' );
 
 		?>
 		<span class="frm_uninstall">
@@ -714,12 +728,11 @@ class FrmProEntriesHelper {
 	 */
 	private static function get_where_arguments_for_general_entry_query( $form_id, $search_param ) {
 		$where = array(
-			'or'                  => 1,
-			'it.name like'        => $search_param,
-			'it.ip like'          => $search_param,
-			'it.item_key like'    => $search_param,
-			'it.description like' => $search_param,
-			'it.created_at like'  => implode( ' ', $search_param ),
+			'or'                 => 1,
+			'it.name like'       => $search_param,
+			'it.ip like'         => $search_param,
+			'it.item_key like'   => $search_param,
+			'it.created_at like' => implode( ' ', $search_param ),
 		);
 
 		$ids_in_search_param = array_filter( $search_param, 'is_numeric' );
@@ -733,6 +746,18 @@ class FrmProEntriesHelper {
 		if ( empty( $where['it.id'] ) ) {
 			$where['it.id'] = 0;
 		}
+
+		/**
+		 * Filters the where arguments for a general entry query in the back-end Entries tab
+		 *
+		 * @since 6.25
+		 *
+		 * @param array $where
+		 * @param array $search_param
+		 * @param int   $form_id
+		 * @return array
+		 */
+		$where = apply_filters( 'frm_where_arguments_for_general_entry_list_query', $where, $search_param, $form_id );
 
 		return $where;
 	}
@@ -989,6 +1014,10 @@ class FrmProEntriesHelper {
 				'it.' . $fid . ' >' => $before,
 				'it.' . $fid . ' <' => $after,
 			);
+		}
+
+		if ( 'description' === $fid ) {
+			return array( 'it.description like' => $search_param );
 		}
 
 		$where = array( 'it.' . $fid => $search_param );

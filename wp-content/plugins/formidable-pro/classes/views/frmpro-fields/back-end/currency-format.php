@@ -2,67 +2,72 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+
+$decimals_type = FrmProCurrencyHelper::get_decimal_setting_type( $field );
+
+if ( 'currency' === FrmField::get_option( $field, 'format' ) && $field['use_global_currency'] ) {
+	$global_currency = FrmProCurrencyHelper::get_global_currency( $field );
+}
+
+$currency_decimals = $global_currency['decimals'] ?? $field['custom_decimals'] ?? 2;
 ?>
+<div class="frm_form_field frm_hidden" id="frm-field-format-global-currency-<?php echo esc_attr( $field['id'] ); ?>">
+	<label class="frm_primary_label" for="frm_use_global_currency_<?php echo esc_attr( $field['id'] ); ?>">
+		<input type="checkbox" id="frm_use_global_currency_<?php echo esc_attr( $field['id'] ); ?>" class="frm-global-currency-checkbox" value="1" <?php checked( ! $field['custom_currency'] && $field['use_global_currency'] ); ?> />
+		<input type="hidden" name="field_options[use_global_currency_<?php echo esc_attr( $field['id'] ); ?>]" value="0" />
+		<?php esc_html_e( 'Use Global Currency Settings', 'formidable-pro' ); ?>
+	</label>
+</div>
 
-<div class="<?php echo esc_attr( $field['calc_type'] === 'text' ? 'frm_hidden' : '' ); ?>">
-	<p class="frm_form_field">
-		<label class="frm_primary_label">
-			<input type="checkbox" value="1" name="field_options[is_currency_<?php echo esc_attr( $field['id'] ); ?>]" <?php checked( $field['is_currency'], 1 ); ?> />
-			<?php
-			printf(
-				/* translators: %s item that will be formatted as currency (calculation, number). */
-				esc_html__( 'Format %s as currency', 'formidable-pro' ),
-				isset( $type ) ? esc_html( $type ) : esc_html__( 'calculation', 'formidable-pro' )
-			);
-			?>
-		</label>
-	</p>
-
-	<p class="frm_form_field <?php echo esc_attr( empty( $field['is_currency'] ) ? 'frm_hidden' : '' ); ?>">
-		<label class="frm_primary_label">
-			<input type="checkbox" value="1" name="field_options[custom_currency_<?php echo esc_attr( $field['id'] ); ?>]" <?php checked( isset( $field['custom_currency'] ) ? $field['custom_currency'] : 0, 1 ); ?> />
-			<?php esc_html_e( 'Use custom currency format', 'formidable-pro' ); ?>
-		</label>
-	</p>
-
-	<div class="<?php echo esc_attr( empty( $field['custom_currency'] ) ? 'frm_hidden' : '' ); ?> frm_grid_container frm_custom_currency_options_wrapper">
-
-		<p class="frm_form_field frm6">
-			<label class="frm_primary_label">
-				<input type="text" value="<?php echo isset( $field['custom_thousand_separator'] ) ? esc_attr( $field['custom_thousand_separator'] ) : ''; ?>" name="field_options[custom_thousand_separator_<?php echo esc_attr( $field['id'] ); ?>]" />
-				<?php esc_html_e( 'Thousand separator', 'formidable-pro' ); ?>
+<div class="frm_form_field frm-mb-0 frm_hidden" id="frm-field-format-currency-<?php echo esc_attr( $field['id'] ); ?>">
+	<div class="frm_grid_container frm_custom_format_options_wrapper">
+		<p class="frm_form_field frm4 frm-mt-0">
+			<label>
+				<span class="frm_primary_label"><?php esc_html_e( 'Thousand', 'formidable-pro' ); ?></span>
+				<input type="text" value="<?php echo esc_attr( $global_currency['thousand_separator'] ?? $field['custom_thousand_separator'] ?? '' ); ?>" name="field_options[custom_thousand_separator_<?php echo esc_attr( $field['id'] ); ?>]" />
 			</label>
 		</p>
 
-		<p class="frm_form_field frm6">
-			<label class="frm_primary_label">
-				<input type="text" value="<?php echo isset( $field['custom_decimal_separator'] ) ? esc_attr( $field['custom_decimal_separator'] ) : ''; ?>" name="field_options[custom_decimal_separator_<?php echo esc_attr( $field['id'] ); ?>]" />
-				<?php esc_html_e( 'Decimal separator', 'formidable-pro' ); ?>
+		<p class="frm_form_field frm4 frm-mt-0">
+			<label>
+				<span class="frm_primary_label"><?php esc_html_e( 'Decimal', 'formidable-pro' ); ?></span>
+				<input type="text" value="<?php echo esc_attr( $global_currency['decimal_separator'] ?? $field['custom_decimal_separator'] ?? '' ); ?>" name="field_options[custom_decimal_separator_<?php echo esc_attr( $field['id'] ); ?>]" />
 			</label>
 		</p>
 
-		<p class="frm_form_field frm4">
-			<label class="frm_primary_label">
-				<select name="field_options[custom_decimals_<?php echo esc_attr( $field['id'] ); ?>]">
-					<option value="0" <?php selected( isset( $field['custom_decimals'] ) ? $field['custom_decimals'] : 0, 0 ); ?>>0</option>
-					<option value="2" <?php selected( isset( $field['custom_decimals'] ) ? $field['custom_decimals'] : 0, 2 ); ?>>2</option>
+		<p class="frm_form_field frm4 frm-mt-0">
+			<label>
+				<span class="frm_primary_label"><?php esc_html_e( 'Decimals', 'formidable-pro' ); ?></span>
+				<select class="<?php echo $decimals_type === 'select' ? '' : 'frm_hidden'; ?>" name="field_options[custom_decimals_<?php echo esc_attr( $field['id'] ); ?>]">
+					<option value="0" <?php selected( $currency_decimals, 0 ); ?>>0</option>
+					<option value="2" <?php selected( $currency_decimals, 2 ); ?>>2</option>
 				</select>
+				<input class="<?php echo $decimals_type === 'text' ? '' : 'frm_hidden'; ?>" name="field_options[calc_dec_<?php echo esc_attr( $field['id'] ); ?>]" type="text" value="<?php echo isset( $field['calc_dec'] ) && is_numeric( $field['calc_dec'] ) ? esc_attr( $field['calc_dec'] ) : '2'; ?>" />
+			</label>
+		</p>
+	</div>
 
-				<?php esc_html_e( 'Decimals', 'formidable-pro' ); ?>
+	<div class="frm_grid_container frm_custom_currency_options_wrapper">
+		<p class="frm_form_field frm6">
+			<label>
+				<?php
+				$left_symbol_value = $global_currency['symbol_left'] ?? $field['custom_symbol_left'] ?? '';
+
+				// Maintain compatibility for older users with currency checkboxes.
+				if ( ! $left_symbol_value && ! empty( $field['is_currency'] ) && empty( $field['custom_currency'] ) ) {
+					$left_symbol_value = FrmProCurrencyHelper::get_currency( $field['form_id'] )['symbol_left'];
+				}
+				?>
+
+				<span class="frm_primary_label"><?php esc_html_e( 'Left symbol', 'formidable-pro' ); ?></span>
+				<input type="text" value="<?php echo esc_attr( $left_symbol_value ); ?>" name="field_options[custom_symbol_left_<?php echo esc_attr( $field['id'] ); ?>]" />
 			</label>
 		</p>
 
-		<p class="frm_form_field frm4">
-			<label class="frm_primary_label">
-				<input type="text" value="<?php echo isset( $field['custom_symbol_left'] ) ? esc_attr( $field['custom_symbol_left'] ) : ''; ?>" name="field_options[custom_symbol_left_<?php echo esc_attr( $field['id'] ); ?>]" />
-				<?php esc_html_e( 'Left symbol', 'formidable-pro' ); ?>
-			</label>
-		</p>
-
-		<p class="frm_form_field frm4">
-			<label class="frm_primary_label">
-				<input type="text" value="<?php echo isset( $field['custom_symbol_right'] ) ? esc_attr( $field['custom_symbol_right'] ) : ''; ?>" name="field_options[custom_symbol_right_<?php echo esc_attr( $field['id'] ); ?>]" />
-				<?php esc_html_e( 'Right symbol', 'formidable-pro' ); ?>
+		<p class="frm_form_field frm6">
+			<label>
+				<span class="frm_primary_label"><?php esc_html_e( 'Right symbol', 'formidable-pro' ); ?></span>
+				<input type="text" value="<?php echo esc_attr( $global_currency['symbol_right'] ?? $field['custom_symbol_right'] ?? '' ); ?>" name="field_options[custom_symbol_right_<?php echo esc_attr( $field['id'] ); ?>]" />
 			</label>
 		</p>
 	</div>

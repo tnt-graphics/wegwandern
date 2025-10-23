@@ -25,17 +25,26 @@ class Settings {
 	public static $importFile = [];
 
 	/**
-	 * Update the settings.
+	 * Retrieves the plugin options.
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return \WP_REST_Response The response.
+	 * @param  \WP_REST_Request  $request The REST Request.
+	 * @return \WP_REST_Response          The response containing all plugin options.
 	 */
-	public static function getOptions() {
-		return new \WP_REST_Response( [
-			'options'  => aioseo()->options->all(),
-			'settings' => aioseo()->settings->all()
-		], 200 );
+	public static function getOptions( $request ) {
+		$siteId = (int) $request->get_param( 'siteId' );
+		if ( $siteId ) {
+			aioseo()->helpers->switchToBlog( $siteId );
+
+			// Re-initialize the options for this site.
+			aioseo()->options->init();
+		}
+
+		return new \WP_REST_Response([
+			'success' => true,
+			'options' => aioseo()->options->all()
+		], 200);
 	}
 
 	/**
@@ -214,11 +223,14 @@ class Settings {
 			switch ( $setting ) {
 				case 'robots':
 					aioseo()->options->tools->robots->reset();
-					break;
-				case 'blocker':
-					aioseo()->options->deprecated->tools->blocker->reset();
+					aioseo()->options->searchAppearance->advanced->unwantedBots->reset();
+					aioseo()->options->searchAppearance->advanced->searchCleanup->settings->preventCrawling = false;
 					break;
 				default:
+					if ( 'searchAppearance' === $setting ) {
+						aioseo()->robotsTxt->resetSearchAppearanceRules();
+					}
+
 					if ( aioseo()->options->has( $setting ) ) {
 						aioseo()->options->$setting->reset();
 					}
@@ -354,6 +366,10 @@ class Settings {
 			unset( $settings['dynamic'] );
 		}
 
+		if ( ! empty( $settings['tools']['robots']['rules'] ) ) {
+			$settings['tools']['robots']['rules'] = array_merge( aioseo()->robotsTxt->extractSearchAppearanceRules(), $settings['tools']['robots']['rules'] );
+		}
+
 		aioseo()->options->sanitizeAndSave( $settings );
 	}
 
@@ -453,6 +469,7 @@ class Settings {
 		unset( $rows[0] );
 
 		$jsonFields = [
+			'ai',
 			'keywords',
 			'keyphrases',
 			'page_analysis',
@@ -460,7 +477,6 @@ class Settings {
 			'og_article_tags',
 			'schema',
 			'options',
-			'open_ai',
 			'videos'
 		];
 
@@ -519,6 +535,17 @@ class Settings {
 			switch ( $setting ) {
 				case 'robots':
 					$allSettings['settings']['tools']['robots'] = $options->tools->robots->all();
+					// Search Appearance settings that are also found in the robots settings.
+					if ( empty( $allSettings['settings']['searchAppearance']['advanced'] ) ) {
+						$allSettings['settings']['searchAppearance']['advanced'] = [
+							'unwantedBots'  => $options->searchAppearance->advanced->unwantedBots->all(),
+							'searchCleanup' => [
+								'settings' => [
+									'preventCrawling' => $options->searchAppearance->advanced->searchCleanup->settings->preventCrawling
+								]
+							]
+						];
+					}
 					break;
 				default:
 					if ( $options->has( $setting ) ) {
@@ -578,7 +605,7 @@ class Settings {
 					'link_suggestions_scan_date' => '',
 					'local_seo'                  => '',
 					'options'                    => '',
-					'open_ai'                    => ''
+					'ai'                         => ''
 				];
 
 				$notAllowed = array_merge( aioseo()->access->getNotAllowedPageFields(), $fieldsToExclude );
@@ -586,12 +613,28 @@ class Settings {
 
 				// Generate content to CSV or JSON.
 				if ( ! empty( $posts ) ) {
+					// Change the order of keys so the post_title shows up at the beginning.
+					$data = [];
+					foreach ( $posts as $p ) {
+						$item = [
+							'id'         => '',
+							'post_id'    => '',
+							'post_title' => '',
+							'title'      => ''
+						];
+
+						$p['title']      = aioseo()->helpers->decodeHtmlEntities( $p['title'] );
+						$p['post_title'] = aioseo()->helpers->decodeHtmlEntities( $p['post_title'] );
+
+						$data[] = array_merge( $item, $p );
+					}
+
 					if ( 'csv' === $typeFile ) {
-						$contentPostType = self::dataToCsv( $posts );
+						$contentPostType = self::dataToCsv( $data );
 					}
 
 					if ( 'json' === $typeFile ) {
-						$contentPostType['postOptions']['content']['posts'] = $posts;
+						$contentPostType['postOptions']['content']['posts'] = $data;
 					}
 				}
 			}
@@ -616,7 +659,7 @@ class Settings {
 	 */
 	private static function getPostTypesData( $postOptions, $notAllowedFields = [] ) {
 		$posts = aioseo()->core->db->start( 'aioseo_posts as ap' )
-			->select( 'ap.*' )
+			->select( 'ap.*, p.post_title' )
 			->join( 'posts as p', 'ap.post_id = p.ID' )
 			->whereIn( 'p.post_type', $postOptions )
 			->orderBy( 'ap.id' )
@@ -725,7 +768,7 @@ class Settings {
 				aioseo()->access->addCapabilities();
 				break;
 			case 'reset-data':
-				aioseo()->core->uninstallDb( true );
+				aioseo()->uninstall->dropData( true );
 				aioseo()->internalOptions->database->installedTables = '';
 				aioseo()->internalOptions->internal->lastActiveVersion = '4.0.0';
 				aioseo()->internalOptions->save( true );
@@ -740,6 +783,19 @@ class Settings {
 				aioseo()->internalOptions->database->installedTables   = '';
 				aioseo()->internalOptions->internal->lastActiveVersion = '4.0.0';
 				aioseo()->internalOptions->save( true );
+				break;
+			case 'rerun-addon-migrations':
+				aioseo()->internalOptions->database->installedTables = '';
+
+				foreach ( $data as $sku ) {
+					$convertedSku = aioseo()->helpers->dashesToCamelCase( $sku );
+					if (
+						function_exists( $convertedSku ) &&
+						isset( $convertedSku()->internalOptions )
+					) {
+						$convertedSku()->internalOptions->internal->lastActiveVersion = '0.0';
+					}
+				}
 				break;
 			case 'restart-v3-migration':
 				Migration\Helpers::redoMigration();

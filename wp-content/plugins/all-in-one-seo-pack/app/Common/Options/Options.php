@@ -37,6 +37,15 @@ class Options {
 			'norton'                    => [ 'type' => 'string' ],
 			'miscellaneousVerification' => [ 'type' => 'html' ]
 		],
+		'aiContent'        => [
+			'country'          => [ 'type' => 'string', 'default' => 'us' ],
+			'language'         => [ 'type' => 'string', 'default' => 'en' ],
+			'tone'             => [ 'type' => 'string', 'default' => 'formal' ],
+			'audience'         => [ 'type' => 'string', 'default' => 'general' ],
+			'imageQuality'     => [ 'type' => 'string', 'default' => 'medium' ],
+			'imageStyle'       => [ 'type' => 'string', 'default' => 'auto' ],
+			'imageAspectRatio' => [ 'type' => 'string', 'default' => 'landscape' ]
+		],
 		'breadcrumbs'      => [
 			'separator'             => [ 'type' => 'string', 'default' => '&raquo;' ],
 			'homepageLink'          => [ 'type' => 'boolean', 'default' => true ],
@@ -163,6 +172,25 @@ TEMPLATE
 					'excludeTerms'  => [ 'type' => 'array', 'default' => [] ]
 				]
 			],
+			'llms'    => [
+				'enable'           => [ 'type' => 'boolean', 'default' => true ],
+				'convertToMd'      => [ 'type' => 'boolean', 'default' => true ],
+				'advancedSettings' => [
+					'title'           => [ 'type' => 'string', 'localized' => true, 'default' => '#site_title' ],
+					'description'     => [ 'type' => 'string', 'localized' => true, 'default' => '#tagline' ],
+					'linksPerPostTax' => [ 'type' => 'number', 'default' => 1000 ],
+					'postTypes'       => [
+						'all'      => [ 'type' => 'boolean', 'default' => true ],
+						'included' => [ 'type' => 'array', 'default' => [ 'post', 'page', 'product' ] ]
+					],
+					'taxonomies'      => [
+						'all'      => [ 'type' => 'boolean', 'default' => true ],
+						'included' => [ 'type' => 'array', 'default' => [] ],
+					],
+					'excludePosts'    => [ 'type' => 'array', 'default' => [] ],
+					'excludeTerms'    => [ 'type' => 'array', 'default' => [] ]
+				]
+			],
 		],
 		'social'           => [
 			'profiles' => [
@@ -186,6 +214,8 @@ TEMPLATE
 					'myspaceUrl'      => [ 'type' => 'string' ],
 					'googlePlacesUrl' => [ 'type' => 'string' ],
 					'wordPressUrl'    => [ 'type' => 'string' ],
+					'blueskyUrl'      => [ 'type' => 'string' ],
+					'threadsUrl'      => [ 'type' => 'string' ]
 				],
 				'additionalUrls' => [ 'type' => 'string' ]
 			],
@@ -282,7 +312,6 @@ TEMPLATE
 					'maxVideoPreview'   => [ 'type' => 'number', 'default' => -1 ],
 					'maxImagePreview'   => [ 'type' => 'string', 'default' => 'large' ]
 				],
-				'sitelinks'                    => [ 'type' => 'boolean', 'default' => true ],
 				'noIndexEmptyCat'              => [ 'type' => 'boolean', 'default' => true ],
 				'removeStopWords'              => [ 'type' => 'boolean', 'default' => false ],
 				'useKeywords'                  => [ 'type' => 'boolean', 'default' => false ],
@@ -315,9 +344,29 @@ TEMPLATE
 						'paginated'      => [ 'type' => 'boolean', 'default' => false ]
 					]
 				],
+				'unwantedBots'                 => [
+					'all'      => [ 'type' => 'boolean', 'default' => false ],
+					'settings' => [
+						'googleAdsBot'             => [ 'type' => 'boolean', 'default' => false ],
+						'openAiGptBot'             => [ 'type' => 'boolean', 'default' => false ],
+						'commonCrawlCcBot'         => [ 'type' => 'boolean', 'default' => false ],
+						'googleGeminiVertexAiBots' => [ 'type' => 'boolean', 'default' => false ]
+					]
+				],
+				'searchCleanup'                => [
+					'enable'   => [ 'type' => 'boolean', 'default' => false ],
+					'settings' => [
+						'maxAllowedNumberOfChars' => [ 'type' => 'number', 'default' => 50 ],
+						'emojisAndSymbols'        => [ 'type' => 'boolean', 'default' => false ],
+						'commonPatterns'          => [ 'type' => 'boolean', 'default' => false ],
+						'redirectPrettyUrls'      => [ 'type' => 'boolean', 'default' => false ],
+						'preventCrawling'         => [ 'type' => 'boolean', 'default' => false ]
+					]
+				],
 				'blockArgs'                    => [
-					'enable'        => [ 'type' => 'boolean', 'default' => false ],
-					'logsRetention' => [ 'type' => 'string', 'default' => '{"label":"1 week","value":"week"}' ]
+					'enable'                => [ 'type' => 'boolean', 'default' => false ],
+					'optimizeUtmParameters' => [ 'type' => 'boolean', 'default' => false ],
+					'logsRetention'         => [ 'type' => 'string', 'default' => '{"label":"1 week","value":"week"}' ]
 				],
 				'removeCategoryBase'           => [ 'type' => 'boolean', 'default' => false ]
 			],
@@ -441,18 +490,6 @@ TEMPLATE
 						'dynamic' => [ 'type' => 'boolean', 'default' => true ]
 					]
 				]
-			],
-			'tools'            => [
-				'blocker' => [
-					'blockBots'    => [ 'type' => 'boolean' ],
-					'blockReferer' => [ 'type' => 'boolean' ],
-					'track'        => [ 'type' => 'boolean' ],
-					'custom'       => [
-						'enable'  => [ 'type' => 'boolean' ],
-						'bots'    => [ 'type' => 'html', 'default' => '' ],
-						'referer' => [ 'type' => 'html', 'default' => '' ]
-					]
-				]
 			]
 		],
 		'writingAssistant' => [
@@ -538,9 +575,6 @@ TEMPLATE
 
 		$hasInitialized = true;
 
-		$this->defaults['deprecated']['tools']['blocker']['custom']['bots']['default']         = implode( "\n", aioseo()->badBotBlocker->getBotList() );
-		$this->defaults['deprecated']['tools']['blocker']['custom']['referer']['default']      = implode( "\n", aioseo()->badBotBlocker->getRefererList() );
-
 		$this->defaults['searchAppearance']['global']['schema']['organizationLogo']['default'] = aioseo()->helpers->getSiteLogoUrl() ? aioseo()->helpers->getSiteLogoUrl() : '';
 
 		$this->defaults['advanced']['emailSummary']['recipients']['default'] = [
@@ -604,6 +638,9 @@ TEMPLATE
 		$oldHtmlSitemapUrl = aioseo()->options->sitemap->html->pageUrl;
 		$logsRetention     = isset( $options['searchAppearance']['advanced']['blockArgs']['logsRetention'] ) ? $options['searchAppearance']['advanced']['blockArgs']['logsRetention'] : null;
 		$oldLogsRetention  = aioseo()->options->searchAppearance->advanced->blockArgs->logsRetention;
+
+		$oldLlmsOptions = aioseo()->options->sitemap->llms->all();
+		$llmsOptions    = isset( $options['sitemap']['llms'] ) ? $options['sitemap']['llms'] : null;
 
 		// Remove category base.
 		$removeCategoryBase    = isset( $options['searchAppearance']['advanced']['removeCategoryBase'] ) ? $options['searchAppearance']['advanced']['removeCategoryBase'] : null;
@@ -689,6 +726,25 @@ TEMPLATE
 				! $deprecatedGeneralSitemapOptions['advancedSettings']['dynamic']
 			) {
 				aioseo()->sitemap->scheduleRegeneration();
+			}
+		}
+
+		if (
+			! empty( $llmsOptions ) &&
+			aioseo()->helpers->arraysDifferent( $oldLlmsOptions, $llmsOptions )
+		) {
+			if ( $llmsOptions['enable'] ) {
+				if ( $oldLlmsOptions['enable'] ) {
+					// If it was enabled before, we need to schedule a single generation.
+					aioseo()->llms->scheduleSingleGenerationForLlmsTxt();
+				} else {
+					// Otherwise we need to schedule a recurrent generation.
+					aioseo()->llms->scheduleRecurrentGenerationForLlmsTxt();
+				}
+			} else {
+				aioseo()->actionScheduler->unschedule( aioseo()->llms->llmsTxtSingleAction );
+				aioseo()->actionScheduler->unschedule( aioseo()->llms->llmsTxtRecurrentAction );
+				aioseo()->llms->deleteLlmsFile();
 			}
 		}
 

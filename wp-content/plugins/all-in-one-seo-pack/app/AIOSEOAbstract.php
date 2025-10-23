@@ -131,15 +131,6 @@ abstract class AIOSEOAbstract {
 	public $blocks = null;
 
 	/**
-	 * BadBotBlocker class instance.
-	 *
-	 * @since 4.2.7
-	 *
-	 * @var \AIOSEO\Plugin\Common\Tools\BadBotBlocker
-	 */
-	public $badBotBlocker = null;
-
-	/**
 	 * Breadcrumbs class instance.
 	 *
 	 * @since 4.2.7
@@ -573,6 +564,15 @@ abstract class AIOSEOAbstract {
 	public $crawlCleanup = null;
 
 	/**
+	 * Search Cleanup class instance.
+	 *
+	 * @since 4.8.0
+	 *
+	 * @var \AIOSEO\Plugin\Common\SearchCleanup\SearchCleanup
+	 */
+	public $searchCleanup = null;
+
+	/**
 	 * EmailReports class instance.
 	 *
 	 * @since 4.7.2
@@ -580,6 +580,15 @@ abstract class AIOSEOAbstract {
 	 * @var null|\AIOSEO\Plugin\Common\EmailReports\EmailReports
 	 */
 	public $emailReports = null;
+
+	/**
+	 * SEO Analysis class instance.
+	 *
+	 * @since 4.8.6
+	 *
+	 * @var \AIOSEO\Plugin\Pro\SeoAnalysis\SeoAnalysis
+	 */
+	public $seoAnalysis = null;
 
 	/**
 	 * ThirdParty class instance.
@@ -598,4 +607,13 @@ abstract class AIOSEOAbstract {
 	 * @var \AIOSEO\Plugin\Common\WritingAssistant\WritingAssistant
 	 */
 	public $writingAssistant = null;
+
+	/**
+	 * Llms class instance.
+	 *
+	 * @since 4.8.4
+	 *
+	 * @var \AIOSEO\Plugin\Common\Llms\Llms|\AIOSEO\Plugin\Pro\Llms\Llms
+	 */
+	public $llms = null;
 }

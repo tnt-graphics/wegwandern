@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $rootline_types = FrmProRootlineController::get_rootline_types();
 
 $i                = 1;
-$first_page_title = isset( $rootline->titles[0] ) ? $rootline->titles[0] : sprintf( __( 'Page %d', 'formidable-pro' ), $i );
+$first_page_title = $rootline->titles[0] ?? sprintf( __( 'Page %d', 'formidable-pro' ), $i );
 
 $hide_rootline_class       = $rootline->is_enabled() ? '' : 'frm_hidden';
 $hide_rootline_title_class = $rootline->show_titles ? '' : 'frm_hidden';
@@ -46,7 +46,7 @@ $hide_rootline_title_class = $rootline->show_titles ? '' : 'frm_hidden';
 	</select>
 </p>
 
-<div class="hide_rootline <?php echo esc_attr( $hide_rootline_class ); ?>">
+<div class="hide_rootline frm-my-xs <?php echo esc_attr( $hide_rootline_class ); ?>">
 	<label>
 		<input type="checkbox" value="1" name="frm_rootline[show_titles]" id="frm-rootline-titles-on" <?php checked( $rootline->show_titles, 1 ); ?> data-toggleclass="hide_rootline_titles" />
 		<?php esc_html_e( 'Show page titles with steps', 'formidable-pro' ); ?>
@@ -78,7 +78,7 @@ $hide_rootline_title_class = $rootline->show_titles ? '' : 'frm_hidden';
 				<label class="screen-reader-text" for="frm-rootline-title-<?php echo intval( $i ); ?>"></label>
 				<input
 					type="text"
-					value="<?php echo esc_attr( isset( $rootline->titles[ $page_field->id ] ) ? $rootline->titles[ $page_field->id ] : $page_field->name ); ?>"
+					value="<?php echo esc_attr( $rootline->titles[ $page_field->id ] ?? $page_field->name ); ?>"
 					name="frm_rootline[titles][<?php echo esc_attr( $page_field->id ); ?>]"
 					class="large-text"
 					placeholder="<?php echo esc_attr( sprintf( __( 'Page %d title', 'formidable-pro' ), $i ) ); ?>"

@@ -15,7 +15,7 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 	public static function show_in_form( $field, $field_name, $atts ) {
 		$frm_settings = FrmAppHelper::get_settings();
 
-		$errors  = isset( $atts['errors'] ) ? $atts['errors'] : array();
+		$errors  = $atts['errors'] ?? array();
 		$html_id = $atts['html_id'];
 
 		$defaults = self::empty_value_array();
@@ -40,7 +40,7 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 	 * @return array
 	 */
 	public static function get_sub_fields( $field ) {
-		$placeholder = (array) ( isset( $field['placeholder'] ) ? $field['placeholder'] : array() );
+		$placeholder = (array) ( $field['placeholder'] ?? array() );
 
 		$fields = array(
 			'cc'    => array(
@@ -53,7 +53,7 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 					'spellcheck'     => 'off',
 					'autocapitalize' => 'off',
 					'data-name'      => $field['id'] . '-cc',
-					'placeholder'    => isset( $placeholder['cc'] ) ? $placeholder['cc'] : '',
+					'placeholder'    => $placeholder['cc'] ?? '',
 				),
 			),
 			'month' => array(
@@ -61,14 +61,14 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 				'classes'     => 'frm_third frm_first frm_cc_exp_month',
 				'label'       => 1,
 				'options'     => range( 1, 12 ),
-				'placeholder' => isset( $placeholder['month'] ) ? $placeholder['month'] : __( 'Month', 'formidable-pro' ),
+				'placeholder' => $placeholder['month'] ?? __( 'Month', 'formidable-pro' ),
 			),
 			'year'  => array(
 				'type'        => 'select',
 				'classes'     => 'frm_third frm_cc_exp_year',
 				'label'       => 1,
 				'options'     => range( gmdate( 'Y' ), gmdate( 'Y' ) + 10 ),
-				'placeholder' => isset( $placeholder['year'] ) ? $placeholder['year'] : __( 'Year', 'formidable-pro' ),
+				'placeholder' => $placeholder['year'] ?? __( 'Year', 'formidable-pro' ),
 			),
 			'cvc'   => array(
 				'type'    => 'tel',
@@ -81,7 +81,7 @@ class FrmProCreditCardsController extends FrmProComboFieldsController {
 					'autocorrect'    => 'off',
 					'autocomplete'   => 'off',
 					'data-name'      => $field['id'] . '-cvc',
-					'placeholder'    => isset( $placeholder['cvc'] ) ? $placeholder['cvc'] : '',
+					'placeholder'    => $placeholder['cvc'] ?? '',
 				),
 			),
 		);

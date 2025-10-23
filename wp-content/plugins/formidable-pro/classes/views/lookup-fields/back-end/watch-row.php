@@ -3,9 +3,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-<p id="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" class="frm_single_option frm_no_top_margin">
+<p id="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" class="frm_single_option frm-flex frm-items-center frm-mt-0">
 	<select name="field_options[watch_lookup_<?php echo esc_attr( $field_id ); ?>][]">
-		<option value=""><?php esc_html_e( '&mdash; Select Field &mdash;', 'formidable-pro' ); ?></option>
+		<option value=""><?php esc_html_e( 'Select Field', 'formidable-pro' ); ?></option>
 		<?php
 		foreach ( $lookup_fields as $field_option ) {
 			if ( $field_option->id == $field_id ) {
@@ -20,5 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	    ?></option>
 	    <?php } ?>
 	</select>
-	<a href="javascript:void(0)" class="frm_remove_tag frm-inline-select" data-removeid="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" data-fieldid="<?php echo esc_attr( $field_id ); ?>"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon' ); ?></a>
+
+	<a href="javascript:void(0)" class="frm_remove_tag frm-inline-select" data-removeid="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" data-fieldid="<?php echo esc_attr( $field_id ); ?>">
+		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon frm_svg14 frm-p-2xs' ); ?>
+	</a>
 </p>

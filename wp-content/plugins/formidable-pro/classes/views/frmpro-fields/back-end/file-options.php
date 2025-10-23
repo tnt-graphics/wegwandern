@@ -3,13 +3,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 ?>
-<h3>
+<h3 class="frm-mt-sm">
 	<?php esc_html_e( 'File Upload Options', 'formidable-pro' ); ?>
-	<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown6_icon', array( 'aria-hidden' => 'true' ) ); ?>
+	<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown8_icon', array( 'aria-hidden' => 'true' ) ); ?>
 </h3>
-<div class="frm_grid_container frm-collapse-me" role="group">
+<div class="frm_grid_container frm-collapse-me frm-pb-0" role="group">
 	<?php if ( ! empty( $public_files_tooltip ) && ! empty( $settings_url ) ) { ?>
-		<div class="frm_warning_style frm-mt-0" style="padding: 10px;">
+		<div class="frm_form_field frm_warning_style frm-p-xs frm-mt-sm">
 			<?php
 			FrmAppHelper::icon_by_class( 'frmfont frm_alert_icon' );
 			echo '&nbsp';
@@ -23,38 +23,39 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php FrmProAppHelper::tooltip_icon( $public_files_tooltip ); ?>
 		</div>
 	<?php } ?>
-	<p>
-		<label for="multiple_<?php echo esc_attr( $field['id'] ); ?>">
+	<p class="frm_form_field">
+		<label class="frm-h-stack-xs" for="multiple_<?php echo esc_attr( $field['id'] ); ?>">
 			<input type="checkbox" name="field_options[multiple_<?php echo esc_attr( $field['id'] ); ?>]" id="multiple_<?php echo esc_attr( $field['id'] ); ?>" value="1" <?php echo checked( $field['multiple'], 1 ); ?> onchange="frm_show_div('limit_file_count_cont_<?php echo absint( $field['id'] ); ?>',this.checked,true,'#')" />
-			<?php esc_html_e( 'Allow multiple files to be uploaded', 'formidable-pro' ); ?>
+			<span><?php esc_html_e( 'Allow multiple files to be uploaded', 'formidable-pro' ); ?></span>
 		</label>
 	</p>
-	<p>
-		<label for="attach_<?php echo esc_attr( $field['id'] ); ?>">
+	<p class="frm_form_field">
+		<label class="frm-h-stack-xs" for="attach_<?php echo esc_attr( $field['id'] ); ?>">
 			<input type="checkbox" id="attach_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[attach_<?php echo esc_attr( $field['id'] ); ?>]" value="1" <?php echo ! empty( $field['attach'] ) ? 'checked="checked"' : ''; ?> />
-			<?php esc_html_e( 'Attach this file to the email notification', 'formidable-pro' ); ?>
+			<span><?php esc_html_e( 'Attach this file to the email notification', 'formidable-pro' ); ?></span>
 		</label>
 	</p>
-	<p>
-		<label for="delete_<?php echo esc_attr( $field['id'] ); ?>">
-			<input type="checkbox" name="field_options[delete_<?php echo esc_attr( $field['id'] ); ?>]" id="delete_<?php echo esc_attr( $field['id'] ); ?>" value="1" <?php echo isset( $field['delete'] ) && $field['delete'] ? 'checked="checked"' : ''; ?> />
-			<?php esc_html_e( 'Permanently delete old files when replaced or when the entry is deleted', 'formidable-pro' ); ?>
+	<p class="frm_form_field">
+		<label class="frm-force-flex frm-gap-xs" for="delete_<?php echo esc_attr( $field['id'] ); ?>">
+			<input class="frm-m-0" type="checkbox" name="field_options[delete_<?php echo esc_attr( $field['id'] ); ?>]" id="delete_<?php echo esc_attr( $field['id'] ); ?>" value="1" <?php echo isset( $field['delete'] ) && $field['delete'] ? 'checked="checked"' : ''; ?> />
+			<span class="-frm-mt-2xs"><?php esc_html_e( 'Permanently delete old files when replaced or when the entry is deleted', 'formidable-pro' ); ?></span>
 		</label>
 	</p>
-	<p>
-		<label>
+	<p class="frm_form_field">
+		<label  class="frm-h-stack-xs" for="resize_<?php echo esc_attr( $field['id'] ); ?>">
 			<input type="checkbox" id="resize_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[resize_<?php echo esc_attr( $field['id'] ); ?>]" value="1" onchange="frm_show_div('resize_file_<?php echo absint( $field['id'] ); ?>',this.checked,1,'.')" <?php checked( $field['resize'], 1 ); ?> />
-			<?php esc_html_e( 'Automatically resize files before upload', 'formidable-pro' ); ?>
-			<?php FrmProAppHelper::tooltip_icon( __( 'When a large image is uploaded, resize it before you save it to your site.', 'formidable-pro' ) ); ?>
+			<span><?php esc_html_e( 'Automatically resize files before upload', 'formidable-pro' ); ?></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'When a large image is uploaded, resize it before you save it to your site.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 		</label>
 	</p>
-	<p class="resize_file_<?php echo esc_attr( $field['id'] ); ?> <?php echo esc_attr( $field['resize'] == 1 ? '' : 'frm_hidden' ); ?>">
-		<label><?php esc_html_e( 'New file size', 'formidable-pro' ); ?></label>
-
-		<label id="new_size_<?php echo esc_attr( $field['id'] ); ?>">
+	<p class="frm_form_field resize_file_<?php echo esc_attr( $field['id'] ); ?> <?php echo esc_attr( $field['resize'] == 1 ? '' : 'frm_hidden' ); ?>">
+		<label class="frm-mb-xs" id="new_size_<?php echo esc_attr( $field['id'] ); ?>">
+			<span class="frm_primary_label frm-font-semibold frm-text-grey-600"><?php esc_html_e( 'New file size', 'formidable-pro' ); ?></span>
 			<span class="frm_screen_reader"><?php esc_html_e( 'The size the image should be resized to', 'formidable-pro' ); ?></span>
-			<input type="text" id="new_size_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[new_size_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( absint( $field['new_size'] ) ); ?>" size="5" />
-			<span class="howto"><?php esc_html_e( 'px', 'formidable-pro' ); ?></span>
+			<span class="frm-h-stack">
+				<input type="text" id="new_size_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[new_size_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( absint( $field['new_size'] ) ); ?>" size="5" />
+				<span class="howto"><?php esc_html_e( 'px', 'formidable-pro' ); ?></span>
+			</span>
 		</label>
 
 		<label id="resize_dir_<?php echo esc_attr( $field['id'] ); ?>">
@@ -69,20 +70,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</select>
 		</label>
 	</p>
+
 	<?php if ( $mimes ) { ?>
-	<h4><?php esc_html_e( 'Allowed file types', 'formidable-pro' ); ?></h4>
-	<p class="frm6 frm_form_field">
-		<label for="restrict_<?php echo esc_html( $field['id'] ); ?>_0">
-			<input type="radio" name="field_options[restrict_<?php echo esc_html( $field['id'] ); ?>]" id="restrict_<?php echo esc_html( $field['id'] ); ?>_0" value="0" <?php FrmAppHelper::checked( $field['restrict'], 0 ); ?> onclick="frm_show_div('restrict_box_<?php echo absint( $field['id'] ); ?>',0,1,'.')" />
-			<?php esc_html_e( 'Allow all file types', 'formidable-pro' ); ?>
-		</label>
-	</p>
-	<p class="frm6 frm_form_field">
-		<label for="restrict_<?php echo esc_html( $field['id'] ); ?>_1">
-			<input type="radio" name="field_options[restrict_<?php echo esc_html( $field['id'] ); ?>]" id="restrict_<?php echo esc_html( $field['id'] ); ?>_1" value="1" <?php FrmAppHelper::checked( $field['restrict'], 1 ); ?> onclick="frm_show_div('restrict_box_<?php echo absint( $field['id'] ); ?>',1,1,'.')" />
-			<?php esc_html_e( 'Specify allowed types', 'formidable-pro' ); ?>
-		</label>
-	</p>
+	<h4 class="frm-font-semibold frm-text-grey-600 frm-mt-xs frm-mb-0"><?php esc_html_e( 'Allowed file types', 'formidable-pro' ); ?></h4>
+	<div class="frm-h-stack-sm">
+		<p class="frm_form_field frm-my-xs">
+			<label class="frm-m-0" for="restrict_<?php echo esc_html( $field['id'] ); ?>_0">
+				<input type="radio" name="field_options[restrict_<?php echo esc_html( $field['id'] ); ?>]" id="restrict_<?php echo esc_html( $field['id'] ); ?>_0" value="0" <?php FrmAppHelper::checked( $field['restrict'], 0 ); ?> onclick="frm_show_div('restrict_box_<?php echo absint( $field['id'] ); ?>',0,1,'.')" />
+				<span><?php esc_html_e( 'Allow all file types', 'formidable-pro' ); ?></span>
+			</label>
+		</p>
+		<p class="frm_form_field frm-my-xs">
+			<label class="frm-m-0" for="restrict_<?php echo esc_html( $field['id'] ); ?>_1">
+				<input type="radio" name="field_options[restrict_<?php echo esc_html( $field['id'] ); ?>]" id="restrict_<?php echo esc_html( $field['id'] ); ?>_1" value="1" <?php FrmAppHelper::checked( $field['restrict'], 1 ); ?> onclick="frm_show_div('restrict_box_<?php echo absint( $field['id'] ); ?>',1,1,'.')" />
+				<span><?php esc_html_e( 'Specify allowed types', 'formidable-pro' ); ?></span>
+			</label>
+		</p>
+	</div>
 	<p class="frm_form_field restrict_box_<?php echo absint( $field['id'] ); ?> <?php echo ( $field['restrict'] == 1 ? '' : 'frm_hidden' ); ?>">
 		<select name="field_options[ftypes_<?php echo esc_attr( $field['id'] ); ?>][]" multiple="multiple" class="frm_multiselect">
 			<?php foreach ( $mimes as $ext_preg => $mime ) { ?>
@@ -92,18 +96,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</p>
 	<?php } ?>
 
-	<h4><?php esc_html_e( 'File size limits', 'formidable-pro' ); ?></h4>
+	<h4 class="frm-font-semibold frm-text-grey-600 frm-mt-xs frm-mb-0"><?php esc_html_e( 'File size limits', 'formidable-pro' ); ?></h4>
 	<p class="frm6 frm_form_field">
-		<label for="min_size_<?php echo esc_attr( $field['id'] ); ?>">
-			<?php esc_html_e( 'Min file size (MB)', 'formidable-pro' ); ?>
-			<?php FrmProAppHelper::tooltip_icon( __( 'Set the minimum file size limit for each file uploaded.', 'formidable-pro' ) ); ?>
+		<label class="frm-h-stack-xs" for="min_size_<?php echo esc_attr( $field['id'] ); ?>">
+			<span><?php esc_html_e( 'Min file size (MB)', 'formidable-pro' ); ?></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'Set the minimum file size limit for each file uploaded.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 		</label>
 		<input type="text" id="min_size_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[min_size_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['min_size'] ); ?>" size="5" />
 	</p>
 	<p class="frm6 frm_form_field">
-		<label for="size_<?php echo esc_attr( $field['id'] ); ?>">
-			<?php esc_html_e( 'Max file size (MB)', 'formidable-pro' ); ?>
-			<?php FrmProAppHelper::tooltip_icon( sprintf( __( 'Set the file size limit for each file uploaded. Your server settings allow a maximum of %d MB.', 'formidable-pro' ), FrmProFileField::get_max_file_size() ) ); ?>
+		<label class="frm-h-stack-xs" for="size_<?php echo esc_attr( $field['id'] ); ?>">
+			<span><?php esc_html_e( 'Max file size (MB)', 'formidable-pro' ); ?></span>
+			<?php FrmProAppHelper::tooltip_icon( sprintf( __( 'Set the file size limit for each file uploaded. Your server settings allow a maximum of %d MB.', 'formidable-pro' ), FrmProFileField::get_max_file_size() ), array( 'class' => 'frm-flex' ) ); ?>
 		</label>
 		<input type="text" id="size_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[size_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['size'] ); ?>" size="5" />
 	</p>
@@ -121,9 +125,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<input type="text" id="drop_msg_<?php echo esc_attr( $field['id'] ); ?>" class="frm_long_input" name="field_options[drop_msg_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['drop_msg'] ); ?>" />
 	</p>
 	<p>
-		<label for="choose_msg_<?php echo esc_attr( $field['id'] ); ?>">
-			<?php esc_html_e( 'Compact upload text', 'formidable-pro' ); ?>
-			<?php FrmProAppHelper::tooltip_icon( __( 'The label shown when the file upload field is compacted with the frm_compact CSS layout class.', 'formidable-pro' ) ); ?>
+		<label class="frm-h-stack-xs" for="choose_msg_<?php echo esc_attr( $field['id'] ); ?>">
+			<span><?php esc_html_e( 'Compact upload text', 'formidable-pro' ); ?></span>
+			<?php FrmProAppHelper::tooltip_icon( __( 'The label shown when the file upload field is compacted with the frm_compact CSS layout class.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 		</label>
 		<input type="text" id="choose_msg_<?php echo esc_attr( $field['id'] ); ?>" class="frm_long_input" name="field_options[choose_msg_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $field['choose_msg'] ); ?>" />
 	</p>

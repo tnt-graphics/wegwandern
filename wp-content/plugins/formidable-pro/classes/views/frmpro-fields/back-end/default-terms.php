@@ -24,8 +24,8 @@ FrmAppHelper::show_search_box(
 		?>
 		<li class="search-terms">
 			<a href="javascript:void(0)" data-code="<?php echo esc_attr( $tag ); ?>" class="show_dyn_default_value frm_insert_code" data-shortcode="0">
-				<?php echo esc_html( $label ); ?>
-				<span><?php echo esc_html( $tag ); ?></span>
+				<span><?php echo esc_html( $label ); ?></span>
+				<span class="frm-text-grey-500"><?php echo esc_html( $tag ); ?></span>
 			</a>
 		</li>
 		<?php
@@ -33,6 +33,6 @@ FrmAppHelper::show_search_box(
 	}
 	?>
 </ul>
-<p class="howto">
+<p class="howto frm-italic frm-mt-sm">
 	<?php esc_html_e( 'Click smart value to dynamically populate this field. Smart values are not used when editing entries.', 'formidable-pro' ); ?>
 </p>

@@ -14,6 +14,7 @@ class FrmProFieldQuantity extends FrmProFieldNumber {
 	protected function field_settings_for_type() {
 		$settings           = parent::field_settings_for_type();
 		$settings['unique'] = false;
+		$settings['format'] = false;
 
 		return $settings;
 	}

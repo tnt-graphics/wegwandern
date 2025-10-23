@@ -53,10 +53,14 @@ class FrmProFieldProduct extends FrmFieldType {
 		return $settings;
 	}
 
-	public function show_extra_field_choices( $args ) {
+	/**
+	 * @since 6.24
+	 *
+	 * {@inheritdoc}
+	 */
+	protected function show_priority_field_choices( $args = array() ) {
 		$field = $args['field'];
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/separate-values.php';
-		parent::show_extra_field_choices( $args );
 	}
 
 	public function show_primary_options( $args ) {
@@ -104,7 +108,7 @@ class FrmProFieldProduct extends FrmFieldType {
 			$html = str_replace( '"frm_opt_container', '"frm_data_container', $html );
 		}
 
-		$form_id = isset( $args['parent_form_id'] ) ? $args['parent_form_id'] : 0;
+		$form_id = $args['parent_form_id'] ?? 0;
 		if ( empty( $form_id ) ) {
 			$form_id = $this->get_field_column( 'form_id' );
 		}
@@ -137,10 +141,6 @@ class FrmProFieldProduct extends FrmFieldType {
 
 	protected function get_bulk_edit_string() {
 		return __( 'Bulk Edit Products', 'formidable-pro' );
-	}
-
-	protected function get_add_option_string() {
-		return __( 'Add Product', 'formidable-pro' );
 	}
 
 	protected function show_single_option( $args ) {
@@ -253,9 +253,10 @@ class FrmProFieldProduct extends FrmFieldType {
 		}
 
 		$base_name = 'default_value_' . $field['id'];
-		$html_id   = isset( $field['html_id'] ) ? $field['html_id'] : FrmFieldsHelper::get_html_id( $field );
+		$html_id   = $field['html_id'] ?? FrmFieldsHelper::get_html_id( $field );
 
-		$default_type = self::get_default_value_type( $field );
+		$default_type  = self::get_default_value_type( $field );
+		$options_count = count( $field['options'] );
 
 		foreach ( $field['options'] as $opt_key => $opt ) {
 			$field_val = FrmFieldsHelper::get_value_from_array( $opt, $opt_key, $field );
@@ -279,7 +280,7 @@ class FrmProFieldProduct extends FrmFieldType {
 		$price      = '';
 		$checked    = false;
 		$field_name = 'default_value_' . $field['id'];
-		$html_id    = isset( $field['html_id'] ) ? $field['html_id'] : FrmFieldsHelper::get_html_id( $field );
+		$html_id    = $field['html_id'] ?? FrmFieldsHelper::get_html_id( $field );
 
 		$default_type = self::get_default_value_type( $field );
 		$field_name  .= ( $default_type === 'checkbox' ? '[' . $opt_key . ']' : '' );
@@ -299,7 +300,7 @@ class FrmProFieldProduct extends FrmFieldType {
 		$opt = apply_filters( 'frm_field_price_saved', $opt, $opt_key, $field );
 
 		if ( is_array( $opt ) ) {
-			return isset( $opt['price'] ) ? $opt['price'] : '';
+			return $opt['price'] ?? '';
 		}
 
 		return '';
@@ -335,5 +336,12 @@ class FrmProFieldProduct extends FrmFieldType {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * @deprecated 6.24
+	 */
+	protected function get_add_option_string() {
+		return __( 'Add Product', 'formidable-pro' );
 	}
 }

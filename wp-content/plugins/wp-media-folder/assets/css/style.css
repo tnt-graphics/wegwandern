@@ -15,6 +15,126 @@
     url('../fonts/MaterialIcons-Regular.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'JuSidebarIcon';
+    src:  url('../fonts/JuSidebarIcon.eot?8vy8ab');
+    src:  url('../fonts/JuSidebarIcon.eot?8vy8ab#iefix') format('embedded-opentype'),
+    url('../fonts/JuSidebarIcon.ttf?8vy8ab') format('truetype'),
+    url('../fonts/JuSidebarIcon.woff?8vy8ab') format('woff'),
+    url('../fonts/JuSidebarIcon.svg?8vy8ab#JuSidebarIcon') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
+
+[class^="ju-icon-"], [class*=" ju-icon-"] {
+    /* use !important to prevent issues with browser extensions that change fonts */
+    font-family: 'JuSidebarIcon' !important;
+    speak: never;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.ju-icon-home:before {
+    content: "\e900";
+    color: #777886;
+}
+.ju-icon-image:before {
+    content: "\e901";
+    color: #777886;
+}
+.ju-icon-gallery-add:before {
+    content: "\e902";
+    color: #777886;
+}
+.ju-icon-photo:before {
+    content: "\e903";
+    color: #777886;
+}
+.ju-icon-design-services:before {
+    content: "\e904";
+    color: #777886;
+}
+.ju-icon-abc:before {
+    content: "\e905";
+    color: #777886;
+}
+.ju-icon-import-export:before {
+    content: "\e906";
+    color: #777886;
+}
+.ju-icon-sync:before {
+    content: "\e907";
+    color: #777886;
+}
+.ju-icon-refresh:before {
+    content: "\e908";
+    color: #777886;
+}
+.ju-icon-folder:before {
+    content: "\e909";
+    color: #777886;
+}
+.ju-icon-img-compression:before {
+    content: "\e90a";
+    color: #777886;
+}
+.ju-icon-cloud:before {
+    content: "\e90b";
+    color: #777886;
+}
+.ju-icon-translate:before {
+    content: "\e90c";
+    color: #777886;
+}
+.ju-icon-shield:before {
+    content: "\e90d";
+    color: #777886;
+}
+.ju-icon-search:before {
+    content: "\e90e";
+    color: #8d8e99;
+}
+.ju-icon-AI:before {
+    content: "\e90f";
+    color: #777886;
+}
+.ju-icon-collapse:before {
+    content: "\e910";
+    color: #777886;
+}
+.ju-icon-expand:before {
+    content: "\e911";
+    color: #777886;
+}
+.ju-icon-chevron-down:before {
+    content: "\e912";
+    color: #777886;
+}
+.ju-icon-chevron-up:before {
+    content: "\e913";
+    color: #777886;
+}
+.ju-icon-check:before {
+  content: "\e914";
+}
+.ju-icon-close:before {
+  content: "\e915";
+}
+.ju-icon-warning:before {
+  content: "\e916";
+}
+.ju-icon-error:before {
+  content: "\e917";
+}
+
 /* Tagify */
 .tagify {
     width: 100%;
@@ -623,7 +743,7 @@
     color: #ffffff;
 }
 
-.wpmf-contextmenu li:hover > .items_menu .wpmf_icon {
+.wpmf-contextmenu li:hover > .items_menu .wpmf_icon, .wpmf-contextmenu li:hover > .items_menu .wpmf_icon.ju-icon-AI:before {
     color: #ffffff;
 }
 
@@ -2616,8 +2736,9 @@ ul.attachments .attachment {
 
 .wpmf-snackbar-wrap .wpmf-snackbar-close {
     position: absolute;
-    top: 3px;
+    top: 50%;
     right: 3px;
+    transform: translateY(-50%);
 }
 
 .wpmf-snackbar-wrap .wpmf-snackbar-close .material-icons {
@@ -3966,8 +4087,8 @@ table.media .column-title .has-media-icon~.row-actions {
 }
 .wpmf-action-attachment input[type=button] {
     width: 100%;
-    padding: 5px;
-    margin-bottom: 15px;
+    padding: 0 10px;
+    margin-bottom: 10px;
 }
 .wpmf-action-attachment div:last-child input {
     margin-bottom: 0;

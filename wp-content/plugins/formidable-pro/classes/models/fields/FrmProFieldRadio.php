@@ -104,4 +104,19 @@ class FrmProFieldRadio extends FrmFieldRadio {
 
 		return $value;
 	}
+
+	/**
+	 * Prevent align setting from applying when image options is enabled.
+	 *
+	 * @since 6.22.1
+	 *
+	 * @return string
+	 */
+	public function get_container_class() {
+		if ( 1 === intval( FrmField::get_option( $this->field, 'image_options' ) ) ) {
+			return '';
+		}
+
+		return parent::get_container_class();
+	}
 }

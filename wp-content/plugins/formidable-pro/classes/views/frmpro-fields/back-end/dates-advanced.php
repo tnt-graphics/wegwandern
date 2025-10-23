@@ -9,8 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php esc_html_e( 'Calendar Localization', 'formidable-pro' ); ?>
 		</label>
 	</td>
-	<td>
-		<select name="field_options[locale_<?php echo absint( $field['id'] ); ?>]" id="field_options_locale_<?php echo absint( $field['id'] ); ?>" class="auto_width">
+	<td class="frm-p-0">
+		<select name="field_options[locale_<?php echo absint( $field['id'] ); ?>]" id="field_options_locale_<?php echo absint( $field['id'] ); ?>" class="frm-w-full">
 			<?php
 			foreach ( $locales as $locale_key => $locale ) {
 				?>

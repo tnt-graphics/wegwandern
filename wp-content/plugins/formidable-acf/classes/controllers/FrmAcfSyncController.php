@@ -19,6 +19,13 @@ class FrmAcfSyncController {
 	private static $child_entry_ids = array();
 
 	/**
+	 * Keep track of new child entry IDs.
+	 *
+	 * @var array
+	 */
+	private static $new_child_entry_ids = array();
+
+	/**
 	 * Converts Frm value to ACF when getting a meta from ACF.
 	 *
 	 * @param mixed  $value    Meta value.
@@ -171,6 +178,7 @@ class FrmAcfSyncController {
 			return $check;
 		}
 
+		// If this variable is not empty, we're processing the value of repeater item, we will update child entries.
 		$repeater_data = FrmAcfSyncHelper::decode_repeater_item_meta_key( $name, $mapping );
 		if ( $repeater_data ) {
 			if ( ! isset( $mapping[ $repeater_data['repeater_name'] ] ) || ! isset( $mapping[ $repeater_data['repeater_name'] ]['child_mapping'] ) ) {
@@ -182,6 +190,7 @@ class FrmAcfSyncController {
 			return self::update_acf_repeater_item( $check, compact( 'entry', 'repeater_data', 'mapping', 'value' ) );
 		}
 
+		// We're processing the whole repeater field.
 		if ( ! isset( $mapping[ $name ] ) || ! self::is_valid_mapping( $mapping[ $name ] ) ) {
 			return $check;
 		}
@@ -197,9 +206,36 @@ class FrmAcfSyncController {
 			return $check;
 		}
 
-		$meta_value = isset( self::$child_entry_ids[ $entry->id ] ) ? self::$child_entry_ids[ $entry->id ] : array();
+		// Use the child repeater entries processed above to update the meta.
+		$meta_value = isset( self::$new_child_entry_ids[ $entry->id ] ) ? self::$new_child_entry_ids[ $entry->id ] : array();
 		update_post_meta( $post_id, $name, $meta_value );
+
+		// Maybe delete child entries which are deleted in ACF.
+		self::maybe_delete_child_entries( $entry->id );
+
 		return true;
+	}
+
+	/**
+	 * Maybe delete child entries. This is used in case an ACF repeater row is deleted.
+	 *
+	 * @param int $parent_entry_id Parent entry ID.
+	 */
+	private static function maybe_delete_child_entries( $parent_entry_id ) {
+		if ( ! empty( self::$child_entry_ids[ $parent_entry_id ] ) ) {
+			foreach ( self::$child_entry_ids[ $parent_entry_id ] as $child_entry_id ) {
+				FrmEntry::destroy( $child_entry_id );
+			}
+		}
+	}
+
+	/**
+	 * By-pass the duplicate check when creating an entry.
+	 *
+	 * @return int Return an empty value to by-pass.
+	 */
+	public static function bypass_frm_duplicate_check() {
+		return 0;
 	}
 
 	/**
@@ -248,24 +284,31 @@ class FrmAcfSyncController {
 		$entry           = $args['entry'];
 		$item_index      = $args['repeater_data']['index'];
 
-		// Get the list of child entry IDs, and store in a static variable.
+		// Get the list of the old child entry IDs, and store in a static variable.
 		if ( ! isset( self::$child_entry_ids[ $entry->id ] ) ) {
-			$entry = FrmEntry::get_meta( $entry );
-			self::$child_entry_ids[ $entry->id ] = isset( $entry->metas[ $frm_repeater_id ] ) ? (array) $entry->metas[ $frm_repeater_id ] : array();
+			// The old child entry IDs are stored in the meta.
+			self::$child_entry_ids[ $entry->id ] = get_post_meta( $entry->post_id, $args['mapping']['meta_name'], true );
 		}
 
-		$child_entry_ids = self::$child_entry_ids[ $entry->id ];
-
 		// Check if the corresponding entry exists, update its meta, otherwise, create a new entry.
-		if ( isset( $child_entry_ids[ $item_index ] ) ) {
-			FrmAcfSyncHelper::add_or_update_frm_meta( $child_entry_ids[ $item_index ], $frm_child_field->id, $frm_value );
+		if ( isset( self::$child_entry_ids[ $entry->id ][ $item_index ] ) ) {
+			FrmAcfSyncHelper::add_or_update_frm_meta(
+				self::$child_entry_ids[ $entry->id ][ $item_index ],
+				$frm_child_field->id,
+				$frm_value
+			);
+
+			// Track the new child entry ID.
+			self::$new_child_entry_ids[ $entry->id ][] = self::$child_entry_ids[ $entry->id ][ $item_index ];
 		} else {
 			$child_entry_id = self::create_repeater_child_entry( $entry, $frm_child_field, $frm_value );
 			if ( $child_entry_id ) {
 				// Track the new child entry ID.
-				self::$child_entry_ids[ $entry->id ][] = $child_entry_id;
+				self::$new_child_entry_ids[ $entry->id ][] = $child_entry_id;
 			}
 		}
+
+		unset( self::$child_entry_ids[ $entry->id ][ $item_index ] );
 
 		return true;
 	}
@@ -303,7 +346,11 @@ class FrmAcfSyncController {
 		 */
 		$entry_data = apply_filters( 'frm_acf_repeater_child_entry_data', $entry_data, compact( 'parent_entry', 'child_field', 'child_value' ) );
 
-		return FrmEntry::create( $entry_data );
+		add_filter( 'frm_time_to_check_duplicates', array( __CLASS__, 'bypass_frm_duplicate_check' ) );
+		$result = FrmEntry::create( $entry_data );
+		remove_filter( 'frm_time_to_check_duplicates', array( __CLASS__, 'bypass_frm_duplicate_check' ) );
+
+		return $result;
 	}
 
 	/**

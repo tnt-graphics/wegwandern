@@ -53,17 +53,18 @@ if ( 'select' === $field['data_type'] ) {
 		<ul id="frm_field_<?php echo esc_attr( $field['id'] ); ?>_opts"
 			class="frm_sortable_field_opts frm_clear<?php echo count( $field['options'] ) > 10 ? ' frm_field_opts_list' : ''; ?>"><?php
 		foreach ( $field['options'] as $opt_key => $opt_value ) {
-				$checked = in_array( $opt_value, $saved_value_array ) ? ' checked="checked"' : '';
+				$opt_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt_value, (array) $field );
+				$checked   = in_array( $opt_value, $saved_value_array ) ? ' checked="checked"' : '';
 
 				?>
 			<li class="frm_single_option">
 			<input type="<?php echo esc_attr( $field['data_type'] ); ?>" name="<?php echo esc_attr( $field_name ); ?>"
 					value="<?php echo esc_attr( $opt_value ); ?>"<?php echo $checked; ?>/>
 			<label class="frm_ipe_field_option field_<?php echo esc_attr( $field['id'] ); ?>_option"
-					id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>"><?php echo FrmAppHelper::kses( $opt_value, 'all' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>"><?php echo FrmAppHelper::kses( $opt_label, 'all' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 			</li><?php
 		}
-		unset( $opt_key, $checked, $opt_value );
+		unset( $opt_key, $checked, $opt_value, $opt_label );
 		?>
 		</ul><?php
 	}

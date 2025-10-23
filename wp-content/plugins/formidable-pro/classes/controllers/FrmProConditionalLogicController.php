@@ -29,20 +29,24 @@ class FrmProConditionalLogicController {
 			if ( ! $prefiltered ) {
 				if ( FrmField::is_no_save_field( $logic_field->type ) ) {
 					$present = false;
-				} elseif ( in_array( $logic_field->type, array( 'file', 'date', 'address', 'credit_card' ), true ) ) {
+				} elseif ( in_array( $logic_field->type, array( 'file', 'address', 'credit_card' ), true ) ) {
 					$present = false;
 				} elseif ( FrmProField::is_list_field( $logic_field ) ) {
 					$present = false;
 				}
 			}
 
+			if ( $present && 'range' === $logic_field->type && FrmField::get_option( $logic_field, 'is_range_slider' ) ) {
+				$present = false;
+			}
+
 			if ( $present ) {
-				$parent_form_id = isset( $current_field['parent_form_id'] ) ? $current_field['parent_form_id'] : '0';
+				$parent_form_id = $current_field['parent_form_id'] ?? '0';
 
 				if ( $logic_field->form_id != $current_field['form_id'] && $logic_field->form_id != $parent_form_id ) {
 					$present = false;
 				} else {
-					$in_section_id  = isset( $logic_field->field_options['in_section'] ) ? $logic_field->field_options['in_section'] : '0';
+					$in_section_id  = $logic_field->field_options['in_section'] ?? '0';
 					if ( $in_section_id == $current_field['id'] ) {
 						$present = false;
 					}
@@ -59,5 +63,29 @@ class FrmProConditionalLogicController {
 		 * @param array $args    The arguments. Contains `$current_field` and `$logic_field`.
 		 */
 		return (bool) apply_filters( 'frm_is_field_present_in_logic_options', $present, compact( 'current_field', 'logic_field' ) );
+	}
+
+	/**
+	 * Get show/hide options for field conditional logic.
+	 *
+	 * @since 6.24
+	 *
+	 * @param array $field The field array.
+	 * @return array
+	 */
+	public static function get_show_hide_options( $field ) {
+		if ( 'submit' === $field['type'] ) {
+			return array(
+				'show'    => __( 'Show this button', 'formidable-pro' ),
+				'hide'    => __( 'Hide this button', 'formidable-pro' ),
+				'enable'  => __( 'Enable this button', 'formidable-pro' ),
+				'disable' => __( 'Disable this button', 'formidable-pro' ),
+			);
+		}
+
+		return array(
+			'show' => $field['type'] === 'break' ? __( 'Do not skip next page', 'formidable-pro' ) : __( 'Show', 'formidable-pro' ),
+			'hide' => $field['type'] === 'break' ? __( 'Skip next page', 'formidable-pro' ) : __( 'Hide', 'formidable-pro' ),
+		);
 	}
 }

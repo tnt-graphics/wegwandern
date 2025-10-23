@@ -101,9 +101,9 @@ class FrmProRootlineController {
 			return;
 		}
 
-		$options['rootline']             = isset( $post_data['type'] ) ? $post_data['type'] : '';
-		$options['pagination_position']  = isset( $post_data['position'] ) ? $post_data['position'] : '';
-		$options['rootline_titles']      = isset( $post_data['titles'] ) ? $post_data['titles'] : array();
+		$options['rootline']             = $post_data['type'] ?? '';
+		$options['pagination_position']  = $post_data['position'] ?? '';
+		$options['rootline_titles']      = $post_data['titles'] ?? array();
 		$options['rootline_titles_on']   = isset( $post_data['show_titles'] );
 		$options['rootline_numbers_off'] = isset( $post_data['hide_numbers'] );
 		$options['rootline_lines_off']   = isset( $post_data['hide_lines'] );

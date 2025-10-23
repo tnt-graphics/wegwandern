@@ -19,7 +19,7 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 	 * @return void
 	 */
 	public static function show_in_form( $field, $field_name, $atts ) {
-		$errors  = isset( $atts['errors'] ) ? $atts['errors'] : array();
+		$errors  = $atts['errors'] ?? array();
 		$html_id = $atts['html_id'];
 
 		$defaults = self::empty_value_array();
@@ -178,7 +178,7 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		$default_labels['line2']   = __( 'Line 2', 'formidable-pro' );
 		$default_labels['country'] = __( 'Country', 'formidable-pro' );
 
-		$label = isset( $default_labels[ $field_name ] ) ? $default_labels[ $field_name ] : '';
+		$label = $default_labels[ $field_name ] ?? '';
 		if ( in_array( $field_name, $descriptions, true ) ) {
 			$saved_label = FrmField::get_option( $field, $field_name . '_desc' );
 			if ( $saved_label ) {
@@ -219,7 +219,7 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 	 */
 	public static function get_country_code( $country ) {
 		self::maybe_define_country_codes();
-		return isset( self::$country_codes[ $country ] ) ? self::$country_codes[ $country ] : '';
+		return self::$country_codes[ $country ] ?? '';
 	}
 
 	/**

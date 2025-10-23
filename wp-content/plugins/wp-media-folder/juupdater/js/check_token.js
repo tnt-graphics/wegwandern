@@ -1,6 +1,6 @@
 (function ($) {
     if (typeof ajaxurl === "undefined") {
-        ajaxurl = updaterparams.ajaxurl;
+        ajaxurl = updaterWPMFparams.ajaxurl;
     }
 
     var ju_update_new = function (plugin, slug) {
@@ -23,11 +23,7 @@
                     $updateRow.find('.plugin-title strong').text()
                 );
             } else {
-                if (updaterparams.version === '4.8.0') {
-                    message = wp.updates.l10n.pluginUpdatingLabel.replace('%s', $updateRow.find('.plugin-title strong').text());
-                } else {
-                    message = wp.updates.l10n.updatingLabel.replace('%s', $updateRow.find('.plugin-title strong').text());
-                }
+                message = wp.updates.l10n.updatingLabel.replace('%s', $updateRow.find('.plugin-title strong').text());
             }
 
         } else if ('plugin-install' === pagenow || 'plugin-install-network' === pagenow) {
@@ -40,11 +36,7 @@
                     $message.data('name')
                 );
             } else {
-                if (updaterparams.version === '4.8.0') {
-                    message = wp.updates.l10n.pluginUpdatingLabel.replace('%s', $message.data('name'));
-                } else {
-                    message = wp.updates.l10n.updatingLabel.replace('%s', $message.data('name'));
-                }
+                message = wp.updates.l10n.updatingLabel.replace('%s', $message.data('name'));
             }
 
             // Remove previous error messages, if any.
@@ -82,82 +74,17 @@
         wp.updates.ajax('update-plugin', args);
     };
 
-    var ju_update_old = function (plugin, slug) {
-        var $message, name;
-        if ('plugins' === pagenow || 'plugins-network' === pagenow) {
-            $message = $('[data-slug="' + slug + '"]').next().find('.update-message');
-        } else if ('plugin-install' === pagenow) {
-            $message = $('.plugin-card-' + slug).find('.update-now');
-            name = $message.data('name');
-            if (updaterparams.version === '4.8.0') {
-                $message.attr('aria-label', wp.updates.l10n.pluginUpdatingLabel.replace('%s', name));
-            } else {
-                $message.attr('aria-label', wp.updates.l10n.updatingLabel.replace('%s', name));
-            }
-        }
-
-        $message.addClass('updating-message');
-        if ($message.html() !== wp.updates.l10n.updating) {
-            $message.data('originaltext', $message.html());
-        }
-
-        $message.text(wp.updates.l10n.updating);
-        wp.a11y.speak(wp.updates.l10n.updatingMsg);
-
-        if (wp.updates.updateLock) {
-            wp.updates.updateQueue.push({
-                type: 'update-plugin',
-                data: {
-                    plugin: plugin,
-                    slug: slug
-                }
-            });
-            return;
-        }
-
-        wp.updates.updateLock = true;
-
-        var data = {
-            _ajax_nonce: wp.updates.ajaxNonce,
-            plugin: plugin,
-            slug: slug,
-            username: wp.updates.filesystemCredentials.ftp.username,
-            password: wp.updates.filesystemCredentials.ftp.password,
-            hostname: wp.updates.filesystemCredentials.ftp.hostname,
-            connection_type: wp.updates.filesystemCredentials.ftp.connectionType,
-            public_key: wp.updates.filesystemCredentials.ssh.publicKey,
-            private_key: wp.updates.filesystemCredentials.ssh.privateKey
-        };
-
-        wp.ajax.post('update-plugin', data)
-            .done(wp.updates.updateSuccess)
-            .fail(wp.updates.updateError);
-    };
-
     var JuupdatePlugin = function (plugin, slug) {
         var listplugins = [
             "wp-media-folder",
             "wp-media-folder-addon",
-            "wp-media-folder-gallery-addon",
-            "wp-file-download",
-            "wp-file-download-addon",
-            "wp-team-display",
-            "wp-table-manager",
-            "wp-latest-post",
-            "wp-latest-posts-addon",
-            "wp-frontpage-news-pro-addon",
-            "wp-meta-seo-addon",
-            "wp-speed-of-light-addon"
+            "wp-media-folder-gallery-addon"
         ];
 
         if ($.inArray(slug, listplugins) !== -1) {
-            if (updaterparams.token && updaterparams.token !== '') {
+            if (updaterWPMFparams.token && updaterWPMFparams.token !== '') {
                 $('#' + slug + '-update .update-message').append('<a style="margin-left:10px;color: #a00;" class="ju_check">Checking token...</a>');
-                if (slug === 'wp-frontpage-news-pro-addon') {
-                    var link = updaterparams.ju_base + 'index.php?option=com_juupdater&task=download.checktoken&extension=wp-latest-posts-addon.zip&token=' + updaterparams.token;
-                } else {
-                    link = updaterparams.ju_base + 'index.php?option=com_juupdater&task=download.checktoken&extension=' + slug + '.zip&token=' + updaterparams.token;
-                }
+                let link = updaterWPMFparams.ju_base + 'index.php?option=com_juupdater&task=download.checktokenV2&extension=' + slug + '.zip&token=' + updaterWPMFparams.token;
                 $.ajax({
                     url: link,
                     method: 'GET',
@@ -166,36 +93,35 @@
                     success: function (response) {
                         $('#' + slug + '-update .update-message .ju_check').remove();
                         if (response.status === true) {
-                            if (updaterparams.version === '4.6.0' || updaterparams.version === '4.8.0') {
-                                ju_update_new(plugin, slug);
-                            } else {
-                                ju_update_old(plugin, slug);
-                            }
-
-                            //window.location.assign(response.linkdownload);
+                            ju_update_new(plugin, slug);
                         } else {
                             var r = confirm(response.datas);
                             if (r === true) {
-                                window.open(updaterparams.ju_base, "_blank");
+                                window.open(updaterWPMFparams.ju_base, "_blank");
                             }
+                            var link = updaterWPMFparams.ju_base + "index.php?option=com_juupdater&view=connect&ext_name="+slug+"&tmpl=component&site=" + updaterWPMFparams.site_url + "&TB_iframe=true&width=400&height=520";
+                            $('#' + slug + '-update .update-message').append('<p style="font-weight: bold; color: #ff6200;">In order to update please link your account : <a class="thickbox ju_update" href="' + link + '">JoomUnited account</a></p>');
                         }
                     }
                 });
             } else {
                 $('tr[data-slug="' + slug + '"] .thickbox.ju_update').click();
             }
-        } else {
-            ju_update(plugin, slug);
         }
     };
 
     $(document).ready(function () {
-        var ju_plugins = ['wp-media-folder', 'wp-file-download', 'wp-team-display', 'wp-latest-post', 'wp-table-manager', 'wp-frontpage-news-pro-addon'];
+        var ju_plugins = ['wp-media-folder'];
         $.each(ju_plugins, function (i, slug) {
-            if (!updaterparams.token || updaterparams.token === '') {
+            if (!updaterWPMFparams.token || updaterWPMFparams.token === '') {
                 $('#' + slug + '-update .update-message a.update-link').addClass('ju-update-link').removeClass('update-link').html('Connect your Joomunited account to update');
             } else {
-                $('#' + slug + '-update .update-message a.update-link').addClass('ju-update-link').removeClass('update-link');
+                if ( $('#' + slug + '-update .update-message a.update-link').length ) {
+                    $('#' + slug + '-update .update-message a.update-link').addClass('ju-update-link').removeClass('update-link');
+                } else {
+                    console.log('run wpmf updaterV2');
+                    $('#' + slug + '-update .update-message a.ju-update-link').html('Update now');
+                }
             }
             $('#' + slug + '-update td.plugin-update').css({
                 'border-left': '4px solid #d54e21',
@@ -211,14 +137,14 @@
         eventer(messageEvent, function (e) {
 
             var res = e.data;
-            if (typeof res !== "undefined" && typeof res.type !== "undefined" && res.type === "joomunited_login") {
+            if (typeof res !== "undefined" && typeof res.type !== "undefined" && res.type === "joomunited_connect" && res.extName === "wp-media-folder") {
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
                     data: {
-                        'action': 'ju_add_token',
+                        'action': 'wpmfju_update_license',
                         'token': res.token,
-                        'ju_updater_nonce': updaterparams.ju_updater_nonce
+                        'ju_updater_nonce': updaterWPMFparams.ju_updater_nonce
                     },
                     success: function () {
                         location.reload();
@@ -227,7 +153,8 @@
             }
         }, false);
 
-        $('.plugin-update-tr').on('click', '.ju-update-link', function (e) {
+        var slug = 'wp-media-folder';
+        $('#' + slug + '-update').on('click', '.ju-update-link', function (e) {
             e.preventDefault();
             if (wp.updates.shouldRequestFilesystemCredentials && !wp.updates.ajaxLocked) {
                 wp.updates.requestFilesystemCredentials(e);
@@ -239,17 +166,19 @@
         });
 
         $(document).on('click', '.ju-btn-disconnect', function () {
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    'action': 'ju_logout',
-                    'ju_updater_nonce': updaterparams.ju_updater_nonce
-                },
-                success: function () {
-                    location.reload();
-                }
-            });
+            if(typeof $(this).data('slug') == 'undefined' || $(this).data('slug') == 'wpmf') {
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        'ju_updater_nonce': updaterWPMFparams.ju_updater_nonce,
+                        'action': 'wpmf_remove_license'
+                    },
+                    success: function () {
+                        location.reload();
+                    }
+                });
+            }
         });
 
     });

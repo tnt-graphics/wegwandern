@@ -57,25 +57,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</label>
 	<textarea name="options[closed_msg]" id="frm_closed_msg" rows="3"><?php echo FrmAppHelper::esc_textarea( $values['closed_msg'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></textarea>
 </p>
+<?php
+	if ( FrmProAppHelper::use_jquery_datepicker() ) {
+		?>
+		<script>
+			jQuery( function() {
+				jQuery('.frm_date').datepicker({changeMonth:true,changeYear:true,dateFormat:'yy-mm-dd',
+					beforeShow: function() {
+						document.getElementById( 'ui-datepicker-div' )?.classList.add( 'frm-datepicker' );
+					},
+					onSelect: function(val){
+					var d = new Date();
 
-<script>
-	jQuery( function() {
-		jQuery('.frm_date').datepicker({changeMonth:true,changeYear:true,dateFormat:'yy-mm-dd',
-			beforeShow: function() {
-				document.getElementById( 'ui-datepicker-div' )?.classList.add( 'frm-datepicker' );
-			},
-			onSelect: function(val){
-			var d = new Date();
+					var h = d.getHours();
+					h = (h < 10) ? ('0' + h) : h ;
 
-			var h = d.getHours();
-			h = (h < 10) ? ('0' + h) : h ;
+					var m = d.getMinutes();
+					m = (m < 10) ? ('0' + m) : m ;
 
-			var m = d.getMinutes();
-			m = (m < 10) ? ('0' + m) : m ;
+					val = val + ' ' + h + ':' + m;
 
-			val = val + ' ' + h + ':' + m;
-
-			jQuery(this).val(val);
-		}});
-	});
-</script>
+					jQuery(this).val(val);
+				}});
+			});
+		</script>
+	<?php
+	} else {
+		?>
+		<script>
+			document.addEventListener( 'DOMContentLoaded', function() {
+				flatpickr( '.frm_date', {
+					dateFormat: 'Y-m-d H:i',
+					changeMonth: true,
+					changeYear: true,
+					enableTime: true,
+					onReady: function( selectedDates, dateStr, instance ) {
+						instance.calendarContainer.classList.add( 'frm-datepicker' );
+					}
+				});
+			});
+		</script>
+	<?php
+	}
+	?>

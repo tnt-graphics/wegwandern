@@ -377,18 +377,7 @@ jQuery(document).ready(function($){
     eventer(messageEvent, function (e) {
         var res = e.data;
         if(typeof res != 'undefined' && typeof res.type != 'undefined' && res.type === 'translation_login'){
-            $.ajax({
-                url : jutranslation.base_url + 'task=jutranslation.saveJuToken',
-                type: 'POST',
-                data: {
-                    action : jutranslation.ajax_action,
-                    token: res.token,
-                    wp_nonce: jutranslation.token
-                },
-                success: function () {
-
-                }
-            });
+            // do nothing
         }
     }, false);
 

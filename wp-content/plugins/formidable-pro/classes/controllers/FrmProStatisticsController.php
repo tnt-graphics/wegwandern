@@ -328,9 +328,42 @@ class FrmProStatisticsController {
 
 		$field_values = FrmProEntryMeta::get_all_metas_for_field( $field, $meta_args );
 
+		if ( 'count' !== $atts['type'] ) {
+			self::translate_dynamic_field_entry_ids_to_meta_values( $field, $field_values );
+		}
+
+		if (
+			! in_array( $atts['type'], array( 'count', 'unique' ), true ) &&
+			FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) )
+		) {
+			FrmProCurrencyHelper::normalize_formatted_number_collection( $field, $field_values );
+		}
+
 		self::format_field_values( $field, $atts, $field_values );
 
 		return $field_values;
+	}
+
+	/**
+	 * Translate dynamic field entry IDs to meta values.
+	 *
+	 * @since 6.19
+	 *
+	 * @param object $field
+	 * @param array  $field_values
+	 * @return void
+	 */
+	private static function translate_dynamic_field_entry_ids_to_meta_values( $field, &$field_values ) {
+		if ( $field->type !== 'data' ) {
+			return;
+		}
+
+		$new_field_values = array();
+		foreach ( $field_values as $entry_id ) {
+			$new_field_values[] = FrmProFieldsHelper::get_data_value( $entry_id, $field );
+		}
+
+		$field_values = $new_field_values;
 	}
 
 	/**
@@ -383,7 +416,7 @@ class FrmProStatisticsController {
 				$mean = $total / $count;
 				$stat = 0.0;
 				foreach ( $meta_values as $i ) {
-					$stat += pow( floatval( $i ) - $mean, 2 );
+					$stat += ( floatval( $i ) - $mean ) ** 2;
 				}
 
 				if ( $count > 1 ) {
@@ -476,8 +509,8 @@ class FrmProStatisticsController {
 	 */
 	private static function get_formatted_statistic( $atts, $stat ) {
 		if ( isset( $atts['thousands_sep'] ) || isset( $atts['dec_point'] ) ) {
-			$dec_point     = isset( $atts['dec_point'] ) ? $atts['dec_point'] : '.';
-			$thousands_sep = isset( $atts['thousands_sep'] ) ? $atts['thousands_sep'] : ',';
+			$dec_point     = $atts['dec_point'] ?? '.';
+			$thousands_sep = $atts['thousands_sep'] ?? ',';
 			$statistic     = number_format( $stat, $atts['decimal'], $dec_point, $thousands_sep );
 		} elseif ( is_numeric( $stat ) ) {
 			$statistic = round( $stat, $atts['decimal'] );
@@ -963,7 +996,7 @@ class FrmProStatisticsController {
 					'where_is'  => $filter_args['operator'],
 					'where_val' => $filter_args['value'],
 				),
-				$filter_args 
+				$filter_args
 			);
 
 			$pass_args = array(

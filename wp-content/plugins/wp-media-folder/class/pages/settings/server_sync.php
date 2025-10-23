@@ -89,9 +89,9 @@ $iptcHeaderArray = getIptcHeader();
                     </div>
 
                     <button type="button"
-                            class="m-t-10 ju-button no-background orange-button waves-effect waves-light btn_addsync_media"><?php esc_html_e('Add', 'wpmf') ?></button>
+                            class="m-t-10 ju-button no-background primary-button waves-effect waves-light btn_addsync_media"><?php esc_html_e('Add', 'wpmf') ?></button>
                     <button type="button"
-                            class="m-t-10 ju-button no-background orange-button waves-effect waves-light btn_deletesync_media"><?php esc_html_e('Delete selected', 'wpmf') ?></button>
+                            class="m-t-10 ju-button no-background primary-button waves-effect waves-light btn_deletesync_media"><?php esc_html_e('Delete selected', 'wpmf') ?></button>
                 </div>
             </div>
         </div>

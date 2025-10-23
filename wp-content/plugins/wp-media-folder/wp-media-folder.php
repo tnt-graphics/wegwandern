@@ -4,7 +4,7 @@
   Plugin URI: http://www.joomunited.com
   Description: WP media Folder is a WordPress plugin that enhance the WordPress media manager by adding a folder manager inside.
   Author: Joomunited
-  Version: 6.0.1
+  Version: 6.1.7
   Update URI: https://www.joomunited.com/juupdater_files/wp-media-folder.json
   Author URI: http://www.joomunited.com
   Text Domain: wpmf
@@ -79,8 +79,9 @@ if (!defined('WPMF_TAXO')) {
 define('_WPMF_GALLERY_PREFIX', '_wpmf_gallery_');
 define('WPMF_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WPMF_DOMAIN', 'wpmf');
-define('WPMF_VERSION', '6.0.1');
+define('WPMF_VERSION', '6.1.7');
 define('WPMF_HIDE_USER_MEDIA_FOLDER_ROOT', true);
+
 
 // disable warning function _load_textdomain_just_in_time was called incorrectly
 add_filter('doing_it_wrong_trigger_error', '__return_false');
@@ -185,7 +186,7 @@ function wpmfSyncServerFolder()
                         $datas['name'] = $name;
                         $datas['type'] = 'folder';
                     } else {
-                        $is_thumb_or_scaled = preg_match('/(-scaled|[_-]\d+x\d+)|@[2-6]\x(?=\.[a-z]{3,4}$)/im', $name) === true;
+                        $is_thumb_or_scaled = preg_match('/(-scaled|[_-]\d+x\d+)|@[2-6]\x(?=\.[a-z]{3,4}$)/im', $name);
                         if ($is_thumb_or_scaled) {
                             continue;
                         }
@@ -368,16 +369,20 @@ function wpmfGetQueueOptions($cron = false)
             'wpmf_sync_onedrive_business' => esc_html__('Syncing %d OneDrive Business files', 'wpmf'),
             'wpmf_sync_dropbox' => esc_html__('Syncing %d Dropbox files', 'wpmf'),
             'wpmf_sync_nextcloud' => esc_html__('Syncing %d Nextcloud files', 'wpmf'),
+            'wpmf_sync_owncloud' => esc_html__('Syncing %d ownCloud files', 'wpmf'),
             'wpmf_google_drive_remove' => esc_html__('Comparing %d Google Drive folders', 'wpmf'),
             'wpmf_dropbox_remove' => esc_html__('Comparing %d Dropbox folders', 'wpmf'),
             'wpmf_onedrive_remove' => esc_html__('Comparing %d OneDrive folders', 'wpmf'),
             'wpmf_onedrive_business_remove' => esc_html__('Comparing %d OneDrive Business folders', 'wpmf'),
             'wpmf_nextcloud_remove' => esc_html__('Comparing %d Nextcloud folders', 'wpmf'),
+            'wpmf_owncloud_remove' => esc_html__('Comparing %d ownCloud folders', 'wpmf'),
             'wpmf_s3_import' => esc_html__('Importing %d files from Amazon S3', 'wpmf'),
             'wpmf_digitalocean_import' => esc_html__('Importing %d files from DigitalOcean', 'wpmf'),
             'wpmf_wasabi_import' => esc_html__('Importing %d files from Wasabi', 'wpmf'),
             'wpmf_linode_import' => esc_html__('Importing %d files from Linode', 'wpmf'),
             'wpmf_google_cloud_storage_import' => esc_html__('Importing %d files from Google Cloud', 'wpmf'),
+            'wpmf_cloudflare_r2_import' => esc_html__('Importing %d files from Cloudflare R2', 'wpmf'),
+            'wpmf_bunny_import' => esc_html__('Importing %d files from Bunny Storage', 'wpmf'),
             'wpmf_replace_s3_url_by_page' => esc_html__('%d actions in queue to updating Amazon S3 URL', 'wpmf'),
             'wpmf_replace_aws3_url_by_page' => esc_html__('%d actions in queue to updating Amazon S3 URL', 'wpmf'),
             'wpmf_replace_digitalocean_url_by_page' => esc_html__('%d actions in queue to updating DigitalOcean URL', 'wpmf'),
@@ -395,6 +400,7 @@ function wpmfGetQueueOptions($cron = false)
             'wpmf_remove_local_file' => esc_html__('Removing %d files after upload to cloud', 'wpmf'),
             'wpmf_import_nextgen_gallery' => esc_html__('Importing %d galleries from NextGen', 'wpmf'),
             'wpmf_nextcloud_render_thumbnail' => esc_html__('Regenerating thumbnails for %d Nextcloud files', 'wpmf'),
+            'wpmf_owncloud_render_thumbnail' => esc_html__('Regenerating thumbnails for %d ownCloud files', 'wpmf'),
             'wpmf_dropbox_render_thumbnail' => esc_html__('Regenerating thumbnails for %d Dropbox files', 'wpmf')
         ), // required
         'queue_options' => array(
@@ -562,6 +568,101 @@ function wpmfInstall()
                 $wpdb->query($wpdb->prepare($query, $values)); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Insert multiple row, can't write sql in prepare
                 $place_holders = array();
                 $values        = array();
+            }
+        }
+    }
+}
+
+
+// updaterV2
+if (is_admin()) {
+    add_action('wp_ajax_wpmfju_update_license', 'wpmfUpdateToken');
+    add_action('init', 'wpmfWizardSetupLoaded');
+    add_action('admin_init', 'wpmfAdminRedirects', 0);
+
+    /**
+     * Includes WP Media Folder setup
+     *
+     * @return void
+     */
+    function wpmfWizardSetupLoaded()
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- View request, no action
+        if (!empty($_GET['page'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- View request, no action
+            switch ($_GET['page']) {
+                case 'wpmf-setup':
+                    require_once WP_MEDIA_FOLDER_PLUGIN_DIR . '/class/install-wizard/install-wizard.php';
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Admin redirect
+     *
+     * @return void
+     */
+    function wpmfAdminRedirects()
+    {
+        global $pagenow;
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- View request, no action
+        if (($pagenow !== 'upload.php' && $pagenow !== 'plugins.php') && (!isset($_GET['page']) || $_GET['page'] !== 'option-folder')) {
+            return;
+        }
+
+        // validate and convert old token to new license token
+        if (empty(get_site_option('wpmf_license_token')) && !empty(get_option('ju_user_token'))) {
+            $extName = 'wp-media-folder';
+            $ju_update_link = JU_BASE . 'index.php?option=com_juupdater&task=licenses.convert&token=' . get_option('ju_user_token').'&extName='.$extName.'&site=' . site_url() ;
+            $res = wp_remote_get($ju_update_link);
+            $new_license = wp_remote_retrieve_body($res);
+            if (!empty($new_license)) {
+                $new_license = json_decode($new_license);
+                if (is_multisite() && current_user_can('manage_network')) {
+                    update_site_option('wpmf_license_token', $new_license->token);
+                } else {
+                    update_option('wpmf_license_token', $new_license->token);
+                    delete_option('_wpmf_activation_redirect');
+                }
+            }
+        }
+
+        // Setup wizard redirect
+        if ($pagenow !== 'plugins.php' && empty(get_site_option('wpmf_license_token'))) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- View request, no action
+            if ((!empty($_GET['page']) && in_array($_GET['page'], array('wpmf-setup')))) {
+                return;
+            }
+            if (defined('DOING_AJAX') && DOING_AJAX) {
+                return;
+            }
+            wp_safe_redirect(admin_url('index.php?page=wpmf-setup'));
+            exit;
+        }
+    }
+
+    /**
+     * Update license token
+     *
+     * @return void
+     */
+    function wpmfUpdateToken()
+    {
+
+        if (empty($_POST['ju_updater_nonce'])
+            || !wp_verify_nonce($_POST['ju_updater_nonce'], 'ju_updater_nonce')) {
+            die();
+        }
+
+        if (isset($_POST['token'])) {
+            //check if it's a multisite and have network admin access
+            if (is_multisite() && current_user_can('manage_network')) {
+                update_site_option('wpmf_license_token', sanitize_text_field($_POST['token']));
+            } else {
+                update_option('wpmf_license_token', $_POST['token']);
+                delete_option('_wpmf_activation_redirect');
+                update_option('wpmf_db_install', '1');
             }
         }
     }
@@ -756,6 +857,7 @@ function wpmfGetOption($option_name)
         'caption_lightbox_gallery' => 0,
         'hide_remote_video' => 1,
         'enable_download_media' => 0,
+        'auto_generate_webp' => 0,
         'default_featured_image_type' => 'fixed',
         'default_featured_image' => 0,
         'featured_image_folder' => 0,
@@ -803,6 +905,7 @@ function wpmfGetOption($option_name)
         'sync_periodicity' => '900',
         'show_folder_id' => 0,
         'connect_nextcloud' => 0,
+        'connect_owncloud' => 0,
         'watermark_opacity' => 100,
         'watermark_margin_unit' => 'px',
         'allow_sync_extensions' => 'jpg,jpeg,jpe,gif,png,svg,webp,bmp,tiff,tif,ico,7z,bz2,gz,rar,tgz,zip,csv,doc,docx,ods,odt,pdf,pps,ppt,pptx,ppsx,rtf,txt,xls,xlsx,psd,tif,tiff,mid,mp3,mp4,ogg,wma,3gp,avi,flv,m4v,mkv,mov,mpeg,mpg,swf,vob,wmv,webm',
@@ -908,6 +1011,9 @@ function wpmfGetOption($option_name)
 
 require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-helper.php');
 $frontend = get_option('wpmf_option_mediafolder');
+
+require_once(WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/class-generate-webp-file.php');
+new WpmfGenerateWebpFile;
 
 if (!empty($frontend) || is_admin()) {
     global $wpmfwatermark;
@@ -1600,7 +1706,7 @@ if (!function_exists('wpmfPluginCheckForUpdates')) {
         $custom_plugins_data = json_decode($response['body'], true);
 
         $package = null;
-        $token = get_option('ju_user_token');
+        $token = get_site_option('wpmf_license_token');
         if (!empty($token)) {
             $package = $custom_plugins_data['download_url'] . '&token=' . $token . '&siteurl=' . get_option('siteurl');
         }
@@ -1676,59 +1782,92 @@ add_action('init', function () {
  */
 function wpmfFindImages($content)
 {
+    global $wpdb;
+
     if (!class_exists('DOMDocument')) {
         return $content;
     }
+
+    // Get all attachments that have a remote video link
+    $attachments = $wpdb->get_results(
+        'SELECT p.ID, pm.meta_value AS remote_url
+        FROM ' . $wpdb->posts . ' p
+        INNER JOIN ' . $wpdb->postmeta . ' pm ON p.ID = pm.post_id
+        WHERE p.post_type = "attachment" AND pm.meta_key = "wpmf_remote_video_link"',
+        ARRAY_A
+    );
+
+    // Build map basename => [id, remote_url]
+    $url_map = [];
+    foreach ($attachments as $row) {
+        $url = wp_get_attachment_url($row['ID']);
+        if ($url) {
+            $basename = wp_basename($url);
+            $url_map[$basename] = [
+                'id'     => $row['ID'],
+                'remote' => $row['remote_url']
+            ];
+        }
+    }
+
     if (preg_match_all('/(<img[^>]+>)/i', $content, $matches)) {
-        if (isset($matches[0]) && is_array($matches[0])) {
+        if (!empty($matches[0])) {
             foreach ($matches[0] as $img) {
                 $dom = new DOMDocument();
                 $dom->loadHTML($img, LIBXML_NOERROR);
                 $imgItem = $dom->getElementsByTagName('img')->item(0);
+
                 if (empty($imgItem)) {
                     return $content;
                 }
-                $src = $imgItem->getAttribute('src');
+
+                $src  = $imgItem->getAttribute('src');
                 $type = $imgItem->getAttribute('data-type');
+
+                // Skip gallery images
                 if ($type === 'wpmfgalleryimg') {
                     return $content;
                 }
+
+                // Normalize the original URL (remove -300x200 or similar suffixes)
                 $pathinfo = pathinfo($src);
                 if (strpos($pathinfo['basename'], '-') !== false) {
-                    $last = strripos($src, '-');
-                    $last1 = strripos($src, '.');
-                    $last2 = strripos($src, 'x');
+                    $last   = strripos($src, '-');
+                    $last1  = strripos($src, '.');
+                    $last2  = strripos($src, 'x');
                     $filename = substr($src, 0, $last);
-                    $ext = substr($src, $last1);
-                    $width = substr($src, $last + 1, ($last2 - $last - 1));
-                    if (!$width) {
-                        $full_src = $src;
-                    } else {
-                        $full_src = $filename . $ext;
-                    }
+                    $ext      = substr($src, $last1);
+                    $width    = substr($src, $last + 1, ($last2 - $last - 1));
+                    $full_src = (!$width) ? $src : $filename . $ext;
                 } else {
                     $full_src = $src;
                 }
 
-                $attachment_ID = attachment_url_to_postid($full_src);
-                if (!empty($attachment_ID)) {
-                    $remote_video_url = get_post_meta($attachment_ID, 'wpmf_remote_video_link', true);
-                    if (!empty($remote_video_url)) {
-                        wp_enqueue_style(
-                            'wpmf-remote-video',
-                            WPMF_PLUGIN_URL . 'assets/css/remote_video.css',
-                            array(),
-                            WPMF_VERSION
-                        );
-                        list($iframeVideoUrl, $videoType) = Joomunited\WPMediaFolder\WpmfHelper::parseVideoUrl($remote_video_url);
-                        if ($videoType === 'dailymotion') {
-                            $return = '<div style="left: 0; width: 100%; height: 0; position: relative; padding-bottom: 56%;"><iframe src="' . $iframeVideoUrl . '" style="top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;" allowfullscreen allow="encrypted-media;"></iframe></div>';
-                        } else {
-                            $return = '<figure class="wpmf-block-embed"><div class="wpmf-block-embed__wrapper"><iframe src="' . $iframeVideoUrl . '" frameborder="0"  allowFullScreen></iframe></div></figure>';
-                        }
+                $basename = wp_basename($full_src);
 
-                        $content = str_replace($img, $return, $content);
+                if (isset($url_map[$basename]) && !empty($url_map[$basename]['remote'])) {
+                    $remote_video_url = $url_map[$basename]['remote'];
+
+                    wp_enqueue_style(
+                        'wpmf-remote-video',
+                        WPMF_PLUGIN_URL . 'assets/css/remote_video.css',
+                        array(),
+                        WPMF_VERSION
+                    );
+
+                    list($iframeVideoUrl, $videoType) = Joomunited\WPMediaFolder\WpmfHelper::parseVideoUrl($remote_video_url);
+
+                    if ($videoType === 'dailymotion') {
+                        $return = '<div style="left:0;width:100%;height:0;position:relative;padding-bottom:56%;">'
+                                . '<iframe src="' . esc_url($iframeVideoUrl) . '" style="top:0;left:0;width:100%;height:100%;position:absolute;border:0;" allowfullscreen allow="encrypted-media"></iframe>'
+                                . '</div>';
+                    } else {
+                        $return = '<figure class="wpmf-block-embed"><div class="wpmf-block-embed__wrapper">'
+                                . '<iframe src="' . esc_url($iframeVideoUrl) . '" frameborder="0" allowfullscreen></iframe>'
+                                . '</div></figure>';
                     }
+
+                    $content = str_replace($img, $return, $content);
                 }
             }
         }
@@ -1976,6 +2115,42 @@ function wpmfDownloadFile()
                                     }
                                 }
                                 break;
+                            case 'owncloud':
+                                require_once WPMFAD_PLUGIN_DIR . '/class/wpmfAddonOwnCloudAdmin.php';
+                                include_once WPMFAD_PLUGIN_DIR . '/class/includes/mime-types.php';
+                                $library = new WpmfAddonOwncloudAdmin;
+                                $path = get_post_meta($file_id, 'wpmf_drive_path', true);
+                                $valid_path = $library->getValidPath($path);
+                                $params = get_option('_wpmfAddon_owncloud_config');
+                                $isConnected = $library->isConnected();
+                                if ($isConnected) {
+                                    $ch = curl_init();
+                                    curl_setopt($ch, CURLOPT_URL, $library->davUrl . $valid_path);
+                                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                                    curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+                                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                                    curl_setopt($ch, CURLOPT_USERPWD, $params['username'] . ':' . $params['password']);
+                                    $content = curl_exec($ch);
+                                    curl_close($ch);
+
+                                    if ($content) {
+                                        $info = pathinfo($path);
+                                        $meta = get_post_meta($file_id, '_wp_attachment_metadata', true);
+                                        $extension = strtolower($info['extension']);
+                                        $contenType = getMimeType($extension);
+                                        header('Content-Description: File Transfer');
+                                        header('Content-Type: ' . $contenType);
+                                        header('Content-Disposition: attachment; filename="' . basename($path) . '"');
+                                        header('Expires: 0');
+                                        header('Cache-Control: must-revalidate');
+                                        header('Pragma: public');
+                                        header('Content-Length: ' . $meta['filesize']);
+                                        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- String is escaped
+                                        echo $content;
+                                    }
+                                }
+                                break;
                         }
                         exit;
                     }
@@ -2055,4 +2230,62 @@ function wpmfCreateWatermarkAfterProductSave($product_id)
         $metadata   = wp_get_attachment_metadata($image_id);
         $wpmfwatermark->createWatermarkImage($metadata, $image_id, true);
     }
+}
+
+add_filter('the_content', 'replaceVideoAndAudioGoogleDriveWithIframe');
+
+/**
+ * Replace Google Drive video and audio blocks with responsive iframes.
+ *
+ * @param string $content Post content.
+ *
+ * @return string
+ */
+function replaceVideoAndAudioGoogleDriveWithIframe($content)
+{
+    // Replace Google Drive video
+    $content =  preg_replace_callback(
+        '#<figure class="wp-block-video">.*?<video[^>]+src=["\']([^"\']*drive\.google\.com[^"\']*)["\'][^>]*>.*?</video>.*?</figure>#is',
+        function ($matches) {
+            $video_src = html_entity_decode($matches[1]);
+            if (preg_match('/id=([^&]+)/', $video_src, $id_match)) {
+                $file_id = $id_match[1];
+                return '<iframe src="https://drive.google.com/file/d/' . esc_attr($file_id) . '/preview" style="width:100%; aspect-ratio:16/9; border:none; display:flex" allow="autoplay" allowfullscreen></iframe>';
+            }
+            return $matches[0];
+        },
+        $content
+    );
+
+
+    // Replace Google Drive audio
+    $content = preg_replace_callback(
+        '#<figure class="wp-block-audio">.*?<audio[^>]+src=["\']([^"\']*drive\.google\.com[^"\']*)["\'][^>]*>.*?</audio>.*?</figure>#is',
+        function ($matches) {
+            $audio_src = html_entity_decode($matches[1]);
+            if (preg_match('/id=([^&]+)/', $audio_src, $id_match)) {
+                $file_id = $id_match[1];
+                return '<iframe src="https://drive.google.com/file/d/' . esc_attr($file_id) . '/preview" style="width:100%; height:130px; border:none; display:flex" allow="autoplay" allowfullscreen></iframe>';
+            }
+            return $matches[0];
+        },
+        $content
+    );
+
+    return $content;
+}
+
+/**
+ * Format a number using a space as thousands separator if >= 10000,
+ * otherwise return as plain number without separator.
+ *
+ * @param integer $number The number to format.
+ *
+ * @return string The formatted number string.
+ */
+function wpmfCustomNumberFormat($number)
+{
+    return $number >= 10000
+        ? number_format($number, 0, '', ' ')
+        : number_format($number, 0, '', '');
 }

@@ -31,7 +31,7 @@ class FrmProField {
 						array(
 							'parent_form_id' => $field_data['form_id'],
 							'field_name'     => $field_data['name'],
-						) 
+						)
 					);
 				}
 				break;
@@ -62,11 +62,39 @@ class FrmProField {
 			return;
 		}
 
+		if ( self::maybe_use_repeater_form_id( $field_data ) ) {
+			// Do not override the in_section value if it is already set
+			// This way it can be passed in field_options when the field is created.
+			return;
+		}
+
 		$ajax_action = FrmAppHelper::get_post_param( 'action', '', 'sanitize_title' );
 		if ( 'frm_insert_field' === $ajax_action ) {
 			$section_id                                = FrmAppHelper::get_post_param( 'section_id', 0, 'absint' );
 			$field_data['field_options']['in_section'] = $section_id;
 		}
+	}
+
+	/**
+	 * When insertFormField is called, it always passes the parent form ID.
+	 * So map it to the repeater's form ID when applicable.
+	 *
+	 * @since 6.24
+	 *
+	 * @param array $field_data
+	 * @return bool True if the section logic has already been handled. When this is true, we exit switch_in_section_field_option early.
+	 */
+	private static function maybe_use_repeater_form_id( &$field_data ) {
+		if ( empty( $field_data['field_options']['in_section'] ) ) {
+			return false;
+		}
+
+		$section_field = FrmField::getOne( $field_data['field_options']['in_section'] );
+		if ( $section_field && ! empty( $section_field->field_options['repeat'] ) ) {
+			$field_data['form_id'] = $section_field->field_options['form_select'];
+		}
+
+		return true;
 	}
 
 	/**
@@ -104,12 +132,66 @@ class FrmProField {
 			self::format_mime_types( $field_options, $field->id );
 		}
 
-		$field_options['custom_currency'] = ! empty( $field_options['custom_currency'] ) ? 1 : 0;
+		$field_options['custom_currency'] = 0; // This setting no longer exists.
+
 		if ( isset( $field_options['custom_decimals'] ) ) {
 			$field_options['custom_decimals'] = absint( $field_options['custom_decimals'] );
 		}
 
+		// Ensure proper handling when the format dropdown is "None".
+		if ( isset( $field_options['format'] ) && '' === $field_options['format'] && isset( $field_options['calc_dec'] ) && is_numeric( $field_options['calc_dec'] ) ) {
+			$field_options['calc_dec'] = '';
+		}
+
 		$field_options = self::sanitize_custom_thousand_separator( $field_options );
+		$field_options = self::update_show_slider_range_value( $field->type, $field_options );
+		$field_options = self::reset_conditional_logic_settings( $field->id, $field_options );
+
+		return $field_options;
+	}
+
+	/**
+	 * @since 6.20
+	 *
+	 * @param string $field_type
+	 * @param array  $field_options
+	 *
+	 * @return array
+	 */
+	private static function update_show_slider_range_value( $field_type, $field_options ) {
+		if ( 'range' !== $field_type ) {
+			return $field_options;
+		}
+		$field_options['show_slider_range'] = absint( $field_options['show_slider_range'] );
+		return $field_options;
+	}
+
+	/**
+	 * If the conditional logic is disabled, reset its settings.
+	 *
+	 * @since 6.24
+	 *
+	 * @param int   $field_id The field ID.
+	 * @param array $field_options The field options.
+	 * @return array
+	 */
+	private static function reset_conditional_logic_settings( $field_id, $field_options ) {
+		if ( isset( $field_options['enable_conditional_logic'] ) && '0' === $field_options['enable_conditional_logic'] ) {
+			$defaults = array(
+				'enable_conditional_logic' => '0',
+				'show_hide'                => 'show',
+				'any_all'                  => 'any',
+				'hide_field'               => array(),
+				'hide_field_cond'          => array( '==' ),
+				'hide_opt'                 => array(),
+			);
+
+			foreach ( $defaults as $key => $value ) {
+				$field_options[ $key ] = $value;
+				// Update POST data to reset the conditional logic settings after the Form Builder is updated and the page reloads.
+				$_POST['field_options'][ $key . '_' . $field_id ] = $value;
+			}
+		}
 
 		return $field_options;
 	}
@@ -119,7 +201,7 @@ class FrmProField {
 	 * @return void
 	 */
 	private static function format_mime_types( &$options, $field_id ) {
-		$file_options = isset( $options['ftypes'] ) ? $options['ftypes'] : array();
+		$file_options = $options['ftypes'] ?? array();
 		if ( ! empty( $file_options ) ) {
 			$mime_array = array();
 
@@ -149,6 +231,27 @@ class FrmProField {
 	}
 
 	/**
+	 * Switches quantity field's product fields to the new field IDs.
+	 *
+	 * @since 6.19
+	 *
+	 * @param array $values
+	 *
+	 * @return void
+	 */
+	private static function switch_quantity_product_field_ids( &$values ) {
+		if ( $values['type'] !== 'quantity' || empty( $values['field_options']['product_field'] ) ) {
+			return;
+		}
+		global $frm_duplicate_ids;
+		foreach ( $values['field_options']['product_field'] as $index => $field_id ) {
+			if ( ! empty( $frm_duplicate_ids[ $field_id ] ) ) {
+				$values['field_options']['product_field'][ $index ] = (string) $frm_duplicate_ids[ $field_id ];
+			}
+		}
+	}
+
+	/**
 	 * @param array $values
 	 * @param array $atts {
 	 *     @type bool $after True on the second run.
@@ -158,7 +261,7 @@ class FrmProField {
 	public static function duplicate( $values, $atts = array() ) {
 		global $frm_duplicate_ids;
 
-		$is_second_run = isset( $atts['after'] ) ? $atts['after'] : false;
+		$is_second_run = $atts['after'] ?? false;
 
 		if ( empty( $frm_duplicate_ids ) || empty( $values['field_options'] ) ) {
 			if ( ! $is_second_run ) {
@@ -174,7 +277,7 @@ class FrmProField {
 				continue;
 			}
 
-			$this_val = isset( $values[ $opt ] ) ? $values[ $opt ] : $values['field_options'][ $opt ];
+			$this_val = $values[ $opt ] ?? $values['field_options'][ $opt ];
 			if ( is_array( $this_val ) ) {
 				continue;
 			}
@@ -247,6 +350,7 @@ class FrmProField {
 		self::switch_out_form_select( $frm_duplicate_ids, $values );
 		self::switch_id_for_section_tracking_field_option( $frm_duplicate_ids, $values );
 		self::switch_ids_for_lookup_settings( $frm_duplicate_ids, $values );
+		self::switch_quantity_product_field_ids( $values );
 
 		return $values;
 	}
@@ -315,7 +419,7 @@ class FrmProField {
 	 * @param array $field_options
 	 */
 	private static function maybe_switch_field_id_in_setting( $frm_duplicate_ids, $setting, &$field_options ) {
-		$old_field_id = isset( $field_options[ $setting ] ) ? $field_options[ $setting ] : 0;
+		$old_field_id = $field_options[ $setting ] ?? 0;
 
 		if ( ! $old_field_id ) {
 			return;
@@ -443,7 +547,7 @@ class FrmProField {
 		if ( FrmField::is_repeating_field( $field ) || $field['type'] === 'form' ) {
 			// If repeating field or embedded form
 
-			$repeat_id = isset( $field['form_select'] ) ? $field['form_select'] : $field['field_options']['form_select'];
+			$repeat_id = $field['form_select'] ?? $field['field_options']['form_select'];
 			$children  = FrmDb::get_col( 'frm_fields', array( 'form_id' => $repeat_id ) );
 
 		} else {

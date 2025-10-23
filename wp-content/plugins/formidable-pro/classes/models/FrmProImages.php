@@ -85,8 +85,8 @@ class FrmProImages {
 
 		echo '<div class="frm_grid_container frm_priority_field_choices">';
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/image-options.php';
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/separate-values.php';
 		echo '</div>';
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/separate-values.php';
 	}
 
 	/**
@@ -100,7 +100,7 @@ class FrmProImages {
 		}
 
 		$opt_key = $atts['opt_key'];
-		$opt     = isset( $field['options'][ $opt_key ] ) ? $field['options'][ $opt_key ] : '';
+		$opt     = $field['options'][ $opt_key ] ?? '';
 		$return  = array( 'filename' );
 		$image   = self::single_option_details( compact( 'opt', 'opt_key', 'field', 'return' ) );
 		$opt     = FrmFieldsHelper::get_label_from_array( $opt, $opt_key, $field );
@@ -173,7 +173,7 @@ class FrmProImages {
 	private static function check_image( $opt, $field ) {
 		if ( is_array( $opt ) ) {
 			if ( FrmField::is_option_true( $field, 'image_options' ) ) {
-				$opt = isset( $opt['image'] ) ? $opt['image'] : 0;
+				$opt = $opt['image'] ?? 0;
 			} else {
 				$opt = 0;
 			}
@@ -228,7 +228,7 @@ class FrmProImages {
 		$matches = array();
 		preg_match( '/([A-Za-z0-9.\-_]+)$/', $filename, $matches );
 
-		return isset( $matches[0] ) ? $matches[0] : '';
+		return $matches[0] ?? '';
 	}
 
 	/**
@@ -243,7 +243,7 @@ class FrmProImages {
 
 		$show_label  = self::should_show_label( $field );
 		$label_class = $show_label ? ' frm_label_with_image' : '';
-		$text_label  = self::get_label_from_opt( $opt );
+		$text_label  = self::get_label_from_opt( $opt, $field );
 		$field_type  = FrmField::get_option( $field, 'type' );
 
 		$label  = '<div class="frm_image_option_container' . esc_attr( $label_class ) . '">';
@@ -282,12 +282,36 @@ class FrmProImages {
 		return apply_filters( 'frm_pro_field_should_show_label', empty( $field['hide_image_text'] ), compact( 'field' ) );
 	}
 
-	private static function get_label_from_opt( $opt ) {
+	/**
+	 * @param array|string $opt
+	 * @param array|object $field This is passed so it can be used as an arg for the frm_choice_field_option_label filter.
+	 * @return string
+	 */
+	private static function get_label_from_opt( $opt, $field ) {
 		if ( is_array( $opt ) ) {
-			$opt = isset( $opt['label'] ) ? $opt['label'] : '';
+			$label = $opt['label'] ?? '';
+		} else {
+			$label = $opt;
 		}
 
-		return $opt;
+		$field = (array) $field;
+
+		/**
+		 * Allows changing the HTML of option label in choice field (radio, checkbox,...).
+		 *
+		 * @since 6.23 This filter was added in Lite in version 5.0.04, but was not supported for image options.
+		 *
+		 * @param string $label Label HTML.
+		 * @param array  $args  The arguments. Contains `field`.
+		 */
+		$filtered_label = apply_filters( 'frm_choice_field_option_label', $label, compact( 'field' ) );
+
+		if ( ! is_string( $filtered_label ) ) {
+			_doing_it_wrong( __METHOD__, 'The frm_choice_field_option_label filter must return a string.', '6.23' );
+			return $label;
+		}
+
+		return $filtered_label;
 	}
 
 	/**
@@ -348,9 +372,9 @@ class FrmProImages {
 				continue;
 			}
 
-			$f_labels[ $opt_key ] = isset( $opt['label'] ) ? $opt['label'] : reset( $opt );
-			$f_values[ $opt_key ] = isset( $opt['value'] ) ? $opt['value'] : $f_labels[ $opt_key ];
-			$f_images[ $opt_key ] = isset( $opt['image'] ) ? $opt['image'] : 0;
+			$f_labels[ $opt_key ] = $opt['label'] ?? reset( $opt );
+			$f_values[ $opt_key ] = $opt['value'] ?? $f_labels[ $opt_key ];
+			$f_images[ $opt_key ] = $opt['image'] ?? 0;
 			unset( $opt_key, $opt );
 		}
 
@@ -388,8 +412,8 @@ class FrmProImages {
 		$image_size_option = FrmField::get_option( $field, 'image_size' );
 		$image_values      = array(
 			'display_options' => $value,
-			'showing_images'  => isset( $atts['show_image'] ) ? $atts['show_image'] : false,
-			'show_label'      => isset( $atts['show_label'] ) ? $atts['show_label'] : ! $hide_image_label,
+			'showing_images'  => $atts['show_image'] ?? false,
+			'show_label'      => $atts['show_label'] ?? ! $hide_image_label,
 			'multiple_values' => $multiple_values,
 			'image_size'      => $image_size_option ? $image_size_option : self::get_default_size(),
 		);
@@ -461,7 +485,7 @@ class FrmProImages {
 
 		$file_field_object                  = $image_values['file_object'];
 		$new_atts                           = $file_field_object->set_file_atts( $atts );
-		$new_atts['show_image']             = isset( $atts['show_image'] ) ? $atts['show_image'] : 1;
+		$new_atts['show_image']             = $atts['show_image'] ?? 1;
 		$new_atts['add_link_for_non_image'] = false;
 
 		// If image_option_size is set for frm-show-entry shortcode, use it.
@@ -474,7 +498,7 @@ class FrmProImages {
 		$has_image = ! empty( $value['image'] ) && $new_atts['show_image'];
 
 		$display_content = '';
-		$label           = isset( $value['label'] ) ? $value['label'] : '';
+		$label           = $value['label'] ?? '';
 
 		if ( $has_image ) {
 			$image_id = $value['image'];

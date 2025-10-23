@@ -854,16 +854,24 @@ var wpmfTreeOptionsModule;
         $('.import_ftp_button').on('click', function () {
             var $this = $(this);
             var check_only_file = document.getElementById("only_file");
+            var check_keep_root_directory = document.getElementById("keep_root_directory");
+
             var wpmf_only_file = 0;
+            var wpmf_root_directory = 0;
+
             if (check_only_file.checked == true){
                 wpmf_only_file = 1;
-            } 
+            }
+            if (check_keep_root_directory.checked == true){
+                wpmf_root_directory = 1;
+            }
             $.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
                     action: "wpmf_import_folder",
                     wpmf_only_file: wpmf_only_file,
+                    wpmf_root_directory: wpmf_root_directory,
                     wpmf_list_import: wpmf_list_import,
                     wpmf_nonce: wpmfoption.vars.wpmf_nonce
                 },

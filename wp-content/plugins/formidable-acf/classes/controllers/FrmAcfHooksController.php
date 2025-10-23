@@ -44,7 +44,7 @@ class FrmAcfHooksController {
 	 * Loads translation.
 	 */
 	private static function load_translation() {
-		add_action( 'plugins_loaded', array( 'FrmAcfAppController', 'init_translation' ) );
+		add_action( 'init', array( 'FrmAcfAppController', 'init_translation' ), 0 );
 	}
 
 	/**

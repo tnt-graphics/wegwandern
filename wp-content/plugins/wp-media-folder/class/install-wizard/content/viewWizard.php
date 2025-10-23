@@ -23,8 +23,9 @@ $image_src = WPMF_PLUGIN_URL . 'class/install-wizard/content/welcome-illustratio
                 <?php esc_html_e('Continue to environment check', 'wpmf'); ?>
             </a>
 
-            <a href="<?php echo esc_url(admin_url('options-general.php?page=option-folder'))?>" class="backup-button">
-                    <?php esc_html_e('I know what I\'m doing, skip wizard', 'wpmf'); ?></a>
+            <a href="<?php echo esc_url(add_query_arg('skip_wizard', 1, admin_url('index.php?page=wpmf-setup'))) ?>" class="backup-button">
+                <?php esc_html_e('I know what I\'m doing, skip wizard', 'wpmf'); ?>
+            </a>
         </div>
     </div>
 </form>

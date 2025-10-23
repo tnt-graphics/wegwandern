@@ -60,7 +60,7 @@ class FrmProPageField {
 			$atts['id'] = $form->id;
 		}
 
-		$position = isset( $form->options['pagination_position'] ) ? $form->options['pagination_position'] : '';
+		$position = $form->options['pagination_position'] ?? '';
 		if ( current_action() !== $setting_action[ $position ] ) {
 			return;
 		}
@@ -88,7 +88,7 @@ class FrmProPageField {
 
 	private static function get_pages_array( $page_breaks, $form ) {
 		global $frm_vars;
-		$page_order = isset( $frm_vars['prev_page'][ $form->id ] ) ? $frm_vars['prev_page'][ $form->id ] : 0;
+		$page_order = $frm_vars['prev_page'][ $form->id ] ?? 0;
 
 		$page_number  = 1;
 		$current_page = 0;
@@ -294,7 +294,7 @@ class FrmProPageField {
 	private static function get_title_for_page( $atts ) {
 		$field_id      = $atts['page']['data-field'];
 		$default_title = sprintf( __( 'Page %d', 'formidable-pro' ), $atts['page_number'] );
-		$title         = isset( $atts['page_titles'][ $field_id ] ) ? $atts['page_titles'][ $field_id ] : $default_title;
+		$title         = $atts['page_titles'][ $field_id ] ?? $default_title;
 
 		return $title;
 	}

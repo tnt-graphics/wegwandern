@@ -99,7 +99,13 @@ class Updraft_Dashboard_News_Offer extends Updraft_Dashboard_News {
 			<ul>
 				<li class="rsswidget <?php echo esc_attr($this->slug.'_dashboard_news_offer_item'); ?>">
 					<div>
-						<p style="color: #fff"><?php esc_html_e(sprintf("This website uses the %s plugin.", 'UpdraftPlus'), 'updraftplus'); ?> <?php esc_html_e("Do you want to see official news from this plugin in this Events and News section?", 'updraftplus'); ?></p>
+						<p style="color: #fff">
+						<?php
+							/* translators: %s: Plugin name */
+							echo sprintf(esc_html__('This website uses the %s plugin.', 'updraftplus'), 'UpdraftPlus');
+							esc_html_e("Do you want to see official news from this plugin in this Events and News section?", 'updraftplus');
+						?>
+						</p>
 						<a class="ud-news-confirm-link" data-val="yes" href="<?php echo esc_url(UpdraftPlus::get_current_clean_url()); ?>"><?php esc_html_e('Yes, show me the news.', 'updraftplus'); ?></a><a class="ud-news-confirm-link" href="<?php echo esc_url(UpdraftPlus::get_current_clean_url()); ?>" data-val="no"><?php esc_html_e("No, please don't.", 'updraftplus'); ?></a>
 					</div>
 				</li>

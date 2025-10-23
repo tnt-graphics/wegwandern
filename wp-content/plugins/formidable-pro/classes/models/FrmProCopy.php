@@ -87,7 +87,7 @@ class FrmProCopy {
 		global $blog_id;
 		$new_values['blog_id'] = $blog_id;
 		$new_values['form_id'] = isset( $values['form_id'] ) ? (int) $values['form_id'] : null;
-		$new_values['type']    = isset( $values['type'] ) ? $values['type'] : 'form'; // options here are: form, display
+		$new_values['type']    = $values['type'] ?? 'form'; // options here are: form, display
 		if ( 'form' === $new_values['type'] ) {
 			$form_copied            = FrmForm::getOne( $new_values['form_id'] );
 			$new_values['copy_key'] = $form_copied->form_key;

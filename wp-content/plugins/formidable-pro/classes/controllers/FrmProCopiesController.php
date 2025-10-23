@@ -25,7 +25,7 @@ class FrmProCopiesController {
 		global $frm_vars;
 
 		$importing = defined( 'WP_IMPORTING' ) && WP_IMPORTING;
-		$upgrading = isset( $frm_vars['doing_upgrade'] ) ? $frm_vars['doing_upgrade'] : false;
+		$upgrading = $frm_vars['doing_upgrade'] ?? false;
 
 		if ( $importing || $upgrading ) {
 			$install_complete = get_option( 'frmpro_db_version' );

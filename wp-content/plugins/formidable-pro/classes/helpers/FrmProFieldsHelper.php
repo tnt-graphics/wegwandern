@@ -7,6 +7,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProFieldsHelper {
 
 	/**
+	 * Keep a record of fields that pass self::hide_on_page checks.
+	 * This way we can reference back later and possibly show the field in test mode.
+	 *
+	 * @since 6.23
+	 *
+	 * @var array
+	 */
+	private static $fields_hidden_on_page = array();
+
+	/**
 	 * @param mixed          $value
 	 * @param false|stdClass $field
 	 * @param bool           $dynamic_default
@@ -109,11 +119,13 @@ class FrmProFieldsHelper {
 	 * Replace Formidable shortcodes (that are not added with add_shortcode) in a string
 	 *
 	 * @since 2.0.24
-	 * @param array $args
-	 * @param string $value
+	 *
+	 * @param array       $args
+	 * @param string|null $value
+	 * @return void
 	 */
 	public static function replace_non_standard_formidable_shortcodes( $args, &$value ) {
-		if ( strpos( $value, '[' ) === false ) {
+		if ( is_null( $value ) || strpos( $value, '[' ) === false ) {
 			// don't run checks if there are no shortcodes
 			return;
 		}
@@ -239,7 +251,7 @@ class FrmProFieldsHelper {
 		$shortcode_functions = self::get_shortcode_to_functions();
 		$shortcode_atts      = self::get_shortcode_function_parameters();
 
-		return call_user_func( $shortcode_functions[ $shortcode ], isset( $shortcode_atts[ $shortcode ] ) ? $shortcode_atts[ $shortcode ] : '' );
+		return call_user_func( $shortcode_functions[ $shortcode ], $shortcode_atts[ $shortcode ] ?? '' );
 	}
 
 	/**
@@ -284,8 +296,8 @@ class FrmProFieldsHelper {
 				break;
 
 			case 'date':
-				$date      = isset( $atts['offset'] ) ? $atts['offset'] : current_time( 'mysql' );
-				$format    = isset( $atts['format'] ) ? $atts['format'] : '';
+				$date      = $atts['offset'] ?? current_time( 'mysql' );
+				$format    = $atts['format'] ?? '';
 				$new_value = self::get_single_date( $date, $format );
 				break;
 
@@ -575,9 +587,12 @@ class FrmProFieldsHelper {
 
 	/**
 	 * @since 3.0
+	 *
+	 * @param string|null $value
+	 * @return bool
 	 */
 	private static function has_shortcode( $value ) {
-		return strpos( $value, '[' ) !== false && strpos( $value, ']' ) !== false;
+		return is_string( $value ) && strpos( $value, '[' ) !== false && strpos( $value, ']' ) !== false;
 	}
 
 	/**
@@ -628,7 +643,7 @@ class FrmProFieldsHelper {
 	 * @param array $args
 	 * @return void
 	 */
-	private static function replace_each_field_id_shortcode( &$value, $args ) {
+	public static function replace_each_field_id_shortcode( &$value, $args ) {
 		// if a shortcode is nested, only get the inner shortcode
 		$pattern = "/\[([^\[](\d*)\b(.*?)(?:(\/))?)\]/s";
 		preg_match_all( $pattern, $value, $matches, PREG_PATTERN_ORDER );
@@ -651,7 +666,7 @@ class FrmProFieldsHelper {
 			if ( ! isset( $_REQUEST ) || ! isset( $_REQUEST['item_meta'] ) ) {
 				if ( is_object( $args['field'] ) && $shortcode === $args['field']->id ) {
 					// If the form hasn't been posted, set self-defaults to blank.
-					$value = str_replace( $val, isset( $atts['default'] ) ? $atts['default'] : '', $value );
+					$value = str_replace( $val, $atts['default'] ?? '', $value );
 				}
 				continue;
 			}
@@ -886,6 +901,7 @@ class FrmProFieldsHelper {
 		}
 
 		self::maybe_use_default_value( $values );
+		self::maybe_show_hidden_field( $field, $values, true );
 		self::prepare_post_fields( $field, $values );
 		self::add_field_javascript( $values );
 
@@ -1095,15 +1111,25 @@ class FrmProFieldsHelper {
 	/**
 	 * @param stdClass $field
 	 * @param array    $values
+	 * @param bool     $is_new True if creating a new entry. False if editing an existing entry.
 	 * @return void
 	 */
-	private static function maybe_show_hidden_field( $field, &$values ) {
-		if ( $values['type'] === 'hidden' ) {
-			$admin_edit = FrmAppHelper::is_admin() && current_user_can( 'administrator' ) && ! FrmAppHelper::is_admin_page( 'formidable' );
-			if ( $admin_edit && self::field_on_current_page( $field ) ) {
-				$values['type']        = 'text';
-				$values['custom_html'] = FrmFieldsHelper::get_default_html( 'text' );
-			}
+	private static function maybe_show_hidden_field( $field, &$values, $is_new = false ) {
+		if ( $values['type'] !== 'hidden' ) {
+			return;
+		}
+
+		$admin_edit = FrmAppHelper::is_admin_page( 'formidable-entries' ) && current_user_can( 'frm_create_entries' );
+		if ( ! $admin_edit || ! self::field_on_current_page( $field ) ) {
+			return;
+		}
+
+		$values['type']        = 'text';
+		$values['custom_html'] = FrmFieldsHelper::get_default_html( 'text' );
+
+		// If creating a new entry, make the input readonly.
+		if ( $is_new ) {
+			$values['custom_html'] = str_replace( '[input]', '[input readonly=1]', $values['custom_html'] );
 		}
 	}
 
@@ -1167,6 +1193,7 @@ class FrmProFieldsHelper {
 		return array(
 			'align'                     => 'block',
 			'form_select'               => '',
+			'enable_conditional_logic'  => '1',
 			'show_hide'                 => 'show',
 			'any_all'                   => 'any',
 			'hide_field'                => array(),
@@ -1177,6 +1204,8 @@ class FrmProFieldsHelper {
 			'taxonomy'                  => 'category',
 			'exclude_cat'               => 0,
 			'read_only'                 => 0,
+			'range_field'               => 0,
+			'linked_date_field'         => 0,
 			'autocomplete'              => '',
 			'admin_only'                => '',
 			'unique'                    => 0,
@@ -1186,6 +1215,7 @@ class FrmProFieldsHelper {
 			'calc_type'                 => '',
 			'is_currency'               => 0,
 			'custom_currency'           => 0,
+			'use_global_currency'       => 1,
 			'custom_thousand_separator' => ',',
 			'custom_decimal_separator'  => '.',
 			'custom_decimals'           => 2,
@@ -1248,7 +1278,7 @@ class FrmProFieldsHelper {
 		$field['type']           = apply_filters( 'frm_field_type', $field['type'], $field_object, '' );
 		$field['size']           = isset( $field_object->field_options['size'] ) && $field_object->field_options['size'] != '' ? $field_object->field_options['size'] : '';
 		$field['blank']          = $field_object->field_options['blank'];
-		$field['default_value']  = isset( $args['default_value'] ) ? $args['default_value'] : '';
+		$field['default_value']  = $args['default_value'] ?? '';
 		$field['parent_form_id'] = $field_object->form_id;
 
 		if ( isset( $args['field_id'] ) ) {
@@ -1386,12 +1416,12 @@ class FrmProFieldsHelper {
 			'inputType'     => self::get_the_input_type_for_logic_rules( $field, $original_type ),
 			'isMultiSelect' => FrmField::is_multiple_select( $field ),
 			'formId'        => $form_id,
-			'inSection'     => isset( $field['in_section'] ) ? $field['in_section'] : '0',
-			'inEmbedForm'   => isset( $field['in_embed_form'] ) ? $field['in_embed_form'] : '0',
+			'inSection'     => $field['in_section'] ?? '0',
+			'inEmbedForm'   => $field['in_embed_form'] ?? '0',
 			'isRepeating'   => ( $form_id != $field['form_id'] ),
 			'dependents'    => array(),
-			'showHide'      => isset( $field['show_hide'] ) ? $field['show_hide'] : 'show',
-			'anyAll'        => isset( $field['any_all'] ) ? $field['any_all'] : 'any',
+			'showHide'      => $field['show_hide'] ?? 'show',
+			'anyAll'        => $field['any_all'] ?? 'any',
 			'conditions'    => array(),
 		);
 
@@ -1435,7 +1465,7 @@ class FrmProFieldsHelper {
 			'dependents'    => array(),
 			'showHide'      => $show_hide,
 			'hideDisable'   => $hide_disable,
-			'anyAll'        => isset( $submit_field['any_all'] ) ? $submit_field['any_all'] : 'any',
+			'anyAll'        => $submit_field['any_all'] ?? 'any',
 			'conditions'    => array(),
 		);
 
@@ -1723,7 +1753,7 @@ class FrmProFieldsHelper {
 			array(
 				'cat'  => $categories,
 				'args' => $args,
-			) 
+			)
 		);
 
 		return $options;
@@ -1748,7 +1778,7 @@ class FrmProFieldsHelper {
 		}
 
 		if ( ! $args['value'] ) {
-			$args['value'] = isset( $args['field']['value'] ) ? $args['field']['value'] : '';
+			$args['value'] = $args['field']['value'] ?? '';
 		}
 
 		if ( ! $args['exclude'] ) {
@@ -1842,7 +1872,7 @@ class FrmProFieldsHelper {
 				'orderby'    => 'name',
 				'order'      => 'ASC',
 				'hide_empty' => false,
-			) 
+			)
 		);
 
 		//Only go 5 levels deep at the most
@@ -1882,7 +1912,7 @@ class FrmProFieldsHelper {
 			$checked = '';
 		}
 
-		$sanitized_name = ( isset( $atts['field']['id'] ) ? $atts['field']['id'] : $atts['field']['field_options']['taxonomy'] ) . '-' . $atts['cat']->cat_ID;
+		$sanitized_name = ( $atts['field']['id'] ?? $atts['field']['field_options']['taxonomy'] ) . '-' . $atts['cat']->cat_ID;
 		// Makes sure ID is unique for excluding checkboxes in Categories/Taxonomies in Create Post action
 		if ( $atts['tax_num'] ) {
 			$sanitized_name .= '-' . $atts['tax_num'];
@@ -1960,7 +1990,7 @@ class FrmProFieldsHelper {
 		$final_options = array();
 		foreach ( $options as $opt_key => $opt ) {
 			if ( is_array( $opt ) ) {
-				$opt_key = isset( $opt['value'] ) ? $opt['value'] : ( isset( $opt['label'] ) ? $opt['label'] : reset( $opt ) );
+				$opt_key = $opt['value'] ?? $opt['label'] ?? reset( $opt );
 			} else {
 				$opt_key = $opt;
 			}
@@ -2403,7 +2433,7 @@ class FrmProFieldsHelper {
 			array(
 				'field'    => $f,
 				'is_first' => $ajax_now,
-			) 
+			)
 		);
 	}
 
@@ -2523,7 +2553,14 @@ class FrmProFieldsHelper {
 		}
 
 		foreach ( $fields as $f ) {
-			if ( $f->type === 'hidden' || $f->type === 'user_id' ) {
+			if ( $f->type === 'user_id' ) {
+				continue;
+			}
+
+			if ( $f->type === 'hidden' ) {
+				if ( self::hide_on_page( $page_numbers, $f ) ) {
+					self::$fields_hidden_on_page[] = (int) $f->id;
+				}
 				continue;
 			}
 
@@ -2532,6 +2569,7 @@ class FrmProFieldsHelper {
 					$f->field_options = array();
 				}
 
+				self::$fields_hidden_on_page[]     = (int) $f->id;
 				$f->field_options['original_type'] = $f->type;
 				$f->type                           = 'hidden';
 			}
@@ -2643,7 +2681,7 @@ class FrmProFieldsHelper {
 
 		$prepend     = FrmField::get_option( $field, 'prepend' );
 		$append      = FrmField::get_option( $field, 'append' );
-		$is_currency = FrmField::get_option( $field, 'is_currency' );
+		$is_currency = FrmField::get_option( $field, 'is_currency' ) || FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) );
 		if ( empty( $prepend ) && empty( $append ) && ! $is_currency ) {
 			return;
 		}
@@ -3054,7 +3092,7 @@ class FrmProFieldsHelper {
 			array(
 				'media_id' => $media_id,
 				'image'    => $orig_image,
-			) 
+			)
 		);
 
 		return $image;
@@ -3165,9 +3203,10 @@ class FrmProFieldsHelper {
 	 * @param array|string        $value
 	 * @param int|stdClass|string $field
 	 * @param array               $atts
+	 * @param bool                $retrieved_linked_value Set by reference. This is set to true if get_linked_field_val is called.
 	 * @return array|string
 	 */
-	public static function get_data_value( $value, $field, $atts = array() ) {
+	public static function get_data_value( $value, $field, $atts = array(), &$retrieved_linked_value = false ) {
 		// Make sure incoming data is in the right format.
 		if ( ! is_object( $field ) ) {
 			$field = FrmField::getOne( $field );
@@ -3183,11 +3222,12 @@ class FrmProFieldsHelper {
 
 			// Get the value to display.
 			self::get_linked_field_val( $linked_field, $atts, $value, $field );
+			$retrieved_linked_value = true;
 		}
 
 		// Implode arrays.
 		if ( is_array( $value ) ) {
-			$value = implode( ( isset( $atts['sep'] ) ? $atts['sep'] : ', ' ), $value );
+			$value = implode( ( $atts['sep'] ?? ', ' ), $value );
 		}
 
 		return $value;
@@ -3244,7 +3284,7 @@ class FrmProFieldsHelper {
 		} else { // No linked field (using show=ID, show="first_name", show="user_email", etc.).
 			$user_id = FrmDb::get_var( 'frm_items', array( 'id' => $value ), 'user_id' );
 			if ( $user_id ) {
-				$show  = isset( $atts['show'] ) ? $atts['show'] : 'display_name';
+				$show  = $atts['show'] ?? 'display_name';
 				$value = FrmFieldsHelper::get_user_display_name( $user_id, $show, array( 'blank' => true ) );
 			} else {
 				$value = '';
@@ -3277,7 +3317,7 @@ class FrmProFieldsHelper {
 			return false;
 		}
 
-		$post_field = isset( $linked_field->field_options['post_field'] ) ? $linked_field->field_options['post_field'] : '';
+		$post_field = $linked_field->field_options['post_field'] ?? '';
 		if ( in_array( $linked_field->type, array( 'rte', 'textarea' ), true ) && in_array( $post_field, array( 'post_content', 'post_excerpt' ) ) ) {
 			return false;
 		}
@@ -3334,9 +3374,7 @@ class FrmProFieldsHelper {
 			return;
 		}
 
-		if ( isset( $atts['show'] ) && ! is_numeric( $atts['show'] ) ) {
-			$atts['show'] = $linked_field->id;
-		} elseif ( isset( $atts['show'] ) && ( (int) $atts['show'] == $linked_field->id || $atts['show'] == $linked_field->field_key ) ) {
+		if ( isset( $atts['show'] ) && ( (int) $atts['show'] == $linked_field->id || $atts['show'] == $linked_field->field_key ) ) {
 			unset( $atts['show'] );
 		}
 
@@ -3459,7 +3497,7 @@ class FrmProFieldsHelper {
 		if ( is_array( $value ) ) {
 			$formatted_values = array();
 			foreach ( $value as $v ) {
-				$formatted_values[] = call_user_func_array( $callback, array( $v, $format ) );
+				$formatted_values[] = $v ? call_user_func_array( $callback, array( $v, $format ) ) : $v;
 				unset( $v );
 			}
 			$value = $formatted_values;
@@ -3497,7 +3535,7 @@ class FrmProFieldsHelper {
 	 * @return void
 	 */
 	public static function get_field_options( $form_id, $value = '', $include = 'not', $types = array(), $args = array() ) {
-		$inc_repeat = isset( $args['inc_sub'] ) ? $args['inc_sub'] : 'exclude';
+		$inc_repeat = $args['inc_sub'] ?? 'exclude';
 		$inc_embed  = $inc_repeat;
 		$fields     = FrmField::get_all_for_form( (int) $form_id, '', $inc_embed, $inc_repeat );
 
@@ -3606,7 +3644,7 @@ class FrmProFieldsHelper {
 									array(
 										'fi.type not' => FrmField::no_save_fields(),
 										'fi.form_id'  => (int) $linked_form,
-									) 
+									)
 								);
 								foreach ( $linked_fields as $linked_field ) {
 								?>
@@ -3662,6 +3700,11 @@ class FrmProFieldsHelper {
 			$field_types['credit_card']['icon'] = str_replace( ' frm_show_upgrade', '', $field_types['credit_card']['icon'] );
 		}
 
+		$field_options = FrmAppHelper::get_post_param( 'field_options', array(), 'wp_kses_post' );
+		if ( ! empty( $field_options['is_range_slider'] ) ) {
+			$field_types['range']['name'] = __( 'Range Slider', 'formidable-pro' );
+		}
+
 		return $field_types;
 	}
 
@@ -3706,12 +3749,21 @@ class FrmProFieldsHelper {
 		self::prepare_conditional_logic( $field );
 
 		$logic_outcomes = self::get_conditional_logic_outcomes( $field, $values );
-
-		$visible = self::is_field_visible_from_logic_outcomes( $field, $logic_outcomes );
+		$visible        = self::is_field_visible_from_logic_outcomes( $field, $logic_outcomes );
 
 		if ( $visible && ! self::dynamic_field_has_options( $field, $values ) ) {
 			$visible = false;
 		}
+
+		/**
+		 * Filters whether a field is conditionally shown
+		 *
+		 * @since 6.24
+		 *
+		 * @param bool $visible
+		 * @param object $field
+		 */
+		$visible = (bool) apply_filters( 'frm_field_is_conditionally_shown', $visible, $field );
 
 		return $visible;
 	}
@@ -3766,13 +3818,92 @@ class FrmProFieldsHelper {
 				continue;
 			}
 
-			$observed_value   = self::get_observed_logic_value( $field, $values, $logic_field, $logic_key );
-			$logic_value      = self::get_conditional_logic_value( $field, $logic_key, $observed_value );
+			$observed_value = self::get_observed_logic_value( $field, $values, $logic_field, $logic_key );
+			$logic_value    = self::get_conditional_logic_value( $field, $logic_key, $observed_value );
+
+			if ( 'date' === FrmField::get_type( $logic_field ) ) {
+				$observed_value = self::prepare_date_value( $observed_value );
+				$logic_value    = self::prepare_date_value( $logic_value );
+			}
+
 			$operator         = $field->field_options['hide_field_cond'][ $logic_key ];
 			$logic_outcomes[] = FrmFieldsHelper::value_meets_condition( $observed_value, $operator, $logic_value );
 		}
 
 		return $logic_outcomes;
+	}
+
+	/**
+	 * Change date values to Y-m-d format so we can compare them consistently.
+	 *
+	 * @since 6.21
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	private static function prepare_date_value( $value ) {
+		$settings = FrmProAppHelper::get_settings();
+		$format   = $settings->date_format;
+
+		if ( 'Y-m-d' === $format ) {
+			return $value;
+		}
+
+		$possible_separators = array( '/', '.', '-' );
+		$separator           = false;
+		foreach ( $possible_separators as $sep ) {
+			if ( strpos( $format, $sep ) !== false ) {
+				$separator = $sep;
+				break;
+			}
+		}
+
+		if ( false === $separator ) {
+			return $value;
+		}
+
+		$split = explode( $separator, $value );
+		if ( 3 !== count( $split ) ) {
+			return $value;
+		}
+
+		switch ( $format ) {
+			case 'Y/m/d':
+				$year_part  = $split[0];
+				$month_part = $split[1];
+				$day_part   = $split[2];
+				break;
+			case 'n/j/Y':
+			case 'm/d/Y':
+				$month_part = $split[0];
+				$day_part   = $split[1];
+				$year_part  = $split[2];
+				break;
+			case 'd/m/Y':
+			case 'd.m.Y':
+			case 'j/m/Y':
+			case 'j/n/Y':
+			case 'j-m-Y':
+			default:
+				$day_part   = $split[0];
+				$month_part = $split[1];
+				$year_part  = $split[2];
+				break;
+		}
+
+		if ( strlen( $year_part ) !== 4 ) {
+			return $value;
+		}
+
+		if ( strlen( $month_part ) < 2 ) {
+			$month_part = '0' . $month_part;
+		}
+
+		if ( strlen( $day_part ) < 2 ) {
+			$day_part = '0' . $day_part;
+		}
+
+		return $year_part . '-' . $month_part . '-' . $day_part;
 	}
 
 	/**
@@ -3784,8 +3915,8 @@ class FrmProFieldsHelper {
 	 * @return bool
 	 */
 	private static function is_field_visible_from_logic_outcomes( $field, $logic_outcomes ) {
-		$action  = isset( $field->field_options['show_hide'] ) ? $field->field_options['show_hide'] : 'show';
-		$any_all = isset( $field->field_options['any_all'] ) ? $field->field_options['any_all'] : 'any';
+		$action  = $field->field_options['show_hide'] ?? 'show';
+		$any_all = $field->field_options['any_all'] ?? 'any';
 		$visible = 'show' === $action;
 
 		self::check_logic_outcomes( $any_all, $logic_outcomes, $visible );
@@ -3982,7 +4113,7 @@ class FrmProFieldsHelper {
 			$observed_value = explode( ',', $observed_value );
 		}
 
-		$linked_field_id = isset( $field->field_options['form_select'] ) ? $field->field_options['form_select'] : '';
+		$linked_field_id = $field->field_options['form_select'] ?? '';
 
 		if ( $linked_field_id === 'taxonomy' ) {
 			// Category fields
@@ -4048,7 +4179,7 @@ class FrmProFieldsHelper {
 		}
 
 		$form_id        = FrmAppHelper::get_param( 'form_id', 0, 'post', 'absint' );
-		$parent         = null === $parent ? $field : $parent;
+		$parent         = $parent ?? $field;
 		$field_order    = is_array( $parent ) ? $parent['field_order'] : $parent->field_order;
 		$parent_form_id = is_array( $parent ) ? $parent['form_id'] : $parent->form_id;
 
@@ -4090,6 +4221,17 @@ class FrmProFieldsHelper {
 		if ( $visibility ) {
 			$visible = self::user_has_permission( $visibility );
 		}
+
+		/**
+		 * Filters whether a field is visible to the user.
+		 * This is used in the test mode add-on, for the Preview as role feature.
+		 *
+		 * @since 6.23
+		 *
+		 * @param bool         $visible Whether the field is visible to the user.
+		 * @param array|object $field   The field object.
+		 */
+		$visible = apply_filters( 'frm_field_visible_to_user', $visible, $field );
 
 		return $visible;
 	}
@@ -4191,7 +4333,7 @@ class FrmProFieldsHelper {
 			return;
 		}
 
-		$add_currency_to_global = FrmField::get_option( $field, 'is_currency' );
+		$add_currency_to_global = FrmField::get_option( $field, 'is_currency' ) || FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) );
 
 		if ( ! $add_currency_to_global ) {
 			$add_currency_to_global = isset( $field['original_type'] ) && in_array( $field['original_type'], array( 'product', 'total' ), true );
@@ -4307,7 +4449,7 @@ class FrmProFieldsHelper {
 		$current = true;
 
 		$prev = 0;
-		$next = 9999;
+		$next = 999999;
 		if ( is_array( $field ) ) {
 			$field = (object) $field;
 		} elseif ( ! is_object( $field ) ) {
@@ -4466,6 +4608,11 @@ class FrmProFieldsHelper {
 			$classes .= ' frm_other_container';
 		}
 
+		// Hide the end date field if date range is enabled and display is inline
+		if ( FrmField::get_option( $field, 'is_range_end_field' ) && FrmField::get_option( $field, 'display_inline' ) ) {
+			$classes .= ' frm_hidden';
+		}
+
 		return $classes;
 	}
 
@@ -4569,38 +4716,15 @@ class FrmProFieldsHelper {
 	}
 
 	/**
-	 * Determine if styles should use frm-datepicker or ui-datepicker. If the dates add on is active and not up to date, use ui-datepicker to avoid breaking styles.
-	 * Versions of the dates add on >= 1.06 support frm-datepicker, and if there isn o dates add on it's safe to use as well.
+	 * Use the frm-datepicker class. We style this class instead of ui-datepicker to prevent conflicts.
 	 *
 	 * @since 5.5
+	 * @since 6.19 This no longer conditionally returns ui-datepicker if the Datepicker add-on is not up to date.
 	 *
 	 * @return string
 	 */
 	public static function get_datepicker_class() {
-		return self::use_frm_datepicker_class() ? 'frm-datepicker' : 'ui-datepicker';
-	}
-
-	/**
-	 * @since 5.5
-	 *
-	 * @return bool True if we should use frm-datepicker. False if ui-datepicker would work better for compatibility with the dates add on.
-	 */
-	private static function use_frm_datepicker_class() {
-		if ( ! class_exists( 'FrmDatesAppHelper', false ) ) {
-			return true;
-		}
-
-		if ( ! is_callable( 'FrmDatesAppHelper::plugin_version' ) ) {
-			// Old versions of dates add on < v1.04 do not support frm-datepicker class so use the old one.
-			return false;
-		}
-
-		$dates_version = FrmDatesAppHelper::plugin_version();
-		if ( version_compare( $dates_version, '1.06', '<' ) ) {
-			return false;
-		}
-
-		return true;
+		return 'frm-datepicker';
 	}
 
 	/**
@@ -4626,11 +4750,13 @@ class FrmProFieldsHelper {
 	 * Adds show password HTML to the input HTML.
 	 *
 	 * @since 6.3.1
+	 * @since 6.18   Added the `$field` parameter.
 	 *
-	 * @param string $input_html Input HTML.
+	 * @param string       $input_html Input HTML.
+	 * @param array|object $field      Field array.
 	 * @return string
 	 */
-	public static function add_show_password_html( $input_html ) {
+	public static function add_show_password_html( $input_html, $field = array() ) {
 		$show_label = __( 'Show password', 'formidable-pro' );
 
 		$button_attrs = array(
@@ -4643,7 +4769,11 @@ class FrmProFieldsHelper {
 
 		$icons = self::get_show_password_icons();
 
-		$input_html  = '<span class="frm_show_password_wrapper">' . $input_html;
+		$style       = '';
+		$field_size  = FrmField::get_option( $field, 'size' );
+		$width       = $field_size ? esc_attr( $field_size ) : '100%';
+		$style       = "style=\"width:$width;\"";
+		$input_html  = '<span class="frm_show_password_wrapper" ' . $style . '>' . $input_html;
 		$input_html .= '<button' . FrmAppHelper::array_to_html_params( $button_attrs ) . '>';
 		$input_html .= $icons['show'];
 		$input_html .= $icons['hide'];
@@ -4722,9 +4852,9 @@ class FrmProFieldsHelper {
 	 * @return void
 	 */
 	public static function show_field_value_selector( $comparison, $selector_field_id, $selector_args ) {
-		$should_show_text_box = in_array( $comparison, array( 'LIKE', 'not LIKE', 'LIKE%', '%LIKE' ), true );
+		$show_dropdown = in_array( $comparison, array( '==', '!=' ), true );
 
-		if ( $should_show_text_box ) {
+		if ( ! $show_dropdown ) {
 			/**
 			 * Used to reset the conditional logic's value selector element options so that it is a text input rather than dropdown element.
 			 */
@@ -4735,9 +4865,33 @@ class FrmProFieldsHelper {
 		}
 
 		FrmFieldsHelper::display_field_value_selector( $selector_field_id, $selector_args );
-		if ( $should_show_text_box ) {
+		if ( ! $show_dropdown ) {
 			remove_filter( 'frm_pro_value_selector_options', $callback );
 		}
+	}
+
+	/**
+	 * Check if a field type supports currency formatting.
+	 *
+	 * @since 6.20
+	 *
+	 * @param string $type The field type to check.
+	 * @return bool Whether the field type supports currency formatting.
+	 */
+	public static function supports_currency_format( $type ) {
+		return in_array( $type, array( 'text', 'textarea', 'number', 'range', 'hidden' ), true );
+	}
+
+	/**
+	 * Check if a field is hidden on the current page.
+	 *
+	 * @since 6.23
+	 *
+	 * @param int|string $field_id
+	 * @return bool
+	 */
+	public static function field_is_hidden_on_page( $field_id ) {
+		return in_array( (int) $field_id, self::$fields_hidden_on_page, true );
 	}
 
 	/**

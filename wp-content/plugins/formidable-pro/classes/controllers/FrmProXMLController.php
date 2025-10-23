@@ -209,7 +209,7 @@ class FrmProXMLController {
 					'form_id'     => $atts['entry']->form_id,
 					'field'       => $atts['field'],
 					'type'        => $atts['field']->type,
-					'exclude_cat' => isset( $atts['field']->field_options['exclude_cat'] ) ? $atts['field']->field_options['exclude_cat'] : 0,
+					'exclude_cat' => $atts['field']->field_options['exclude_cat'] ?? 0,
 					'sep'         => $atts['separator'],
 				)
 			);

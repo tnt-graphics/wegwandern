@@ -33,7 +33,7 @@ class FrmProFieldFile extends FrmFieldType {
 	 */
 	public function get_file_size_range( $from_size = '', $to_size = '' ) {
 		if ( ! $to_size ) {
-			$size    = isset( $this->field->field_options['size'] ) ? $this->field->field_options['size'] : '';
+			$size    = $this->field->field_options['size'] ?? '';
 			$to_size = FrmProFileField::get_max_file_size( $size );
 		}
 
@@ -227,7 +227,7 @@ class FrmProFieldFile extends FrmFieldType {
 
 		$showing_image = ! empty( $atts['html'] ) || ! empty( $atts['show_image'] );
 		$default_sep   = $showing_image ? ' ' : ', ';
-		$atts['sep']   = isset( $atts['sep'] ) ? $atts['sep'] : $default_sep;
+		$atts['sep']   = $atts['sep'] ?? $default_sep;
 
 		$this->get_file_html_from_atts( $atts, $value );
 
@@ -414,7 +414,6 @@ class FrmProFieldFile extends FrmFieldType {
 		} else {
 			remove_filter( 'wp_get_attachment_url', 'FrmProFileField::filter_attachment_url' );
 			remove_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src' );
-			remove_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta' );
 
 			$html = $atts['show_image'] ? wp_get_attachment_image( $id, $atts['size'], ! $is_image ) : '';
 
@@ -451,7 +450,6 @@ class FrmProFieldFile extends FrmFieldType {
 
 			add_filter( 'wp_get_attachment_url', 'FrmProFileField::filter_attachment_url', 10, 2 );
 			add_filter( 'wp_get_attachment_image_src', 'FrmProFileField::filter_attachment_image_src', 10, 4 );
-			add_filter( 'wp_get_attachment_metadata', 'FrmProFileField::maybe_turnoff_attachment_meta', 10, 2 );
 
 			// If show_filename=1 is included
 			if ( $atts['show_filename'] ) {
@@ -493,8 +491,7 @@ class FrmProFieldFile extends FrmFieldType {
 	 */
 	private function get_display_html_for_inaccessible_file( $id, $atts ) {
 		if ( ! FrmProFileField::file_is_temporary( $id ) || ! $atts['show_image'] ) {
-			$frm_settings = FrmAppHelper::get_settings();
-			return esc_html( $frm_settings->admin_permission );
+			return esc_html__( 'Oops! That file is protected', 'formidable-pro' );
 		}
 
 		$file = FrmProFileField::get_mock_file( $id );
@@ -649,7 +646,7 @@ class FrmProFieldFile extends FrmFieldType {
 			array(
 				'form_id'  => $this->field->form_id,
 				'field_id' => $this->field->id,
-			) 
+			)
 		);
 
 		if ( $stop_sanitizing ) {

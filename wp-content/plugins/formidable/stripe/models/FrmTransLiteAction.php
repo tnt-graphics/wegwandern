@@ -34,8 +34,8 @@ class FrmTransLiteAction extends FrmFormAction {
 		$options             = $form_action->post_content;
 		$form_fields         = $this->get_field_options( $args['form']->id );
 		$field_dropdown_atts = compact( 'form_fields', 'form_action' );
-		$currencies          = FrmCurrencyHelper::get_currencies();
 		$repeat_times        = FrmTransLiteAppHelper::get_repeat_times();
+		$gateways            = FrmTransLiteAppHelper::get_gateways();
 
 		if ( ! isset( $form_action->post_content['payment_limit'] ) ) {
 			$form_action->post_content['payment_limit'] = '';
@@ -51,9 +51,10 @@ class FrmTransLiteAction extends FrmFormAction {
 	 *
 	 * @since 6.5
 	 *
+	 * @param string $selected_gateway The selected gateway for the given payment action.
 	 * @return void
 	 */
-	public function echo_capture_payment_upsell() {
+	public function echo_capture_payment_upsell( $selected_gateway = 'stripe' ) {
 		// Add an upsell placeholder for the capture payment setting.
 		$upgrading      = FrmAddonsController::install_link( 'stripe' );
 		$upgrade_params = array();
@@ -158,6 +159,8 @@ class FrmTransLiteAction extends FrmFormAction {
 	 * Show the dropdown fields for custom form fields.
 	 * This is used for first and last name fields.
 	 *
+	 * @since 6.18 The `$field_atts` might contain `skipped_fields`. By default, the submit field is skipped.
+	 *
 	 * @param  array $form_atts
 	 * @param  array $field_atts
 	 * @return void
@@ -166,12 +169,21 @@ class FrmTransLiteAction extends FrmFormAction {
 		if ( ! isset( $field_atts['allowed_fields'] ) ) {
 			$field_atts['allowed_fields'] = array();
 		}
+
+		if ( ! isset( $field_atts['skipped_fields'] ) ) {
+			$field_atts['skipped_fields'] = array( FrmSubmitHelper::FIELD_TYPE );
+		}
+
 		$has_field = false;
 		?>
 		<select class="frm_with_left_label" name="<?php echo esc_attr( $this->get_field_name( $field_atts['name'] ) ); ?>" id="<?php echo esc_attr( $this->get_field_id( $field_atts['name'] ) ); ?>">
 			<option value=""><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
 			<?php
 			foreach ( $form_atts['form_fields'] as $field ) {
+				if ( $field_atts['skipped_fields'] && in_array( $field->type, (array) $field_atts['skipped_fields'], true ) ) {
+					continue;
+				}
+
 				$type_is_allowed = empty( $field_atts['allowed_fields'] ) || in_array( $field->type, (array) $field_atts['allowed_fields'], true );
 
 				if ( ! $type_is_allowed ) {

@@ -50,7 +50,7 @@ class PostSettings {
 		// Add metabox.
 		add_action( 'add_meta_boxes', [ $this, 'addPostSettingsMetabox' ] );
 
-		// Add metabox to terms on init hook.
+		// Add metabox (upsell) to terms on init hook.
 		add_action( 'init', [ $this, 'init' ], 1000 );
 
 		// Save metabox.
@@ -114,6 +114,7 @@ class PostSettings {
 		$generalSettingsCapability      = aioseo()->access->hasCapability( 'aioseo_page_general_settings' );
 		$socialSettingsCapability       = aioseo()->access->hasCapability( 'aioseo_page_social_settings' );
 		$schemaSettingsCapability       = aioseo()->access->hasCapability( 'aioseo_page_schema_settings' );
+		$aiContentSettingsCapability    = aioseo()->access->hasCapability( 'aioseo_page_ai_content_settings' );
 		$linkAssistantCapability        = aioseo()->access->hasCapability( 'aioseo_page_link_assistant_settings' );
 		$redirectsCapability            = aioseo()->access->hasCapability( 'aioseo_page_redirects_manage' );
 		$advancedSettingsCapability     = aioseo()->access->hasCapability( 'aioseo_page_advanced_settings' );
@@ -127,6 +128,7 @@ class PostSettings {
 				empty( $generalSettingsCapability ) &&
 				empty( $socialSettingsCapability ) &&
 				empty( $schemaSettingsCapability ) &&
+				empty( $aiContentSettingsCapability ) &&
 				empty( $linkAssistantCapability ) &&
 				empty( $redirectsCapability ) &&
 				empty( $advancedSettingsCapability ) &&
@@ -235,10 +237,12 @@ class PostSettings {
 			return;
 		}
 
-		$currentPost = json_decode( sanitize_text_field( wp_unslash( ( $_POST['aioseo-post-settings'] ) ) ), true );
+		$currentPost = json_decode( wp_unslash( ( $_POST['aioseo-post-settings'] ) ), true );
+		$currentPost = aioseo()->helpers->sanitize( $currentPost );
 
 		// If there is no data, there likely was an error, e.g. if the hidden field wasn't populated on load and the user saved the post without making changes in the metabox.
 		// In that case we should return to prevent a complete reset of the data.
+
 		if ( empty( $currentPost ) ) {
 			return;
 		}
@@ -301,11 +305,11 @@ class PostSettings {
 		$eligiblePostTypes = aioseo()->helpers->getTruSeoEligiblePostTypes();
 		if ( ! in_array( $postType, $eligiblePostTypes, true ) ) {
 			return [
-				'total'                 => 0,
-				'withoutFocusKeyphrase' => 0,
-				'needsImprovement'      => 0,
-				'okay'                  => 0,
-				'good'                  => 0
+				'total'               => 0,
+				'withoutFocusKeyword' => 0,
+				'needsImprovement'    => 0,
+				'okay'                => 0,
+				'good'                => 0
 			];
 		}
 
@@ -314,24 +318,22 @@ class PostSettings {
 		$implodedPageIdPlaceholders = implode( ', ', $implodedPageIdPlaceholders );
 
 		global $wpdb;
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 		$overviewData = $wpdb->get_row(
-			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 			$wpdb->prepare(
-				"SELECT 
+				"SELECT
 					COUNT(*) as total,
-					COALESCE( SUM(CASE WHEN ap.keyphrases = '' OR ap.keyphrases IS NULL OR ap.keyphrases LIKE %s THEN 1 ELSE 0 END), 0) as withoutFocusKeyphrase,
-					COALESCE( SUM(CASE WHEN ap.seo_score < 50 AND NOT (ap.keyphrases = '' OR ap.keyphrases IS NULL OR ap.keyphrases LIKE %s) THEN 1 ELSE 0 END), 0) as needsImprovement,
-					COALESCE( SUM(CASE WHEN ap.seo_score BETWEEN 50 AND 79 AND NOT (ap.keyphrases = '' OR ap.keyphrases IS NULL OR ap.keyphrases LIKE %s) THEN 1 ELSE 0 END), 0) as okay,
-					COALESCE( SUM(CASE WHEN ap.seo_score >= 80 AND NOT (ap.keyphrases = '' OR ap.keyphrases IS NULL OR ap.keyphrases LIKE %s) THEN 1 ELSE 0 END), 0) as good
+					COALESCE( SUM(CASE WHEN ap.keyphrases = '' OR ap.keyphrases IS NULL OR ap.keyphrases LIKE %s THEN 1 ELSE 0 END), 0) as withoutFocusKeyword,
+					COALESCE( SUM(CASE WHEN ap.seo_score IS NULL OR ap.seo_score = 0 THEN 1 ELSE 0 END), 0) as withoutTruSeoScore,
+					COALESCE( SUM(CASE WHEN ap.seo_score > 0 AND ap.seo_score < 50 THEN 1 ELSE 0 END), 0) as needsImprovement,
+					COALESCE( SUM(CASE WHEN ap.seo_score BETWEEN 50 AND 79 THEN 1 ELSE 0 END), 0) as okay,
+					COALESCE( SUM(CASE WHEN ap.seo_score >= 80 THEN 1 ELSE 0 END), 0) as good
 				FROM {$wpdb->posts} as p
 				LEFT JOIN {$wpdb->prefix}aioseo_posts as ap ON ap.post_id = p.ID
 				WHERE p.post_status = 'publish'
 				AND p.post_type = %s
 				AND p.ID NOT IN ( $implodedPageIdPlaceholders )",
-				// phpcs:enable
-				'{"focus":{"keyphrase":""%',
-				'{"focus":{"keyphrase":""%',
-				'{"focus":{"keyphrase":""%',
 				'{"focus":{"keyphrase":""%',
 				$postType,
 				...array_values( $specialPageIds )
@@ -372,17 +374,20 @@ class PostSettings {
 		$whereClause        = '';
 		$noKeyphrasesClause = "(aioseo_p.keyphrases = '' OR aioseo_p.keyphrases IS NULL OR aioseo_p.keyphrases LIKE '{\"focus\":{\"keyphrase\":\"\"%')";
 		switch ( $filter ) {
-			case 'withoutFocusKeyphrase':
+			case 'withoutFocusKeyword':
 				$whereClause = " AND $noKeyphrasesClause ";
 				break;
+			case 'withoutTruSeoScore':
+				$whereClause = ' AND ( aioseo_p.seo_score IS NULL OR aioseo_p.seo_score = 0 ) ';
+				break;
 			case 'needsImprovement':
-				$whereClause = " AND aioseo_p.seo_score < 50 AND NOT $noKeyphrasesClause ";
+				$whereClause = ' AND ( aioseo_p.seo_score > 0 AND aioseo_p.seo_score < 50 ) ';
 				break;
 			case 'okay':
-				$whereClause = " AND aioseo_p.seo_score BETWEEN 50 AND 80 AND NOT $noKeyphrasesClause ";
+				$whereClause = ' AND aioseo_p.seo_score BETWEEN 50 AND 80 ';
 				break;
 			case 'good':
-				$whereClause = " AND aioseo_p.seo_score > 80 AND NOT $noKeyphrasesClause ";
+				$whereClause = ' AND aioseo_p.seo_score > 80 ';
 				break;
 		}
 

@@ -59,7 +59,7 @@ class FrmProDynamicFieldsController {
 	 */
 	public static function add_options_for_dynamic_field( $field, &$values, $atts = array() ) {
 		if ( self::is_field_independent( $values ) ) {
-			$entry_id          = isset( $atts['entry_id'] ) ? $atts['entry_id'] : 0;
+			$entry_id          = $atts['entry_id'] ?? 0;
 			$values['options'] = self::get_independent_options( $values, $field, $entry_id );
 		} elseif ( is_numeric( $values['value'] ) ) {
 			$values['options'] = array();
@@ -115,14 +115,12 @@ class FrmProDynamicFieldsController {
 			return array();
 		}
 
-		$linked_is_post_field = FrmField::get_option( $selected_field, 'post_field' );
-		$linked_posts         = $linked_is_post_field && $linked_is_post_field != '';
-
-		$post_ids = array();
+		$linked_posts = (bool) FrmField::get_option( $selected_field, 'post_field' );
+		$post_ids     = array();
 
 		if ( is_numeric( $values['hide_field'] ) && empty( $values['hide_opt'] ) ) {
 			if ( isset( $_POST['item_meta'] ) ) {
-				$observed_field_val = isset( $_POST['item_meta'][ $values['hide_field'] ] ) ? $_POST['item_meta'][ $values['hide_field'] ] : '';
+				$observed_field_val = $_POST['item_meta'][ $values['hide_field'] ] ?? '';
 			} elseif ( $entry_id ) {
 				$observed_field_val = FrmEntryMeta::get_entry_meta_by_field( $entry_id, $values['hide_field'] );
 			} else {
@@ -168,8 +166,11 @@ class FrmProDynamicFieldsController {
 				$meta_args['order_by'] = 'meta_value';
 			}
 
-			$metas    = FrmDb::get_results( 'frm_item_metas', array( 'field_id' => $values['form_select'] ), 'item_id, meta_value', $meta_args );
-			$post_ids = FrmDb::get_results( 'frm_items', array( 'form_id' => $selected_field->form_id ), 'id, post_id', array( 'limit' => $limit ) );
+			$metas = FrmDb::get_results( 'frm_item_metas', array( 'field_id' => $values['form_select'] ), 'item_id, meta_value', $meta_args );
+
+			if ( $linked_posts ) {
+				$post_ids = FrmDb::get_results( 'frm_items', array( 'form_id' => $selected_field->form_id ), 'id, post_id', array( 'limit' => $limit ) );
+			}
 		}
 
 		if ( $linked_posts && ! empty( $post_ids ) ) {
@@ -353,7 +354,7 @@ class FrmProDynamicFieldsController {
 	 * @return bool
 	 */
 	public static function include_blank_option( $options, $field ) {
-		if ( empty( $options ) || $field->type !== 'data' ) {
+		if ( $field->type !== 'data' ) {
 			return false;
 		}
 

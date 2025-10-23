@@ -19,7 +19,7 @@ class FrmAcfAppHelper {
 	 *
 	 * @var string
 	 */
-	public static $plug_version = '1.0.2';
+	public static $plug_version = '1.0.3';
 
 	/**
 	 * Gets plugin folder name.

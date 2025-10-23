@@ -126,7 +126,7 @@ class FrmProFieldData extends FrmFieldType {
 		$data_type   = FrmField::get_option( $this->field, 'data_type' );
 		$form_select = FrmField::get_option( $this->field, 'form_select' );
 		if ( in_array( $data_type, array( 'select', 'radio', 'checkbox' ) ) && is_numeric( $form_select ) ) {
-			$entry_id = isset( $atts['entry_id'] ) ? $atts['entry_id'] : 0;
+			$entry_id = $atts['entry_id'] ?? 0;
 			FrmProDynamicFieldsController::add_options_for_dynamic_field( $this->field, $values, array( 'entry_id' => $entry_id ) );
 		}
 		return $values;
@@ -155,7 +155,7 @@ class FrmProFieldData extends FrmFieldType {
 			return $value;
 		}
 
-		$atts['show'] = isset( $atts['show'] ) ? $atts['show'] : false;
+		$atts['show'] = $atts['show'] ?? false;
 
 		if ( ! empty( $value ) && ! is_array( $value ) && strpos( $value, $atts['sep'] ) !== false ) {
 			$value = explode( $atts['sep'], $value );
@@ -308,17 +308,50 @@ class FrmProFieldData extends FrmFieldType {
 		return $value;
 	}
 
+	/**
+	 * @param string $linked_id
+	 * @param array  $atts
+	 * @return false|string
+	 */
 	private function get_single_data_value( $linked_id, $atts ) {
 		$atts['includes_list_data'] = true;
-		$value                      = FrmProFieldsHelper::get_data_value( $linked_id, $this->field, $atts );
+		$retrieved_linked_value     = false;
+		$value                      = FrmProFieldsHelper::get_data_value( $linked_id, $this->field, $atts, $retrieved_linked_value );
 
-		if ( $linked_id === $value && ! FrmProField::is_list_field( $this->field ) ) {
-			$value = false;
-		} elseif ( is_array( $value ) ) {
+		if ( $this->should_unset_dynamic_field_value( $linked_id, $value, $retrieved_linked_value ) ) {
+			return false;
+		}
+
+		if ( is_array( $value ) ) {
 			$value = implode( $atts['sep'], $value );
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Check if the linked id may not have changed after FrmProFieldsHelper::get_data_value is called.
+	 * To prevent a the dynamic field entry ID from appearing when it is not expected, we unset the value.
+	 *
+	 * @since 6.24
+	 *
+	 * @param string $linked_id
+	 * @param string $value
+	 * @param bool   $retrieved_linked_value If this is true, then we will not unset the value. This way entry IDs can be used when intended.
+	 * @return bool
+	 */
+	private function should_unset_dynamic_field_value( $linked_id, $value, $retrieved_linked_value ) {
+		if ( FrmProField::is_list_field( $this->field ) ) {
+			// Never unset the entry ID for a list field.
+			return false;
+		}
+
+		if ( $value !== $linked_id ) {
+			// We only want to unset the value if it matches the linked entry ID.
+			return false;
+		}
+
+		return ! $retrieved_linked_value;
 	}
 
 	public function get_container_class() {
@@ -336,7 +369,7 @@ class FrmProFieldData extends FrmFieldType {
 	 */
 	protected function maybe_include_hidden_values( $args ) {
 		$hidden       = '';
-		$field        = isset( $args['field'] ) ? $args['field'] : $this->field;
+		$field        = $args['field'] ?? $this->field;
 		$is_read_only = empty( $field['options'] ) || ( FrmField::is_read_only( $this->field ) && ! FrmAppHelper::is_admin() );
 		if ( $is_read_only && $this->show_readonly_hidden() ) {
 			$hidden = $this->show_hidden_values( $args );

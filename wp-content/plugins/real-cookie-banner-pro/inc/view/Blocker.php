@@ -2,6 +2,7 @@
 
 namespace DevOwl\RealCookieBanner\view;
 
+use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\services\Service;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\AbstractBlockable;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\Constants;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\HeadlessContentBlocker;
@@ -79,6 +80,11 @@ class Blocker
         'div[id^="tve_thrive_lightbox_"]',
         // [Plugin Comp] Bricks
         '.brxe-xpromodalnestable',
+        // [Plugin Comp] EventON
+        '.evcal_eventcard',
+        // [Plugin Comp] Divi Builder
+        '.divioverlay',
+        '.et_pb_toggle_content',
     ];
     /**
      * See `disableDeduplicateExceptions` parameter in `createVisual` for more information.
@@ -226,12 +232,21 @@ class Blocker
     {
         $blockables = [];
         $blockers = SettingsBlocker::getInstance()->getOrdered();
+        /**
+         * All services.
+         *
+         * @var Service[]
+         */
+        $allServices = [];
+        foreach (Core::getInstance()->getCookieConsentManagement()->getSettings()->getGeneral()->getServiceGroups() as $group) {
+            $allServices = \array_merge($allServices, $group->getItems());
+        }
         foreach ($blockers as &$blocker) {
             // Ignore blockers with no connected cookies
             if (\count($blocker->metas[SettingsBlocker::META_NAME_SERVICES]) + \count($blocker->metas[SettingsBlocker::META_NAME_TCF_VENDORS]) === 0) {
                 continue;
             }
-            $blockables[] = new BlockerPostType($headlessContentBlocker, $blocker);
+            $blockables[] = new BlockerPostType($headlessContentBlocker, $blocker, $allServices);
         }
         /**
          * Allows you to add, modify or remove existing `AbstractBlockable` instances. For usual,

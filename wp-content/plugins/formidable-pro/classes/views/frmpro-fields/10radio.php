@@ -5,8 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $field['options'] = $this->get_options( array() );
 
-if ( is_array($field['options']) ) {
-	if ( ! isset($field['value']) ) {
+if ( is_array( $field['options'] ) ) {
+	if ( ! isset( $field['value'] ) ) {
 		$field['value'] = $field['default_value'];
 		FrmProAppHelper::unserialize_or_decode( $field['value'] );
 	}

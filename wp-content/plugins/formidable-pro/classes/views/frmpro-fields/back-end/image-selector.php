@@ -15,16 +15,16 @@ $show_image = FrmProImages::should_show_images( $field );
 			<img id="frm_image_preview_<?php echo esc_attr( $field['id'] . '-' . $opt_key ); ?>" src="<?php echo esc_url( empty( $image['url'] ) ? '' : $image['url'] ); ?>" class="frm_image_preview" alt="<?php echo esc_attr( $opt ); ?>" />
 			<div class="frm_image_data">
 				<div class="frm_image_preview_title"><?php echo esc_html( $image['filename'] ); ?></div>
-				<div class="frm_remove_image_option" title="<?php esc_attr_e( 'Remove image', 'formidable-pro' ); ?>">
+				<div class="frm_remove_image_option frm-h-stack" title="<?php esc_attr_e( 'Remove image', 'formidable-pro' ); ?>">
 					<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_delete_icon' ); ?>
-					<?php esc_attr_e( 'Delete', 'formidable-pro'); ?>
+					<span><?php esc_html_e( 'Delete', 'formidable-pro' ); ?></span>
 				</div>
 			</div>
 		</div>
 	</div>
-	<button type="button" class="frm_choose_image_box frm_button frm_no_style_button<?php echo empty( $image['url'] ) ? '' : ' frm_hidden'; ?>">
-		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_upload_icon' ); ?>
-		<?php esc_attr_e( 'Upload image', 'formidable-pro' ); ?>
+	<button type="button" class="frm_choose_image_box frm_button frm-flex-center frm-gap-xs frm_no_style_button<?php echo empty( $image['url'] ) ? '' : ' frm_hidden'; ?>">
+		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_upload3_icon frm_svg20' ); ?>
+		<span><?php esc_html_e( 'Upload image', 'formidable-pro' ); ?></span>
 	</button>
 </div>
 <?php

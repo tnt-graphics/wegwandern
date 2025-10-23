@@ -1,0 +1,348 @@
+1745913560.767 (R) [notice] Search and replacing table: wp_actionscheduler_actions: rows: 20
+1745913560.772 (R) [notice] Search and replacing table: wp_actionscheduler_claims: rows: 0
+1745913560.773 (R) [notice] Search and replacing table: wp_actionscheduler_groups: rows: 2
+1745913560.775 (R) [notice] Search and replacing table: wp_actionscheduler_logs: rows: 52
+1745913560.777 (R) [notice] Search and replacing table: wp_aioseo_cache: rows: 18
+1745913560.782 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_blocked_args: rows: 0
+1745913560.784 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_logs: rows: 0
+1745913560.786 (R) [notice] Search and replacing table: wp_aioseo_notifications: rows: 35
+1745913560.792 (R) [notice] Search and replacing table: wp_aioseo_posts: rows: 13736
+1745913564.494 (R) [notice] Searching and replacing reached row: 5000
+1745913565.034 (R) [notice] Searching and replacing reached row: 10000
+1745913565.699 (R) [notice] Search and replacing table: wp_aioseo_writing_assistant_keywords: rows: 0
+1745913565.701 (R) [notice] Search and replacing table: wp_aioseo_writing_assistant_posts: rows: 0
+1745913565.702 (R) [notice] Search and replacing table: wp_aryo_activity_log: rows: 4
+1745913565.704 (R) [notice] Search and replacing table: wp_b2b_ad_clicks: rows: 51
+1745913565.706 (R) [notice] Search and replacing table: wp_b2b_payment_details: rows: 87
+1745913565.716 (R) [notice] Search and replacing table: wp_cmplz_cookiebanners: rows: 0
+1745913565.718 (R) [notice] Search and replacing table: wp_cmplz_cookies: rows: 60
+1745913565.721 (R) [notice] Search and replacing table: wp_cmplz_services: rows: 0
+1745913565.722 (R) [notice] Search and replacing table: wp_commentmeta: rows: 26
+1745913565.724 (R) [notice] Search and replacing table: wp_comments: rows: 15
+1745913565.727 (R) [notice] Search and replacing table: wp_email_log: rows: 63
+1745913565.729 (R) [notice] Search and replacing table: wp_esp_answer: rows: 0
+1745913565.731 (R) [notice] Search and replacing table: wp_esp_attendee_meta: rows: 0
+1745913565.732 (R) [notice] Search and replacing table: wp_esp_checkin: rows: 0
+1745913565.734 (R) [notice] Search and replacing table: wp_esp_country: rows: 250
+1745913565.739 (R) [notice] Search and replacing table: wp_esp_currency: rows: 153
+1745913565.742 (R) [notice] Search and replacing table: wp_esp_currency_payment_method: rows: 0
+1745913565.743 (R) [notice] Search and replacing table: wp_esp_datetime: rows: 0
+1745913565.744 (R) [notice] Search and replacing table: wp_esp_datetime_ticket: rows: 0
+1745913565.746 (R) [notice] Search and replacing table: wp_esp_event_message_template: rows: 0
+1745913565.747 (R) [notice] Search and replacing table: wp_esp_event_meta: rows: 0
+1745913565.748 (R) [notice] Search and replacing table: wp_esp_event_question_group: rows: 0
+1745913565.749 (R) [notice] Search and replacing table: wp_esp_event_venue: rows: 0
+1745913565.750 (R) [notice] Search and replacing table: wp_esp_extra_join: rows: 0
+1745913565.751 (R) [notice] Search and replacing table: wp_esp_extra_meta: rows: 8
+1745913565.753 (R) [notice] Search and replacing table: wp_esp_line_item: rows: 0
+1745913565.754 (R) [notice] Search and replacing table: wp_esp_log: rows: 0
+1745913565.755 (R) [notice] Search and replacing table: wp_esp_message: rows: 0
+1745913565.757 (R) [notice] Search and replacing table: wp_esp_message_template: rows: 0
+1745913565.758 (R) [notice] Search and replacing table: wp_esp_message_template_group: rows: 0
+1745913565.759 (R) [notice] Search and replacing table: wp_esp_payment: rows: 0
+1745913565.760 (R) [notice] Search and replacing table: wp_esp_payment_method: rows: 9
+1745913565.762 (R) [notice] Search and replacing table: wp_esp_price: rows: 2
+1745913565.763 (R) [notice] Search and replacing table: wp_esp_price_type: rows: 7
+1745913565.765 (R) [notice] Search and replacing table: wp_esp_question: rows: 10
+1745913565.766 (R) [notice] Search and replacing table: wp_esp_question_group: rows: 2
+1745913565.768 (R) [notice] Search and replacing table: wp_esp_question_group_question: rows: 10
+1745913565.769 (R) [notice] Search and replacing table: wp_esp_question_option: rows: 0
+1745913565.770 (R) [notice] Search and replacing table: wp_esp_registration: rows: 0
+1745913565.771 (R) [notice] Search and replacing table: wp_esp_registration_payment: rows: 0
+1745913565.773 (R) [notice] Search and replacing table: wp_esp_state: rows: 69
+1745913565.774 (R) [notice] Search and replacing table: wp_esp_status: rows: 38
+1745913565.776 (R) [notice] Search and replacing table: wp_esp_ticket: rows: 1
+1745913565.778 (R) [notice] Search and replacing table: wp_esp_ticket_price: rows: 1
+1745913565.779 (R) [notice] Search and replacing table: wp_esp_ticket_template: rows: 0
+1745913565.780 (R) [notice] Search and replacing table: wp_esp_transaction: rows: 0
+1745913565.781 (R) [notice] Search and replacing table: wp_esp_venue_meta: rows: 0
+1745913565.783 (R) [notice] Search and replacing table: wp_frm_fields: rows: 84
+1745913565.788 (R) [notice] Search and replacing table: wp_frm_forms: rows: 12
+1745913565.790 (R) [notice] Search and replacing table: wp_frm_item_metas: rows: 1068
+1745913565.799 (R) [notice] Search and replacing table: wp_frm_items: rows: 257
+1745913565.804 (R) [notice] Search and replacing table: wp_ju_queue: rows: 0
+1745913565.805 (R) [notice] Search and replacing table: wp_links: rows: 0
+1745913565.806 (R) [notice] Search and replacing table: wp_options: rows: 1115
+1745913565.836 (R) [notice] Search and replacing table: wp_pmxe_exports: rows: 2
+1745913565.840 (R) [notice] Search and replacing table: wp_pmxe_google_cats: rows: 5371
+1745913565.867 (R) [notice] Searching and replacing reached row: 5000
+1745913565.872 (R) [notice] Search and replacing table: wp_pmxe_posts: rows: 1162
+1745913565.879 (R) [notice] Search and replacing table: wp_pmxe_templates: rows: 0
+1745913565.880 (R) [notice] Search and replacing table: wp_pmxi_files: rows: 12
+1745913565.882 (R) [notice] Search and replacing table: wp_pmxi_hash: rows: 4863
+1745913565.907 (R) [notice] Search and replacing table: wp_pmxi_history: rows: 9
+1745913565.909 (R) [notice] Search and replacing table: wp_pmxi_images: rows: 952
+1745913565.915 (R) [notice] Search and replacing table: wp_pmxi_imports: rows: 11
+1745913565.921 (R) [notice] Search and replacing table: wp_pmxi_posts: rows: 6479
+1745913565.953 (R) [notice] Searching and replacing reached row: 5000
+1745913565.966 (R) [notice] Search and replacing table: wp_pmxi_templates: rows: 0
+1745913566.541 (R) [notice] Search and replacing table: wp_postmeta: rows: 7158
+1745913569.707 (R) [notice] Searching and replacing reached row: 5000
+1745913570.373 (R) [notice] Search and replacing table: wp_posts: rows: 14318
+1745913570.463 (R) [notice] Searching and replacing reached row: 5000
+1745913570.552 (R) [notice] Searching and replacing reached row: 10000
+1745913570.640 (R) [notice] Search and replacing table: wp_rcb_asset_seo_redirect: rows: 4
+1745913570.641 (R) [notice] Search and replacing table: wp_rcb_blocker_thumbnails: rows: 0
+1745913570.643 (R) [notice] Search and replacing table: wp_rcb_consent_decision: rows: 11
+1745913570.644 (R) [notice] Search and replacing table: wp_rcb_consent_ip: rows: 59
+1745913570.646 (R) [notice] Search and replacing table: wp_rcb_consent_tcf_string: rows: 98
+1745913570.648 (R) [notice] Search and replacing table: wp_rcb_consent_url: rows: 26
+1745913570.650 (R) [notice] Search and replacing table: wp_rcb_consent_v2: rows: 205
+1745913570.657 (R) [notice] Search and replacing table: wp_rcb_revision: rows: 32
+1745913570.746 (R) [notice] Search and replacing table: wp_rcb_revision_independent: rows: 59
+1745913570.780 (R) [notice] Search and replacing table: wp_rcb_scan: rows: 16832
+1745913570.830 (R) [notice] Searching and replacing reached row: 5000
+1745913570.885 (R) [notice] Searching and replacing reached row: 10000
+1745913570.941 (R) [notice] Searching and replacing reached row: 15000
+1745913570.970 (R) [notice] Search and replacing table: wp_rcb_scan_markup: rows: 50
+1745913570.973 (R) [notice] Search and replacing table: wp_rcb_stats: rows: 504
+1745913570.977 (R) [notice] Search and replacing table: wp_rcb_stats_buttons_clicked: rows: 85
+1745913570.979 (R) [notice] Search and replacing table: wp_rcb_stats_custom_bypass: rows: 56
+1745913570.981 (R) [notice] Search and replacing table: wp_rcb_tcf_data_categories: rows: 44
+1745913570.983 (R) [notice] Search and replacing table: wp_rcb_tcf_features: rows: 12
+1745913570.985 (R) [notice] Search and replacing table: wp_rcb_tcf_purposes: rows: 44
+1745913570.987 (R) [notice] Search and replacing table: wp_rcb_tcf_special_features: rows: 8
+1745913570.988 (R) [notice] Search and replacing table: wp_rcb_tcf_special_purposes: rows: 10
+1745913570.990 (R) [notice] Search and replacing table: wp_rcb_tcf_stacks: rows: 180
+1745913571.001 (R) [notice] Search and replacing table: wp_rcb_tcf_vendors: rows: 39518
+1745913571.452 (R) [notice] Searching and replacing reached row: 5000
+1745913571.900 (R) [notice] Searching and replacing reached row: 10000
+1745913572.406 (R) [notice] Searching and replacing reached row: 15000
+1745913572.879 (R) [notice] Searching and replacing reached row: 20000
+1745913573.346 (R) [notice] Searching and replacing reached row: 25000
+1745913573.830 (R) [notice] Searching and replacing reached row: 30000
+1745913574.331 (R) [notice] Searching and replacing reached row: 35000
+1745913574.772 (R) [notice] Search and replacing table: wp_rcb_template: rows: 2
+1745913574.776 (R) [notice] Search and replacing table: wp_rcb_template_translation: rows: 633
+1745913574.783 (R) [notice] Search and replacing table: wp_real_queue: rows: 0
+1745913574.784 (R) [notice] Search and replacing table: wp_redirection_404: rows: 0
+1745913574.785 (R) [notice] Search and replacing table: wp_redirection_groups: rows: 2
+1745913574.787 (R) [notice] Search and replacing table: wp_redirection_items: rows: 123
+1745913574.790 (R) [notice] Search and replacing table: wp_redirection_logs: rows: 0
+1745913574.793 (R) [notice] Search and replacing table: wp_term_relationships: rows: 69989
+1745913574.820 (R) [notice] Searching and replacing reached row: 5000
+1745913574.849 (R) [notice] Searching and replacing reached row: 10000
+1745913574.877 (R) [notice] Searching and replacing reached row: 15000
+1745913574.906 (R) [notice] Searching and replacing reached row: 20000
+1745913574.936 (R) [notice] Searching and replacing reached row: 25000
+1745913574.968 (R) [notice] Searching and replacing reached row: 30000
+1745913575.001 (R) [notice] Searching and replacing reached row: 35000
+1745913575.033 (R) [notice] Searching and replacing reached row: 40000
+1745913575.068 (R) [notice] Searching and replacing reached row: 45000
+1745913575.102 (R) [notice] Searching and replacing reached row: 50000
+1745913575.137 (R) [notice] Searching and replacing reached row: 55000
+1745913575.172 (R) [notice] Searching and replacing reached row: 60000
+1745913575.214 (R) [notice] Searching and replacing reached row: 65000
+1745913575.252 (R) [notice] Search and replacing table: wp_term_taxonomy: rows: 1296
+1745913575.262 (R) [notice] Search and replacing table: wp_termmeta: rows: 606
+1745913575.268 (R) [notice] Search and replacing table: wp_terms: rows: 1296
+1745913575.276 (R) [notice] Search and replacing table: wp_tm_taskmeta: rows: 1
+1745913575.278 (R) [notice] Search and replacing table: wp_tm_tasks: rows: 0
+1745913575.279 (R) [notice] Search and replacing table: wp_usermeta: rows: 1567
+1745913575.290 (R) [notice] Search and replacing table: wp_users: rows: 55
+1745913575.292 (R) [notice] Search and replacing table: wp_wfauditevents: rows: 0
+1745913575.293 (R) [notice] Search and replacing table: wp_wfblockediplog: rows: 0
+1745913575.294 (R) [notice] Search and replacing table: wp_wfblocks7: rows: 0
+1745913575.295 (R) [notice] Search and replacing table: wp_wfconfig: rows: 236
+1745913575.299 (R) [notice] Search and replacing table: wp_wfcrawlers: rows: 0
+1745913575.300 (R) [notice] Search and replacing table: wp_wffilechanges: rows: 0
+1745913575.301 (R) [notice] Search and replacing table: wp_wffilemods: rows: 0
+1745913575.303 (R) [notice] Search and replacing table: wp_wfhits: rows: 0
+1745913575.304 (R) [notice] Search and replacing table: wp_wfhoover: rows: 0
+1745913575.305 (R) [notice] Search and replacing table: wp_wfissues: rows: 0
+1745913575.306 (R) [notice] Search and replacing table: wp_wfknownfilelist: rows: 0
+1745913575.307 (R) [notice] Search and replacing table: wp_wflivetraffichuman: rows: 0
+1745913575.308 (R) [notice] Search and replacing table: wp_wflocs: rows: 0
+1745913575.309 (R) [notice] Search and replacing table: wp_wflogins: rows: 41
+1745913575.311 (R) [notice] Search and replacing table: wp_wfls_2fa_secrets: rows: 0
+1745913575.312 (R) [notice] Search and replacing table: wp_wfls_role_counts: rows: 0
+1745913575.313 (R) [notice] Search and replacing table: wp_wfls_settings: rows: 28
+1745913575.315 (R) [notice] Search and replacing table: wp_wfnotifications: rows: 1
+1745913575.316 (R) [notice] Search and replacing table: wp_wfpendingissues: rows: 0
+1745913575.317 (R) [notice] Search and replacing table: wp_wfreversecache: rows: 0
+1745913575.319 (R) [notice] Search and replacing table: wp_wfsecurityevents: rows: 0
+1745913575.320 (R) [notice] Search and replacing table: wp_wfsnipcache: rows: 0
+1745913575.321 (R) [notice] Search and replacing table: wp_wfstatus: rows: 0
+1745913575.322 (R) [notice] Search and replacing table: wp_wftrafficrates: rows: 0
+1745913575.323 (R) [notice] Search and replacing table: wp_wfwaffailures: rows: 0
+1745913575.325 (R) [notice] Search and replacing table: wp_wpml_mails: rows: 16
+1745913575.326 (R) [notice] Tables examined: 138
+1745913575.326 (R) [notice] Rows examined: 191331
+1745913575.326 (R) [notice] Changes made: 1701
+1745913575.326 (R) [notice] SQL update commands run: 1693
+1745913575.326 (R) [notice] Errors: 0
+1745913575.326 (R) [notice] Time taken (seconds): 14.56
+1745913970.964 (R) [notice] Search and replacing table: wp_actionscheduler_actions: rows: 20
+1745913970.967 (R) [notice] Search and replacing table: wp_actionscheduler_claims: rows: 0
+1745913970.968 (R) [notice] Search and replacing table: wp_actionscheduler_groups: rows: 2
+1745913970.970 (R) [notice] Search and replacing table: wp_actionscheduler_logs: rows: 52
+1745913970.972 (R) [notice] Search and replacing table: wp_aioseo_cache: rows: 18
+1745913970.976 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_blocked_args: rows: 0
+1745913970.977 (R) [notice] Search and replacing table: wp_aioseo_crawl_cleanup_logs: rows: 0
+1745913970.979 (R) [notice] Search and replacing table: wp_aioseo_notifications: rows: 35
+1745913970.984 (R) [notice] Search and replacing table: wp_aioseo_posts: rows: 13736
+1745913974.099 (R) [notice] Searching and replacing reached row: 5000
+1745913975.559 (R) [notice] Searching and replacing reached row: 10000
+1745913976.583 (R) [notice] Search and replacing table: wp_aioseo_writing_assistant_keywords: rows: 0
+1745913976.584 (R) [notice] Search and replacing table: wp_aioseo_writing_assistant_posts: rows: 0
+1745913976.585 (R) [notice] Search and replacing table: wp_aryo_activity_log: rows: 6
+1745913976.587 (R) [notice] Search and replacing table: wp_b2b_ad_clicks: rows: 51
+1745913976.589 (R) [notice] Search and replacing table: wp_b2b_payment_details: rows: 87
+1745913976.598 (R) [notice] Search and replacing table: wp_cmplz_cookiebanners: rows: 0
+1745913976.599 (R) [notice] Search and replacing table: wp_cmplz_cookies: rows: 60
+1745913976.602 (R) [notice] Search and replacing table: wp_cmplz_services: rows: 0
+1745913976.603 (R) [notice] Search and replacing table: wp_commentmeta: rows: 26
+1745913976.604 (R) [notice] Search and replacing table: wp_comments: rows: 15
+1745913976.606 (R) [notice] Search and replacing table: wp_email_log: rows: 63
+1745913976.615 (R) [notice] Search and replacing table: wp_esp_answer: rows: 0
+1745913976.617 (R) [notice] Search and replacing table: wp_esp_attendee_meta: rows: 0
+1745913976.618 (R) [notice] Search and replacing table: wp_esp_checkin: rows: 0
+1745913976.619 (R) [notice] Search and replacing table: wp_esp_country: rows: 250
+1745913976.624 (R) [notice] Search and replacing table: wp_esp_currency: rows: 153
+1745913976.626 (R) [notice] Search and replacing table: wp_esp_currency_payment_method: rows: 0
+1745913976.627 (R) [notice] Search and replacing table: wp_esp_datetime: rows: 0
+1745913976.628 (R) [notice] Search and replacing table: wp_esp_datetime_ticket: rows: 0
+1745913976.630 (R) [notice] Search and replacing table: wp_esp_event_message_template: rows: 0
+1745913976.631 (R) [notice] Search and replacing table: wp_esp_event_meta: rows: 0
+1745913976.632 (R) [notice] Search and replacing table: wp_esp_event_question_group: rows: 0
+1745913976.633 (R) [notice] Search and replacing table: wp_esp_event_venue: rows: 0
+1745913976.635 (R) [notice] Search and replacing table: wp_esp_extra_join: rows: 0
+1745913976.636 (R) [notice] Search and replacing table: wp_esp_extra_meta: rows: 8
+1745913976.638 (R) [notice] Search and replacing table: wp_esp_line_item: rows: 0
+1745913976.639 (R) [notice] Search and replacing table: wp_esp_log: rows: 0
+1745913976.640 (R) [notice] Search and replacing table: wp_esp_message: rows: 0
+1745913976.641 (R) [notice] Search and replacing table: wp_esp_message_template: rows: 0
+1745913976.643 (R) [notice] Search and replacing table: wp_esp_message_template_group: rows: 0
+1745913976.644 (R) [notice] Search and replacing table: wp_esp_payment: rows: 0
+1745913976.645 (R) [notice] Search and replacing table: wp_esp_payment_method: rows: 9
+1745913976.647 (R) [notice] Search and replacing table: wp_esp_price: rows: 2
+1745913976.649 (R) [notice] Search and replacing table: wp_esp_price_type: rows: 7
+1745913976.650 (R) [notice] Search and replacing table: wp_esp_question: rows: 10
+1745913976.652 (R) [notice] Search and replacing table: wp_esp_question_group: rows: 2
+1745913976.653 (R) [notice] Search and replacing table: wp_esp_question_group_question: rows: 10
+1745913976.654 (R) [notice] Search and replacing table: wp_esp_question_option: rows: 0
+1745913976.656 (R) [notice] Search and replacing table: wp_esp_registration: rows: 0
+1745913976.657 (R) [notice] Search and replacing table: wp_esp_registration_payment: rows: 0
+1745913976.658 (R) [notice] Search and replacing table: wp_esp_state: rows: 69
+1745913976.660 (R) [notice] Search and replacing table: wp_esp_status: rows: 38
+1745913976.662 (R) [notice] Search and replacing table: wp_esp_ticket: rows: 1
+1745913976.663 (R) [notice] Search and replacing table: wp_esp_ticket_price: rows: 1
+1745913976.665 (R) [notice] Search and replacing table: wp_esp_ticket_template: rows: 0
+1745913976.666 (R) [notice] Search and replacing table: wp_esp_transaction: rows: 0
+1745913976.667 (R) [notice] Search and replacing table: wp_esp_venue_meta: rows: 0
+1745913976.669 (R) [notice] Search and replacing table: wp_frm_fields: rows: 84
+1745913976.674 (R) [notice] Search and replacing table: wp_frm_forms: rows: 12
+1745913976.677 (R) [notice] Search and replacing table: wp_frm_item_metas: rows: 1068
+1745913976.686 (R) [notice] Search and replacing table: wp_frm_items: rows: 257
+1745913976.737 (R) [notice] Search and replacing table: wp_ju_queue: rows: 0
+1745913976.738 (R) [notice] Search and replacing table: wp_links: rows: 0
+1745913976.740 (R) [notice] Search and replacing table: wp_options: rows: 1117
+1745913976.779 (R) [notice] Search and replacing table: wp_pmxe_exports: rows: 2
+1745913976.784 (R) [notice] Search and replacing table: wp_pmxe_google_cats: rows: 5371
+1745913976.811 (R) [notice] Searching and replacing reached row: 5000
+1745913976.817 (R) [notice] Search and replacing table: wp_pmxe_posts: rows: 1162
+1745913976.824 (R) [notice] Search and replacing table: wp_pmxe_templates: rows: 0
+1745913976.825 (R) [notice] Search and replacing table: wp_pmxi_files: rows: 12
+1745913976.827 (R) [notice] Search and replacing table: wp_pmxi_hash: rows: 4863
+1745913976.857 (R) [notice] Search and replacing table: wp_pmxi_history: rows: 9
+1745913976.859 (R) [notice] Search and replacing table: wp_pmxi_images: rows: 952
+1745913976.866 (R) [notice] Search and replacing table: wp_pmxi_imports: rows: 11
+1745913976.872 (R) [notice] Search and replacing table: wp_pmxi_posts: rows: 6479
+1745913976.906 (R) [notice] Searching and replacing reached row: 5000
+1745913976.921 (R) [notice] Search and replacing table: wp_pmxi_templates: rows: 0
+1745913977.524 (R) [notice] Search and replacing table: wp_postmeta: rows: 7158
+1745913980.657 (R) [notice] Searching and replacing reached row: 5000
+1745913981.327 (R) [notice] Search and replacing table: wp_posts: rows: 14318
+1745913981.425 (R) [notice] Searching and replacing reached row: 5000
+1745913981.512 (R) [notice] Searching and replacing reached row: 10000
+1745913981.668 (R) [notice] Search and replacing table: wp_rcb_asset_seo_redirect: rows: 4
+1745913981.670 (R) [notice] Search and replacing table: wp_rcb_blocker_thumbnails: rows: 0
+1745913981.671 (R) [notice] Search and replacing table: wp_rcb_consent_decision: rows: 11
+1745913981.673 (R) [notice] Search and replacing table: wp_rcb_consent_ip: rows: 59
+1745913981.674 (R) [notice] Search and replacing table: wp_rcb_consent_tcf_string: rows: 98
+1745913981.677 (R) [notice] Search and replacing table: wp_rcb_consent_url: rows: 26
+1745913981.683 (R) [notice] Search and replacing table: wp_rcb_consent_v2: rows: 205
+1745913981.690 (R) [notice] Search and replacing table: wp_rcb_revision: rows: 32
+1745913981.771 (R) [notice] Search and replacing table: wp_rcb_revision_independent: rows: 59
+1745913981.853 (R) [notice] Search and replacing table: wp_rcb_scan: rows: 16832
+1745913982.690 (R) [notice] Searching and replacing reached row: 5000
+1745913983.455 (R) [notice] Searching and replacing reached row: 10000
+1745913984.222 (R) [notice] Searching and replacing reached row: 15000
+1745913984.504 (R) [notice] Search and replacing table: wp_rcb_scan_markup: rows: 50
+1745913984.506 (R) [notice] Search and replacing table: wp_rcb_stats: rows: 504
+1745913984.510 (R) [notice] Search and replacing table: wp_rcb_stats_buttons_clicked: rows: 85
+1745913984.512 (R) [notice] Search and replacing table: wp_rcb_stats_custom_bypass: rows: 56
+1745913984.514 (R) [notice] Search and replacing table: wp_rcb_tcf_data_categories: rows: 44
+1745913984.516 (R) [notice] Search and replacing table: wp_rcb_tcf_features: rows: 12
+1745913984.517 (R) [notice] Search and replacing table: wp_rcb_tcf_purposes: rows: 44
+1745913984.519 (R) [notice] Search and replacing table: wp_rcb_tcf_special_features: rows: 8
+1745913984.521 (R) [notice] Search and replacing table: wp_rcb_tcf_special_purposes: rows: 10
+1745913984.523 (R) [notice] Search and replacing table: wp_rcb_tcf_stacks: rows: 180
+1745913984.533 (R) [notice] Search and replacing table: wp_rcb_tcf_vendors: rows: 39518
+1745913984.987 (R) [notice] Searching and replacing reached row: 5000
+1745913985.432 (R) [notice] Searching and replacing reached row: 10000
+1745913985.883 (R) [notice] Searching and replacing reached row: 15000
+1745913986.356 (R) [notice] Searching and replacing reached row: 20000
+1745913986.825 (R) [notice] Searching and replacing reached row: 25000
+1745913987.310 (R) [notice] Searching and replacing reached row: 30000
+1745913987.791 (R) [notice] Searching and replacing reached row: 35000
+1745913988.224 (R) [notice] Search and replacing table: wp_rcb_template: rows: 2
+1745913988.227 (R) [notice] Search and replacing table: wp_rcb_template_translation: rows: 633
+1745913988.233 (R) [notice] Search and replacing table: wp_real_queue: rows: 0
+1745913988.234 (R) [notice] Search and replacing table: wp_redirection_404: rows: 0
+1745913988.235 (R) [notice] Search and replacing table: wp_redirection_groups: rows: 2
+1745913988.237 (R) [notice] Search and replacing table: wp_redirection_items: rows: 123
+1745913988.259 (R) [notice] Search and replacing table: wp_redirection_logs: rows: 0
+1745913988.262 (R) [notice] Search and replacing table: wp_term_relationships: rows: 69989
+1745913988.288 (R) [notice] Searching and replacing reached row: 5000
+1745913988.315 (R) [notice] Searching and replacing reached row: 10000
+1745913988.342 (R) [notice] Searching and replacing reached row: 15000
+1745913988.370 (R) [notice] Searching and replacing reached row: 20000
+1745913988.400 (R) [notice] Searching and replacing reached row: 25000
+1745913988.430 (R) [notice] Searching and replacing reached row: 30000
+1745913988.461 (R) [notice] Searching and replacing reached row: 35000
+1745913988.493 (R) [notice] Searching and replacing reached row: 40000
+1745913988.525 (R) [notice] Searching and replacing reached row: 45000
+1745913988.558 (R) [notice] Searching and replacing reached row: 50000
+1745913988.591 (R) [notice] Searching and replacing reached row: 55000
+1745913988.625 (R) [notice] Searching and replacing reached row: 60000
+1745913988.660 (R) [notice] Searching and replacing reached row: 65000
+1745913988.696 (R) [notice] Search and replacing table: wp_term_taxonomy: rows: 1296
+1745913988.705 (R) [notice] Search and replacing table: wp_termmeta: rows: 606
+1745913988.711 (R) [notice] Search and replacing table: wp_terms: rows: 1296
+1745913988.719 (R) [notice] Search and replacing table: wp_tm_taskmeta: rows: 1
+1745913988.721 (R) [notice] Search and replacing table: wp_tm_tasks: rows: 0
+1745913988.722 (R) [notice] Search and replacing table: wp_usermeta: rows: 1567
+1745913988.733 (R) [notice] Search and replacing table: wp_users: rows: 55
+1745913988.735 (R) [notice] Search and replacing table: wp_wfauditevents: rows: 0
+1745913988.736 (R) [notice] Search and replacing table: wp_wfblockediplog: rows: 0
+1745913988.737 (R) [notice] Search and replacing table: wp_wfblocks7: rows: 0
+1745913988.739 (R) [notice] Search and replacing table: wp_wfconfig: rows: 236
+1745913988.742 (R) [notice] Search and replacing table: wp_wfcrawlers: rows: 0
+1745913988.743 (R) [notice] Search and replacing table: wp_wffilechanges: rows: 0
+1745913988.744 (R) [notice] Search and replacing table: wp_wffilemods: rows: 0
+1745913988.746 (R) [notice] Search and replacing table: wp_wfhits: rows: 0
+1745913988.747 (R) [notice] Search and replacing table: wp_wfhoover: rows: 0
+1745913988.748 (R) [notice] Search and replacing table: wp_wfissues: rows: 0
+1745913988.750 (R) [notice] Search and replacing table: wp_wfknownfilelist: rows: 0
+1745913988.751 (R) [notice] Search and replacing table: wp_wflivetraffichuman: rows: 0
+1745913988.752 (R) [notice] Search and replacing table: wp_wflocs: rows: 0
+1745913988.753 (R) [notice] Search and replacing table: wp_wflogins: rows: 41
+1745913988.755 (R) [notice] Search and replacing table: wp_wfls_2fa_secrets: rows: 0
+1745913988.756 (R) [notice] Search and replacing table: wp_wfls_role_counts: rows: 0
+1745913988.757 (R) [notice] Search and replacing table: wp_wfls_settings: rows: 28
+1745913988.759 (R) [notice] Search and replacing table: wp_wfnotifications: rows: 1
+1745913988.761 (R) [notice] Search and replacing table: wp_wfpendingissues: rows: 0
+1745913988.762 (R) [notice] Search and replacing table: wp_wfreversecache: rows: 0
+1745913988.763 (R) [notice] Search and replacing table: wp_wfsecurityevents: rows: 0
+1745913988.764 (R) [notice] Search and replacing table: wp_wfsnipcache: rows: 0
+1745913988.766 (R) [notice] Search and replacing table: wp_wfstatus: rows: 0
+1745913988.767 (R) [notice] Search and replacing table: wp_wftrafficrates: rows: 0
+1745913988.768 (R) [notice] Search and replacing table: wp_wfwaffailures: rows: 0
+1745913988.769 (R) [notice] Search and replacing table: wp_wpml_mails: rows: 16
+1745913988.774 (R) [notice] Tables examined: 138
+1745913988.774 (R) [notice] Rows examined: 191335
+1745913988.774 (R) [notice] Changes made: 31944
+1745913988.774 (R) [notice] SQL update commands run: 31944
+1745913988.774 (R) [notice] Errors: 0
+1745913988.774 (R) [notice] Time taken (seconds): 17.811

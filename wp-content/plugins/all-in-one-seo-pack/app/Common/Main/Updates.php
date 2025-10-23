@@ -69,10 +69,25 @@ class Updates {
 	 * @return void
 	 */
 	public function runUpdates() {
+		$lastActiveVersion = aioseo()->internalOptions->internal->lastActiveVersion;
+		// Don't run updates if the last active version is the same as the current version.
+		if ( aioseo()->version === $lastActiveVersion ) {
+			// Allow addons to run their updates.
+			do_action( 'aioseo_run_updates', $lastActiveVersion );
+
+			return;
+		}
+
+		// Try to acquire the lock.
+		if ( ! aioseo()->core->db->acquireLock( 'aioseo_run_updates_lock', 0 ) ) {
+			// If we couldn't acquire the lock, exit early without doing anything.
+			// This means another process is already running updates.
+			return;
+		}
+
 		// The dynamic options have not yet fully loaded, so let's refresh here to force that to happen.
 		aioseo()->dynamicOptions->refresh(); // TODO: Check if we still need this since it already runs on 999 in the main AIOSEO file.
 
-		$lastActiveVersion = aioseo()->internalOptions->internal->lastActiveVersion;
 		if ( version_compare( $lastActiveVersion, '4.0.5', '<' ) ) {
 			$this->addImageScanDateColumn();
 		}
@@ -231,10 +246,40 @@ class Updates {
 			$this->disableEmailReports();
 		}
 
+		if ( version_compare( $lastActiveVersion, '4.7.9', '<' ) ) {
+			$this->fixSavedHeadlines();
+			$this->rescheduleEmailReport();
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.8.3', '<' ) ) {
+			$this->resetImageScanDate();
+			$this->addSeoAnalyzerResultsTable();
+			$this->migrateSeoAnalyzerResults();
+			$this->migrateSeoAnalyzerCompetitors();
+			$this->addBreadcrumbSettingsColumn();
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.8.3.1', '<' ) ) {
+			aioseo()->core->cache->delete( 'analyze_site_code' );
+			aioseo()->core->cache->delete( 'analyze_site_body' );
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.8.4', '<' ) ) {
+			$this->addAiColumn();
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.8.4.1', '<' ) ) {
+			aioseo()->ai->updateCredits( true );
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.8.7', '<' ) ) {
+			$this->addColumnIndexForCornerstoneContent();
+		}
+
 		do_action( 'aioseo_run_updates', $lastActiveVersion );
 
 		// Always clear the cache if the last active version is different from our current.
-		// https://github.com/awesomemotive/aioseo/issues/2920
+
 		if ( version_compare( $lastActiveVersion, AIOSEO_VERSION, '<' ) ) {
 			aioseo()->core->cache->clear();
 		}
@@ -436,6 +481,26 @@ class Updates {
 	}
 
 	/**
+	 * Adds the breadcrumb settings column to our posts table.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	public function addBreadcrumbSettingsColumn() {
+		if ( ! aioseo()->core->db->columnExists( 'aioseo_posts', 'breadcrumb_settings' ) ) {
+			$tableName = aioseo()->core->db->db->prefix . 'aioseo_posts';
+			aioseo()->core->db->execute(
+				"ALTER TABLE {$tableName}
+				ADD `breadcrumb_settings` longtext DEFAULT NULL AFTER local_seo"
+			);
+
+			// Reset the cache for the installed tables.
+			aioseo()->internalOptions->database->installedTables = '';
+		}
+	}
+
+	/**
 	 * Modifes the default value of the twitter_use_og column.
 	 *
 	 * @since 4.0.6
@@ -480,7 +545,7 @@ class Updates {
 		$duplicates = aioseo()->core->db->start( 'aioseo_posts' )
 			->select( 'post_id, min(id) as id' )
 			->groupBy( 'post_id having count(post_id) > 1' )
-			->orderBy( 'count(post_id) DESC' )
+			->orderByRaw( 'count(post_id) DESC' )
 			->run()
 			->result();
 
@@ -1797,5 +1862,216 @@ class Updates {
 
 		// Schedule a notification to remind the user to enable email reports in 2 weeks.
 		aioseo()->actionScheduler->scheduleSingle( 'aioseo_email_reports_enable_reminder', 2 * WEEK_IN_SECONDS );
+	}
+
+	/**
+	 * Cancels all occurrences of the report summary task.
+	 * This is needed in order to force the scheduled date to be reset.
+	 *
+	 * @since 4.7.9
+	 *
+	 * @return void
+	 */
+	private function rescheduleEmailReport() {
+		as_unschedule_all_actions( aioseo()->emailReports->summary->actionHook );
+	}
+
+	/**
+	 * Fixes headlines that could not be analyzed.
+	 *
+	 * @since 4.7.9
+	 *
+	 * @return void
+	 */
+	private function fixSavedHeadlines() {
+		$headlines = aioseo()->internalOptions->internal->headlineAnalysis->headlines;
+		if ( empty( $headlines ) ) {
+			return;
+		}
+
+		foreach ( $headlines as $key => $headline ) {
+			if ( ! json_decode( $headline ) ) {
+				unset( $headlines[ $key ] );
+			}
+		}
+
+		aioseo()->internalOptions->internal->headlineAnalysis->headlines = $headlines;
+	}
+
+	/**
+	 * Resets the image scan date in order to force a new scan.
+	 * This is needed because we're now storing relative URLs in order to support site migrations.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	private function resetImageScanDate() {
+		aioseo()->core->db->update( 'aioseo_posts' )
+			->set(
+				[
+					'image_scan_date' => null
+				]
+			)
+			->run();
+	}
+
+	/**
+	 * Adds our custom table for the SeoAnalysis/SeoAnalyzer homepage and competitor results.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	private function addSeoAnalyzerResultsTable() {
+		$db             = aioseo()->core->db->db;
+		$charsetCollate = '';
+
+		if ( ! empty( $db->charset ) ) {
+			$charsetCollate .= "DEFAULT CHARACTER SET {$db->charset}";
+		}
+		if ( ! empty( $db->collate ) ) {
+			$charsetCollate .= " COLLATE {$db->collate}";
+		}
+
+		// Check for seo analyzer results table.
+		if ( ! aioseo()->core->db->tableExists( 'aioseo_seo_analyzer_results' ) ) {
+			$tableName = $db->prefix . 'aioseo_seo_analyzer_results';
+
+			aioseo()->core->db->execute(
+				"CREATE TABLE {$tableName} (
+					`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+					`data` text NOT NULL,
+					`score` varchar(255),
+					`competitor_url` varchar(255),
+					`created` datetime NOT NULL,
+					`updated` datetime NOT NULL,
+					PRIMARY KEY (id),
+					KEY ndx_aioseo_seo_analyzer_results_competitor_url (competitor_url)
+				) {$charsetCollate};"
+			);
+
+			// Reset the cache for the installed tables.
+			aioseo()->internalOptions->database->installedTables = '';
+		}
+	}
+
+	/**
+	 * Migrate the SeoAnalyzer homepage results from the Internal Optinos to the new table.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	private function migrateSeoAnalyzerResults() {
+		$internalOptions = $this->getRawInternalOptions();
+		$results         = ! empty( $internalOptions['internal']['siteAnalysis']['results'] ) ? $internalOptions['internal']['siteAnalysis']['results'] : [];
+		if ( empty( $results ) ) {
+			return;
+		}
+
+		$parsedData = [
+			'results' => is_string( $results ) ? json_decode( $results, true ) : $results,
+			'score'   => $internalOptions['internal']['siteAnalysis']['score'],
+		];
+
+		Models\SeoAnalyzerResult::addResults( $parsedData );
+
+		aioseo()->core->cache->delete( 'analyze_site_code' );
+		aioseo()->core->cache->delete( 'analyze_site_body' );
+	}
+
+	/**
+	 * Migrate the SeoAnalyzer competitors results from the Internal Optinos to the new table.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return void
+	 */
+	private function migrateSeoAnalyzerCompetitors() {
+		$internalOptions = $this->getRawInternalOptions();
+		$competitors     = ! empty( $internalOptions['internal']['siteAnalysis']['competitors'] ) ? $internalOptions['internal']['siteAnalysis']['competitors'] : [];
+		if ( empty( $competitors ) ) {
+			return;
+		}
+
+		foreach ( $competitors as $url => $competitor ) {
+			$parsedData = is_string( $competitor ) ? json_decode( $competitor, true ) : $competitor;
+			$results    = empty( $parsedData['results'] ) ? [] : $parsedData['results'];
+			if ( empty( $results ) ) {
+				continue;
+			}
+
+			Models\SeoAnalyzerResult::addResults( [
+				'results' => $results,
+				'score'   => $parsedData['score'],
+			], $url );
+		}
+
+		aioseo()->core->cache->delete( 'analyze_site_code' );
+		aioseo()->core->cache->delete( 'analyze_site_body' );
+	}
+
+	/**
+	* Adds the AI column to our posts table.
+	*
+	* @since 4.8.4
+	*
+	* @return void
+	*/
+	public function addAiColumn() {
+		if ( ! aioseo()->core->db->columnExists( 'aioseo_posts', 'ai' ) ) {
+			$tableName = aioseo()->core->db->db->prefix . 'aioseo_posts';
+			if ( aioseo()->core->db->columnExists( 'aioseo_posts', 'open_ai' ) ) {
+				aioseo()->core->db->execute(
+					"ALTER TABLE {$tableName}
+					ADD ai longtext DEFAULT NULL AFTER open_ai"
+				);
+			} else {
+				aioseo()->core->db->execute(
+					"ALTER TABLE {$tableName}
+					ADD ai longtext DEFAULT NULL AFTER options"
+				);
+			}
+		}
+	}
+
+	/**
+	 * Returns the raw options from the database.
+	 *
+	 * @since 4.8.3
+	 *
+	 * @return array
+	 */
+	private function getRawInternalOptions() {
+		// Options from the DB.
+		$internalOptions = json_decode( get_option( aioseo()->internalOptions->optionsName ), true );
+		if ( empty( $internalOptions ) ) {
+			$internalOptions = [];
+		}
+
+		return $internalOptions;
+	}
+
+	/**
+	 * Adds the column index for the cornerstone content table.
+	 *
+	 * @since 4.8.7
+	 *
+	 * @return void
+	 */
+	private function addColumnIndexForCornerstoneContent() {
+		if (
+			! aioseo()->core->db->columnExists( 'aioseo_posts', 'pillar_content' ) ||
+			aioseo()->core->db->indexExists( 'aioseo_posts', 'ndx_aioseo_posts_pillar_content' )
+		) {
+			return;
+		}
+
+		$tableName = aioseo()->core->db->db->prefix . 'aioseo_posts';
+		aioseo()->core->db->execute(
+			"ALTER TABLE {$tableName}
+			ADD INDEX ndx_aioseo_posts_pillar_content (pillar_content)"
+		);
 	}
 }

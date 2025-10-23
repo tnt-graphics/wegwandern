@@ -38,13 +38,13 @@ class FrmProForm {
 
 		$options = FrmAppHelper::maybe_filter_array( $options, array( 'edit_msg', 'draft_msg' ) );
 
-		$options['single_entry'] = isset( $values['options']['single_entry'] ) ? $values['options']['single_entry'] : 0;
+		$options['single_entry'] = $values['options']['single_entry'] ?? 0;
 		if ( $options['single_entry'] ) {
-			$options['single_entry_type'] = isset( $values['options']['single_entry_type'] ) ? $values['options']['single_entry_type'] : array();
+			$options['single_entry_type'] = $values['options']['single_entry_type'] ?? array();
 		}
 
 		if ( is_multisite() ) {
-			$options['copy'] = isset( $values['options']['copy'] ) ? $values['options']['copy'] : 0;
+			$options['copy'] = $values['options']['copy'] ?? 0;
 		}
 
 		// In the latest Lite version, start over isn't saved in form options anymore.
@@ -88,7 +88,7 @@ class FrmProForm {
 		unset( $defaults['logged_in'], $defaults['editable'] );
 
 		foreach ( $defaults as $opt => $default ) {
-			$options[ $opt ] = isset( $values['options'][ $opt ] ) ? $values['options'][ $opt ] : $default;
+			$options[ $opt ] = $values['options'][ $opt ] ?? $default;
 
 			unset( $opt, $default );
 		}
@@ -295,10 +295,10 @@ class FrmProForm {
 
 			//create a new field
 			$new_values                                 = apply_filters( 'frm_before_field_created', FrmFieldsHelper::setup_new_vars( 'checkbox', $form_id ) );
-			$new_values['field_options']['taxonomy']    = isset( $field_name['meta_name'] ) ? $field_name['meta_name'] : 'category';
+			$new_values['field_options']['taxonomy']    = $field_name['meta_name'] ?? 'category';
 			$new_values['name']                         = ucwords( str_replace( '_', ' ', $new_values['field_options']['taxonomy'] ) );
 			$new_values['field_options']['post_field']  = 'post_category';
-			$new_values['field_options']['exclude_cat'] = isset( $field_name['exclude_cat'] ) ? $field_name['exclude_cat'] : 0;
+			$new_values['field_options']['exclude_cat'] = $field_name['exclude_cat'] ?? 0;
 
 			$settings['post_category'][ $k ]['field_id'] = FrmField::create( $new_values );
 
@@ -358,8 +358,8 @@ class FrmProForm {
 			}
 
 			$field_options['post_field']  = 'post_category';
-			$field_options['taxonomy']    = isset( $field_name['meta_name'] ) ? $field_name['meta_name'] : 'category';
-			$field_options['exclude_cat'] = isset( $field_name['exclude_cat'] ) ? $field_name['exclude_cat'] : 0;
+			$field_options['taxonomy']    = $field_name['meta_name'] ?? 'category';
+			$field_options['exclude_cat'] = $field_name['exclude_cat'] ?? 0;
 		}
 
 		//Set post custom fields
@@ -389,8 +389,8 @@ class FrmProForm {
 		if ( 'update' === $action && $saving_builder ) {
 			$updated = self::update_builder_page( $id );
 		} elseif ( isset( $values['options'] ) && 'update_settings' === $action ) {
-			$logged_in = isset( $values['logged_in'] ) ? $values['logged_in'] : 0;
-			$editable  = isset( $values['editable'] ) ? $values['editable'] : 0;
+			$logged_in = $values['logged_in'] ?? 0;
+			$editable  = $values['editable'] ?? 0;
 			$updated   = $wpdb->update(
 				$wpdb->prefix . 'frm_forms',
 				array(
@@ -575,7 +575,7 @@ class FrmProForm {
 
 		$updated_titles = array();
 		foreach ( $original_titles as $key => $value ) {
-			$use_key                    = isset( $duplicate_ids[ $key ] ) ? $duplicate_ids[ $key ] : $key;
+			$use_key                    = $duplicate_ids[ $key ] ?? $key;
 			$updated_titles[ $use_key ] = $value;
 		}
 		return $updated_titles;
@@ -600,7 +600,7 @@ class FrmProForm {
 	 * @return int
 	 */
 	public static function is_ajax_on( $form ) {
-		$ajax = isset( $form->options['ajax_submit'] ) ? $form->options['ajax_submit'] : 0;
+		$ajax = $form->options['ajax_submit'] ?? 0;
 		return $ajax;
 	}
 

@@ -140,6 +140,8 @@
 
 							}else if(preg_match("/utm_(source|medium|campaign|content|term)/i", $this->cacheFilePath)){
 
+							}else if(preg_match("/srsltid\=/i", $this->cacheFilePath)){
+
 							}else{
 								$this->cacheFilePath = false;
 							}
@@ -209,6 +211,11 @@
 
 					//to remove query strings for cache if google analytics parameters are set
 					if(preg_match("/^utm_(source|medium|campaign|content|term)/i", $query_param)){
+						continue;
+					}
+
+					//to remove query strings for cache if google merchant center parameters are set
+					if(preg_match("/^srsltid\=/i", $query_param)){
 						continue;
 					}
 
@@ -1117,11 +1124,13 @@
 		}
 
 		public function cacheDate($buffer){
-			if($this->isMobile() && class_exists("WpFcMobileCache") && isset($this->options->wpFastestCacheMobile) && isset($this->options->wpFastestCacheMobileTheme)){
-				$comment = "<!-- Mobile: WP Fastest Cache file was created in ".$this->creationTime()." seconds, on ".date("d-m-y G:i:s", current_time('timestamp'))." -->";
-			}else{
-				$comment = "<!-- WP Fastest Cache file was created in ".$this->creationTime()." seconds, on ".date("d-m-y G:i:s", current_time('timestamp'))." -->";
-			}
+			$prefix = ($this->isMobile() && class_exists("WpFcMobileCache") && isset($this->options->wpFastestCacheMobile) && isset($this->options->wpFastestCacheMobileTheme)) 
+			    ? "Mobile: " 
+			    : "";
+
+			$comment = "<!-- {$prefix}WP Fastest Cache file was created in " . $this->creationTime() . " seconds, on " . date(get_option('date_format') . ' @ ' . get_option('time_format'), current_time('timestamp')) . " -->";
+
+
 
 			if(apply_filters( 'wpfc_remove_footer_comment', false )){
 				$comment = "";
@@ -1136,7 +1145,10 @@
 		}
 
 		public function creationTime(){
-			return microtime(true) - $this->startTime;
+			$time = microtime(true) - $this->startTime;
+			$time = number_format($time, 3);
+
+			return $time;
 		}
 
 		public function isCommenter(){

@@ -190,8 +190,8 @@ DEFAULT_HTML;
 		}
 
 		if ( FrmField::is_option_true( $this->field, 'repeat' ) ) {
-			$errors = isset( $args['errors'] ) ? $args['errors'] : array();
-			$form   = isset( $args['form'] ) ? $args['form'] : array();
+			$errors = $args['errors'] ?? array();
+			$form   = $args['form'] ?? array();
 
 			$input = $this->front_field_input( compact( 'errors', 'form' ), array() );
 
@@ -328,7 +328,7 @@ DEFAULT_HTML;
 		$old_header_html    = reset( $headings[0] );
 		$aria_expanded      = $section_is_open ? 'true' : 'false';
 
-		$collapse_icon = isset( $style_settings['collapse_icon'] ) ? $style_settings['collapse_icon'] : 1;
+		$collapse_icon = $style_settings['collapse_icon'] ?? 1;
 		$svg_args      = array(
 			'echo'          => false,
 			'width'         => '1em',

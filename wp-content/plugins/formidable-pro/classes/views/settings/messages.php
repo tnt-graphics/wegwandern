@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php esc_html_e( 'Update Button', 'formidable-pro' ); ?>
 		<?php FrmProAppHelper::tooltip_icon( __( 'The label on the submit button when editing and entry.', 'formidable-pro' ) ); ?>
 	</label>
-	<input type="text" id="frm_update_value" name="frm_update_value" class="frm8 frm_form_field" value="<?php echo esc_attr($frmpro_settings->update_value); ?>" />
+	<input type="text" id="frm_update_value" name="frm_update_value" class="frm8 frm_form_field" value="<?php echo esc_attr( $frmpro_settings->update_value ); ?>" />
 </p>
 
 <p class="frm_grid_container">
@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php esc_html_e( 'Login Message', 'formidable-pro' ); ?>
 		<?php FrmProAppHelper::tooltip_icon( __( 'The message seen when a user who is not logged-in views a form only logged-in users can submit.', 'formidable-pro' ) ); ?>
 	</label>
-	<input type="text" id="frm_login_msg" name="frm_login_msg" class="frm8 frm_form_field" value="<?php echo esc_attr($frm_settings->login_msg); ?>" />
+	<input type="text" id="frm_login_msg" name="frm_login_msg" class="frm8 frm_form_field" value="<?php echo esc_attr( $frm_settings->login_msg ); ?>" />
 </p>
 
 <p class="frm_grid_container">
@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php esc_html_e( 'Previously Submitted Message', 'formidable-pro' ); ?>
 		<?php FrmProAppHelper::tooltip_icon( __( 'The message seen when a user attempts to submit a form for a second time if submissions are limited.', 'formidable-pro' ) ); ?>
 	</label>
-	<input type="text" id="frm_already_submitted" name="frm_already_submitted" class="frm8 frm_form_field" value="<?php echo esc_attr($frmpro_settings->already_submitted); ?>" />
+	<input type="text" id="frm_already_submitted" name="frm_already_submitted" class="frm8 frm_form_field" value="<?php echo esc_attr( $frmpro_settings->already_submitted ); ?>" />
 </p>
 
 <p>

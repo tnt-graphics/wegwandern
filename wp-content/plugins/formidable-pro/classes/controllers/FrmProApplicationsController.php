@@ -241,6 +241,8 @@ class FrmProApplicationsController {
 
 		$response['redirect'] = FrmProApplicationsHelper::get_edit_url( $term_id );
 
+		FrmProUsageController::track_usage_data( $args );
+
 		return $response;
 	}
 

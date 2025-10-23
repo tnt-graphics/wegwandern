@@ -17,8 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 		</div>
 	</div>
-	<button type="button" class="frm_choose_image_box frm-flex-center frm_button frm_no_style_button<?php echo 0 === $bg_image_id ? '' : ' frm_hidden'; ?>">
-		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm-upload-icon-2024' ); ?>
-		<?php esc_attr_e( 'Upload background image', 'formidable-pro' ); ?>
+	<button type="button" class="frm_choose_image_box frm-flex-center frm_button frm-px-0 frm_no_style_button<?php echo 0 === $bg_image_id ? '' : ' frm_hidden'; ?>">
+		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_upload3_icon frm_svg20 frm-text-primary-500' ); ?>
+		<span class="frm-text-md"><?php esc_html_e( 'Upload Image', 'formidable-pro' ); ?></span>
 	</button>
 </div>

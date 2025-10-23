@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Formidable ACF
  * Description: Map Formidable fields to Advanced Custom Fields.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Plugin URI: https://formidableforms.com/
  * Author URI: https://formidableforms.com/
  * Author: Strategy11

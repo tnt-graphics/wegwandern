@@ -45,6 +45,7 @@ class Features {
 		}
 
 		// Convert the features array to objects using JSON. This is essential because we have lots of features that rely on this to be an object, and changing it to an array would break them.
+
 		$features = json_decode( wp_json_encode( $features ) );
 
 		return $features;
