@@ -1,0 +1,15 @@
+# WordPress
+.DS_Store
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
