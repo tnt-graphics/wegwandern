@@ -19,7 +19,15 @@ function after_entry_created( $entry_id, $form_id ) {
 	 */
 	$comments_form_id = FrmForm::get_id_by_key( 'commentsform' );
 	if ( $comments_form_id === $form_id ) {
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
 		$current_user            = wp_get_current_user();
+		if ( ! $current_user || 0 === $current_user->ID ) {
+			return;
+		}
+
 		$post_array              = $_POST;
 		$star_rating_field_id    = FrmField::get_id_by_key( '30zuy' );
 		$mein_commentar_field_id = FrmField::get_id_by_key( 'ts5o3' );
@@ -31,8 +39,13 @@ function after_entry_created( $entry_id, $form_id ) {
 			$post_array['item_meta'][ $wanderung_field_id ] = $post->ID;
 		}
 		if ( '' !== $post_array['item_meta'][ $mein_commentar_field_id ] || '' !== $post_array['item_meta'][ $file_upload_field_id ] ) {
+			$comment_author = trim( $current_user->user_firstname . ' ' . $current_user->user_lastname );
+			if ( '' === $comment_author ) {
+				$comment_author = $current_user->display_name;
+			}
+
 			$values     = array(
-				'comment_author'       => $current_user->user_firstname . ' ' . $current_user->user_lastname,
+				'comment_author'       => $comment_author,
 				'comment_author_email' => $current_user->user_email,
 				'comment_post_ID'      => $post_array['item_meta'][ $wanderung_field_id ],
 				'comment_content'      => $post_array['item_meta'][ $mein_commentar_field_id ],
