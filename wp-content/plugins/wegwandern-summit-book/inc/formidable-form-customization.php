@@ -315,7 +315,51 @@ function article_form_redirection( $url, $form, $params ) {
 	return $url;
 }
 
+add_filter( 'frm_skip_form_action', 'block_unauthenticated_comment_emails', 10, 2 );
 add_filter( 'frm_skip_form_action', 'stop_multiple_actions', 20, 2 );
+
+/**
+ * Block email actions for unauthenticated comment form submissions
+ *
+ * @param bool  $skip_this_action whether to skip this action or not.
+ * @param array $args array of form values.
+ */
+function block_unauthenticated_comment_emails( $skip_this_action, $args ) {
+	// Only block if user is not logged in
+	if ( is_user_logged_in() ) {
+		return $skip_this_action;
+	}
+
+	// Get the entry to find the form
+	if ( ! isset( $args['entry'] ) ) {
+		return $skip_this_action;
+	}
+
+	$entry = $args['entry'];
+	$form_id = is_object( $entry ) && isset( $entry->form_id ) ? $entry->form_id : null;
+	
+	// If we don't have form_id from entry object, try to get it from entry ID
+	if ( ! $form_id && is_object( $entry ) && isset( $entry->id ) ) {
+		$entry_obj = FrmEntry::getOne( $entry->id, true );
+		$form_id = $entry_obj ? $entry_obj->form_id : null;
+	}
+
+	// Check if this is the comments form
+	$comments_form_id = FrmForm::get_id_by_key( 'commentsform' );
+	if ( $comments_form_id && $form_id && (int) $form_id === (int) $comments_form_id ) {
+		// Block email actions for unauthenticated users
+		// Check if this is an email action by checking post_excerpt or post_title
+		if ( isset( $args['action']->post_excerpt ) && 'email' === $args['action']->post_excerpt ) {
+			return true; // Skip this email action
+		}
+		// Also check post_type or other indicators
+		if ( isset( $args['action']->post_type ) && 'frm_email_action' === $args['action']->post_type ) {
+			return true; // Skip this email action
+		}
+	}
+
+	return $skip_this_action;
+}
 
 /**
  * Stop sending of multiple emails
@@ -339,6 +383,25 @@ function stop_multiple_actions( $skip_this_action, $args ) {
 }
 
 add_action( 'frm_trigger_email_action', 'frm_set_action_triggered', 30, 2 );
+add_filter( 'wp_mail', 'block_unauthenticated_comment_form_emails_via_wpmail', 10, 1 );
+
+/**
+ * Block emails sent from comment form for unauthenticated users (backup method)
+ *
+ * @param array $args wp_mail arguments.
+ */
+function block_unauthenticated_comment_form_emails_via_wpmail( $args ) {
+	// Only block if user is not logged in
+	if ( ! is_user_logged_in() ) {
+		// Check if this email is from a comment form submission
+		$comments_form_id = FrmForm::get_id_by_key( 'commentsform' );
+		if ( $comments_form_id && isset( $_POST['form_id'] ) && (int) $_POST['form_id'] === (int) $comments_form_id ) {
+			// Block the email
+			return false;
+		}
+	}
+	return $args;
+}
 
 /**
  * Update the action as triggered
