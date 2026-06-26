@@ -55,9 +55,11 @@ class ContrastRatioValidator
     public function validate_callback($validity)
     {
         // Avoid circular issues with `post_value`
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- customize autosave flag is read-only flow control.
         if ($this->currentlyDisabled || !empty($_POST['customize_changeset_autosave'])) {
             return $validity;
         }
+        // phpcs:enable
         // Collect both values
         $this->currentlyDisabled = \true;
         $against1 = Utils::getValue($this->setting1, $this->panel);

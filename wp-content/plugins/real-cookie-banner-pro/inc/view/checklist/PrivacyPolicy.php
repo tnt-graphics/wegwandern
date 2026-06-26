@@ -27,12 +27,12 @@ class PrivacyPolicy extends \DevOwl\RealCookieBanner\view\checklist\AbstractChec
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Set privacy policy page', RCB_TD);
+        return \__('Set privacy policy page', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Legally required pages must be accessible even if the cookie banner covers your website. Therefore, the privacy policy should be linked in the footer of the cookie banner.', RCB_TD);
+        return \__('Legally required pages must be accessible even if the cookie banner covers your website. Therefore, the privacy policy should be linked in the footer of the cookie banner.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -42,7 +42,7 @@ class PrivacyPolicy extends \DevOwl\RealCookieBanner\view\checklist\AbstractChec
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Set privacy policy page', RCB_TD);
+        return \__('Set privacy policy page', 'real-cookie-banner');
     }
     /**
      * Privacy policy got updated, let's update the checklist accordingly.

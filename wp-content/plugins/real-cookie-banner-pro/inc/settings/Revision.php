@@ -153,7 +153,7 @@ class Revision extends AbstractRevisionPersistance
          */
         $translated = \apply_filters('RCB/Revision/Context/Translate', $context);
         if (empty($translated)) {
-            $translated = \__('Without context', RCB_TD);
+            $translated = \__('Without context', 'real-cookie-banner');
         }
         return $translated;
     }
@@ -165,18 +165,18 @@ class Revision extends AbstractRevisionPersistance
      * - `created_tag_managers`: Has a cookie with a valid Google/Matomo Tag Manager script (so you can show a notice in your config UI)
      * - `public_count`: A total count of public cookies
      *
-     * @param boolean $recreate If true, a new revision gets created so new consents need to be made. Always recreates when no consents are given yet.
+     * @param boolean|"force" $recreate If true, a new revision gets created so new consents need to be made. Always recreates when no consents are given yet.
      */
     public function getCurrent($recreate = \false)
     {
-        $create = $this->getRevision()->create($recreate || UserConsent::getInstance()->getCount() === 0);
+        $create = $this->getRevision()->create($recreate === 'force' ? 'force' : $recreate || UserConsent::getInstance()->getCount() === 0);
         $calculated = $create['hash'];
         $publicToUsers = $this->getRevision()->getEnsuredCurrentHash();
         $consentsDeletedAt = \mysql2date('c', \get_transient(\DevOwl\RealCookieBanner\settings\Consent::TRANSIENT_SCHEDULE_CONSENTS_DELETION), \false);
         // Search for all available tag managers
         $createdTagManagers = [];
         foreach (ManagerMiddleware::TAG_MANAGER_IDENTIFIERS as $tagManagerIdentifier) {
-            $ids = \get_posts(Core::getInstance()->queryArguments(['post_type' => \DevOwl\RealCookieBanner\settings\Cookie::CPT_NAME, 'numberposts' => -1, 'nopaging' => \true, 'fields' => 'ids', 'meta_query' => [['key' => \DevOwl\RealCookieBanner\settings\Blocker::META_NAME_PRESET_ID, 'value' => $tagManagerIdentifier, 'compare' => '=']]], 'revisionGetManagerIds'));
+            $ids = \get_posts(Core::getInstance()->queryArguments(['post_type' => \DevOwl\RealCookieBanner\settings\Cookie::CPT_NAME, 'numberposts' => -1, 'nopaging' => \true, 'fields' => 'ids', 'meta_query' => [['key' => \DevOwl\RealCookieBanner\settings\Blocker::META_NAME_PRESET_ID, 'value' => \sprintf('^%s', $tagManagerIdentifier), 'compare' => 'REGEXP']]], 'revisionGetManagerIds'));
             $createdTagManagers[$tagManagerIdentifier] = $ids;
         }
         $notices = Core::getInstance()->getNotices();

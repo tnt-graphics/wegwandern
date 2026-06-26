@@ -30,12 +30,12 @@ class ActivateBanner extends \DevOwl\RealCookieBanner\view\checklist\AbstractChe
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Activate Cookie Banner and Content Blocker', RCB_TD);
+        return \__('Activate Cookie Banner and Content Blocker', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Once everything is set up, you can display the cookie banner to your visitors.', RCB_TD);
+        return \__('Once everything is set up, you can display the cookie banner to your visitors.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -45,7 +45,7 @@ class ActivateBanner extends \DevOwl\RealCookieBanner\view\checklist\AbstractChe
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Activate', RCB_TD);
+        return \__('Activate', 'real-cookie-banner');
     }
     /**
      * Settings got saved, let's check the checklist item.

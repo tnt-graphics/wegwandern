@@ -12,14 +12,14 @@ if (!function_exists('rcb_skip_wp_admin_notice')) {
             global $wp_version;
             echo '<div class=\'notice notice-error\'>
 				<p><strong>' .
-                $data['Name'] .
+                esc_html($data['Name']) .
                 '</strong> could not be initialized because you need minimum WordPress version ' .
-                RCB_MIN_WP .
+                esc_html(RCB_MIN_WP) .
                 ' ... you are running: ' .
-                $wp_version .
+                esc_html($wp_version) .
                 '.
 				<a href="' .
-                admin_url('update-core.php') .
+                esc_url(admin_url('update-core.php')) .
                 '">Update WordPress now.</a>
 			</div>';
         }

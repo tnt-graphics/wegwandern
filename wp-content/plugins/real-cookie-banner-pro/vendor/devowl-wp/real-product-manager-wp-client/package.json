@@ -1,6 +1,6 @@
 {
     "name": "@devowl-wp/real-product-manager-wp-client",
-    "version": "1.19.46",
+    "version": "1.20.22",
     "private": true,
     "description": "A WordPress client for Real Product Manager",
     "homepage": "https://devowl.io",
@@ -10,7 +10,13 @@
         "**/*.{css,scss,less}",
         "./src/public/ts/*.tsx"
     ],
-    "main": "lib/index.tsx",
+    "type": "module",
+    "exports": {
+        ".": {
+            "devowl-source": "./lib/index.tsx",
+            "default": "./lib/index.js"
+        }
+    },
     "files": [
         "dist",
         "dev",
@@ -36,13 +42,13 @@
         "not IE 11"
     ],
     "dependencies": {
-        "@ant-design/icons": "5.3.7",
+        "@ant-design/icons": "catalog:frontend",
         "@devowl-wp/react-utils": "workspace:*",
-        "antd": "5.18.1",
-        "mobx": "4.15.7",
-        "mobx-react": "6.3.1",
-        "react": "18.3.1",
-        "react-dom": "18.3.1"
+        "antd": "catalog:frontend",
+        "mobx": "catalog:legacy",
+        "mobx-react": "catalog:legacy",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
     },
     "devDependencies": {
         "@devowl-wp/composer-licenses": "workspace:*",
@@ -56,22 +62,19 @@
         "@devowl-wp/ts-config": "workspace:*",
         "@devowl-wp/utils": "workspace:*",
         "@devowl-wp/webpack-config": "workspace:*",
-        "@types/react": "18.3.3",
-        "@types/react-dom": "18.3.0",
-        "ts-node": "10.9.2",
-        "tslib": "2.6.3",
-        "typescript": "5.4.5",
-        "webpack": "5.92.0",
-        "webpack-cli": "5.1.4"
+        "@swc-node/register": "catalog:build",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "tslib": "catalog:build",
+        "typescript": "catalog:build",
+        "webpack": "catalog:webpack",
+        "webpack-cli": "catalog:webpack"
     },
     "peerDependencies": {
         "@devowl-wp/utils": "workspace:*",
         "mobx": "*",
         "react": "*",
         "react-dom": "*"
-    },
-    "engines": {
-        "node": ">=14.15.0"
     },
     "continuous-localization": {
         "locales": {
@@ -113,7 +116,9 @@
             "pt_PT": "pt@formal",
             "pt_BR": false,
             "el": "el",
-            "ro_RO": "ro"
+            "ro_RO": "ro",
+            "sl_SI": "sl",
+            "hr": "hr"
         },
         "thresholds": {
             "de@informal": 100,
@@ -129,11 +134,13 @@
             "nb_NO": 100,
             "cs": 100,
             "pt@formal": 100,
-            "hu_HU": 100,
-            "ro_RO": 100,
+            "hu": 100,
+            "ro": 100,
             "el": 100,
             "fi": 100,
-            "sk_SK": 100
+            "sk": 100,
+            "sl": 100,
+            "hr": 100
         },
         "machineTranslation": {
             "fr@formal": [
@@ -183,6 +190,9 @@
             ],
             "sk": [
                 "deepl"
+            ],
+            "sl": [
+                "deepl"
             ]
         },
         "copyFiles": {
@@ -225,6 +235,9 @@
             ],
             "fi_FI.(po)$": [
                 "fi.$1"
+            ],
+            "hr_HR.(po)$": [
+                "hr.$1"
             ]
         },
         "projects": {
@@ -306,9 +319,6 @@
         },
         "module": {
             "type": "es6"
-        },
-        "env": {
-            "coreJs": 3
         },
         "sourceMaps": true
     }

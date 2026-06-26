@@ -53,7 +53,7 @@ trait ImportBannerLinks
             // Always create the entry
             $create = \wp_insert_post(['post_type' => BannerLink::CPT_NAME, 'post_content' => $post_content, 'post_title' => $post_title, 'post_status' => $post_status, 'meta_input' => $metas, 'menu_order' => 99], \true);
             if (\is_wp_error($create)) {
-                $this->addMessageCreateFailure($post_name, \__('Footer link', RCB_TD), $create);
+                $this->addMessageCreateFailure($post_name, \__('Footer link', 'real-cookie-banner'), $create);
                 continue;
             }
             if ($showPageIdMessage) {
@@ -70,7 +70,7 @@ trait ImportBannerLinks
     protected function handleCorruptBannerLink($bannerLink, $index)
     {
         if (!isset($bannerLink['metas'], $bannerLink['post_name'], $bannerLink['post_title'])) {
-            $this->addMessageMissingProperties($index, \__('Footer links', RCB_TD), 'ID, metas, post_name, post_status, post_title');
+            $this->addMessageMissingProperties($index, \__('Footer links', 'real-cookie-banner'), 'ID, metas, post_name, post_status, post_title');
             return \false;
         }
         return \true;

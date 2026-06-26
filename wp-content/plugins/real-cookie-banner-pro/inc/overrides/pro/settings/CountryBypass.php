@@ -8,6 +8,7 @@ use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\lite\MaxMindDatabase;
 use DevOwl\RealCookieBanner\MyConsent;
 use DevOwl\RealCookieBanner\settings\CountryBypass as SettingsCountryBypass;
+use DevOwl\RealCookieBanner\settings\General as SettingsGeneral;
 use DevOwl\RealCookieBanner\Utils;
 use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Utils as UtilsUtils;
 use WP_Error;
@@ -38,11 +39,13 @@ trait CountryBypass
     // Documented in IOverrideCountryBypass
     public function overrideRegister()
     {
-        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_ACTIVE, ['type' => 'boolean', 'show_in_rest' => \true]);
-        // WP < 5.3 does not support array types yet, so we need to store serialized
-        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_COUNTRIES, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_TYPE, ['type' => 'string', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => [SettingsCountryBypass::TYPE_ALL, SettingsCountryBypass::TYPE_ESSENTIALS]]]]);
-        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_DB_DOWNLOAD_TIME, ['type' => 'string', 'show_in_rest' => \true]);
+        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_ACTIVE, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        // WP < 5.3 does not support array types yet, so we store the country codes as a CSV string.
+        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_COUNTRIES, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => function ($value) {
+            return SettingsGeneral::sanitize_delimited_list($value);
+        }]);
+        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_TYPE, ['type' => 'string', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => [SettingsCountryBypass::TYPE_ALL, SettingsCountryBypass::TYPE_ESSENTIALS]]], 'sanitize_callback' => [SettingsCountryBypass::class, 'sanitize_country_bypass_type']]);
+        \register_setting(SettingsCountryBypass::OPTION_GROUP, SettingsCountryBypass::SETTING_COUNTRY_BYPASS_DB_DOWNLOAD_TIME, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_text_field']);
         $this->previousActive = $this->isActive();
     }
     // Documented in IOverrideCountryBypass
@@ -64,7 +67,8 @@ trait CountryBypass
         if ($result === \false) {
             $transaction = new Transaction();
             $transaction->setIpAddress(Utils::getIpAddress());
-            $transaction->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+            $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? \sanitize_text_field(\wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+            $transaction->setUserAgent($userAgent);
             $transaction->setReferer($request->get_param('referer'));
             $transaction->setViewPort($request->get_param('viewPortWidth'), $request->get_param('viewPortHeight'));
             $bypass = $this->probablyCreateTransaction(MyConsent::getInstance()->getCurrentUser(), $transaction);
@@ -91,7 +95,7 @@ trait CountryBypass
             }
             return $result;
         }
-        return new WP_Error('rcb_update_country_db_not_active', \__('This functionality is currently not available.', RCB_TD), ['status' => 500]);
+        return new WP_Error('rcb_update_country_db_not_active', \__('This functionality is currently not available.', 'real-cookie-banner'), ['status' => 500]);
     }
     // Documented in IOverrideCountryBypass
     public function clearDatabase()

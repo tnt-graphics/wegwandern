@@ -19,7 +19,7 @@ class Utils
      */
     public static function startsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -35,7 +35,7 @@ class Utils
      */
     public static function endsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -108,7 +108,7 @@ class Utils
         if (self::startsWith($string, '{')) {
             return $string;
         }
-        if (\function_exists('gzuncompress')) {
+        if (\is_string($string) && \function_exists('gzuncompress')) {
             return \gzuncompress(\base64_decode($string));
         }
         return $default;

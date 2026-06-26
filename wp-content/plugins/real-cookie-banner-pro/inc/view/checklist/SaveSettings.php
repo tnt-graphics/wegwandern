@@ -28,12 +28,12 @@ class SaveSettings extends \DevOwl\RealCookieBanner\view\checklist\AbstractCheck
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Adjust the settings of the cookie banner', RCB_TD);
+        return \__('Adjust the settings of the cookie banner', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Decide which features should be enabled in your cookie banner depending on your needs.', RCB_TD);
+        return \__('Decide which features should be enabled in your cookie banner depending on your needs.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -43,7 +43,7 @@ class SaveSettings extends \DevOwl\RealCookieBanner\view\checklist\AbstractCheck
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Manage settings', RCB_TD);
+        return \__('Manage settings', 'real-cookie-banner');
     }
     /**
      * Settings got saved, let's check the checklist item.

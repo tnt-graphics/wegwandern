@@ -26,11 +26,11 @@ trait GoogleConsentMode
     // Documented in IOverrideGoogleConsentMode
     public function overrideRegister()
     {
-        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_ENABLED, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_SHOW_RECOMMONDATIONS_WITHOUT_CONSENT, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_ADDITIONAL_URL_PARAMETERS, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_REDACT_DATA_WITHOUT_CONSENT, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_LIST_PURPOSES, ['type' => 'boolean', 'show_in_rest' => \true]);
+        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_ENABLED, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_SHOW_RECOMMONDATIONS_WITHOUT_CONSENT, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_ADDITIONAL_URL_PARAMETERS, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_REDACT_DATA_WITHOUT_CONSENT, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(SettingsGoogleConsentMode::OPTION_GROUP, SettingsGoogleConsentMode::SETTING_GCM_LIST_PURPOSES, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
     }
     /**
      * Localize frontend.

@@ -25,7 +25,7 @@ if (\defined('ABSPATH')) {
         });
         \add_action('rest_api_init', function () use($compLanguage) {
             if (isset($_GET['_dataLocale'])) {
-                $compLanguage->switch($_GET['_dataLocale']);
+                $compLanguage->switch(\sanitize_text_field(\wp_unslash($_GET['_dataLocale'])));
             }
         }, 0);
     });

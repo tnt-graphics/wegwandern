@@ -30,7 +30,11 @@ class HTTP_WebDAV_Client_parse_propfind_response
 		xml_parser_set_option($xml_parser, XML_OPTION_CASE_FOLDING,
 							  false);
 		$this->success = xml_parse($xml_parser, $response, true);
-		xml_parser_free($xml_parser);
+		if (version_compare(PHP_VERSION, '8.0', '<')) {
+			xml_parser_free($xml_parser);
+		} else {
+			unset($xml_parser); // On PHP 8+, xml_parser_free() is a no-op (deprecated in 8.5); unset the handle instead.
+		}
 
 		unset($this->_depth);
 	}

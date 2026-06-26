@@ -47,13 +47,19 @@ class Persist
     public function normalizeVendors()
     {
         global $wpdb;
+        $persistedVendorIds = [];
+        $downloader = $this->getDownloader();
+        $gvlSpecificationVersion = $downloader->getGvlSpecificationVersion();
+        $tcfPolicyVersion = $downloader->getTcfPolicyVersion();
+        $vendorListVersion = $downloader->getVendorListVersion();
+        $table_name = $this->getNormalizer()->getTableName(\DevOwl\RealCookieBanner\lite\tcf\Persist::TABLE_NAME_VENDORS);
         // Prepare all rows as `VALUES` string and chunk them
         $rows = [];
-        $downloader = $this->getDownloader();
         foreach ($downloader->getVendors() as $vendor) {
+            $persistedVendorIds[] = $vendor['id'];
             // Generate SQL
             // phpcs:disable WordPress.DB.PreparedSQL
-            $rows[] = $wpdb->prepare('%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s', $downloader->getGvlSpecificationVersion(), $downloader->getTcfPolicyVersion(), $downloader->getVendorListVersion(), $vendor['id'], $vendor['name'], \join(',', $vendor['purposes']), \join(',', $vendor['legIntPurposes']), \join(',', $vendor['flexiblePurposes']), \join(',', $vendor['specialPurposes']), \join(',', $vendor['features']), \join(',', $vendor['specialFeatures']), isset($vendor['usesCookies']) ? $vendor['usesCookies'] ? '1' : '0' : 'NULL', $vendor['cookieMaxAgeSeconds'] ?? 'NULL', isset($vendor['cookieRefresh']) ? $vendor['cookieRefresh'] ? '1' : '0' : 'NULL', isset($vendor['usesNonCookieAccess']) ? $vendor['usesNonCookieAccess'] ? '1' : '0' : 'NULL', $vendor['deviceStorageDisclosureUrl'] ?? 'NULL', $vendor['deviceStorageDisclosureViolation'] ?? 'NULL', isset($vendor['deviceStorageDisclosure']) ? \json_encode($vendor['deviceStorageDisclosure']) : 'NULL', isset($vendor['additionalInformation']) ? \json_encode($vendor['additionalInformation']) : 'NULL', isset($vendor['dataRetention']) ? \json_encode($vendor['dataRetention']) : 'NULL', \join(',', $vendor['dataDeclaration'] ?? []), isset($vendor['urls']) ? \json_encode($vendor['urls']) : 'NULL');
+            $rows[] = $wpdb->prepare('%d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s, %d, %d, %d, %d, %s, %s, %s, %s, %s, %s, %s', $gvlSpecificationVersion, $tcfPolicyVersion, $vendorListVersion, $vendor['id'], $vendor['name'], \join(',', $vendor['purposes']), \join(',', $vendor['legIntPurposes']), \join(',', $vendor['flexiblePurposes']), \join(',', $vendor['specialPurposes']), \join(',', $vendor['features']), \join(',', $vendor['specialFeatures']), isset($vendor['usesCookies']) ? $vendor['usesCookies'] ? '1' : '0' : 'NULL', $vendor['cookieMaxAgeSeconds'] ?? 'NULL', isset($vendor['cookieRefresh']) ? $vendor['cookieRefresh'] ? '1' : '0' : 'NULL', isset($vendor['usesNonCookieAccess']) ? $vendor['usesNonCookieAccess'] ? '1' : '0' : 'NULL', $vendor['deviceStorageDisclosureUrl'] ?? 'NULL', $vendor['deviceStorageDisclosureViolation'] ?? 'NULL', isset($vendor['deviceStorageDisclosure']) ? \json_encode($vendor['deviceStorageDisclosure']) : 'NULL', isset($vendor['additionalInformation']) ? \json_encode($vendor['additionalInformation']) : 'NULL', isset($vendor['dataRetention']) ? \json_encode($vendor['dataRetention']) : 'NULL', \join(',', $vendor['dataDeclaration'] ?? []), isset($vendor['urls']) ? \json_encode($vendor['urls']) : 'NULL');
             // phpcs:enable WordPress.DB.PreparedSQL
             if (\count($rows) >= 150) {
                 $this->persistVendors($rows);
@@ -62,6 +68,16 @@ class Persist
         }
         // Persist remaining rows
         $this->persistVendors($rows);
+        // Delete all vendors which are no longer in the current vendor list version.
+        if (\count($persistedVendorIds) > 0) {
+            // phpcs:disable WordPress.DB.PreparedSQL
+            $sql = $wpdb->prepare("DELETE FROM {$table_name} WHERE gvlSpecificationVersion = %d AND tcfPolicyVersion = %d AND vendorListVersion = %d AND id NOT IN (" . \join(',', \array_map('intval', $persistedVendorIds)) . ')', $gvlSpecificationVersion, $tcfPolicyVersion, $vendorListVersion);
+            $wpdb->query($sql);
+            // Keep only the currently downloaded GVL/TCF/vendor-list combination.
+            $sql = $wpdb->prepare("DELETE FROM {$table_name}\n                WHERE NOT (\n                    gvlSpecificationVersion = %d\n                    AND tcfPolicyVersion = %d\n                    AND vendorListVersion = %d\n                )", $gvlSpecificationVersion, $tcfPolicyVersion, $vendorListVersion);
+            $wpdb->query($sql);
+            // phpcs:enable WordPress.DB.PreparedSQL
+        }
     }
     /**
      * Parse `vendor-list.json`, normalize purposes and features and push it up to the database.

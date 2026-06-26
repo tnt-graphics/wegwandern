@@ -40,7 +40,7 @@ class TcfTexts
         $isTcfActive = TCF::getInstance()->isActive();
         // Insert before "Age notice"
         $offset = \array_search(self::CONTROLS_STACK_BEFORE, \array_keys($controls), \true);
-        $newControls = [self::HEADLINE_STACKS => ['class' => Headline::class, 'name' => 'textsTcfStacks', 'label' => \__('TCF stacks', RCB_TD), 'level' => 3, 'isSubHeadline' => \true, 'description' => $isTcfActive ? '' : $this->getTcfDisabledNotice()], self::SETTING_STACKS_CUSTOM_NAME => ['name' => 'tcfStacksCustomName', 'label' => \__('Stack name for non-TCF services', RCB_TD), 'input_attrs' => $isTcfActive ? [] : ['disabled' => 'disabled'], 'setting' => ['default' => $defaultButtonTexts['stackCustomName'], 'allowEmpty' => \true]], self::SETTING_STACKS_CUSTOM_DESCRIPTION => ['name' => 'tcfStacksCustomDescription', 'label' => \__('Stack description for non-TCF services', RCB_TD), 'input_attrs' => $isTcfActive ? [] : ['disabled' => 'disabled'], 'setting' => ['default' => $defaultButtonTexts['stackCustomDescription'], 'allowEmpty' => \true]]];
+        $newControls = [self::HEADLINE_STACKS => ['class' => Headline::class, 'name' => 'textsTcfStacks', 'label' => \__('TCF stacks', 'real-cookie-banner'), 'level' => 3, 'isSubHeadline' => \true, 'description' => $isTcfActive ? '' : $this->getTcfDisabledNotice()], self::SETTING_STACKS_CUSTOM_NAME => ['name' => 'tcfStacksCustomName', 'label' => \__('Stack name for non-TCF services', 'real-cookie-banner'), 'input_attrs' => $isTcfActive ? [] : ['disabled' => 'disabled'], 'setting' => ['default' => $defaultButtonTexts['stackCustomName'], 'allowEmpty' => \true]], self::SETTING_STACKS_CUSTOM_DESCRIPTION => ['name' => 'tcfStacksCustomDescription', 'label' => \__('Stack description for non-TCF services', 'real-cookie-banner'), 'input_attrs' => $isTcfActive ? [] : ['disabled' => 'disabled'], 'setting' => ['default' => $defaultButtonTexts['stackCustomDescription'], 'allowEmpty' => \true]]];
         $controls = \array_slice($controls, 0, $offset, \true) + $newControls + \array_slice($controls, $offset, null, \true);
         return $sections;
     }
@@ -51,7 +51,7 @@ class TcfTexts
     {
         return \sprintf('<div class="notice notice-info inline below-h2 notice-alt" style="margin: 10px 0px 0px;"><p>%s</p></div>', \sprintf(
             // translators:
-            \__('TCF is currently disabled. Please navigate to %1$sSettings > Transparency & Consent Framework (TCF)%2$s to activate it.', RCB_TD),
+            \__('TCF is currently disabled. Please navigate to %1$sSettings > Transparency & Consent Framework (TCF)%2$s to activate it.', 'real-cookie-banner'),
             '<a href="' . \esc_attr(Core::getInstance()->getConfigPage()->getUrl()) . '#/settings/tcf" target="_blank">',
             '</a>'
         ));
@@ -62,7 +62,9 @@ class TcfTexts
     public static function getDefaultTexts()
     {
         $tempTd = Hooks::getInstance()->createTemporaryTextDomain();
-        $defaults = ['stackCustomName' => \__('Services with various purposes outside the TCF standard', Hooks::TD_FORCED), 'stackCustomDescription' => \__('Services that do not share consents via the TCF standard, but via other technologies. These are divided into several groups according to their purpose. Some of them are used based on a legitimate interest (e.g. threat prevention), others are used only with your consent. Details about the individual groups and purposes of the services can be found in the individual privacy settings.', Hooks::TD_FORCED)];
+        $defaults = $tempTd->translate(function () {
+            return ['stackCustomName' => \__('Services with various purposes outside the TCF standard', 'real-cookie-banner'), 'stackCustomDescription' => \__('Services that do not share consents via the TCF standard, but via other technologies. These are divided into several groups according to their purpose. Some of them are used based on a legitimate interest (e.g. threat prevention), others are used only with your consent. Details about the individual groups and purposes of the services can be found in the individual privacy settings.', 'real-cookie-banner')];
+        });
         $tempTd->teardown();
         return $defaults;
     }

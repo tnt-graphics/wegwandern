@@ -236,10 +236,12 @@ class Core extends BaseCore implements IOverrideCore
         \add_action('DevOwl/RealProductManager/LicenseActivation/StatusChanged/' . RCB_SLUG, [$automaticScanStarter, 'probablyAddClientJob']);
         \add_action('admin_init', [$this, 'registerSettings'], 1);
         \add_action('rest_api_init', [$this, 'registerSettings'], 1);
+        \add_filter('rest_request_after_callbacks', [$this->getBlocker(), 'skipContentBlockerOnRestAPIEndpoint'], 10, 3);
         \add_action('plugins_loaded', [\DevOwl\RealCookieBanner\Localization::class, 'multilingual'], 1);
         \add_action('wp', [$this->getAssets(), 'createHashedAssets']);
         \add_action('login_init', [$this->getAssets(), 'createHashedAssets']);
         \add_action('plugins_loaded', [$this->getBlocker(), 'registerOutputBuffer'], ViewBlocker::OB_START_PLUGINS_LOADED_PRIORITY);
+        \add_filter('pre_http_request', [$this->getBlocker(), 'pre_http_request'], 10, 3);
         \add_action('DevOwl/Utils/NewVersionInstallation/' . RCB_SLUG, [TCF::getInstance(), 'new_version_installation']);
         \add_action('DevOwl/Utils/NewVersionInstallation/' . RCB_SLUG, [new DatabaseUpgrades(), 'apply']);
         \add_filter('RCB/Blocker/Enabled', [$this->getScanner(), 'force_blocker_enabled']);
@@ -293,11 +295,14 @@ class Core extends BaseCore implements IOverrideCore
         // LiteSpeed Cache Unique CSS
         \add_filter('us_grid_listing_post', [$this->getBlocker(), 'replace']);
         // Impreza Lazy Loading posts
+        \add_filter('woocommerce_update_order_review_fragments', [$this->getBlocker(), 'replace']);
+        // WooCommerce
         \add_filter('fl_builder_render_js', [ScriptInlineMatcher::class, 'makeInlineScriptSkippable']);
         // Beaver Builder and inline scripts (https://docs.wpbeaverbuilder.com/beaver-builder/developer/how-to-tips/load-css-and-javascript-inline/)
         \add_action('shutdown', function () {
             // [Theme Comp] Themify
             if (\has_action('shutdown', ['TFCache', 'tf_cache_end']) !== \false) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Themify buffer merge returns filtered HTML document body.
                 echo $this->getBlocker()->replace(\ob_get_clean());
             }
         }, 0);
@@ -334,7 +339,7 @@ class Core extends BaseCore implements IOverrideCore
         if (!$isLicensed) {
             $args['aid'] = null;
         }
-        $translatedUrl = \__('https://devowl.io/go/real-cookie-banner?source=rcb-lite', RCB_TD);
+        $translatedUrl = \__('https://devowl.io/go/real-cookie-banner?source=rcb-lite', 'real-cookie-banner');
         $translatedUrl = \add_query_arg($args, $translatedUrl);
         \define('RCB_PRO_VERSION', $translatedUrl);
     }
@@ -443,6 +448,7 @@ class Core extends BaseCore implements IOverrideCore
         \add_filter('update_post_metadata', [$this->getNotices(), 'update_post_meta_data_processing_in_unsafe_countries'], 10, 4);
         \add_filter('nav_menu_link_attributes', [$navMenuLinks, 'nav_menu_link_attributes'], 10, 2);
         \add_filter('wp_setup_nav_menu_item', [$navMenuLinks, 'wp_setup_nav_menu_item']);
+        \add_filter('walker_nav_menu_start_el', [$navMenuLinks, 'walker_nav_menu_start_el'], 10, 2);
         \add_filter('customize_nav_menu_available_item_types', [$navMenuLinks, 'register_customize_nav_menu_item_types']);
         \add_filter('customize_nav_menu_available_items', [$navMenuLinks, 'register_customize_nav_menu_items'], 10, 4);
         \add_filter('RCB/Revision/Current', [$navMenuLinks, 'revisionCurrent']);
@@ -510,8 +516,10 @@ class Core extends BaseCore implements IOverrideCore
         // Allow to reset all available data and recreated
         if (isset($_GET['rcb-reset-texts']) && \current_user_can(self::MANAGE_MIN_CAPABILITY)) {
             \check_admin_referer('rcb-reset-texts');
-            $resetLang = $_GET['reset-lang'] ?? [];
-            Reset::getInstance()->texts(\is_array($resetLang) ? $resetLang : null);
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce-verified admin reset; languages sanitized before persist.
+            $resetLangRaw = isset($_GET['reset-lang']) ? \wp_unslash($_GET['reset-lang']) : [];
+            $resetLang = \is_array($resetLangRaw) ? \array_map('sanitize_text_field', $resetLangRaw) : null;
+            Reset::getInstance()->texts($resetLang);
             \wp_safe_redirect($this->getConfigPage()->getUrl());
             exit;
         }

@@ -122,6 +122,9 @@ abstract class AbstractOutputBufferPlugin extends AbstractLanguagePlugin
         $result = \explode($joinDelimiter, $html);
         // Remove `keep-me` HTML tag to get real results
         foreach ($result as &$value) {
+            if (empty($value)) {
+                continue;
+            }
             $value = \explode('>', $value, 2)[1];
             $value = \substr($value, 0, (\strlen(self::HTML_TAG_KEEP) + 3) * -1);
             if (\is_callable($strip)) {
@@ -179,6 +182,11 @@ abstract class AbstractOutputBufferPlugin extends AbstractLanguagePlugin
      */
     protected function remapResultToReference(&$content, $result, $locale, $context = null)
     {
+        $cacheLocale = empty($locale) ? $this->getCurrentLanguageFallback() : $locale;
+        $cache =& $this->translateArrayCache[$cacheLocale];
+        if (!\is_array($cache)) {
+            $cache = [];
+        }
         foreach ($content as $i => &$untranslated) {
             $previousContent = $untranslated;
             $translation = $result[$i] ?? null;
@@ -190,6 +198,7 @@ abstract class AbstractOutputBufferPlugin extends AbstractLanguagePlugin
             if ($previousContent === $translation) {
                 list(, $translation) = $this->translateStringFromMo($translation, $locale, $context);
             }
+            $cache[$untranslated] = $translation;
             $untranslated = $translation;
         }
     }

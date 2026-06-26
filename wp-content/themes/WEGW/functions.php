@@ -705,6 +705,437 @@ function wegwandern_sync_hike_json_in_comments_form_submit( $entry_id, $form_id 
 	}
 }
 
+
+/*
+ * Also push the same Formidable newsletter signup to Mailjet (using the Mailjet WP plugin settings).
+ * Uses Double Opt-In: confirmation email sent first, only adds to Mailjet after user confirms.
+ */
+add_action( 'frm_after_create_entry', 'wegwandern_newsletter_doi_step1', 25, 2 );
+
+/**
+ * Step 1: On form submit, save token and send confirmation email.
+ * Handles:
+ * - Form 2 (newsletterabonnieren): Direct newsletter signup → List 10610399
+ * - Form 11 (edit-user-profile-summit-book): Summit Book profile with optional newsletter checkbox → List 10610399
+ * - Form 4 (edit-user-profile): B2B profile with optional newsletter checkbox → List 10638908
+ */
+function wegwandern_newsletter_doi_step1( $entry_id, $form_id ) {
+	if ( ! class_exists( 'FrmForm' ) || ! class_exists( 'FrmEntry' ) || ! class_exists( 'FrmField' ) ) {
+		return;
+	}
+
+	$form_key  = FrmForm::get_key_by_id( $form_id );
+	
+	// Check which form this is
+	$is_newsletter_form    = ( 'newsletterabonnieren' === $form_key ) || ( 2 === (int) $form_id );
+	$is_profile_form       = ( 'edit-user-profile-summit-book' === $form_key ) || ( 11 === (int) $form_id );
+	$is_b2b_profile_form   = ( 'edit-user-profile' === $form_key ) || ( 4 === (int) $form_id );
+	
+	if ( ! $is_newsletter_form && ! $is_profile_form && ! $is_b2b_profile_form ) {
+		return;
+	}
+
+	$entry = FrmEntry::getOne( $entry_id, true );
+	if ( ! $entry || empty( $entry->metas ) ) {
+		return;
+	}
+
+	// Extract form fields based on which form it is.
+	$email              = '';
+	$vorname            = '';
+	$nachname           = '';
+	$anrede             = '';
+	$newsletter_checked = false;
+	$fields             = FrmField::get_all_for_form( $form_id );
+
+	foreach ( (array) $fields as $field ) {
+		$value = isset( $entry->metas[ $field->id ] ) ? $entry->metas[ $field->id ] : '';
+		
+		if ( $is_newsletter_form ) {
+			// Form 2 field mappings
+			if ( 'email' === $field->type && is_email( $value ) && empty( $email ) ) {
+				$email = $value;
+			}
+			if ( 'radio' === $field->type && ( $field->field_key === 'ofpl2' || $field->id == 6 ) ) {
+				$anrede = $value;
+			}
+			if ( 'text' === $field->type && ( $field->field_key === 'fpin6' || $field->id == 8 ) ) {
+				$vorname = $value;
+			}
+			if ( 'text' === $field->type && ( $field->field_key === '7asa1' || $field->id == 9 ) ) {
+				$nachname = $value;
+			}
+		}
+		
+		if ( $is_profile_form ) {
+			// Form 11 field mappings
+			if ( 'email' === $field->type && ( $field->field_key === 'tqz0w2' || $field->id == 74 ) && is_email( $value ) ) {
+				$email = $value;
+			}
+			if ( 'select' === $field->type && ( $field->field_key === 'zg19' || $field->id == 70 ) ) {
+				$anrede = $value;
+			}
+			if ( 'text' === $field->type && ( $field->field_key === '9mi9m2' || $field->id == 71 ) ) {
+				$vorname = $value;
+			}
+			if ( 'text' === $field->type && ( $field->field_key === 'uolyi2' || $field->id == 72 ) ) {
+				$nachname = $value;
+			}
+			// Check newsletter subscription checkbox (field 76, key xl1ih2)
+			if ( 'checkbox' === $field->type && ( $field->field_key === 'xl1ih2' || $field->id == 76 ) ) {
+				// Checkbox value can be array or string containing 'newsletter_subscription'
+				if ( is_array( $value ) ) {
+					$newsletter_checked = in_array( 'newsletter_subscription', $value, true );
+				} else {
+					$newsletter_checked = ( strpos( $value, 'newsletter_subscription' ) !== false );
+				}
+			}
+		}
+		
+		if ( $is_b2b_profile_form ) {
+			// Form 4 field mappings (B2B profile)
+			if ( 'email' === $field->type && ( $field->field_key === 'tqz0w' || $field->id == 24 ) && is_email( $value ) ) {
+				$email = $value;
+			}
+			if ( 'select' === $field->type && ( $field->field_key === 'b2b_prof_frm_user_designation' || $field->id == 16 ) ) {
+				$anrede = $value;
+			}
+			if ( 'text' === $field->type && ( $field->field_key === 'b2b_prof_frm_user_fname' || $field->id == 17 ) ) {
+				$vorname = $value;
+			}
+			if ( 'text' === $field->type && ( $field->field_key === 'b2b_prof_frm_user_lname' || $field->id == 18 ) ) {
+				$nachname = $value;
+			}
+			// Check newsletter subscription checkbox (field 26, key b2b_prof_frm_newsletter)
+			if ( 'checkbox' === $field->type && ( $field->field_key === 'b2b_prof_frm_newsletter' || $field->id == 26 ) ) {
+				// Checkbox value can be array or string containing 'newsletter_subscription'
+				if ( is_array( $value ) ) {
+					$newsletter_checked = in_array( 'newsletter_subscription', $value, true );
+				} else {
+					$newsletter_checked = ( strpos( $value, 'newsletter_subscription' ) !== false );
+				}
+			}
+		}
+	}
+	
+	// For Form 11 and Form 4: Only proceed if newsletter checkbox is checked
+	if ( ( $is_profile_form || $is_b2b_profile_form ) && ! $newsletter_checked ) {
+		return;
+	}
+
+	if ( empty( $email ) ) {
+		return;
+	}
+	
+	// Determine target Mailjet list ID
+	// Form 4 (B2B) goes to list 10638908, all others go to 10640994
+	$target_list_id = $is_b2b_profile_form ? 10638908 : 10640994;
+
+	// Generate unique confirmation token.
+	$token = wp_generate_password( 32, false );
+	
+	// Store pending signup in database.
+	$signup_data = array(
+		'email'    => $email,
+		'vorname'  => $vorname,
+		'nachname' => $nachname,
+		'anrede'   => $anrede,
+		'entry_id' => $entry_id,
+		'list_id'  => $target_list_id,
+		'created'  => current_time( 'mysql' ),
+	);
+	
+	update_option( 'wegw_newsletter_pending_' . $token, $signup_data, false );
+	
+	// Build confirmation URL.
+	$confirm_url = add_query_arg( array(
+		'newsletter_confirm' => $token,
+	), home_url( '/' ) );
+	
+	// Transform Anrede for email greeting.
+	$greeting = '';
+	if ( ! empty( $anrede ) ) {
+		$anrede_trimmed = trim( $anrede );
+		if ( 'Frau' === $anrede_trimmed ) {
+			$greeting = 'Liebe ' . $vorname;
+		} elseif ( 'Herr' === $anrede_trimmed ) {
+			$greeting = 'Lieber ' . $vorname;
+		} else {
+			$greeting = 'Hallo ' . $vorname;
+		}
+	} else {
+		$greeting = 'Hallo' . ( ! empty( $vorname ) ? ' ' . $vorname : '' );
+	}
+	
+	// Send confirmation email.
+	$subject = 'Bitte bestätige deine Newsletter-Anmeldung';
+	
+	$message = '
+	<html>
+	<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+		<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+			<p>' . esc_html( $greeting ) . ',</p>
+			
+			<p>Vielen Dank für deine Anmeldung zum WegWandern Newsletter!</p>
+			
+			<p>Bitte bestätige deine Anmeldung, indem du auf den folgenden Link klickst:</p>
+			
+			<p style="text-align: center; margin: 30px 0;">
+				<a href="' . esc_url( $confirm_url ) . '" 
+				   style="background-color: #4CAF50; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+					Newsletter-Anmeldung bestätigen
+				</a>
+			</p>
+			
+			<p>Oder kopiere diesen Link in deinen Browser:<br>
+			<a href="' . esc_url( $confirm_url ) . '">' . esc_url( $confirm_url ) . '</a></p>
+			
+			<p>Wenn du diese Anmeldung nicht angefordert hast, kannst du diese E-Mail ignorieren.</p>
+			
+			<p>Herzliche Grüsse,<br>
+			Dein WegWandern Team</p>
+		</div>
+	</body>
+	</html>';
+	
+	$headers = array( 'Content-Type: text/html; charset=UTF-8' );
+	
+	wp_mail( $email, $subject, $message, $headers );
+	
+	// Log.
+	$log_file = WP_CONTENT_DIR . '/mailjet-debug.log';
+	$timestamp = date( 'Y-m-d H:i:s' );
+	file_put_contents( $log_file, "[{$timestamp}] DOI Step 1: Confirmation email sent to {$email}, token: {$token}\n", FILE_APPEND );
+}
+
+/**
+ * Step 2: Handle confirmation link click - add to Mailjet.
+ */
+add_action( 'init', 'wegwandern_newsletter_doi_step2' );
+
+function wegwandern_newsletter_doi_step2() {
+	if ( ! isset( $_GET['newsletter_confirm'] ) ) {
+		return;
+	}
+	
+	$token = sanitize_text_field( $_GET['newsletter_confirm'] );
+	$option_name = 'wegw_newsletter_pending_' . $token;
+	$signup_data = get_option( $option_name );
+	
+	// Log file.
+	$log_file = WP_CONTENT_DIR . '/mailjet-debug.log';
+	$log = function( $msg ) use ( $log_file ) {
+		$timestamp = date( 'Y-m-d H:i:s' );
+		file_put_contents( $log_file, "[{$timestamp}] {$msg}\n", FILE_APPEND );
+	};
+	
+	if ( empty( $signup_data ) ) {
+		$log( 'DOI Step 2: Invalid or expired token: ' . $token );
+		// Redirect to homepage with error.
+		wp_redirect( home_url( '/?newsletter=invalid' ) );
+		exit;
+	}
+	
+	$email    = $signup_data['email'];
+	$vorname  = $signup_data['vorname'];
+	$nachname = $signup_data['nachname'];
+	$anrede   = $signup_data['anrede'];
+	$list_id  = isset( $signup_data['list_id'] ) ? intval( $signup_data['list_id'] ) : 10610399;
+	
+	$log( 'DOI Step 2: Confirmation received for ' . $email . ' (List: ' . $list_id . ')' );
+	
+	// Transform Anrede for Mailjet.
+	if ( ! empty( $anrede ) ) {
+		$anrede_trimmed = trim( $anrede );
+		if ( 'Frau' === $anrede_trimmed ) {
+			$anrede = 'Liebe';
+		} elseif ( 'Herr' === $anrede_trimmed ) {
+			$anrede = 'Lieber';
+		}
+	}
+	
+	// Build Mailjet properties.
+	$properties = array();
+	if ( ! empty( $anrede ) ) {
+		$properties['anrede'] = $anrede;
+	}
+	if ( ! empty( $vorname ) ) {
+		$properties['vorname'] = $vorname;
+		$properties['firstname'] = $vorname;
+	}
+	if ( ! empty( $nachname ) ) {
+		$properties['nachname'] = $nachname;
+		$properties['lastname'] = $nachname;
+	}
+	
+	$full_name = trim( $vorname . ' ' . $nachname );
+	
+	// Now add to Mailjet (confirmed!) using the stored list_id.
+	wegwandern_mailjet_add_confirmed_contact( $email, $full_name, $list_id, $properties );
+	
+	// Delete the pending signup.
+	delete_option( $option_name );
+	
+	$log( 'DOI Step 2: SUCCESS - ' . $email . ' confirmed and added to Mailjet' );
+	
+	// Redirect to thank you page.
+	// Ändere den Slug 'newsletter-bestaetigung' falls deine Seite anders heisst.
+	wp_redirect( home_url( '/newsletter-bestaetigung/?newsletter=confirmed' ) );
+	exit;
+}
+
+/**
+ * Add confirmed contact to Mailjet (after DOI confirmation).
+ */
+function wegwandern_mailjet_add_confirmed_contact( $email, $name, $list_id, $properties = array() ) {
+	$log_file = WP_CONTENT_DIR . '/mailjet-debug.log';
+	$log = function( $msg ) use ( $log_file ) {
+		$timestamp = date( 'Y-m-d H:i:s' );
+		file_put_contents( $log_file, "[{$timestamp}] {$msg}\n", FILE_APPEND );
+	};
+
+	$log( '=== Mailjet Add Confirmed Contact ===' );
+	$log( 'Email: ' . $email . ', List ID: ' . $list_id );
+
+	$creds = wegwandern_get_mailjet_credentials();
+	if ( empty( $creds['api_key'] ) || empty( $creds['api_secret'] ) ) {
+		$log( 'ERROR: API credentials missing' );
+		return;
+	}
+
+	$allowed_properties = array( 'anrede', 'vorname', 'firstname', 'nachname', 'lastname' );
+	$filtered_properties = array();
+	foreach ( $properties as $key => $value ) {
+		if ( in_array( $key, $allowed_properties, true ) && ! empty( $value ) ) {
+			$filtered_properties[ $key ] = $value;
+		}
+	}
+
+	$contact_data = array(
+		'Email'  => $email,
+		'Action' => 'addforce',
+	);
+	
+	if ( ! empty( $filtered_properties ) ) {
+		$contact_data['Properties'] = $filtered_properties;
+	}
+	
+	if ( ! empty( $name ) ) {
+		$contact_data['Name'] = $name;
+	}
+
+	$api_url = 'https://api.mailjet.com/v3/REST/contactslist/' . intval( $list_id ) . '/managecontact';
+
+	$response = wp_remote_post( $api_url, array(
+		'method'  => 'POST',
+		'timeout' => 30,
+		'headers' => array(
+			'Authorization' => 'Basic ' . base64_encode( $creds['api_key'] . ':' . $creds['api_secret'] ),
+			'Content-Type'  => 'application/json',
+		),
+		'body' => wp_json_encode( $contact_data ),
+	) );
+
+	if ( is_wp_error( $response ) ) {
+		$log( 'ERROR: ' . $response->get_error_message() );
+		return;
+	}
+
+	$status_code = wp_remote_retrieve_response_code( $response );
+	$body        = wp_remote_retrieve_body( $response );
+
+	$log( 'Response status: ' . $status_code );
+	$log( 'Response body: ' . $body );
+}
+
+/**
+ * Shortcode für Newsletter-Bestätigungsmeldung.
+ * Verwendung: [newsletter_bestaetigung]
+ * Zeigt automatisch eine Meldung an, wenn ?newsletter=confirmed in der URL steht.
+ */
+add_shortcode( 'newsletter_bestaetigung', 'wegwandern_newsletter_confirmation_shortcode' );
+
+function wegwandern_newsletter_confirmation_shortcode( $atts ) {
+	$atts = shortcode_atts( array(
+		'success_title'   => 'Vielen Dank!',
+		'success_message' => 'Deine Newsletter-Anmeldung wurde erfolgreich bestätigt. Du erhältst ab sofort unsere neuesten Wandertipps und Angebote.',
+		'error_title'     => 'Fehler',
+		'error_message'   => 'Der Bestätigungslink ist ungültig oder abgelaufen. Bitte melde dich erneut für den Newsletter an.',
+	), $atts, 'newsletter_bestaetigung' );
+
+	$status = isset( $_GET['newsletter'] ) ? sanitize_text_field( $_GET['newsletter'] ) : '';
+
+	if ( empty( $status ) ) {
+		return ''; // Kein Parameter = nichts anzeigen.
+	}
+
+	$output = '<div class="newsletter-confirmation">';
+
+	if ( $status === 'confirmed' ) {
+		$output .= '<div class="newsletter-success">';
+		$output .= '<h2>' . esc_html( $atts['success_title'] ) . '</h2>';
+		$output .= '<p>' . esc_html( $atts['success_message'] ) . '</p>';
+		$output .= '</div>';
+	} elseif ( $status === 'error' ) {
+		$output .= '<div class="newsletter-error">';
+		$output .= '<h2>' . esc_html( $atts['error_title'] ) . '</h2>';
+		$output .= '<p>' . esc_html( $atts['error_message'] ) . '</p>';
+		$output .= '</div>';
+	}
+
+	$output .= '</div>';
+
+	// Inline CSS für einfaches Styling.
+	$output .= '<style>
+		.newsletter-confirmation { margin: 20px 0; padding: 20px; border-radius: 8px; }
+		.newsletter-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+		.newsletter-error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+		.newsletter-confirmation h2 { margin-top: 0; }
+	</style>';
+
+	return $output;
+}
+
+// Legacy function kept for compatibility (now unused).
+function wegwandern_mailjet_subscribe_from_formidable( $entry_id, $form_id ) {
+	// This function is replaced by the DOI flow above.
+	return;
+}
+
+/**
+ * Get Mailjet API credentials from api-wegwandern.txt file.
+ */
+function wegwandern_get_mailjet_credentials() {
+	static $credentials;
+	
+	if ( null !== $credentials ) {
+		return $credentials;
+	}
+	
+	$file_path = get_template_directory() . '/api-wegwandern.txt';
+	if ( ! file_exists( $file_path ) || ! is_readable( $file_path ) ) {
+		return array( 'api_key' => '', 'api_secret' => '' );
+	}
+	
+	$lines = file( $file_path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+	$api_key = '';
+	$api_secret = '';
+	
+	if ( ! empty( $lines[0] ) ) {
+		$api_key = trim( $lines[0] );
+	}
+	if ( ! empty( $lines[1] ) ) {
+		$api_secret = trim( $lines[1] );
+	}
+	
+	$credentials = array(
+		'api_key'    => $api_key,
+		'api_secret' => $api_secret,
+	);
+	
+	return $credentials;
+}
+
 /*
  * Add custom click functionality to ACF field in theme options.
  * Click to sync hikes json file

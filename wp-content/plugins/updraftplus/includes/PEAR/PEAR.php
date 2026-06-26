@@ -1,4 +1,6 @@
 <?php
+// phpcs:disable Squiz.PHP.DiscouragedFunctions.Discouraged -- some functions, like set_time_limit() and ini_set(), are used to temporarily change PHP configuration values based on the script's needs (e.g., processing large datasets or performing long operations).
+
 /**
  * PEAR, the PHP Extension and Application Repository
  *
@@ -324,12 +326,12 @@ class PEAR
                 if (is_callable($options)) {
                     $setoptions = $options;
                 } else {
-                    trigger_error("invalid error callback", E_USER_WARNING);
+                    trigger_error("invalid error callback", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
                 }
                 break;
 
             default:
-                trigger_error("invalid error mode", E_USER_WARNING);
+                trigger_error("invalid error mode", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
                 break;
         }
     }
@@ -583,12 +585,12 @@ class PEAR
                 if (is_callable($options)) {
                     $def_options = $options;
                 } else {
-                    trigger_error("invalid error callback", E_USER_WARNING);
+                    trigger_error("invalid error callback", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
                 }
                 break;
 
             default:
-                trigger_error("invalid error mode", E_USER_WARNING);
+                trigger_error("invalid error mode", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
                 break;
         }
         $stack[] = array($mode, $options);
@@ -620,12 +622,12 @@ class PEAR
                 if (is_callable($options)) {
                     $setoptions = $options;
                 } else {
-                    trigger_error("invalid error callback", E_USER_WARNING);
+                    trigger_error("invalid error callback", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
                 }
                 break;
 
             default:
-                trigger_error("invalid error mode", E_USER_WARNING);
+                trigger_error("invalid error mode", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
                 break;
         }
         return true;
@@ -867,7 +869,7 @@ class PEAR_Error
         }
 
         if ($this->mode & PEAR_ERROR_TRIGGER) {
-            trigger_error($this->getMessage(), $this->level);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
+            trigger_error($this->getMessage(), $this->level);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- prevent the string from being double-escaped; the escaping should occur when printed. The trigger_error() function is intentionally used to generate user-level error messages.
         }
 
         if ($this->mode & PEAR_ERROR_DIE) {
@@ -888,7 +890,7 @@ class PEAR_Error
         }
 
         if ($this->mode & PEAR_ERROR_EXCEPTION) {
-           trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING);
+           trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
            $e = new Exception($this->message, $this->code);
            throw $e;
         }

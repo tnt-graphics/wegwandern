@@ -1,4 +1,7 @@
 <?php
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
+// phpcs:disable Squiz.PHP.DiscouragedFunctions.Discouraged -- some functions, like set_time_limit() and ini_set(), are used to temporarily change PHP configuration values based on the script's needs (e.g., processing large datasets or performing long operations).
+if (!defined('ABSPATH')) die('No direct access allowed');
 /**
  * Net_Socket
  *
@@ -209,10 +212,9 @@ class Net_Socket extends PEAR
         }
 
         if (!$fp) {
-            // @codingStandardsIgnoreLine
-            if ($errno == 0 && !strlen($errstr) && isset($php_errormsg)) {
-                // @codingStandardsIgnoreLine
-                $errstr = $php_errormsg;
+            $last_error = error_get_last();
+            if ($errno == 0 && !strlen($errstr) && isset($last_error['message'])) {
+                $errstr = $last_error['message'];
             }
             @ini_set('track_errors', $old_track_errors);
             return $this->raiseError($errstr, $errno);

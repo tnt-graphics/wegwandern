@@ -293,7 +293,7 @@ class Job
     {
         global $wpdb;
         if (!\is_callable($this->callable)) {
-            return new WP_Error('real_queue_job_execute_not_callable', \__('The passed callable persisted to the job cannot be called (`is_callable`)', REAL_QUEUE_TD));
+            return new WP_Error('real_queue_job_execute_not_callable', \__('The passed callable persisted to the job cannot be called (`is_callable`)', 'devowl-wp-real-queue'));
         }
         // Check if already done
         if ($this->isDone()) {
@@ -318,7 +318,7 @@ class Job
         // Is the job locked because the `finally` below did not update the `locked` attribute?
         // This could be checked by comparing the `lock_until` timestamp.
         if ($this->locked && $this->lock_until > \time()) {
-            return new WP_Error('real_queue_job_locked', \__('This job is already running in another thread on your server.', REAL_QUEUE_TD));
+            return new WP_Error('real_queue_job_locked', \__('This job is already running in another thread on your server.', 'devowl-wp-real-queue'));
         }
         $this->updatedLocked(\true);
         // Process with given error handler
@@ -336,7 +336,7 @@ class Job
             }
         } catch (Exception $e) {
             \restore_error_handler();
-            return new WP_Error('real_queue_job_execute_exception', \__('Unexpected exception.', REAL_QUEUE_TD), ['exception' => ['id' => $this->id, 'code' => $e->getCode(), 'message' => $e->getMessage(), 'stack' => $e->getTraceAsString(), 'at' => \time()]]);
+            return new WP_Error('real_queue_job_execute_exception', \__('Unexpected exception.', 'devowl-wp-real-queue'), ['exception' => ['id' => $this->id, 'code' => $e->getCode(), 'message' => $e->getMessage(), 'stack' => $e->getTraceAsString(), 'at' => \time()]]);
         } finally {
             $this->updatedLocked(\false);
             $this->updateRuns($previousProcess);
@@ -433,6 +433,7 @@ class Job
         if (\in_array($errno, [\E_WARNING, \E_NOTICE, \E_CORE_WARNING, \E_COMPILE_WARNING, \E_USER_WARNING, \E_USER_NOTICE, \E_DEPRECATED, \E_USER_DEPRECATED], \true)) {
             return \false;
         }
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Error details are wrapped in an exception and not rendered directly.
         throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
     }
     /**

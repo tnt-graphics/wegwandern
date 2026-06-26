@@ -1018,7 +1018,7 @@ class Net_URL2
                 'Unable to remove dot segments; hit loop limit %d (left: %s)',
                 $j, var_export($path, true)
             );
-            trigger_error($message, E_USER_WARNING);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
+            trigger_error($message, E_USER_WARNING);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- prevent the string from being double-escaped; the escaping should occur when printed. The trigger_error() function is intentionally used to generate user-level error messages.
         }
 
         return $output;
@@ -1057,10 +1057,10 @@ class Net_URL2
         }
 
         // Begin with a relative URL
-        $url = new self($_SERVER['PHP_SELF']);
+        $url = new self(UpdraftPlus_Manipulation_Functions::fetch_superglobal('server', 'PHP_SELF', ''));
         $url->_scheme = isset($_SERVER['HTTPS']) ? 'https' : 'http';
-        $url->_host   = $_SERVER['SERVER_NAME'];
-        $port = $_SERVER['SERVER_PORT'];
+        $url->_host   = UpdraftPlus_Manipulation_Functions::fetch_superglobal('server', 'SERVER_NAME', '');
+        $port = UpdraftPlus_Manipulation_Functions::fetch_superglobal('server', 'SERVER_PORT', 8000); // if not specified, default port number is 8000
         if ($url->_scheme == 'http' && $port != 80
             || $url->_scheme == 'https' && $port != 443
         ) {
@@ -1094,10 +1094,10 @@ class Net_URL2
         }
 
         // Begin with a relative URL
-        $url = new self($_SERVER['REQUEST_URI']);
+        $url = new self(UpdraftPlus_Manipulation_Functions::fetch_superglobal('server', 'REQUEST_URI', ''));
         $url->_scheme = isset($_SERVER['HTTPS']) ? 'https' : 'http';
         // Set host and possibly port
-        $url->setAuthority($_SERVER['HTTP_HOST']);
+        $url->setAuthority(UpdraftPlus_Manipulation_Functions::fetch_superglobal('server', 'HTTP_HOST', ''));
         return $url;
     }
 

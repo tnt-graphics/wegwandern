@@ -4,6 +4,8 @@ namespace DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag;
 
 use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\PregReplaceCallbackRerunException;
 use DOMDocument;
+use SplObjectStorage;
+use Traversable;
 /**
  * Utility helpers.
  * @internal
@@ -28,7 +30,7 @@ class Utils
      */
     public static function startsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -44,7 +46,7 @@ class Utils
      */
     public static function endsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -58,10 +60,11 @@ class Utils
      *
      * @param string $string
      * @param mixed $default
+     * @param boolean $assoc
      * @see https://stackoverflow.com/a/6041773/5506547
-     * @return array|false
+     * @return array|object|false
      */
-    public static function isJson($string, $default = \false)
+    public static function isJson($string, $default = \false, $assoc = \true)
     {
         if (\is_array($string)) {
             return $string;
@@ -69,8 +72,74 @@ class Utils
         if (!\is_string($string)) {
             return $default;
         }
-        $result = \json_decode($string, ARRAY_A);
+        $result = \json_decode($string, $assoc);
         return \json_last_error() === \JSON_ERROR_NONE ? $result : $default;
+    }
+    /**
+     * Walk through an array or object recursively.
+     *
+     * @param mixed $data
+     * @param callable $callback
+     * @see https://chatgpt.com/share/68c9228e-f4bc-8002-be5c-24c7da52c764
+     * @see https://www.php.net/manual/en/function.array-walk-recursive.php#130141
+     * @codeCoverageIgnore
+     */
+    public static function array_and_object_walk_recursive(&$data, $callback)
+    {
+        $visited = new SplObjectStorage();
+        // For cycle detection
+        $recurse = function (&$node, $key = null) use(&$recurse, $callback, $visited) : void {
+            // 1) Arrays: Delegate as much as possible to `array_walk_recursive`
+            if (\is_array($node)) {
+                \array_walk_recursive($node, function (&$v, $k) use(&$recurse, $callback, $visited) : void {
+                    if (\is_object($v)) {
+                        // `array_walk_recursive` does not traverse objects further -> take over
+                        if (!$visited->contains($v)) {
+                            $visited->attach($v);
+                            foreach ($v as $ok => &$ov) {
+                                if (\is_array($ov) || \is_object($ov)) {
+                                    $recurse($ov, $ok);
+                                } else {
+                                    $callback($ov, $ok);
+                                }
+                            }
+                        }
+                    } else {
+                        $callback($v, $k);
+                    }
+                });
+                return;
+            }
+            // 2) Objects: recursively traverse (supports stdClass, public props, Traversable)
+            if (\is_object($node)) {
+                if ($visited->contains($node)) {
+                    return;
+                }
+                $visited->attach($node);
+                // If Traversable, iterate; otherwise over public properties
+                if ($node instanceof Traversable) {
+                    foreach ($node as $k => &$v) {
+                        if (\is_array($v) || \is_object($v)) {
+                            $recurse($v, $k);
+                        } else {
+                            $callback($v, $k);
+                        }
+                    }
+                } else {
+                    foreach ($node as $k => &$v) {
+                        if (\is_array($v) || \is_object($v)) {
+                            $recurse($v, $k);
+                        } else {
+                            $callback($v, $k);
+                        }
+                    }
+                }
+                return;
+            }
+            // 3) Scalars/other: directly to callback
+            $callback($node, $key);
+        };
+        $recurse($data, null);
     }
     /**
      * Check if a passed string is HTML.
@@ -142,7 +211,7 @@ class Utils
                 $offsets = [];
                 foreach ($matchesWithOffsets as $match) {
                     // See https://www.php.net/manual/en/function.preg-match.php#106804
-                    $offsets[] = \strlen(\utf8_decode(\substr($current, 0, $match[1])));
+                    $offsets[] = \mb_strlen(\substr($current, 0, $match[1]), 'UTF-8');
                 }
                 $e->setMatches($matches, $offsets);
                 throw $e;
@@ -261,6 +330,7 @@ class Utils
                     // Fix VueJS attributes like `v-else-if="button_type > 'woo'"></template` which causes
                     // the regular expression to fail
                     if (self::$inPregReplaceCallbackRecursive > 0 && \is_string($nodeValue) && self::endsWith($nodeValue, '></' . Utils::PARSE_HTML_ATTRIBUTES_CUSTOM_TAG . '>')) {
+                        // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal parser-retry callback, no direct HTML output.
                         throw new PregReplaceCallbackRerunException(function ($subject, $matches, $offsets) use($str) {
                             $offsetMatch = $offsets[0];
                             // Check if there is a `/>` which would break the regex, too, and we need to replace it accordingly
@@ -274,6 +344,7 @@ class Utils
                                 return \substr_replace($subject, '&gt;', $strPos, 1);
                             }
                         });
+                        // phpcs:enable
                     }
                 }
             }

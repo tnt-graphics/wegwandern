@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
 // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 /**
  * Socket-based adapter for HTTP_Request2
@@ -705,7 +706,7 @@ class HTTP_Request2_Adapter_Socket extends HTTP_Request2_Adapter
         if (empty($challenge['qop'])) {
             $digest = md5($a1 . ':' . $challenge['nonce'] . ':' . $a2);
         } else {
-            $challenge['cnonce'] = 'Req2.' . rand();
+            $challenge['cnonce'] = 'Req2.' . wp_rand();
             if (empty($challenge['nc'])) {
                 $challenge['nc'] = 1;
             }

@@ -13,6 +13,7 @@ use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\lite\settings\General as LiteGeneral;
 use DevOwl\RealCookieBanner\overrides\interfce\settings\IOverrideGeneral;
 use DevOwl\RealCookieBanner\Utils;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\middlewares\services\ManagerMiddleware;
 use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Utils as UtilsUtils;
 // @codeCoverageIgnoreStart
 \defined('ABSPATH') or die('No script kiddies please!');
@@ -81,16 +82,16 @@ class General extends AbstractGeneral implements IOverrideGeneral
      */
     public function register()
     {
-        \register_setting(self::OPTION_GROUP, self::SETTING_BANNER_ACTIVE, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_BLOCKER_ACTIVE, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_COUNTRY, ['type' => 'string', 'show_in_rest' => \true, 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => \array_merge(\array_keys(Iso3166OneAlpha2::getCodes()), [''])]]]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_ADDRESS, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_PHONE, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_EMAIL, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_FORM_ID, ['type' => 'number', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_COOKIE_POLICY_ID, ['type' => 'number', 'show_in_rest' => \true]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_BANNER_ACTIVE, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_BLOCKER_ACTIVE, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_COUNTRY, ['type' => 'string', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => \array_merge(\array_keys(Iso3166OneAlpha2::getCodes()), [''])]], 'sanitize_callback' => [self::class, 'sanitize_operator_country']]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_ADDRESS, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_textarea_field']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_PHONE, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_text_field']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_EMAIL, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_email']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_OPERATOR_CONTACT_FORM_ID, ['type' => 'number', 'show_in_rest' => \true, 'sanitize_callback' => 'absint']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_COOKIE_POLICY_ID, ['type' => 'number', 'show_in_rest' => \true, 'sanitize_callback' => 'absint']);
         // WP < 5.3 does not support array types yet, so we need to store serialized
-        \register_setting(self::OPTION_GROUP, self::SETTING_TERRITORIAL_LEGAL_BASIS, ['type' => 'string', 'show_in_rest' => \true]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_TERRITORIAL_LEGAL_BASIS, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => [self::class, 'sanitize_territorial_legal_basis']]);
         $this->overrideRegister();
     }
     // Documented in AbstractGeneral
@@ -141,6 +142,9 @@ class General extends AbstractGeneral implements IOverrideGeneral
     // Documented in AbstractGeneral
     public function getBlocker()
     {
+        if (!Core::getInstance()->getBlocker()->isEnabled()) {
+            return [];
+        }
         return \array_map(function ($data) {
             return ServicesBlocker::fromJson($data);
         }, \DevOwl\RealCookieBanner\settings\Blocker::getInstance()->toJson());
@@ -269,6 +273,67 @@ class General extends AbstractGeneral implements IOverrideGeneral
                 }
             }
         }
+    }
+    /**
+     * Sanitize operator country option for persistence and REST.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_operator_country($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        $allowed = \array_merge(\array_keys(Iso3166OneAlpha2::getCodes()), ['']);
+        return \in_array($value, $allowed, \true) ? $value : '';
+    }
+    /**
+     * Sanitize territorial legal basis list stored as a comma-separated string.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_territorial_legal_basis($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        $parts = \array_filter(\array_map('trim', \explode(',', $value)));
+        $parts = \array_values(\array_intersect($parts, self::LEGAL_BASIS_ALLOWED));
+        return \implode(',', $parts);
+    }
+    /**
+     * Sanitize a delimiter-separated list option that pre-dates WP 5.3's native array option type
+     * (e.g. CSV of page IDs / country codes, pipe-separated forward-to URLs). Splits `$value` on
+     * `$delimiter`, applies `$itemSanitizer` to each raw token, drops tokens that become empty
+     * after sanitization and rejoins with the same delimiter.
+     *
+     * Returns `''` for any non-string input so callers do not need a setting-specific fallback;
+     * a missing / mistyped option simply becomes the empty list.
+     *
+     * @param mixed $value
+     * @param string $delimiter
+     * @param callable $itemSanitizer Receives one raw token (string) and returns the sanitized scalar.
+     */
+    public static function sanitize_delimited_list($value, $delimiter = ',', $itemSanitizer = 'sanitize_text_field')
+    {
+        if (!\is_string($value)) {
+            return '';
+        }
+        $items = [];
+        foreach (\explode($delimiter, $value) as $item) {
+            $item = \call_user_func($itemSanitizer, $item);
+            if (!empty($item)) {
+                $items[] = $item;
+            }
+        }
+        return \implode($delimiter, $items);
+    }
+    /**
+     * Sanitize tag manager integration mode option.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_set_cookies_via_manager($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        $allowed = [ManagerMiddleware::SET_COOKIES_AFTER_CONSENT_VIA_JAVASCRIPT, ManagerMiddleware::SET_COOKIES_AFTER_CONSENT_VIA_GOOGLE_TAG_MANAGER, ManagerMiddleware::SET_COOKIES_AFTER_CONSENT_VIA_GOOGLE_TAG_MANAGER_WITH_GCM, ManagerMiddleware::SET_COOKIES_AFTER_CONSENT_VIA_MATOMO_TAG_MANAGER];
+        return \in_array($value, $allowed, \true) ? $value : self::DEFAULT_SET_COOKIES_VIA_MANAGER;
     }
     /**
      * Get singleton instance.

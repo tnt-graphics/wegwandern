@@ -52,7 +52,7 @@ class TcfVendorConfiguration
      */
     public function register()
     {
-        $labels = ['name' => \__('TCF vendor configurations', RCB_TD), 'singular_name' => \__('TCF vendor configuration', RCB_TD)];
+        $labels = ['name' => \__('TCF vendor configurations', 'real-cookie-banner'), 'singular_name' => \__('TCF vendor configuration', 'real-cookie-banner')];
         $args = ['label' => $labels['name'], 'labels' => $labels, 'description' => '', 'public' => \false, 'publicly_queryable' => \false, 'show_ui' => \true, 'show_in_rest' => \true, 'rest_base' => self::CPT_NAME, 'rest_controller_class' => WP_REST_Posts_Controller::class, 'has_archive' => \false, 'show_in_menu' => \false, 'show_in_nav_menus' => \false, 'delete_with_user' => \false, 'exclude_from_search' => \true, 'capabilities' => Cookie::CAPABILITIES, 'map_meta_cap' => \false, 'hierarchical' => \false, 'rewrite' => \false, 'query_var' => \true, 'supports' => ['custom-fields']];
         \register_post_type(self::CPT_NAME, $args);
         \register_meta('post', self::META_NAME_VENDOR_ID, ['object_subtype' => self::CPT_NAME, 'type' => 'number', 'single' => \true, 'show_in_rest' => \true]);

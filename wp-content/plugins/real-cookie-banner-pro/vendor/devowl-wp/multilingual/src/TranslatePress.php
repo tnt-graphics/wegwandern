@@ -97,7 +97,9 @@ class TranslatePress extends AbstractOutputBufferPlugin
                     if (!$doForce && \intval($row['status']) === 2) {
                         continue;
                     }
-                    $updates[] = ['id' => \intval($row['id']), 'translated' => $found_string_row[1] === null ? '' : $found_string_row[1], 'status' => $found_string_row[1] === null ? 0 : 2, 'original' => $row['original']];
+                    if ($found_string_row !== null) {
+                        $updates[] = ['id' => \intval($row['id']), 'translated' => $found_string_row[1] === null ? '' : $found_string_row[1], 'status' => $found_string_row[1] === null ? 0 : 2, 'original' => $row['original']];
+                    }
                 }
             }
             $query->update_strings($updates, $targetLocale, ['id', 'original', 'translated', 'status']);
@@ -139,6 +141,10 @@ class TranslatePress extends AbstractOutputBufferPlugin
     // Documented in AbstractLanguagePlugin
     public function getActiveLanguages()
     {
+        // This function is also used in `isActive()`, therefore, we check if the required class exists
+        if (!\class_exists(TRP_Translate_Press::class)) {
+            return [];
+        }
         return $this->getTrpSettingsManager()->get_setting('translation-languages');
     }
     // Documented in AbstractLanguagePlugin
@@ -211,7 +217,7 @@ class TranslatePress extends AbstractOutputBufferPlugin
     // Documented in AbstractOutputBufferPlugin
     public function isCurrentlyInEditorPreview()
     {
-        return isset($_GET[self::EDIT_QUERY_VAR]) && $_GET[self::EDIT_QUERY_VAR] === 'preview';
+        return isset($_GET[self::EDIT_QUERY_VAR]) && \sanitize_text_field(\wp_unslash($_GET[self::EDIT_QUERY_VAR])) === 'preview';
     }
     // Documented in AbstractOutputBufferPlugin
     public function translateInput($input, $context = null)
@@ -231,6 +237,11 @@ class TranslatePress extends AbstractOutputBufferPlugin
     {
         global $wpdb;
         if (!$this->useRawQueryForRead) {
+            return \false;
+        }
+        $defaultLanguage = $this->getDefaultLanguage();
+        // A database table like `wp_trp_dictionary_en_us_en_us` does not exist, so we can skip the translation
+        if ($locale === null || \strtolower($defaultLanguage) === \strtolower($locale)) {
             return \false;
         }
         $query = $this->getTrpQueryManager();
@@ -323,6 +334,7 @@ class TranslatePress extends AbstractOutputBufferPlugin
             }
             // Make hacky things: Simulate the `rest_prepare_` filter so we can force always to translate
             \array_push($wp_current_filter, 'rest_prepare_force_output_buffer_plugin');
+            \array_push($wp_current_filter, 'rest_pre_echo_response');
             $contentCount = $this->addWptexturizeToContent($content);
             /**
              * Try to find a translation from our MO file for each found "part" which TranslatePress finds before
@@ -350,6 +362,7 @@ class TranslatePress extends AbstractOutputBufferPlugin
             if ($locale !== null) {
                 $this->switch($currentLanguage);
             }
+            \array_pop($wp_current_filter);
             \array_pop($wp_current_filter);
         }
     }

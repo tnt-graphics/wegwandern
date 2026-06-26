@@ -26,12 +26,12 @@ class GetPro extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistIt
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Buy a license of Real Cookie Banner PRO', RCB_TD);
+        return \__('Buy a license of Real Cookie Banner PRO', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Get a PRO license at devowl.io to get more out of Real Cookie Banner!', RCB_TD);
+        return \__('Get a PRO license at devowl.io to get more out of Real Cookie Banner!', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function isVisible()
@@ -44,7 +44,7 @@ class GetPro extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistIt
         if (\defined('RCB_PRO_VERSION')) {
             return \add_query_arg('feature', 'checklist', RCB_PRO_VERSION);
         } else {
-            return \__('https://devowl.io/go/real-cookie-banner?source=rcb-lite', RCB_TD);
+            return \__('https://devowl.io/go/real-cookie-banner?source=rcb-lite', 'real-cookie-banner');
         }
     }
     // Documented in AbstractChecklistItem
@@ -55,7 +55,7 @@ class GetPro extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistIt
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Learn more', RCB_TD);
+        return \__('Learn more', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLinkTarget()

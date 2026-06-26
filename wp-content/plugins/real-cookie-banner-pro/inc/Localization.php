@@ -38,9 +38,9 @@ class Localization
     protected function getPackageInfo($type)
     {
         if ($type === Constants::LOCALIZATION_BACKEND) {
-            return [RCB_PATH . '/languages', RCB_TD];
+            return [RCB_PATH . '/languages', 'real-cookie-banner'];
         } else {
-            return [RCB_PATH . '/' . Constants::LOCALIZATION_PUBLIC_JSON_I18N, RCB_TD];
+            return [RCB_PATH . '/' . Constants::LOCALIZATION_PUBLIC_JSON_I18N, 'real-cookie-banner'];
         }
     }
     /**

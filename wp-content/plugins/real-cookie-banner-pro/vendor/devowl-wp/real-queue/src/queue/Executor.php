@@ -50,7 +50,7 @@ class Executor
                 $result = $job->execute();
             }
             if ($result === \false) {
-                $result = new WP_Error('real_queue_execute', \__('Process failed due to an unexpected error.', REAL_QUEUE_TD), ['status' => 500]);
+                $result = new WP_Error('real_queue_execute', \__('Process failed due to an unexpected error.', 'devowl-wp-real-queue'), ['status' => 500]);
             }
             if (\is_wp_error($result)) {
                 $job->updateException($result);
@@ -110,7 +110,7 @@ class Executor
                  */
                 $description = \apply_filters('DevOwl/RealQueue/Error/Description', \sprintf(
                     // translators:
-                    \__('%1$d / %2$d (thereof %3$d remaining) tasks could not be executed properly.', REAL_QUEUE_TD),
+                    \__('%1$d / %2$d (thereof %3$d remaining) tasks could not be executed properly.', 'devowl-wp-real-queue'),
                     $remainArr['failure'],
                     $remainArr['total'],
                     $remainArr['paused']

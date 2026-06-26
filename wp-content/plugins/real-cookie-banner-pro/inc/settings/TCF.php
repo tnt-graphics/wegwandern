@@ -70,6 +70,16 @@ class TCF extends AbstractTcf implements IOverrideTCF
         $this->overrideRegister();
     }
     /**
+     * Sanitize deprecated TCF scope-of-consent string.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_scope_of_consent($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        return \in_array($value, self::ALLOWED_SCOPE_OF_CONSENT, \true) ? $value : self::DEFAULT_TCF_SCOPE_OF_CONSENT;
+    }
+    /**
      * When a new version of Real Cookie Banner got installed, automatically download the new GVL.
      */
     public function new_version_installation()

@@ -74,7 +74,7 @@ trait ImportCustomizeBanner
             case HeaderDesign::SETTING_LOGO:
             case HeaderDesign::SETTING_LOGO_RETINA:
                 if (!empty($value)) {
-                    $this->addMessageOptionRelatesMedia($optionName === HeaderDesign::SETTING_LOGO ? \__('Logo', RCB_TD) : \__('Logo (Retina)', RCB_TD), $section . '.' . $setting);
+                    $this->addMessageOptionRelatesMedia($optionName === HeaderDesign::SETTING_LOGO ? \__('Logo', 'real-cookie-banner') : \__('Logo (Retina)', 'real-cookie-banner'), $section . '.' . $setting);
                     break;
                 }
                 return \true;

@@ -177,7 +177,7 @@ class RpmInitiator extends AbstractInitiator
         if ($this->isPro() || \boolval(\get_option(FooterDesign::SETTING_POWERED_BY_LINK))) {
             return [];
         }
-        return [['id' => 'powered-by-link', 'text' => \__('I allow to place a link in the cookie banner, which informs about the use of this plugin.', RCB_TD), 'stateFn' => function ($state) {
+        return [['id' => 'powered-by-link', 'text' => \__('I allow to place a link in the cookie banner, which informs about the use of this plugin.', 'real-cookie-banner'), 'stateFn' => function ($state) {
             if ($state) {
                 \update_option(FooterDesign::SETTING_POWERED_BY_LINK, \true);
             }

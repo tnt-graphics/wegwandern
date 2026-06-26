@@ -24,8 +24,11 @@ trait ImportMessages
      */
     protected function addMessageWrongUsageKey($type)
     {
-        // translators:
-        $this->addMessage(\sprintf(\__('Please provide a valid <code>%s</code> key.', RCB_TD), $type), 'error');
+        $this->addMessage(\sprintf(
+            // translators:
+            \__('Please provide a valid <code>%s</code> key.', 'real-cookie-banner'),
+            $type
+        ), 'error');
     }
     /**
      * A type definition is incorrect.
@@ -38,7 +41,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The %1$s with index <code>%2$d</code> is missing. Required properties: <code>%3$s</code>. Skipped.', RCB_TD),
+            \__('The %1$s with index <code>%2$d</code> is missing. Required properties: <code>%3$s</code>. Skipped.', 'real-cookie-banner'),
             $type,
             $index,
             $properties
@@ -55,7 +58,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('%1$s <strong>%2$s</strong> could not be created due to the following error: <code>%3$s</code>. Skipped.', RCB_TD),
+            \__('%1$s <strong>%2$s</strong> could not be created due to the following error: <code>%3$s</code>. Skipped.', 'real-cookie-banner'),
             $type,
             $post_title,
             $error->get_error_message()
@@ -70,7 +73,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('<strong>%s</strong>: You are trying to import a template from Real Cookie Banner PRO, but here you are using the free version of the plugin. Please remove this service before exporting the services or use the PRO version on this website! Skipped.', RCB_TD),
+            \__('<strong>%s</strong>: You are trying to import a template from Real Cookie Banner PRO, but here you are using the free version of the plugin. Please remove this service before exporting the services or use the PRO version on this website! Skipped.', 'real-cookie-banner'),
             $post_title
         ), 'error');
     }
@@ -83,9 +86,9 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('<strong>%s</strong>: You are trying to import a template but have not activated a licence. Please activate a licence so that you can import services and content blockers created from templates here! Skipped.', RCB_TD),
+            \__('<strong>%s</strong>: You are trying to import a template but have not activated a licence. Please activate a licence so that you can import services and content blockers created from templates here! Skipped.', 'real-cookie-banner'),
             $post_title
-        ), 'error', 'link', ['href' => '#/licensing?navigateAfterActivation=' . \urlencode('#/import'), 'linkText' => \__('Activate license', RCB_TD)]);
+        ), 'error', 'link', ['href' => '#/licensing?navigateAfterActivation=' . \urlencode('#/import'), 'linkText' => \__('Activate license', 'real-cookie-banner')]);
     }
     /**
      * Add message for non-associated cookies / TCF vendors.
@@ -100,7 +103,7 @@ trait ImportMessages
         if ($count !== $associatedCount) {
             $this->addMessage(\sprintf(
                 // translators:
-                \__('The newly created content blocker <code>%s</code> could not correctly resolve some associated relationships.', RCB_TD),
+                \__('The newly created content blocker <code>%s</code> could not correctly resolve some associated relationships.', 'real-cookie-banner'),
                 $post_title
             ), 'warning', 'blocker', ['blocker' => $blockerId]);
         }
@@ -115,7 +118,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The newly created content blocker <code>%s</code> could not set the preview image because it refers to a media item within your media library (ID)', RCB_TD),
+            \__('The newly created content blocker <code>%s</code> could not set the preview image because it refers to a media item within your media library (ID)', 'real-cookie-banner'),
             $post_title
         ), 'warning', 'blocker', ['blocker' => $blockerId]);
     }
@@ -128,9 +131,9 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The newly created footer link <code>%s</code> could not set the selected page because it refers to a page item (ID)', RCB_TD),
+            \__('The newly created footer link <code>%s</code> could not set the selected page because it refers to a page item (ID)', 'real-cookie-banner'),
             $post_title
-        ), 'warning', 'link', ['href' => '#/settings', 'linkText' => \__('Select page', RCB_TD)]);
+        ), 'warning', 'link', ['href' => '#/settings', 'linkText' => \__('Select page', 'real-cookie-banner')]);
     }
     /**
      * The cookie got not created because already exists.
@@ -141,7 +144,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The service <code>%s</code> already exists. Skipped.', RCB_TD),
+            \__('The service <code>%s</code> already exists. Skipped.', 'real-cookie-banner'),
             $post_name
         ), 'info');
     }
@@ -154,7 +157,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The content blocker <code>%s</code> already exists. Skipped.', RCB_TD),
+            \__('The content blocker <code>%s</code> already exists. Skipped.', 'real-cookie-banner'),
             $post_name
         ), 'info');
     }
@@ -167,7 +170,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The footer link <code>%s</code> already exists or may only be configured once. Skipped.', RCB_TD),
+            \__('The footer link <code>%s</code> already exists or may only be configured once. Skipped.', 'real-cookie-banner'),
             $post_name
         ), 'info');
     }
@@ -180,7 +183,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The TCF vendor configuration for vendor with ID <code>%s</code> already exists. Skipped.', RCB_TD),
+            \__('The TCF vendor configuration for vendor with ID <code>%s</code> already exists. Skipped.', 'real-cookie-banner'),
             $vendorId
         ), 'info');
     }
@@ -200,7 +203,7 @@ trait ImportMessages
         // Add a message when a duplicate got created
         $this->addMessage(\sprintf(
             // translators:
-            \__('The content blocker <code>%s</code> already exists. A new content blocker has been created anyway.', RCB_TD),
+            \__('The content blocker <code>%s</code> already exists. A new content blocker has been created anyway.', 'real-cookie-banner'),
             $post_name
         ), 'warning', 'blockerDuplicate', ['blockerDuplicate' => ['original' => $original, 'duplicate' => $duplicate]]);
     }
@@ -219,7 +222,7 @@ trait ImportMessages
         }
         $this->addMessage(\sprintf(
             // translators:
-            \__('The service <code>%s</code> already exists. A new service has been created anyway.', RCB_TD),
+            \__('The service <code>%s</code> already exists. A new service has been created anyway.', 'real-cookie-banner'),
             $post_name
         ), 'warning', 'cookieDuplicate', ['cookieDuplicate' => ['original' => [\get_the_terms($found['ID'], CookieGroup::TAXONOMY_NAME)[0]->term_id, $found['ID']], 'duplicate' => [$group, $created]]]);
     }
@@ -236,7 +239,7 @@ trait ImportMessages
         if ($groupNotFound) {
             $this->addMessage(\sprintf(
                 // translators:
-                \__('The newly created service <code>%s</code> has been added to the fallback service group because the original service group could not be found.', RCB_TD),
+                \__('The newly created service <code>%s</code> has been added to the fallback service group because the original service group could not be found.', 'real-cookie-banner'),
                 $post_title
             ), 'warning', 'cookie', ['cookie' => [$group, $created]]);
         }
@@ -251,7 +254,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The service <strong>%1$s</strong> could not be assigned to the given group due to the following error: <code>%2$s</code>. Skipped.', RCB_TD),
+            \__('The service <strong>%1$s</strong> could not be assigned to the given group due to the following error: <code>%2$s</code>. Skipped.', 'real-cookie-banner'),
             \get_the_title($postId),
             $error->get_error_message()
         ), 'error');
@@ -266,7 +269,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The service group <strong>%1$s</strong> could not be updated due to the following error: <code>%2$s</code>. Skipped.', RCB_TD),
+            \__('The service group <strong>%1$s</strong> could not be updated due to the following error: <code>%2$s</code>. Skipped.', 'real-cookie-banner'),
             $name,
             $error->get_error_message()
         ), 'error');
@@ -280,7 +283,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('The service group <strong>%s</strong> was not created. Instead, the existing one has been updated.', RCB_TD),
+            \__('The service group <strong>%s</strong> was not created. Instead, the existing one has been updated.', 'real-cookie-banner'),
             $name
         ), 'info');
     }
@@ -295,7 +298,7 @@ trait ImportMessages
         if ($onlyPro) {
             $this->addMessage(\sprintf(
                 // translators:
-                \__('Setting/Option <code>%s</code> can only be imported in the PRO version. Skipped.', RCB_TD),
+                \__('Setting/Option <code>%s</code> can only be imported in the PRO version. Skipped.', 'real-cookie-banner'),
                 $key
             ), 'error');
         }
@@ -309,7 +312,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('Setting/Option <code>%s</code> could not be updated. Skipped.', RCB_TD),
+            \__('Setting/Option <code>%s</code> could not be updated. Skipped.', 'real-cookie-banner'),
             $optionName
         ), 'error');
     }
@@ -322,7 +325,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('Settings/Options <code>%s</code> not found or obsolete. Skipped.', RCB_TD),
+            \__('Settings/Options <code>%s</code> not found or obsolete. Skipped.', 'real-cookie-banner'),
             $key
         ), 'error');
     }
@@ -336,7 +339,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('Setting/Option <strong>%1$s</strong> (key <code>%2$s</code>) cannot be imported because it refers to a page (ID). Skipped.', RCB_TD),
+            \__('Setting/Option <strong>%1$s</strong> (key <code>%2$s</code>) cannot be imported because it refers to a page (ID). Skipped.', 'real-cookie-banner'),
             $name,
             $key
         ), 'warning', 'settings', ['settingsTab' => '']);
@@ -351,7 +354,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('Setting/Option <strong>%1$s</strong> (key <code>%2$s</code>) cannot be imported because it refers to a media URL/ID. Skipped.', RCB_TD),
+            \__('Setting/Option <strong>%1$s</strong> (key <code>%2$s</code>) cannot be imported because it refers to a media URL/ID. Skipped.', 'real-cookie-banner'),
             $name,
             $key
         ), 'warning', 'link', ['href' => \admin_url('/customize.php?autofocus[control]=' . HeaderDesign::HEADLINE_LOGO)]);
@@ -366,7 +369,7 @@ trait ImportMessages
     {
         $this->addMessage(\sprintf(
             // translators:
-            \__('Setting/Option <strong>%1$s</strong> (key <code>%2$s</code>) cannot be imported. Skipped.', RCB_TD),
+            \__('Setting/Option <strong>%1$s</strong> (key <code>%2$s</code>) cannot be imported. Skipped.', 'real-cookie-banner'),
             $name,
             $key
         ), 'warning', 'settings', ['settingsTab' => 'multisite']);

@@ -45,18 +45,18 @@ class LinkShortcode
             $atts['tag'] = self::DEFAULT_TAG;
         }
         if (empty($atts['text'])) {
-            return \__('Please provide a `text` attribute in your shortcode!', RCB_TD);
+            return \__('Please provide a `text` attribute in your shortcode!', 'real-cookie-banner');
         }
         if (empty($atts['type']) || !\in_array($atts['type'], self::ALLOWED_TYPES, \true)) {
             return \sprintf(
                 // translators:
-                \__('Please provide a `type` attribute in your shortcode. Allowed: %s!', RCB_TD),
+                \__('Please provide a `type` attribute in your shortcode. Allowed: %s!', 'real-cookie-banner'),
                 \join(',', self::ALLOWED_TYPES)
             );
         }
         // Force to show banner
         $core->getAssets()->enqueue_scripts_and_styles(Constants::ASSETS_TYPE_FRONTEND);
         Checklist::getInstance()->toggle(Shortcode::IDENTIFIER, \true);
-        return \sprintf('<%s %s href="%s" role="button" id="%s" data-success-message="%s" class="rcb-sc-link rcb-sc-link-%s %s">%s</%s>', $atts['tag'], \is_customize_preview() ? \sprintf('onClick="alert(\'%s\')"', \esc_html(\__('This legal link on your website has the corresponding functionality. It is deactivated in the preview you are currently in.', RCB_TD))) : '', '#consent-' . $atts['type'], !empty($atts['id']) ? \esc_attr($atts['id']) : 'rcb-sc-link-' . $atts['type'], \esc_attr($atts['successmessage']), $atts['type'], \esc_attr($atts['class']), \esc_html($atts['text']), $atts['tag']);
+        return \sprintf('<%s %s href="%s" role="button" id="%s" data-success-message="%s" class="rcb-sc-link rcb-sc-link-%s %s">%s</%s>', $atts['tag'], \is_customize_preview() ? \sprintf('onClick="alert(\'%s\')"', \esc_html(\__('This legal link on your website has the corresponding functionality. It is deactivated in the preview you are currently in.', 'real-cookie-banner'))) : '', '#consent-' . $atts['type'], !empty($atts['id']) ? \esc_attr($atts['id']) : 'rcb-sc-link-' . $atts['type'], \esc_attr($atts['successmessage']), $atts['type'], \esc_attr($atts['class']), \esc_html($atts['text']), $atts['tag']);
     }
 }

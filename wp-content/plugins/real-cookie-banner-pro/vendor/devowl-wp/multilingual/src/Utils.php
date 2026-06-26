@@ -25,7 +25,7 @@ class Utils
      */
     public static function startsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -41,7 +41,7 @@ class Utils
      */
     public static function endsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -54,15 +54,31 @@ class Utils
      * Expand keys to dot notation so `skipKeys` works as expected and can skip
      * multidimensional arrays. This functionality also keeps the reference!
      *
+     * You can use regular expressions in the skip keys to match parts of the path,
+     * e.g. "/technicalDefinitions\.\d+\.(?!purpose)/"
+     *
      * @param mixed $arr
-     * @param string $skipKeys
+     * @param string[] $skipKeys
+     * @param callable $skipKeysByCallback
      * @see https://stackoverflow.com/a/40217420/5506547
      */
-    public static function expandKeys(&$arr, $skipKeys = [])
+    public static function expandKeys(&$arr, $skipKeys = [], $skipKeysByCallback = null)
     {
         $iterator = new RecursiveIteratorIterator(new RecursiveArrayIterator($arr), RecursiveIteratorIterator::SELF_FIRST);
         $pathMapping = [];
         $flatArray = [];
+        $regexSkipKeys = [];
+        foreach ($skipKeys as $key) {
+            // Only allow "/" as the regex delimiter, e.g. "/pattern/"
+            if (\strlen($key) >= 3 && $key[0] === '/' && \substr($key, -1) === '/') {
+                $inner = \substr($key, 1, -1);
+                if (\strpos(\str_replace('\\/', '', $inner), '/') !== \false) {
+                    continue;
+                }
+                $regexSkipKeys[] = $inner;
+            }
+        }
+        $regexSkipKeys = \join('|', $regexSkipKeys);
         foreach ($iterator as $key => $value) {
             $pathMapping[$iterator->getDepth()] = $key;
             if (!\is_array($value)) {
@@ -79,7 +95,11 @@ class Utils
                         $refValue =& $refValue->{$dot};
                     }
                 }
-                $flatArray[\implode('.', $pathMapping)] =& $refValue;
+                $path = \implode('.', $pathMapping);
+                if (\is_callable($skipKeysByCallback) && $skipKeysByCallback($path, $refValue) || !empty($regexSkipKeys) && \preg_match('/' . $regexSkipKeys . '/', $path)) {
+                    continue;
+                }
+                $flatArray[$path] =& $refValue;
             }
         }
         return $flatArray;

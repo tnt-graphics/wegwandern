@@ -51,8 +51,8 @@ class Affiliate
     public function register()
     {
         \register_setting(self::OPTION_GROUP, self::SETTING_AFFILIATE_LINK, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'esc_url_raw']);
-        \register_setting(self::OPTION_GROUP, self::SETTING_AFFILIATE_LABEL_BEHIND, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_AFFILIATE_DESCRIPTION, ['type' => 'string', 'show_in_rest' => \true]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_AFFILIATE_LABEL_BEHIND, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_text_field']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_AFFILIATE_DESCRIPTION, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'wp_kses_post']);
     }
     /**
      * Localize frontend.
@@ -94,7 +94,9 @@ class Affiliate
     public function getDefaultTexts()
     {
         $tempTd = Hooks::getInstance()->createTemporaryTextDomain();
-        $defaults = ['description' => \__('The link to Real Cookie Banner is an affiliate link. If you buy the product, we may receive a commission, but the price of the product will not change for you.', Hooks::TD_FORCED)];
+        $defaults = $tempTd->translate(function () {
+            return ['description' => \__('The link to Real Cookie Banner is an affiliate link. If you buy the product, we may receive a commission, but the price of the product will not change for you.', 'real-cookie-banner')];
+        });
         $tempTd->teardown();
         return $defaults;
     }

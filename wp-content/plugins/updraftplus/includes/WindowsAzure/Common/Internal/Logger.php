@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_print_r -- print_r is intentionally used to convert an array into a readable string or for controlled logging purposes.
 
 /**
  * LICENSE: Licensed under the Apache License, Version 2.0 (the "License");

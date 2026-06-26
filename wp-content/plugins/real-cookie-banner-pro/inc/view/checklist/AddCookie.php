@@ -29,12 +29,12 @@ class AddCookie extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklis
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Add all services (cookies) from your website', RCB_TD);
+        return \__('Add all services (cookies) from your website', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('You can manually add all services from your website. Use the cookie templates of known services to save time!', RCB_TD);
+        return \__('You can manually add all services from your website. Use the cookie templates of known services to save time!', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -44,7 +44,7 @@ class AddCookie extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklis
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Add service', RCB_TD);
+        return \__('Add service', 'real-cookie-banner');
     }
     /**
      * A cookie was saved, check if non-RCB cookie and newly created.

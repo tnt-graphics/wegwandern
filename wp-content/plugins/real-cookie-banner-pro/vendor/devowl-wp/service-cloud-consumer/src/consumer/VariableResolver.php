@@ -166,7 +166,10 @@ class VariableResolver
             }
             return $value;
         }
-        throw new Exception(\sprintf('Please provide a variable with name "%s" in the consumers variable resolver.', $key));
+        throw new Exception(
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message is internal and not directly rendered.
+            \sprintf('Please provide a variable with name "%s" in the consumers variable resolver.', $key)
+        );
     }
     /**
      * Check an array of statements if one of them resolves truly with the required variable `oneOf`.

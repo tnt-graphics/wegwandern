@@ -130,7 +130,8 @@ class Import
         if ($request->get_param('download')) {
             $json = \json_encode($jsonResult);
             \header('Content-Disposition: attachment; filename="rcb-export-' . \md5($json) . '.json";');
-            echo $json;
+            // Not HTML: JSON attachment body (escaping would corrupt the file).
+            \file_put_contents('php://output', $json);
             // Close (wp_die could not be used here because it generates unwanted output)
             $wpdb->close();
             die;

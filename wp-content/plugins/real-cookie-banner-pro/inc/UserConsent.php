@@ -198,7 +198,7 @@ class UserConsent
         if (!empty($ip)) {
             $ips = \DevOwl\RealCookieBanner\IpHandler::getInstance()->persistIp($ip, $exactIp);
             if ($ips['ipv4'] === \false || $ips['ipv6'] === \false) {
-                return new WP_Error('invalid_ip', \__('Invalid IP address. Please insert a valid IPv4 or IPv6 address.', RCB_TD));
+                return new WP_Error('invalid_ip', \__('Invalid IP address. Please insert a valid IPv4 or IPv6 address.', 'real-cookie-banner'));
             }
             $whereIp = [];
             foreach ($ips as $key => $value) {

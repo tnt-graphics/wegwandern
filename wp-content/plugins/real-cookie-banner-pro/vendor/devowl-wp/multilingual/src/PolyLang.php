@@ -195,7 +195,7 @@ class PolyLang extends AbstractSyncPlugin
     public static function isPresent()
     {
         // Never do anything while trying to deactivate the plugin
-        if (isset($_GET['action'], $_GET['plugin']) && $_GET['action'] === 'deactivate' && \strpos($_GET['plugin'], 'polylang') === 0) {
+        if (isset($_GET['action'], $_GET['plugin']) && \sanitize_text_field(\wp_unslash($_GET['action'])) === 'deactivate' && \strpos(\sanitize_text_field(\wp_unslash($_GET['plugin'])), 'polylang') === 0) {
             return \false;
         }
         return \is_plugin_active('polylang/polylang.php') || \is_plugin_active('polylang-pro/polylang.php');

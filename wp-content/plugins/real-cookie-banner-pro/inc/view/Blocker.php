@@ -13,13 +13,18 @@ use DevOwl\RealCookieBanner\base\UtilsProvider;
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\scanner\Scanner;
 use DevOwl\RealCookieBanner\settings\Blocker as SettingsBlocker;
+use DevOwl\RealCookieBanner\settings\CookieGroup;
 use DevOwl\RealCookieBanner\settings\General;
 use DevOwl\RealCookieBanner\Utils;
 use DevOwl\RealCookieBanner\view\blockable\BlockerPostType;
 use DevOwl\RealCookieBanner\view\blocker\Plugin;
 use WP_Scripts;
 use WP_Dependencies;
+use WP_Error;
 use WP_Query;
+use WP_REST_Request;
+use WP_REST_Response;
+use WP_REST_Server;
 // @codeCoverageIgnoreStart
 \defined('ABSPATH') or die('No script kiddies please!');
 // Avoid direct file request
@@ -113,6 +118,11 @@ class Blocker
      * A list of handles which got blocked. They are lazily detected through e.g. `sgo_js_minify_exclude`.
      */
     private $blockedHandles = ['js' => [], 'css' => []];
+    /**
+     * A list of URLs which are currently being processed in the `pre_http_request` hook. This is used to avoid
+     * duplicate processing of the same URL and leading to a infinite loop and memory exhaustion.
+     */
+    private $currentRequestUrlQueue = [];
     /**
      * C'tor.
      *
@@ -213,7 +223,7 @@ class Blocker
      *
      * If you want to use this functionality in your plugin, please use the filter `Consent/Block/HTML` instead!
      *
-     * @param string $html
+     * @param mixed $html
      */
     public function replace($html)
     {
@@ -267,7 +277,7 @@ class Blocker
     /**
      * Check if content blocker is enabled on the current request.
      */
-    protected function isEnabled()
+    public function isEnabled()
     {
         global $wp_query;
         $isEnabled = (Utils::isFrontend() || $this->isAdminAjaxAction()) && General::getInstance()->isBannerActive() && General::getInstance()->isBlockerActive() && !\is_customize_preview() && !$this->isCurrentRequestException();
@@ -298,13 +308,19 @@ class Blocker
      */
     protected function isCurrentRequestException()
     {
-        return isset($_GET['callback']) && $_GET['callback'] === 'map-iframe' || isset($_GET['lease']) && \preg_match('/^[a-f0-9]{32}$/i', $_GET['lease']) || isset($_GET['trustindex-google-widget-content']);
+        return isset($_GET['callback']) && $_GET['callback'] === 'map-iframe' || isset($_GET['lease']) && \preg_match('/^[a-f0-9]{32}$/i', \sanitize_text_field(\wp_unslash($_GET['lease']))) || isset($_GET['trustindex-google-widget-content']);
     }
     /**
      * Allows to modify content within a `admin-ajax.php` action.
      */
     protected function isAdminAjaxAction()
     {
+        $doingAjax = \wp_doing_ajax();
+        // Special case: WP Grid Builder and adding the `DOING_AJAX` constant manually.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- presence-only check for admin-ajax vendor compatibility flag.
+        if ($doingAjax && isset($_POST['wpgb'])) {
+            return \true;
+        }
         /**
          * Run the content blocker over `admin-ajax.php` responses.
          *
@@ -332,8 +348,94 @@ class Blocker
             'ut_get_portfolio_post_content',
             // [Plugin Comp] https://core.pixfort.com/
             'pix_get_popup_content',
+            // [Plugin Comp] Formidable Forms
+            'frm_entries_create',
+            // [Plugin Comp] Routiz
+            'rz_listing_edit',
         ]);
-        return \wp_doing_ajax() && isset($_REQUEST['action']) && \in_array($_REQUEST['action'], $actions, \true);
+        return $doingAjax && isset($_REQUEST['action']) && \in_array($_REQUEST['action'], $actions, \true);
+    }
+    /**
+     * Hook into every HTTP request made by the WordPress instance and add script tags to the final HTML output
+     * with the backtrace and URL so we can scan and block HTTP requests to external services on server side.
+     *
+     * @param array $response
+     * @param array $parsed_args
+     * @param string $url
+     * @see https://github.com/WordPress/wordpress-develop/blob/c726220a21d13fdb5409372b652c9460c59ce1db/src/wp-includes/functions.php#L7227-L7267
+     * @see https://developer.wordpress.org/reference/functions/wp_debug_backtrace_summary/
+     */
+    public function pre_http_request($response, $parsed_args, $url)
+    {
+        // Only allow to block requests when our taxonomy is ready and can be read. Otherwise, we could run into "Invalid taxonomy" errors
+        // when reading service groups in `CookieGroup::getOrdered()` class.
+        // Example: WP Rocket sends a license check request before the `init` hook:
+        if (!\taxonomy_exists(CookieGroup::TAXONOMY_NAME)) {
+            return $response;
+        }
+        static $truncated_path;
+        $backtrace = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+        if (!\is_array($backtrace) || !\is_string($url)) {
+            return $response;
+        }
+        if (isset($this->currentRequestUrlQueue[$url]) && $this->currentRequestUrlQueue[$url]) {
+            return $response;
+        }
+        $this->currentRequestUrlQueue[$url] = \true;
+        $result = [];
+        if (!isset($truncated_path)) {
+            $truncated_path = \wp_normalize_path(ABSPATH);
+        }
+        // Remove the stack trace of `WP_Http->get, WP_Http->request, apply_filters('pre_http_request'), WP_Hook->apply_filters, DevOwl\\RealCookieBanner\\scanner\\Scanner->pre_http_request`
+        $skipFunctions = [['wp-includes/class-wp-hook.php', 'pre_http_request'], ['wp-includes/plugin.php', 'apply_filters'], ['wp-includes/class-wp-http.php', 'apply_filters'], ['wp-includes/class-wp-http.php', 'request'], ['wp-includes/http.php', 'get']];
+        $stopSkip = \false;
+        $result[] = \strtoupper($parsed_args['method']) . ' ' . $url;
+        foreach ($backtrace as &$trace) {
+            if (isset($trace['file']) && isset($trace['line']) && isset($trace['function'])) {
+                $path = \wp_normalize_path($trace['file']);
+                if (\strpos($path, $truncated_path) === 0) {
+                    $path = \substr($path, \strlen($truncated_path));
+                }
+                $function = $trace['function'];
+                if (!$stopSkip) {
+                    foreach ($skipFunctions as $skipFunction) {
+                        if ($path === $skipFunction[0] && $function === $skipFunction[1]) {
+                            continue 2;
+                        }
+                    }
+                    $stopSkip = \true;
+                }
+                $result[] = '  ' . $path . ':' . $trace['line'] . ' - ' . $function;
+            }
+        }
+        $htmlToScan = \sprintf('<script wordpress-filter="pre_http_request">
+wordpress-filter:pre_http_request
+%s
+</script>', \implode("\n", $result));
+        $htmlToScan = $this->replace($htmlToScan);
+        if (\strpos($htmlToScan, Constants::HTML_ATTRIBUTE_INLINE) !== \false) {
+            $required = \preg_match('/consent-required="([^"]+)"/', $htmlToScan, $matches);
+            if (isset($matches[1]) && !empty($matches[1])) {
+                // This is not a scan process, but the hook got blocked by a content blocker.
+                // Lets check if we have consent for all required services.
+                $required = \array_map('intval', \explode(',', $matches[1]));
+                if (\count($required) > 0) {
+                    $hasConsent = \true;
+                    foreach ($required as $service) {
+                        if (!\wp_rcb_consent_given($service)['cookieOptIn']) {
+                            $hasConsent = \false;
+                            break;
+                        }
+                    }
+                    if (!$hasConsent) {
+                        return new WP_Error('rcb_request_blocked_missing_consent', 'Real Cookie Banner blocked the request due to missing consent.', ['services' => $required]);
+                    }
+                }
+            }
+            // We keep the request firing in scan mode to catch also follow-up requests.
+        }
+        unset($this->currentRequestUrlQueue[$url]);
+        return $response;
     }
     /**
      * Exclude blocked styles from autoptimize inline aggregation.
@@ -420,6 +522,31 @@ class Blocker
             ['fl_builder' => '1'],
             $url
         );
+    }
+    /**
+     * Filter REST API responses to disable content blocking for specific endpoints.
+     *
+     * @param WP_REST_Response $response
+     * @param WP_REST_Server $server
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response
+     */
+    public function skipContentBlockerOnRestAPIEndpoint($response, $server, $request)
+    {
+        // Check if this is the OptimizePress 3 page builder data endpoint
+        $route = $request->get_route();
+        if (\preg_match('/^\\/op3\\/v1\\/pages\\/\\d+\\/data/', $route)) {
+            $data = $response->get_data();
+            // Add the skip property to disable content blocking
+            if (\is_array($data)) {
+                $data['$$skipFastHtmlTag'] = ['HeadlessContentBlocker'];
+                $response->set_data($data);
+            } elseif (\is_object($data)) {
+                $data->{'$$skipFastHtmlTag'} = ['HeadlessContentBlocker'];
+                $response->set_data($data);
+            }
+        }
+        return $response;
     }
     /**
      * Modify the HTML of an oEmbed HTML and keep the original pasted URL as attribute

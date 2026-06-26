@@ -3793,7 +3793,7 @@ class SSH2
                 $this->bitmap = 0;
                 user_error('Error reading socket');
                 return false;
-            } elseif ($hmac != $this->hmac_check->hash(pack('NNCa*', $this->get_seq_no, $packet_length, $padding_length, $payload . $padding))) {
+            } elseif (!$this->_equals($hmac, $this->hmac_check->hash(pack('NNCa*', $this->get_seq_no, $packet_length, $padding_length, $payload . $padding)))) {
                 user_error('Invalid HMAC');
                 return false;
             }
@@ -3983,8 +3983,9 @@ class SSH2
                     }
                     extract(unpack('Nlength', $this->_string_shift($payload, 4)));
                     $this->errors[] = 'SSH_MSG_GLOBAL_REQUEST: ' . $this->_string_shift($payload, $length);
+                    $want_reply = ord($this->_string_shift($payload)) != 0;
 
-                    if (!$this->_send_binary_packet(pack('C', NET_SSH2_MSG_REQUEST_FAILURE))) {
+                    if ($want_reply && !$this->_send_binary_packet(pack('C', NET_SSH2_MSG_REQUEST_FAILURE))) {
                         return $this->_disconnect(NET_SSH2_DISCONNECT_BY_APPLICATION);
                     }
 
@@ -4269,7 +4270,7 @@ class SSH2
                                     $this->errors[count($this->errors)].= "\r\n" . $this->_string_shift($response, $length);
                                 }
 
-                                $this->_send_binary_packet(pack('CN', NET_SSH2_MSG_CHANNEL_EOF, $this->server_channels[$client_channel]));
+                                $this->_send_binary_packet(pack('CN', NET_SSH2_MSG_CHANNEL_EOF, $this->server_channels[$channel]));
                                 $this->_send_binary_packet(pack('CN', NET_SSH2_MSG_CHANNEL_CLOSE, $this->server_channels[$channel]));
 
                                 $this->channel_status[$channel] = NET_SSH2_MSG_CHANNEL_EOF;
@@ -4287,8 +4288,13 @@ class SSH2
 
                                 continue 3;
                             default:
-                                // "Some systems may not implement signals, in which case they SHOULD ignore this message."
-                                //  -- http://tools.ietf.org/html/rfc4254#section-6.9
+                                $want_reply = ord($this->_string_shift($response)) != 0;
+                                if ($want_reply) {
+                                    // "If the request is not recognized or is not supported for the channel,
+                                    //  SSH_MSG_CHANNEL_FAILURE is returned."
+                                    // -- https://datatracker.ietf.org/doc/html/rfc4254#page-10
+                                    $this->_send_binary_packet(pack('CN', NET_SSH2_MSG_CHANNEL_FAILURE, $this->server_channels[$channel]));
+                                }
                                 continue 3;
                         }
                 }
@@ -5686,5 +5692,34 @@ class SSH2
     function bytesUntilKeyReexchange($bytes)
     {
         $this->doKeyReexchangeAfterXBytes = $bytes;
+    }
+
+    /**
+     * Constant time equality testing
+     *
+     * Pretty much copy / pasted from Crypt/RSA.php
+     *
+     * @access private
+     * @param string $x
+     * @param string $y
+     * @return bool
+     */
+    function _equals($x, $y)
+    {
+        if (function_exists('hash_equals')) {
+            return hash_equals($x, $y);
+        }
+
+        if (strlen($x) != strlen($y)) {
+            return false;
+        }
+
+        $result = "\0";
+        $x^= $y;
+        for ($i = 0; $i < strlen($x); $i++) {
+            $result|= $x[$i];
+        }
+
+        return $result === "\0";
     }
 }

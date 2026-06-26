@@ -112,8 +112,10 @@ class Frontend
         foreach ([$transaction->getRevisionIndependent(), $transaction->getRevision()] as $revision) {
             if (isset($revision['lazyLoadedDataForSecondView'])) {
                 $vendorsInContext =& $obj['context']['tcf']['tcf']['vendors'];
-                foreach ($revision['lazyLoadedDataForSecondView']['tcf']['vendors'] as $vendorId => $vendor) {
-                    $vendorsInContext[$vendorId] = \array_merge_recursive($vendorsInContext[$vendorId], $vendor);
+                if (isset($revision['lazyLoadedDataForSecondView']['tcf'])) {
+                    foreach ($revision['lazyLoadedDataForSecondView']['tcf']['vendors'] as $vendorId => $vendor) {
+                        $vendorsInContext[$vendorId] = \array_merge_recursive($vendorsInContext[$vendorId], $vendor);
+                    }
                 }
             }
         }
@@ -138,18 +140,20 @@ class Frontend
         // Remove `additionalInformation`, `urls` and `deviceStorageDisclosure` from the GVL
         if (isset($output['tcf']) && !empty($output['tcf'])) {
             $lazyLoaded['tcf'] = ['vendors' => []];
-            foreach ($output['tcf']['vendors'] as $vendorId => &$row) {
-                foreach ([
-                    // This keys are part of the main GVL model
-                    'urls',
-                    'deviceStorageDisclosureUrl',
-                    // This keys are not part of the main GVL model, but inserted into the object by Real Cookie Banner backend
-                    'additionalInformation',
-                    'deviceStorageDisclosure',
-                ] as $key) {
-                    if (isset($row[$key])) {
-                        $lazyLoaded['tcf']['vendors'][$vendorId][$key] = $row[$key];
-                        unset($row[$key]);
+            if (\is_array($output['tcf']['vendors'])) {
+                foreach ($output['tcf']['vendors'] as $vendorId => &$row) {
+                    foreach ([
+                        // This keys are part of the main GVL model
+                        'urls',
+                        'deviceStorageDisclosureUrl',
+                        // This keys are not part of the main GVL model, but inserted into the object by Real Cookie Banner backend
+                        'additionalInformation',
+                        'deviceStorageDisclosure',
+                    ] as $key) {
+                        if (isset($row[$key])) {
+                            $lazyLoaded['tcf']['vendors'][$vendorId][$key] = $row[$key];
+                            unset($row[$key]);
+                        }
                     }
                 }
             }

@@ -55,6 +55,7 @@ class TemplateConsumers
      * @var ConsumerPool[]
      */
     private $pools = [];
+    private $persistedTranslations = [];
     /**
      * Singleton instance.
      *
@@ -121,6 +122,10 @@ class TemplateConsumers
      */
     protected function fillVariableResolver($context, $resolver, $serviceConsumer, $blockerConsumer)
     {
+        $temporaryTextDomain = Hooks::getInstance()->getTemporaryTextDomain();
+        $translateTemporaryTextDomain = function ($callback) use($temporaryTextDomain) {
+            return $temporaryTextDomain !== null ? $temporaryTextDomain->translate($callback) : $callback();
+        };
         $variables = [
             // Custom properties
             'context' => $context,
@@ -212,64 +217,78 @@ class TemplateConsumers
                 return Core::getInstance()->getNotices()->getScannerIgnored()['templates'];
             },
             // I18n
-            'i18n.ContentTypeButtonTextMiddleware.loadContent' => function () {
-                return \__('Load content', Hooks::TD_FORCED);
+            'i18n.ContentTypeButtonTextMiddleware.loadContent' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Load content', 'real-cookie-banner');
+                });
             },
-            'i18n.ContentTypeButtonTextMiddleware.loadMap' => function () {
-                return \__('Load map', Hooks::TD_FORCED);
+            'i18n.ContentTypeButtonTextMiddleware.loadMap' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Load map', 'real-cookie-banner');
+                });
             },
-            'i18n.ContentTypeButtonTextMiddleware.loadForm' => function () {
-                return \__('Load form', Hooks::TD_FORCED);
+            'i18n.ContentTypeButtonTextMiddleware.loadForm' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Load form', 'real-cookie-banner');
+                });
             },
-            'i18n.disabled' => \__('Disabled', RCB_TD),
-            'i18n.ExistsMiddleware.alreadyCreated' => \__('Already created', RCB_TD),
-            'i18n.ExistsMiddleware.blockerAlreadyCreatedTooltip' => \__('You have already created a Content Blocker with this template.', RCB_TD),
-            'i18n.ExistsMiddleware.serviceAlreadyCreatedTooltip' => \__('You have already created a Service (Cookie) with this template.', RCB_TD),
+            'i18n.disabled' => \__('Disabled', 'real-cookie-banner'),
+            'i18n.ExistsMiddleware.alreadyCreated' => \__('Already created', 'real-cookie-banner'),
+            'i18n.ExistsMiddleware.blockerAlreadyCreatedTooltip' => \__('You have already created a Content Blocker with this template.', 'real-cookie-banner'),
+            'i18n.ExistsMiddleware.serviceAlreadyCreatedTooltip' => \__('You have already created a Service (Cookie) with this template.', 'real-cookie-banner'),
             // translators:
-            'i18n.ManagerMiddleware.tooltip' => \__('This service template is optimized to work with %s.', RCB_TD),
+            'i18n.ManagerMiddleware.tooltip' => \__('This service template is optimized to work with %s.', 'real-cookie-banner'),
             // translators:
-            'i18n.ManagerMiddleware.disabledTooltip' => \__('Please activate %s in settings to use this template.', RCB_TD),
-            'i18n.ServiceAvailableBlockerTemplatesMiddleware.tooltip' => \__('A suitable content blocker for this service can be created automatically.', RCB_TD),
-            'i18n.GroupMiddleware.group.essential' => function () {
-                return \__('Essential', Hooks::TD_FORCED);
+            'i18n.ManagerMiddleware.disabledTooltip' => \__('Please activate %s in settings to use this template.', 'real-cookie-banner'),
+            'i18n.ServiceAvailableBlockerTemplatesMiddleware.tooltip' => \__('A suitable content blocker for this service can be created automatically.', 'real-cookie-banner'),
+            'i18n.GroupMiddleware.group.essential' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Essential', 'real-cookie-banner');
+                });
             },
-            'i18n.GroupMiddleware.group.functional' => function () {
-                return \__('Functional', Hooks::TD_FORCED);
+            'i18n.GroupMiddleware.group.functional' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Functional', 'real-cookie-banner');
+                });
             },
-            'i18n.GroupMiddleware.group.statistics' => function () {
-                return \__('Statistics', Hooks::TD_FORCED);
+            'i18n.GroupMiddleware.group.statistics' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Statistics', 'real-cookie-banner');
+                });
             },
-            'i18n.GroupMiddleware.group.marketing' => function () {
-                return \__('Marketing', Hooks::TD_FORCED);
+            'i18n.GroupMiddleware.group.marketing' => function () use($translateTemporaryTextDomain) {
+                return $translateTemporaryTextDomain(function () {
+                    return \__('Marketing', 'real-cookie-banner');
+                });
             },
             'i18n.OneOfMiddleware.disabledTooltip' => function () {
                 return \sprintf(
                     // translators:
-                    \__('This template is currently disabled because the respective WordPress plugin is not installed or the desired function is not active. <a href="%s" target="_blank">Learn more</a>', RCB_TD),
-                    \__('https://devowl.io/knowledge-base/real-cookie-banner-disabled-cookie-templates/', RCB_TD)
+                    \__('This template is currently disabled because the respective WordPress plugin is not installed or the desired function is not active. <a href="%s" target="_blank">Learn more</a>', 'real-cookie-banner'),
+                    \__('https://devowl.io/knowledge-base/real-cookie-banner-disabled-cookie-templates/', 'real-cookie-banner')
                 );
             },
-            'i18n.TcfMiddleware.disabled' => \__('TCF required', RCB_TD),
-            'i18n.TcfMiddleware.disabledTooltip' => \__('This template requires the integration of TCF, as the provider of this template uses this standard. Please activate this in the settings to be able to block this service.', RCB_TD),
+            'i18n.TcfMiddleware.disabled' => \__('TCF required', 'real-cookie-banner'),
+            'i18n.TcfMiddleware.disabledTooltip' => \__('This template requires the integration of TCF, as the provider of this template uses this standard. Please activate this in the settings to be able to block this service.', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.introduction' => \__('%s is a network of globally distributed servers that cache content and deliver it to your website visitors faster based on their location, reducing website load times and improving performance. This technology is also known as a content delivery network (CDN). {{strong}}Servers may also be located in countries that are considered unsafe in terms of data protection law.{{/strong}}', RCB_TD),
+            'i18n.CdnMiddleware.introduction' => \__('%s is a network of globally distributed servers that cache content and deliver it to your website visitors faster based on their location, reducing website load times and improving performance. This technology is also known as a content delivery network (CDN). {{strong}}Servers may also be located in countries that are considered unsafe in terms of data protection law.{{/strong}}', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.introductionNoScc' => \__('In order to use the service in a way that complies with data protection regulations, the only practical option would be to conclude standard contractual clauses (SCCs) with %1$s that guarantee the safe processing of personal data of your website visitors (in particular IP addresses). Unfortunately, %1$s does not offer the option of concluding standard contractual clauses to our knowledge. Therefore, in our legal opinion, {{strong}}it is not possible to use this service in a legally compliant manner.{{/strong}}', RCB_TD),
+            'i18n.CdnMiddleware.introductionNoScc' => \__('In order to use the service in a way that complies with data protection regulations, the only practical option would be to conclude standard contractual clauses (SCCs) with %1$s that guarantee the safe processing of personal data of your website visitors (in particular IP addresses). Unfortunately, %1$s does not offer the option of concluding standard contractual clauses to our knowledge. Therefore, in our legal opinion, {{strong}}it is not possible to use this service in a legally compliant manner.{{/strong}}', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.introductionNotEssential' => \__('%s unfortunately sets cookies that are not technically essential according to our knowledge, for which consent would be required. At the same time, the CDN cannot be blocked with a content blocker until the website visitors have given their consent, as otherwise parts of your website may malfunction. Therefore, in our legal opinion, {{strong}}it is not possible to use this service in a legally compliant manner.{{/strong}}', RCB_TD),
+            'i18n.CdnMiddleware.introductionNotEssential' => \__('%s unfortunately sets cookies that are not technically essential according to our knowledge, for which consent would be required. At the same time, the CDN cannot be blocked with a content blocker until the website visitors have given their consent, as otherwise parts of your website may malfunction. Therefore, in our legal opinion, {{strong}}it is not possible to use this service in a legally compliant manner.{{/strong}}', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.introductionSccAndEmbedsOnlyExternalResources1' => \__('In order to use the service in a way that complies with data protection regulations, the only practical option would be to conclude standard contractual clauses (SCCs) with %s that guarantee the safe processing of personal data of your website visitors (in particular IP addresses).', RCB_TD),
+            'i18n.CdnMiddleware.introductionSccAndEmbedsOnlyExternalResources1' => \__('In order to use the service in a way that complies with data protection regulations, the only practical option would be to conclude standard contractual clauses (SCCs) with %s that guarantee the safe processing of personal data of your website visitors (in particular IP addresses).', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.introductionSccAndEmbedsOnlyExternalResources2' => \__('{{strong}}Please make sure that you have concluded standard contract clauses with %1$s, which can be done on their website!{{/strong}} Since %1$s does not set cookies to our knowledge, we do not recommend creating a service in your cookie banner for it. However, you must mention the use of %1$s in your privacy policy.', RCB_TD),
+            'i18n.CdnMiddleware.introductionSccAndEmbedsOnlyExternalResources2' => \__('{{strong}}Please make sure that you have concluded standard contract clauses with %1$s, which can be done on their website!{{/strong}} Since %1$s does not set cookies to our knowledge, we do not recommend creating a service in your cookie banner for it. However, you must mention the use of %1$s in your privacy policy.', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.introductionRemoveService' => \__('Please remove %s from your website!', RCB_TD),
+            'i18n.CdnMiddleware.introductionRemoveService' => \__('Please remove %s from your website!', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.moreInfoTitle' => \__('Why is %s integrated into my website at all?', RCB_TD),
+            'i18n.CdnMiddleware.moreInfoTitle' => \__('Why is %s integrated into my website at all?', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.moreInfoDescription' => \__('If you do not consciously integrate %1$s, it is most likely that a plugin or theme you are using uses this CDN to load external scripts, fonts or media such as images. The best way to find out who is integrating the CDN is to disable the individual plugins or themes and scan again. Once you have found out where the integration is coming from, contact the developer of the plugin or theme to see if it can be used without %1$s or replace this plugin/theme!', RCB_TD),
+            'i18n.CdnMiddleware.moreInfoDescription' => \__('If you do not consciously integrate %1$s, it is most likely that a plugin or theme you are using uses this CDN to load external scripts, fonts or media such as images. The best way to find out who is integrating the CDN is to disable the individual plugins or themes and scan again. Once you have found out where the integration is coming from, contact the developer of the plugin or theme to see if it can be used without %1$s or replace this plugin/theme!', 'real-cookie-banner'),
             // translators:
-            'i18n.CdnMiddleware.sccConclusionInstructionsNoticeTitle' => \__('How do I conclude standard contractual clauses with %s?', RCB_TD),
-            'i18n.CdnMiddleware.buttonLabel' => \__('Acknowledged', RCB_TD),
+            'i18n.CdnMiddleware.sccConclusionInstructionsNoticeTitle' => \__('How do I conclude standard contractual clauses with %s?', 'real-cookie-banner'),
+            'i18n.CdnMiddleware.buttonLabel' => \__('Acknowledged', 'real-cookie-banner'),
         ];
         foreach ($variables as $key => $value) {
             $resolver->add($key, $value);
@@ -530,13 +549,17 @@ class TemplateConsumers
      */
     public function probablyPersistTranslationsForRequestedLocales($locales)
     {
+        $currentContext = self::getContext();
         foreach ($locales as $locale) {
             $pool = $this->getPool($locale);
-            if ($pool === null) {
+            if ($pool === null || \in_array($locale, $this->persistedTranslations, \true)) {
                 continue;
             }
+            $this->persistedTranslations[] = $locale;
             $consumer = $pool->getConsumer(ServiceTemplate::class);
-            if ($consumer !== null && $consumer->isInvalidatedThroughStorage()) {
+            // For the current context (e.g. TranslatePress current language), we always retrieve the templates
+            // if not already done (internally, `retrieve` uses `shouldInvalidate` to not download twice).
+            if ($consumer !== null && ($consumer->isInvalidatedThroughStorage() || $locale === $currentContext)) {
                 $consumer->retrieve();
             }
         }
@@ -651,7 +674,7 @@ class TemplateConsumers
     public static function getContext()
     {
         $compLanguage = Core::getInstance()->getCompLanguage();
-        $language = isset($_GET['_dataLocale']) ? \sanitize_text_field($_GET['_dataLocale']) : $compLanguage->getCurrentLanguage();
+        $language = isset($_GET['_dataLocale']) ? \sanitize_text_field(\wp_unslash($_GET['_dataLocale'])) : $compLanguage->getCurrentLanguage();
         if ($compLanguage->isActive()) {
             $language = $compLanguage->getWordPressCompatibleLanguageCode($language);
         }

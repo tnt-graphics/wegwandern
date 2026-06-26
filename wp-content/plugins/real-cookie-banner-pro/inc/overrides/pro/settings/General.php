@@ -20,9 +20,14 @@ trait General
     // Documented in IOverrideMultisite
     public function overrideRegister()
     {
-        // WP < 5.3 does not support array types yet, so we need to store serialized
-        \register_setting(SettingsGeneral::OPTION_GROUP, SettingsGeneral::SETTING_HIDE_PAGE_IDS, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(SettingsGeneral::OPTION_GROUP, SettingsGeneral::SETTING_SET_COOKIES_VIA_MANAGER, ['type' => 'string', 'show_in_rest' => \true]);
+        // WP < 5.3 does not support array types yet, so we store the page IDs as a CSV string.
+        \register_setting(SettingsGeneral::OPTION_GROUP, SettingsGeneral::SETTING_HIDE_PAGE_IDS, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => function ($value) {
+            return SettingsGeneral::sanitize_delimited_list($value, ',', function ($id) {
+                $id = \absint($id);
+                return $id > 0 ? $id : '';
+            });
+        }]);
+        \register_setting(SettingsGeneral::OPTION_GROUP, SettingsGeneral::SETTING_SET_COOKIES_VIA_MANAGER, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => [SettingsGeneral::class, 'sanitize_set_cookies_via_manager']]);
     }
     // Documented in AbstractGeneral
     public function getAdditionalPageHideIds()

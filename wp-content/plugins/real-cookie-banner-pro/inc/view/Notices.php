@@ -281,7 +281,11 @@ class Notices
             return;
         }
         if (\current_user_can(Core::MANAGE_MIN_CAPABILITY) && \count($needsUpdate) > 0 && !Core::getInstance()->getConfigPage()->isVisible()) {
-            echo \sprintf('<div class="notice notice-warning">%s</div>', $this->servicesWithUpdatedTemplatesHtml($needsUpdate));
+            echo \sprintf(
+                '<div class="notice notice-warning">%s</div>',
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- servicesWithUpdatedTemplatesHtml returns a escaped string.
+                $this->servicesWithUpdatedTemplatesHtml($needsUpdate)
+            );
         }
     }
     /**
@@ -300,7 +304,11 @@ class Notices
             return;
         }
         if (\current_user_can(Core::MANAGE_MIN_CAPABILITY) && \count($successors) > 0 && !Core::getInstance()->getConfigPage()->isVisible()) {
-            echo \sprintf('<div class="notice notice-warning">%s</div>', $this->servicesWithSuccessorTemplatesHtml($successors));
+            echo \sprintf(
+                '<div class="notice notice-warning">%s</div>',
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- servicesWithSuccessorTemplatesHtml returns a escaped string.
+                $this->servicesWithSuccessorTemplatesHtml($successors)
+            );
         }
     }
     /**
@@ -324,9 +332,9 @@ class Notices
             unset($output['noLegitimateInterest']);
             $resetCache = \true;
         }
-        if (isset($_GET[self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE]) && \in_array($_GET[self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE], ['requiresGoogleConsentModeGa', 'requiresGoogleConsentModeAdsConversionTracking'], \true)) {
+        if (isset($_GET[self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE]) && \in_array(\sanitize_text_field(\wp_unslash($_GET[self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE])), ['requiresGoogleConsentModeGa', 'requiresGoogleConsentModeAdsConversionTracking'], \true)) {
             $dismissed = $this->getStates()->get(self::DISMISSED_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE, []);
-            $service = $_GET[self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE];
+            $service = \sanitize_text_field(\wp_unslash($_GET[self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE]));
             $dismissed = \array_values(\array_merge($dismissed, [$service]));
             $this->getStates()->set(self::DISMISSED_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE, \array_unique($dismissed));
             unset($output[$service]);
@@ -337,6 +345,7 @@ class Notices
         }
         foreach ($output as $key => $value) {
             if ($show && !\in_array($key, ['noConsentTypes', 'noLegitimateInterest', 'gtmAndGcmWithGtmActive'], \true)) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- value is escaped in servicesWithGoogleConsentModeAdjustmentsHtml.
                 echo \sprintf('<div class="notice notice-warning">%s</div>', $value);
             }
         }
@@ -361,7 +370,7 @@ class Notices
                 if (\is_wp_error($response)) {
                     $checker->addError($url, [$response->get_error_message(), \sprintf(
                         // translators:
-                        \__('There seems to be something generally wrong with the REST API of your WordPress instance. Please deactivate Real Cookie Banner and then check under <a href="%s">Tools > Site Health</a> whether errors regarding the REST API are listed there.', RCB_TD),
+                        \__('There seems to be something generally wrong with the REST API of your WordPress instance. Please deactivate Real Cookie Banner and then check under <a href="%s">Tools > Site Health</a> whether errors regarding the REST API are listed there.', 'real-cookie-banner'),
                         \admin_url('site-health.php')
                     )]);
                 } else {
@@ -376,13 +385,13 @@ class Notices
         }
         $tests = $result['tests'];
         if (\count(Utils::array_flatten($tests)) > 0) {
-            $html = \sprintf('<p>%1$s</p>', \__('<strong>Consent cannot be saved in the cookie banner:</strong> Website visitors (not logged into WordPress) currently cannot save consents in the cookie banner. This may result in the cookie banner being displayed again each time the website visitor visits a page.', RCB_TD));
+            $html = \sprintf('<p>%1$s</p>', \__('<strong>Consent cannot be saved in the cookie banner:</strong> Website visitors (not logged into WordPress) currently cannot save consents in the cookie banner. This may result in the cookie banner being displayed again each time the website visitor visits a page.', 'real-cookie-banner'));
             foreach ($tests as $url => $errors) {
                 $url = \base64_decode($url);
                 $html .= \sprintf('<p>%s</p><ul style="list-style: initial;padding-inline-start:27px;"><li>%2$s</li></ul>', \sprintf(
                     // translators:
-                    \__('The consent would be saved via the WP REST API route %s. The following problems with your WordPress installation were detected during the automatic error analysis:', RCB_TD),
-                    \sprintf('<a style="word-break:break-all;" target="_blank" href="%s">%s</a>', \add_query_arg(\array_merge($checker->getRequestArguments()['body'], ['_method' => 'POST']), $url), $url)
+                    \__('The consent would be saved via the WP REST API route %s. The following problems with your WordPress installation were detected during the automatic error analysis:', 'real-cookie-banner'),
+                    \sprintf('<a style="word-break:break-all;" target="_blank" href="%s">%s</a>', \esc_url(\add_query_arg(\array_merge($checker->getRequestArguments()['body'], ['_method' => 'POST']), $url)), \esc_url($url))
                 ), \join('</li><li>', \array_map(function ($error) {
                     if (\is_array($error)) {
                         $code = $error[0];
@@ -390,48 +399,48 @@ class Notices
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_ERROR_CODE:
                                 return \sprintf(
                                     // translators:
-                                    \__('HTTP error code <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/%1$d" target="_blank"><code>%1$d</code></a> has been returned by the server. This indicates that the <a href="%2$s" target="_blank">WP REST API may have been proactively blocked</a>.', RCB_TD),
+                                    \__('HTTP error code <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/%1$d" target="_blank"><code>%1$d</code></a> has been returned by the server. This indicates that the <a href="%2$s" target="_blank">WP REST API may have been proactively blocked</a>.', 'real-cookie-banner'),
                                     $error[1],
-                                    \__('https://devowl.io/knowledge-base/wordpress-rest-api-does-not-respond/#how-can-i-enable-the-wordpress-rest-api-in-my-website', RCB_TD)
+                                    \__('https://devowl.io/knowledge-base/wordpress-rest-api-does-not-respond/#how-can-i-enable-the-wordpress-rest-api-in-my-website', 'real-cookie-banner')
                                 );
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_RESPONSE_BODY:
                                 return \sprintf(
                                     // translators:
-                                    \__('Response from the server is malformed. This indicates, for example, that another plugin is manipulating the response. In the following, you find the server response:', RCB_TD),
+                                    \__('Response from the server is malformed. This indicates, for example, that another plugin is manipulating the response. In the following, you find the server response:', 'real-cookie-banner'),
                                     $error[1]
                                 ) . \sprintf('<br /><code>%s</code>', \htmlentities($error[1]));
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_NO_COOKIES:
                                 return \sprintf(
                                     // translators:
-                                    \__('Cookie with the saved consent (name starts with <code>real_cookie_banner</code>) was not part of the server response. Perhaps you have configured your <a href="%s" target="_blank">webserver to drop all cookies before sending the response</a>.', RCB_TD),
-                                    \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/#cause-4-server-discards-all-cookies', RCB_TD)
+                                    \__('Cookie with the saved consent (name starts with <code>real_cookie_banner</code>) was not part of the server response. Perhaps you have configured your <a href="%s" target="_blank">webserver to drop all cookies before sending the response</a>.', 'real-cookie-banner'),
+                                    \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/#cause-4-server-discards-all-cookies', 'real-cookie-banner')
                                 );
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_COOKIE_PATH:
                                 return \sprintf(
                                     // translators:
-                                    \__('Cookie <code>%1$s</code> with saved consent has been responded by server, but with the invalid cookie path <code>%2$s</code>. You may have an <a href="%3$s" target="_blank">error in your WordPress configuration file</a>.', RCB_TD),
+                                    \__('Cookie <code>%1$s</code> with saved consent has been responded by server, but with the invalid cookie path <code>%2$s</code>. You may have an <a href="%3$s" target="_blank">error in your WordPress configuration file</a>.', 'real-cookie-banner'),
                                     $error[1],
                                     $error[2],
-                                    \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/#cause-2-incorrect-cookie-path', RCB_TD)
+                                    \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/#cause-2-incorrect-cookie-path', 'real-cookie-banner')
                                 );
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_COOKIE_HTTP_ONLY:
                                 return \sprintf(
                                     // translators:
-                                    \__('Cookie <code>%1$s</code> with saved consent has been responded to by the server, but with a <code>HttpOnly</code> flag, which means that the Real Cookie Banner JavaScript does not have permission to read it. You probably have <a href="%2$s" target="_blank">too strict security settings configured in your web server</a>.', RCB_TD),
+                                    \__('Cookie <code>%1$s</code> with saved consent has been responded to by the server, but with a <code>HttpOnly</code> flag, which means that the Real Cookie Banner JavaScript does not have permission to read it. You probably have <a href="%2$s" target="_blank">too strict security settings configured in your web server</a>.', 'real-cookie-banner'),
                                     $error[1],
-                                    \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/#cause-3-cookie-not-accessible-via-javascript', RCB_TD)
+                                    \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/#cause-3-cookie-not-accessible-via-javascript', 'real-cookie-banner')
                                 );
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_REDIRECT:
                                 return \sprintf(
                                     // translators:
-                                    \__('Response of the server contains a <code>Location</code> header, which leads to a redirection of the save request instead of saving. You probably have an <a href="%2$s" target="_blank">incorrect trailing slash configuration in your web server</a>.', RCB_TD),
+                                    \__('Response of the server contains a <code>Location</code> header, which leads to a redirection of the save request instead of saving. You probably have an <a href="%2$s" target="_blank">incorrect trailing slash configuration in your web server</a>.', 'real-cookie-banner'),
                                     $error[1],
-                                    \__('https://devowl.io/knowledge-base/wordpress-rest-api-does-not-respond/#i-can-read-data-but-not-write', RCB_TD)
+                                    \__('https://devowl.io/knowledge-base/wordpress-rest-api-does-not-respond/#i-can-read-data-but-not-write', 'real-cookie-banner')
                                 );
                             case SavingConsentViaRestApiEndpointChecker::ERROR_DIAGNOSTIC_403_FORBIDDEN_HTACCESS_DENY:
                                 return \sprintf(
                                     // translators:
-                                    \__('Since the request returned a <code>403</code> error, it is possible that the IP of your server has been blocked for internal loopback requests. We have checked the <code>.htaccess</code> file and found that the following line could be the trigger for this, which you should check and remove: <code>%s</code>.', RCB_TD),
+                                    \__('Since the request returned a <code>403</code> error, it is possible that the IP of your server has been blocked for internal loopback requests. We have checked the <code>.htaccess</code> file and found that the following line could be the trigger for this, which you should check and remove: <code>%s</code>.', 'real-cookie-banner'),
                                     $error[1]
                                 );
                             default:
@@ -444,11 +453,15 @@ class Notices
             }
             $html .= \sprintf('<p>%s</p>', \sprintf(
                 // translators:
-                \__('We have <a href="%s" target="_blank">explained typical misconfigurations and solutions</a> for this issue in a detailed article. If you do not know how to solve this problem, please contact the technical contact person for your website!', RCB_TD),
-                \__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/', RCB_TD)
+                \__('We have <a href="%s" target="_blank">explained typical misconfigurations and solutions</a> for this issue in a detailed article. If you do not know how to solve this problem, please contact the technical contact person for your website!', 'real-cookie-banner'),
+                \esc_url(\__('https://devowl.io/knowledge-base/cookie-banner-displayed-every-subpage/', 'real-cookie-banner'))
             ));
-            $dismissLink = \add_query_arg(self::NOTICE_CHECK_SAVING_CONSENT_VIA_REST_API_ENDPOINT_WORKING, '1', UtilsUtils::isRest() ? Core::getInstance()->getConfigPage()->getUrl() : $_SERVER['REQUEST_URI']);
-            $html .= '<p><a class="button button-primary" href="' . \esc_url($dismissLink) . '">' . \__('Check consent storage process again', RCB_TD) . '</a></p>';
+            $dismissBase = Core::getInstance()->getConfigPage()->getUrl();
+            if (!UtilsUtils::isRest()) {
+                $dismissBase = isset($_SERVER['REQUEST_URI']) ? \esc_url_raw(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
+            }
+            $dismissLink = \add_query_arg(self::NOTICE_CHECK_SAVING_CONSENT_VIA_REST_API_ENDPOINT_WORKING, '1', $dismissBase);
+            $html .= '<p><a class="button button-primary" href="' . \esc_url($dismissLink) . '">' . \esc_html(\__('Check consent storage process again', 'real-cookie-banner')) . '</a></p>';
             return $html;
         }
         return null;
@@ -464,26 +477,30 @@ class Notices
         $configPage = Core::getInstance()->getConfigPage();
         $compLanguage = Core::getInstance()->getCompLanguage();
         $configPageUrl = $configPage->getUrl();
-        $output = $context === 'notice' ? '<p>' . \__('Changes have been made to the templates you use in Real Cookie Banner. You should review the proposed changes and adjust your services and/or content blockers if necessary to be able to remain legally compliant. The following services are affected:', RCB_TD) . '</p><ul>' : '<ul>';
+        $output = $context === 'notice' ? '<p>' . \__('Changes have been made to the templates you use in Real Cookie Banner. You should review the proposed changes and adjust your services and/or content blockers if necessary to be able to remain legally compliant. The following services are affected:', 'real-cookie-banner') . '</p><ul>' : '<ul>';
         foreach ($needsUpdate as $update) {
             $postLanguage = $compLanguage->getPostLanguage($update->post_id);
             switch ($update->post_type) {
                 case Blocker::CPT_NAME:
-                    $typeLabel = \__('Content Blocker', RCB_TD);
+                    $typeLabel = \__('Content Blocker', 'real-cookie-banner');
                     $editLink = $configPageUrl . '#/blocker/edit/' . $update->post_id;
                     break;
                 case Cookie::CPT_NAME:
                     $groupIds = \wp_get_post_terms($update->post_id, CookieGroup::TAXONOMY_NAME, ['fields' => 'ids']);
-                    $typeLabel = \__('Service (Cookie)', RCB_TD);
+                    $typeLabel = \__('Service (Cookie)', 'real-cookie-banner');
                     $editLink = $configPageUrl . '#/cookies/' . $groupIds[0] . '/edit/' . $update->post_id;
                     break;
                 default:
                     break;
             }
-            $output .= \sprintf('<li><strong>%s</strong> (%s) &bull;%s <a href="%s">%s</a></li>', \esc_html($update->post_title), $typeLabel, !empty($postLanguage) ? \sprintf(' (%s) &bull;', $compLanguage->getTranslatedName($postLanguage)) : '', $editLink, \__('Review changes', RCB_TD));
+            $output .= \sprintf('<li><strong>%s</strong> (%s) &bull;%s <a href="%s">%s</a></li>', \esc_html($update->post_title), \esc_html($typeLabel), !empty($postLanguage) ? \sprintf(' (%s) &bull;', $compLanguage->getTranslatedName($postLanguage)) : '', \esc_url($editLink), \esc_html(\__('Review changes', 'real-cookie-banner')));
         }
-        $dismissLink = \add_query_arg(self::DISMISS_SERVICES_WITH_UPDATED_TEMPLATES_NOTICE_QUERY_ARG, '1', UtilsUtils::isRest() ? $configPageUrl : $_SERVER['REQUEST_URI']);
-        $output .= $context === 'notice' ? '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', RCB_TD) . '</a></p>' : '</ul>';
+        $dismissBase = $configPageUrl;
+        if (!UtilsUtils::isRest()) {
+            $dismissBase = isset($_SERVER['REQUEST_URI']) ? \esc_url_raw(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
+        }
+        $dismissLink = \add_query_arg(self::DISMISS_SERVICES_WITH_UPDATED_TEMPLATES_NOTICE_QUERY_ARG, '1', $dismissBase);
+        $output .= $context === 'notice' ? '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', 'real-cookie-banner') . '</a></p>' : '</ul>';
         return $output;
     }
     /**
@@ -495,22 +512,22 @@ class Notices
     {
         $configPage = Core::getInstance()->getConfigPage();
         $configPageUrl = $configPage->getUrl();
-        $output = '<p>' . \__('Templates in Real Cookie Banner have been replaced by new templates. You should check whether you want to replace the new service and/or content blocker with the new one in order to remain legally compliant. The following services are affected:', RCB_TD) . '</p><ul>';
+        $output = '<p>' . \__('Templates in Real Cookie Banner have been replaced by new templates. You should check whether you want to replace the new service and/or content blocker with the new one in order to remain legally compliant. The following services are affected:', 'real-cookie-banner') . '</p><ul>';
         foreach ($successors as $postType => $successor) {
             foreach ($successor as $successorIdentifier => $row) {
                 switch ($postType) {
                     case Blocker::CPT_NAME:
-                        $typeLabel = \__('Content Blocker', RCB_TD);
+                        $typeLabel = \__('Content Blocker', 'real-cookie-banner');
                         $replaceLink = $configPageUrl . '#/blocker/new?force=' . $successorIdentifier;
                         break;
                     case Cookie::CPT_NAME:
-                        $typeLabel = \__('Service (Cookie)', RCB_TD);
+                        $typeLabel = \__('Service (Cookie)', 'real-cookie-banner');
                         $replaceLink = $configPageUrl . '#/cookies/' . CookieGroup::getInstance()->getEssentialGroupId() . '/new?force=' . $successorIdentifier;
                         break;
                     default:
                         break;
                 }
-                $output .= \sprintf('<li>%s: <strong>%s</strong> replaces %s &bull; <a href="%s">%s</a></li>', $typeLabel, $row['name'], UtilsUtils::joinWithAndSeparator(\array_map(function ($replaces) use($postType, $configPageUrl) {
+                $output .= \sprintf('<li>%s: <strong>%s</strong> replaces %s &bull; <a href="%s">%s</a></li>', \esc_html($typeLabel), \esc_html($row['name']), UtilsUtils::joinWithAndSeparator(\array_map(function ($replaces) use($postType, $configPageUrl) {
                     $postId = $replaces[0];
                     $postTitle = $replaces[1];
                     switch ($postType) {
@@ -524,12 +541,16 @@ class Notices
                         default:
                             break;
                     }
-                    return \sprintf('<a href="%s" target="_blank">%s</a>', $editLink, $postTitle);
-                }, $row['replaces']), \__(' and ', RCB_TD)), $replaceLink, \__('Replace', RCB_TD));
+                    return \sprintf('<a href="%s" target="_blank">%s</a>', \esc_url($editLink), \esc_html($postTitle));
+                }, $row['replaces']), \__(' and ', 'real-cookie-banner')), \esc_url($replaceLink), \esc_html(\__('Replace', 'real-cookie-banner')));
             }
         }
-        $dismissLink = \add_query_arg(self::DISMISS_SERVICES_WITH_SUCCESSOR_TEMPLATES_NOTICE_QUERY_ARG, '1', UtilsUtils::isRest() ? $configPageUrl : $_SERVER['REQUEST_URI']);
-        $output .= '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', RCB_TD) . '</a></p>';
+        $dismissBase = $configPageUrl;
+        if (!UtilsUtils::isRest()) {
+            $dismissBase = isset($_SERVER['REQUEST_URI']) ? \esc_url_raw(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
+        }
+        $dismissLink = \add_query_arg(self::DISMISS_SERVICES_WITH_SUCCESSOR_TEMPLATES_NOTICE_QUERY_ARG, '1', $dismissBase);
+        $output .= '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', 'real-cookie-banner') . '</a></p>';
         return $output;
     }
     /**
@@ -541,37 +562,40 @@ class Notices
     public function servicesWithGoogleConsentModeAdjustmentsHtml($adjustments)
     {
         $configPage = Core::getInstance()->getConfigPage();
-        $configPageUrl = UtilsUtils::isRest() ? $configPage->getUrl() : $_SERVER['REQUEST_URI'];
+        $configPageUrl = $configPage->getUrl();
+        if (!UtilsUtils::isRest()) {
+            $configPageUrl = isset($_SERVER['REQUEST_URI']) ? \esc_url_raw(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
+        }
         $settingsPage = $configPageUrl . '#/settings/gcm';
-        $activateGcmUrl = \sprintf('<a href="%s">%s</a>', $settingsPage, \__('Activate Google Consent Mode', RCB_TD));
-        $learnMoreUrl = \sprintf('<a href="%s" target="_blank">%s</a>', \__('https://devowl.io/knowledge-base/real-cookie-banner-google-consent-mode-setup/', RCB_TD), \__('Learn more', RCB_TD));
+        $activateGcmUrl = \sprintf('<a href="%s">%s</a>', $settingsPage, \__('Activate Google Consent Mode', 'real-cookie-banner'));
+        $learnMoreUrl = \sprintf('<a href="%s" target="_blank">%s</a>', \__('https://devowl.io/knowledge-base/real-cookie-banner-google-consent-mode-setup/', 'real-cookie-banner'), \__('Learn more', 'real-cookie-banner'));
         $result = [];
         if (\count($adjustments['missingConsentTypes']) > 0) {
-            $output = '<p>' . \__('You are obtaining consent for Google services and have activated Google Consent Mode at the same time. However, you have not yet specified in the named services which consent types should be requested in accordance with Google Consent Mode. Please add these in the following services:', RCB_TD) . '</p><ul>';
+            $output = '<p>' . \__('You are obtaining consent for Google services and have activated Google Consent Mode at the same time. However, you have not yet specified in the named services which consent types should be requested in accordance with Google Consent Mode. Please add these in the following services:', 'real-cookie-banner') . '</p><ul>';
             foreach ($adjustments['missingConsentTypes'] as $row) {
                 $editLink = $configPageUrl . '#/cookies/' . $row['groupId'] . '/edit/' . $row['id'] . '?initiallyScrollToField=googleConsentModeConsentTypes';
-                $output .= \sprintf('<li><strong>%s</strong> &bull; <a href="%s">%s</a></li>', \esc_html($row['title']), $editLink, \__('Edit service', RCB_TD));
+                $output .= \sprintf('<li><strong>%s</strong> &bull; <a href="%s">%s</a></li>', \esc_html($row['title']), \esc_url($editLink), \esc_html(\__('Edit service', 'real-cookie-banner')));
             }
             $dismissLink = \add_query_arg(self::DISMISS_SERVICES_USING_GOOGLE_CONSENT_MODE_NO_CONSENT_TYPES, '1', $configPageUrl);
-            $output .= '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', RCB_TD) . '</a></p>';
+            $output .= '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', 'real-cookie-banner') . '</a></p>';
             $result['noConsentTypes'] = $output;
         }
         if (\count($adjustments['noLegitimateInterest']) > 0) {
-            $output = '<p>' . \__('You have activated Google Consent Mode and agreed to recommendations for the use of Google services without consent. At the same time, you only allow the following services to be loaded after obtaining consent. Please check whether you want to use the following services on your website based on a legitimate interest (even before Google receiving consent into consent types accordance with Google Consent Mode and therefore e.g. not setting advertising cookies):', RCB_TD) . '</p><ul>';
+            $output = '<p>' . \__('You have activated Google Consent Mode and agreed to recommendations for the use of Google services without consent. At the same time, you only allow the following services to be loaded after obtaining consent. Please check whether you want to use the following services on your website based on a legitimate interest (even before Google receiving consent into consent types accordance with Google Consent Mode and therefore e.g. not setting advertising cookies):', 'real-cookie-banner') . '</p><ul>';
             foreach ($adjustments['noLegitimateInterest'] as $row) {
                 $editLink = $configPageUrl . '#/cookies/' . $row['groupId'] . '/edit/' . $row['id'] . '?initiallyScrollToField=legalBasis';
-                $output .= \sprintf('<li><strong>%s</strong> &bull; <a href="%s">%s</a></li>', \esc_html($row['title']), $editLink, \__('Edit service', RCB_TD));
+                $output .= \sprintf('<li><strong>%s</strong> &bull; <a href="%s">%s</a></li>', \esc_html($row['title']), \esc_url($editLink), \esc_html(\__('Edit service', 'real-cookie-banner')));
             }
             $dismissLink = \add_query_arg(self::DISMISS_SERVICES_USING_GOOGLE_CONSENT_MODE_NO_LEGITIMATE_INTEREST, '1', $configPageUrl);
-            $output .= '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', RCB_TD) . '</a></p>';
+            $output .= '</ul><p><a href="' . \esc_url($dismissLink) . '">' . \__('Dismiss notice', 'real-cookie-banner') . '</a></p>';
             $result['noLegitimateInterest'] = $output;
         }
         if (isset($adjustments['requiresGoogleConsentModeGa'])) {
-            $output = \sprintf('<p>' . \__('You obtain consent for <strong>Google Analytics 4</strong> using Real Cookie Banner. In order to continue to create audiences in Google Analytics 4, you must have configured Google Consent Mode in your cookie banner as of March 2024.', RCB_TD) . '</p><p>%s</p>', \join(' &bull; ', [$activateGcmUrl, \sprintf('<a href="%s">%s</a>', \add_query_arg(self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE, 'requiresGoogleConsentModeGa', $configPageUrl), \__('I do not use "Audiences" in Google Analytics 4', RCB_TD)), $learnMoreUrl]));
+            $output = \sprintf('<p>' . \__('You obtain consent for <strong>Google Analytics 4</strong> using Real Cookie Banner. In order to continue to create audiences in Google Analytics 4, you must have configured Google Consent Mode in your cookie banner as of March 2024.', 'real-cookie-banner') . '</p><p>%s</p>', \join(' &bull; ', [$activateGcmUrl, \sprintf('<a href="%s">%s</a>', \add_query_arg(self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE, 'requiresGoogleConsentModeGa', $configPageUrl), \esc_html(\__('I do not use "Audiences" in Google Analytics 4', 'real-cookie-banner'))), $learnMoreUrl]));
             $result['requiresGoogleConsentModeGa'] = $output;
         }
         if (isset($adjustments['requiresGoogleConsentModeAdsConversionTracking'])) {
-            $output = \sprintf('<p>' . \__('You obtain consent for <strong>Google Ads Conversion Tracking and Remarketing</strong> using Real Cookie Banner. From March 2024, conversions will only be processed by Google Ads if consent is obtained using Google Consent Mode. This data is also required in order to be able to continue to run remarketing campaigns in Google Ads.', RCB_TD) . '</p><p>%s</p>', \join(' &bull; ', [$activateGcmUrl, \sprintf('<a href="%s">%s</a>', \add_query_arg(self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE, 'requiresGoogleConsentModeAdsConversionTracking', $configPageUrl), \__('Ignore', RCB_TD)), $learnMoreUrl]));
+            $output = \sprintf('<p>' . \__('You obtain consent for <strong>Google Ads Conversion Tracking and Remarketing</strong> using Real Cookie Banner. From March 2024, conversions will only be processed by Google Ads if consent is obtained using Google Consent Mode. This data is also required in order to be able to continue to run remarketing campaigns in Google Ads.', 'real-cookie-banner') . '</p><p>%s</p>', \join(' &bull; ', [$activateGcmUrl, \sprintf('<a href="%s">%s</a>', \add_query_arg(self::DISMISS_SERVICES_REQUIRING_GOOGLE_CONSENT_MODE_ACTIVE, 'requiresGoogleConsentModeAdsConversionTracking', $configPageUrl), \esc_html(\__('Ignore', 'real-cookie-banner'))), $learnMoreUrl]));
             $result['requiresGoogleConsentModeAdsConversionTracking'] = $output;
         }
         return $result;
@@ -670,6 +694,9 @@ class Notices
                 unset($checks['legalBasisConsentWithoutVisualContentBlocker'][$key]);
             }
         }
+        // Re-index to keep JSON arrays after unset (avoid object encoding with sparse keys).
+        $checks['legalBasisLegitimateInterest'] = \array_values($checks['legalBasisLegitimateInterest']);
+        $checks['legalBasisConsentWithoutVisualContentBlocker'] = \array_values($checks['legalBasisConsentWithoutVisualContentBlocker']);
         return $checks;
     }
     /**
@@ -701,6 +728,7 @@ class Notices
         }
         $html = $this->serviceWithEmptyPrivacyPolicyNoticeHtml();
         if (\is_string($html)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- html is escaped in serviceWithEmptyPrivacyPolicyNoticeHtml.
             echo \sprintf('<div class="notice notice-warning">%s</div>', $html);
         }
     }
@@ -732,6 +760,7 @@ class Notices
         }
         $html = $this->scannerExplicitExternalUrlCoverageNoticeHtml();
         if (\is_string($html)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- html is escaped in scannerExplicitExternalUrlCoverageNoticeHtml.
             echo \sprintf('<div class="notice notice-warning">%s</div>', $html);
         }
     }
@@ -745,6 +774,7 @@ class Notices
         }
         $html = $this->checkSavingConsentViaRestApiEndpointWorkingHtml();
         if (\is_string($html) && !empty($html)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- html is escaped in checkSavingConsentViaRestApiEndpointWorkingHtml.
             echo \sprintf('<div class="notice notice-error">%s</div>', $html);
         }
     }
@@ -786,8 +816,8 @@ class Notices
             $this->getStates()->set(self::NOTICE_SERVICES_WITH_EMPTY_PRIVACY_POLICY, $noticeState);
         }
         if (\count($noticeState) > 0) {
-            return \sprintf('<p>%s</p><ul>%s</ul>', \__('There are no privacy policies with further information linked for the following services in your cookie banner. We now consider these to be mandatory in order to comply with the information obligations under the GDPR. Please provide a privacy policy for each service!', RCB_TD), \join('', \array_map(function ($row) use($url) {
-                return \sprintf('<li data-id="%d">%s &bull; <a href="%s">%s</a></li>', $row['id'], $row['title'], \esc_attr($url . '#/cookies/' . $row['groupId'] . '/edit/' . $row['id']), \__('Set privacy policy URL', RCB_TD));
+            return \sprintf('<p>%s</p><ul>%s</ul>', \__('There are no privacy policies with further information linked for the following services in your cookie banner. We now consider these to be mandatory in order to comply with the information obligations under the GDPR. Please provide a privacy policy for each service!', 'real-cookie-banner'), \join('', \array_map(function ($row) use($url) {
+                return \sprintf('<li data-id="%d">%s &bull; <a href="%s">%s</a></li>', \esc_attr($row['id']), \esc_html($row['title']), \esc_url($url . '#/cookies/' . $row['groupId'] . '/edit/' . $row['id']), \esc_html(\__('Set privacy policy URL', 'real-cookie-banner')));
             }, $noticeState)));
         }
         return null;
@@ -853,38 +883,42 @@ class Notices
             $templates = \wp_list_pluck($existing[$host], 'headline');
             return \count($templates) > 0 ? null : $host;
         }, \array_keys($existing)))));
-        $resultScannedJoined = UtilsUtils::joinWithAndSeparator($resultScanned, \__(' and ', RCB_TD));
-        $resultManualTriggerJoined = UtilsUtils::joinWithAndSeparator($resultManualTrigger, \__(' and ', RCB_TD));
+        $resultScannedJoined = UtilsUtils::joinWithAndSeparator($resultScanned, \__(' and ', 'real-cookie-banner'));
+        $resultManualTriggerJoined = UtilsUtils::joinWithAndSeparator($resultManualTrigger, \__(' and ', 'real-cookie-banner'));
         $configPageUrl = Core::getInstance()->getConfigPage()->getUrl();
         $startScannerLink = \add_query_arg(self::DISMISS_SCANNER_EXPLICIT_EXTERNAL_URL_COVERAGE_NOTICE_START_SCAN_QUERY_ARG, '1', $configPageUrl . '#/scanner');
-        $dismissLink = \add_query_arg(self::DISMISS_SCANNER_EXPLICIT_EXTERNAL_URL_COVERAGE_NOTICE_QUERY_ARG, '1', UtilsUtils::isRest() ? $configPageUrl : $_SERVER['REQUEST_URI']);
+        $dismissBase = $configPageUrl;
+        if (!UtilsUtils::isRest()) {
+            $dismissBase = isset($_SERVER['REQUEST_URI']) ? \esc_url_raw(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
+        }
+        $dismissLink = \add_query_arg(self::DISMISS_SCANNER_EXPLICIT_EXTERNAL_URL_COVERAGE_NOTICE_QUERY_ARG, '1', $dismissBase);
         switch (\true) {
             case \count($resultManualTrigger) > 0 && \count($resultScanned) > 0:
                 $text = \sprintf(
                     // translators:
-                    \__('Real Cookie Banner offers new service templates for <strong>%1$s</strong> and for handling external URLs <strong>%2$s</strong>, which may be of interest to you.', RCB_TD),
-                    $resultScannedJoined,
-                    $resultManualTriggerJoined
+                    \__('Real Cookie Banner offers new service templates for <strong>%1$s</strong> and for handling external URLs <strong>%2$s</strong>, which may be of interest to you.', 'real-cookie-banner'),
+                    \esc_html($resultScannedJoined),
+                    \esc_html($resultManualTriggerJoined)
                 );
                 break;
             case \count($resultScanned) > 0:
                 $text = \sprintf(
                     // translators:
-                    \__('Real Cookie Banner offers new service templates for <strong>%s</strong> that may be of interest to you.', RCB_TD),
-                    $resultScannedJoined
+                    \__('Real Cookie Banner offers new service templates for <strong>%s</strong> that may be of interest to you.', 'real-cookie-banner'),
+                    \esc_html($resultScannedJoined)
                 );
                 break;
             case \count($resultManualTrigger) > 0:
                 $text = \sprintf(
                     // translators:
-                    \__('Real Cookie Banner offers new service templates for handling external URLs <strong>%s</strong>, which may be of interest to you.', RCB_TD),
-                    $resultManualTriggerJoined
+                    \__('Real Cookie Banner offers new service templates for handling external URLs <strong>%s</strong>, which may be of interest to you.', 'real-cookie-banner'),
+                    \esc_html($resultManualTriggerJoined)
                 );
                 break;
             default:
                 $text = '';
         }
-        return \sprintf('<p>%s</p><p>%s</p>', \join(' ', [$text, \count($resultManualTrigger) > 0 ? \sprintf(\__('Start the scanner to check if the service template can be used for your case and will be suggested in the scanner!', RCB_TD)) : '']), \join('&nbsp;&bull;&nbsp;', \array_filter([\count($resultManualTrigger) > 0 ? \sprintf('<a href="%s">%s</a>', \esc_url($startScannerLink), \__('Start scanner', RCB_TD)) : '', \sprintf('<a href="%s">%s</a>', \esc_url($configPageUrl . '#/scanner'), \__('Open scanner', RCB_TD)), \sprintf('<a href="%s">%s</a>', \esc_url($dismissLink), \__('Dismiss notice', RCB_TD))])));
+        return \sprintf('<p>%s</p><p>%s</p>', \join(' ', [$text, \count($resultManualTrigger) > 0 ? \sprintf(\__('Start the scanner to check if the service template can be used for your case and will be suggested in the scanner!', 'real-cookie-banner')) : '']), \join('&nbsp;&bull;&nbsp;', \array_filter([\count($resultManualTrigger) > 0 ? \sprintf('<a href="%s">%s</a>', \esc_url($startScannerLink), \__('Start scanner', 'real-cookie-banner')) : '', \sprintf('<a href="%s">%s</a>', \esc_url($configPageUrl . '#/scanner'), \__('Open scanner', 'real-cookie-banner')), \sprintf('<a href="%s">%s</a>', \esc_url($dismissLink), \__('Dismiss notice', 'real-cookie-banner'))])));
     }
     /**
      * Checks if the notice about services which are processing data in unsafe countries should be shown,
@@ -900,7 +934,7 @@ class Notices
             foreach (Core::getInstance()->getCookieConsentManagement()->getSettings()->getConsent()->calculateServicesWithDataProcessingInUnsafeCountries() as $candidate) {
                 $servicesHtml[] = \sprintf(
                     // translators:s
-                    \__('<strong>%1$s</strong> is processing data to %2$s', RCB_TD),
+                    \__('<strong>%1$s</strong> is processing data to %2$s', 'real-cookie-banner'),
                     \esc_html($candidate['name']),
                     \join(', ', \array_map(function ($country) use($iso3166OneAlpha2) {
                         return $iso3166OneAlpha2[$country] ?? $country;
@@ -908,7 +942,7 @@ class Notices
                 );
             }
             if (\count($servicesHtml) > 0) {
-                return \sprintf('<p>%s</p><ul><li>%s</li></ul>', \__('Some services perform data processing in unsafe third countries within the meaning of data protection regulations.  In the service configurations, you have stated that no security mechanisms are in place for this data processing. You should obtain special consent for this or only use services with data processing in secure countries or with appropriate security mechanisms.', RCB_TD), \join('</li><li>', $servicesHtml));
+                return \sprintf('<p>%s</p><ul><li>%s</li></ul>', \__('Some services perform data processing in unsafe third countries within the meaning of data protection regulations.  In the service configurations, you have stated that no security mechanisms are in place for this data processing. You should obtain special consent for this or only use services with data processing in secure countries or with appropriate security mechanisms.', 'real-cookie-banner'), \join('</li><li>', $servicesHtml));
             }
         }
         return null;
@@ -923,7 +957,7 @@ class Notices
         if ($state) {
             $posts = \get_posts(Core::getInstance()->queryArguments(['post_type' => [Cookie::CPT_NAME, Blocker::CPT_NAME], 'fields' => 'ids', 'numberposts' => -1, 'nopaging' => \true, 'meta_query' => [['key' => Blocker::META_NAME_PRESET_ID, 'compare' => 'IN', 'value' => ['google-adsense']]], 'post_status' => ['publish', 'private', 'draft']], 'admin_notice_service_using_template_which_got_deleted'));
             if (\count($posts) > 0) {
-                echo \sprintf('<div class="notice notice-warning" style="position:relative"><p>%s</p><p>%s</p><p><a target="_blank" href="%s">%s</a></p>%s</div>', \__('<strong>[ACTION REQUIRED]</strong> As of January 16, 2024, Google AdSense will only display advertising on your website if you obtain consent in accordance with the TCF standard. You must act now to continue earning advertising revenue!', RCB_TD), \__('You are currently obtaining non-standard compliant consent for Google Adsense via Real Cookie Banner. Please delete the Google AdSense service and Google AdSense content blocker in the Real Cookie Banner settings and then configure the TCF integration.', RCB_TD), \__('https://devowl.io/knowledge-base/google-adsense-tcf-consent-wordpress/', RCB_TD), \__('Read instructions for Google AdSense configuration with TCF consents', RCB_TD), \sprintf('<button type="button" class="notice-dismiss" onClick="%s"></button>', \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_USING_TEMPLATES_WHICH_GOT_DELETED, 'false'))));
+                echo \sprintf('<div class="notice notice-warning" style="position:relative"><p>%s</p><p>%s</p><p><a target="_blank" href="%s">%s</a></p>%s</div>', \wp_kses_post(\__('<strong>[ACTION REQUIRED]</strong> As of January 16, 2024, Google AdSense will only display advertising on your website if you obtain consent in accordance with the TCF standard. You must act now to continue earning advertising revenue!', 'real-cookie-banner')), \wp_kses_post(\__('You are currently obtaining non-standard compliant consent for Google Adsense via Real Cookie Banner. Please delete the Google AdSense service and Google AdSense content blocker in the Real Cookie Banner settings and then configure the TCF integration.', 'real-cookie-banner')), \esc_url(\__('https://devowl.io/knowledge-base/google-adsense-tcf-consent-wordpress/', 'real-cookie-banner')), \esc_html__('Read instructions for Google AdSense configuration with TCF consents', 'real-cookie-banner'), \sprintf('<button type="button" class="notice-dismiss" onClick="%s"></button>', \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_USING_TEMPLATES_WHICH_GOT_DELETED, 'false'))));
             } else {
                 $this->getStates()->set(self::NOTICE_USING_TEMPLATES_WHICH_GOT_DELETED, \false);
             }
@@ -948,7 +982,7 @@ class Notices
     public function admin_notice_scanner_rerun_after_plugin_toggle()
     {
         if ($this->getStates()->get(self::NOTICE_SCANNER_RERUN_AFTER_PLUGIN_TOGGLE, \false) && \current_user_can(Core::MANAGE_MIN_CAPABILITY)) {
-            echo \sprintf('<div class="notice notice-warning" style="position:relative"><p>%s &bull; <a onClick="%s" href="#">%s</a></p>%s</div>', \__('You have enabled or disabled plugins on your website, which may require your cookie banner to be adjusted. Please scan your website again as soon as you have finished the changes!', RCB_TD), \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_SCANNER_RERUN_AFTER_PLUGIN_TOGGLE, 'false', Core::getInstance()->getConfigPage()->getUrl() . '#/scanner?start=1')), \__('Scan website again', RCB_TD), \sprintf('<button type="button" class="notice-dismiss" onClick="%s"></button>', \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_SCANNER_RERUN_AFTER_PLUGIN_TOGGLE, 'false'))));
+            echo \sprintf('<div class="notice notice-warning" style="position:relative"><p>%s &bull; <a onClick="%s" href="#">%s</a></p>%s</div>', \esc_html__('You have enabled or disabled plugins on your website, which may require your cookie banner to be adjusted. Please scan your website again as soon as you have finished the changes!', 'real-cookie-banner'), \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_SCANNER_RERUN_AFTER_PLUGIN_TOGGLE, 'false', Core::getInstance()->getConfigPage()->getUrl() . '#/scanner?start=1')), \esc_html__('Scan website again', 'real-cookie-banner'), \sprintf('<button type="button" class="notice-dismiss" onClick="%s"></button>', \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_SCANNER_RERUN_AFTER_PLUGIN_TOGGLE, 'false'))));
         }
     }
     /**
@@ -957,7 +991,7 @@ class Notices
     public function admin_notice_tcf_too_much_vendors()
     {
         if ($this->isPro() && TCF::getInstance()->isActive() && $this->getStates()->get(self::NOTICE_TCF_TOO_MUCH_VENDORS, \false) && TcfVendorConfiguration::getInstance()->getAllCount() > self::TCF_TOO_MUCH_VENDORS) {
-            echo \sprintf('<div class="notice notice-warning" style="position:relative"><p>%s &bull; <a href="%s">%s</a></p>%s</div>', \__('Are you really embedding ads and content from all created TCF vendors on your website? <strong>Asking for consent from vendors you don\'t use could be an abuse of rights and could make the entire consent ineffective.</strong> You make it difficult for your website visitors to make an informed choice by using too many vendors. We therefore recommend you to create only TCF vendors that you actually use!', RCB_TD), Core::getInstance()->getConfigPage()->getUrl() . '#/cookies/tcf-vendors', \__('Configure TCF vendors', RCB_TD), \sprintf('<button type="button" class="notice-dismiss" onClick="%s"></button>', \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_TCF_TOO_MUCH_VENDORS, 'false'))));
+            echo \sprintf('<div class="notice notice-warning" style="position:relative"><p>%s &bull; <a href="%s">%s</a></p>%s</div>', \wp_kses_post(\__('Are you really embedding ads and content from all created TCF vendors on your website? <strong>Asking for consent from vendors you don\'t use could be an abuse of rights and could make the entire consent ineffective.</strong> You make it difficult for your website visitors to make an informed choice by using too many vendors. We therefore recommend you to create only TCF vendors that you actually use!', 'real-cookie-banner')), \esc_url(Core::getInstance()->getConfigPage()->getUrl() . '#/cookies/tcf-vendors'), \esc_html__('Configure TCF vendors', 'real-cookie-banner'), \sprintf('<button type="button" class="notice-dismiss" onClick="%s"></button>', \esc_js($this->getStates()->noticeDismissOnClickHandler(self::NOTICE_TCF_TOO_MUCH_VENDORS, 'false'))));
         }
     }
     /**

@@ -91,16 +91,16 @@ trait ImportSettings
             case General::SETTING_HIDE_PAGE_IDS:
             case Consent::SETTING_BANNER_LESS_SHOW_ON_PAGE_IDS:
                 if ($value > 0 || !empty($value)) {
-                    $label = \__('Hide on additional pages', RCB_TD);
+                    $label = \__('Hide on additional pages', 'real-cookie-banner');
                     switch ($optionName) {
                         case General::SETTING_OPERATOR_CONTACT_FORM_ID:
-                            $label = \__('Contact form', RCB_TD);
+                            $label = \__('Contact form', 'real-cookie-banner');
                             break;
                         case General::SETTING_COOKIE_POLICY_ID:
-                            $label = \__('Cookie policy', RCB_TD);
+                            $label = \__('Cookie policy', 'real-cookie-banner');
                             break;
                         case Consent::SETTING_BANNER_LESS_SHOW_ON_PAGE_IDS:
-                            $label = \__('Show cookie banner on specific pages', RCB_TD);
+                            $label = \__('Show cookie banner on specific pages', 'real-cookie-banner');
                             break;
                         default:
                             break;
@@ -130,7 +130,7 @@ trait ImportSettings
             case Multisite::SETTING_CROSS_DOMAINS:
                 if (!empty($value)) {
                     if ($this->isPro()) {
-                        $this->addMessageOptionMultisite($optionName === Multisite::SETTING_FORWARD_TO ? \__('Forward to', RCB_TD) : \__('External \'Forward To\' endpoints', RCB_TD), $key);
+                        $this->addMessageOptionMultisite($optionName === Multisite::SETTING_FORWARD_TO ? \__('Forward to', 'real-cookie-banner') : \__('External \'Forward To\' endpoints', 'real-cookie-banner'), $key);
                     } else {
                         $onlyPro = \true;
                     }
@@ -141,9 +141,9 @@ trait ImportSettings
                 if ($value === \true) {
                     $this->addMessage(\sprintf(
                         // translators:
-                        \__('Setting/Option <code>%1$s</code> (%2$s) cannot be imported because it needs explicit opt-in. Skipped.', RCB_TD),
+                        \__('Setting/Option <code>%1$s</code> (%2$s) cannot be imported because it needs explicit opt-in. Skipped.', 'real-cookie-banner'),
                         $key,
-                        \__('enabling TCF-compatibility', RCB_TD)
+                        \__('enabling TCF-compatibility', 'real-cookie-banner')
                     ), 'warning', 'settings', ['settingsTab' => 'tcf']);
                     break;
                 }
@@ -152,9 +152,9 @@ trait ImportSettings
                 if ($value === \true) {
                     $this->addMessage(\sprintf(
                         // translators:
-                        \__('Setting/Option <code>%1$s</code> (%2$s) cannot be imported because it needs explicit opt-in. Skipped.', RCB_TD),
+                        \__('Setting/Option <code>%1$s</code> (%2$s) cannot be imported because it needs explicit opt-in. Skipped.', 'real-cookie-banner'),
                         $key,
-                        \__('enabling geo-restriction', RCB_TD)
+                        \__('enabling geo-restriction', 'real-cookie-banner')
                     ), 'warning', 'settings', ['settingsTab' => 'country-bypass']);
                     break;
                 }

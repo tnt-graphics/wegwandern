@@ -129,7 +129,7 @@ abstract class AbstractDashboardTileMigration
         if (\is_callable($args['callback'])) {
             \add_filter('RCB/Migration/' . $this->getId() . '/' . $id, function ($result) use($args, $id) {
                 if ($args['needsPro'] && !$this->isPro()) {
-                    return new WP_Error('rcb_migration_only_pro', \__('Migration is only available in PRO version!', RCB_TD));
+                    return new WP_Error('rcb_migration_only_pro', \__('Migration is only available in PRO version!', 'real-cookie-banner'));
                 }
                 $result = $args['callback']($result);
                 // Save that this action was performed by this user

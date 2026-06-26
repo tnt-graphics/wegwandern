@@ -17,9 +17,10 @@ if ( !class_exists('Puc_v4p13_Plugin_Update', false) ):
 		public $requires_php = false;
 		public $icons = array();
 		public $filename; //Plugin filename relative to the plugins directory.
+		public $autoupdate = false;
 
 		protected static $extraFields = array(
-			'id', 'homepage', 'tested', 'requires_php', 'upgrade_notice', 'icons', 'filename',
+			'id', 'homepage', 'tested', 'requires_php', 'upgrade_notice', 'icons', 'filename', 'autoupdate',
 		);
 
 		/**
@@ -83,6 +84,7 @@ if ( !class_exists('Puc_v4p13_Plugin_Update', false) ):
 			$update->tested = $this->tested;
 			$update->requires_php = $this->requires_php;
 			$update->plugin = $this->filename;
+			$update->autoupdate = $this->autoupdate;
 
 			if ( !empty($this->upgrade_notice) ) {
 				$update->upgrade_notice = $this->upgrade_notice;

@@ -51,16 +51,16 @@ class Hooks
         $compLanguage = $this->compInstance();
         if ($compLanguage->isActive()) {
             if ($compLanguage instanceof AbstractSyncPlugin) {
-                $hints['deleteCookieGroup'][] = \__('If you delete a service group, it will not be deleted in other languages.', RCB_TD);
-                $hints['deleteCookie'][] = \__('If you delete a service, it will not be deleted in other languages.', RCB_TD);
+                $hints['deleteCookieGroup'][] = \__('If you delete a service group, it will not be deleted in other languages.', 'real-cookie-banner');
+                $hints['deleteCookie'][] = \__('If you delete a service, it will not be deleted in other languages.', 'real-cookie-banner');
             }
-            $hints['export'][] = \__('The export contains only data from the current language.', RCB_TD);
+            $hints['export'][] = \__('The export contains only data from the current language.', 'real-cookie-banner');
         }
         $activeMinimalTranslations = $this->getActiveMinimalTranslations();
         if (\count($activeMinimalTranslations) > 0) {
-            $hints['dashboardTile'][] = ['title' => 'ℹ ' . \__('Incomplete translation', RCB_TD), 'description' => \sprintf(
+            $hints['dashboardTile'][] = ['title' => 'ℹ ' . \__('Incomplete translation', 'real-cookie-banner'), 'description' => \sprintf(
                 // translators:
-                \__('Real Cookie Banner is not yet fully available in your configured language (<strong>%s</strong>). However, you can translate all the untranslated texts displayed to your visitors in the cookie banner by yourself in the Real Cookie Banner settings.', RCB_TD),
+                \__('Real Cookie Banner is not yet fully available in your configured language (<strong>%s</strong>). However, you can translate all the untranslated texts displayed to your visitors in the cookie banner by yourself in the Real Cookie Banner settings.', 'real-cookie-banner'),
                 \join(', ', \array_values($activeMinimalTranslations))
             )];
         }
@@ -126,7 +126,7 @@ class Hooks
      */
     public function createTemporaryTextDomain($locale = null)
     {
-        $this->temporaryTextDomain = TemporaryTextDomain::fromPluginReceiver(self::TD_FORCED, RCB_TD, Core::getInstance(), $locale === null ? $this->compInstance() : $locale, Localization::class);
+        $this->temporaryTextDomain = TemporaryTextDomain::fromPluginReceiver(self::TD_FORCED, 'real-cookie-banner', Core::getInstance(), $locale === null ? $this->compInstance() : $locale, Localization::class);
         return $this->temporaryTextDomain;
     }
     /**
@@ -151,7 +151,7 @@ class Hooks
         return $this->compInstance()->isActive() ? \preg_replace_callback('/lang:([A-Za-z_]+)/m', function ($m) {
             $languageCode = $m[1];
             $translatedName = $this->compInstance()->getTranslatedName($languageCode);
-            return \__('Language', RCB_TD) . ': ' . (empty($translatedName) ? $languageCode : $translatedName);
+            return \__('Language', 'real-cookie-banner') . ': ' . (empty($translatedName) ? $languageCode : $translatedName);
         }, $context, 1) : $context;
     }
     /**

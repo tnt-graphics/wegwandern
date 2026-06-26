@@ -40,7 +40,7 @@ class ConfigPage
         if ($this->isVisible() || !Utils::isPreinstalledEnvironment() || $hasInteractedWithFormOnce) {
             return;
         }
-        echo \sprintf('<div class="notice notice-warning"><p>%s &bull; <a href="%s">%s</a></p></div>', \__('A cookie banner for your website is installed. With it, you can integrate e.g. <strong>Google Analytics, Google Maps or YouTube videos</strong> legally compliant. You just have to configure it!', RCB_TD), $this->getUrl(), \__('Start now!', RCB_TD));
+        echo \sprintf('<div class="notice notice-warning"><p>%s &bull; <a href="%s">%s</a></p></div>', \wp_kses_post(\__('A cookie banner for your website is installed. With it, you can integrate e.g. <strong>Google Analytics, Google Maps or YouTube videos</strong> legally compliant. You just have to configure it!', 'real-cookie-banner')), \esc_url($this->getUrl()), \esc_html__('Start now!', 'real-cookie-banner'));
     }
     /**
      * Creates an admin notice in the settings page if an ad-blocker got detected.
@@ -50,15 +50,10 @@ class ConfigPage
         if (!$this->isVisible()) {
             return;
         }
-        echo \sprintf('<div id="rcb-ad-block-checker-notice" class="notice notice-warning hidden"><p>%s</p></div>
-<script type="text/javascript" src="%s"></script>
-<script>(function(notice) {
-    document.addEventListener("DOMContentLoaded", function() {
-        if (!document.getElementById("ZSCFlsPIDL95U1QFvkFvGKQu3R9YAh0")) {
-            notice.classList.remove("hidden");
-        }
-    });
-})(document.getElementById("rcb-ad-block-checker-notice"))</script>', \__('<strong>Adblocker detected</strong>: You may use an adblocker in your browser. This can block parts of the settings of the Real Cookie Banner and thus lead to errors. <strong>Please deactivate your adblocker for your own website!</strong>', RCB_TD), \plugins_url('public/images/detect-adblock/doubleserve.js', RCB_FILE));
+        \printf('<div id="rcb-ad-block-checker-notice" class="notice notice-warning hidden"><p>%s</p></div>', \wp_kses_post(\__('<strong>Adblocker detected</strong>: You may use an adblocker in your browser. This can block parts of the settings of the Real Cookie Banner and thus lead to errors. <strong>Please deactivate your adblocker for your own website!</strong>', 'real-cookie-banner')));
+        \printf('<script type="text/javascript" src="%s"></script>', \esc_url(\plugins_url('public/images/detect-adblock/doubleserve.js', RCB_FILE)));
+        $adBlockProbeInline = '(function(notice){document.addEventListener("DOMContentLoaded",function(){if(!document.getElementById("ZSCFlsPIDL95U1QFvkFvGKQu3R9YAh0")){notice.classList.remove("hidden");}});})(document.getElementById("rcb-ad-block-checker-notice"));';
+        \wp_print_inline_script_tag($adBlockProbeInline);
     }
     /**
      * Add new menu page.
@@ -76,7 +71,7 @@ class ConfigPage
          */
         $checklistOverdue = \apply_filters('RCB/Menu/ConfigPage/Attention', $checklistOverdue);
         $pluginName = $this->getCore()->getPluginData()['Name'];
-        \add_menu_page($pluginName, \__('Cookies', RCB_TD) . '&nbsp;' . ($checklistOverdue ? ' <span class="awaiting-mod" id="rcb-checklist-overdue" style="margin-right: 5px;">!</span>' : '') . '<span class="awaiting-mod" id="rcb-scanner-status" style="display:none;"></span>', Core::MANAGE_MIN_CAPABILITY, self::COMPONENT_ID, [$this, 'render_component_library'], self::getIconAsSvgBase64($this->isVisible() ? '#FFFFFF' : '#858585'));
+        \add_menu_page($pluginName, \__('Cookies', 'real-cookie-banner') . '&nbsp;' . ($checklistOverdue ? ' <span class="awaiting-mod" id="rcb-checklist-overdue" style="margin-right: 5px;">!</span>' : '') . '<span class="awaiting-mod" id="rcb-scanner-status" style="display:none;"></span>', Core::MANAGE_MIN_CAPABILITY, self::COMPONENT_ID, [$this, 'render_component_library'], self::getIconAsSvgBase64($this->isVisible() ? '#FFFFFF' : '#858585'));
     }
     /**
      * Show a "Settings" link in plugins list.
@@ -86,7 +81,7 @@ class ConfigPage
      */
     public function plugin_action_links($actions)
     {
-        $actions[] = \sprintf('<a href="%s">%s</a>', $this->getUrl(), \__('Settings'));
+        $actions[] = \sprintf('<a href="%s">%s</a>', \esc_url($this->getUrl()), \esc_html__('Settings', 'real-cookie-banner'));
         return $actions;
     }
     /**
@@ -94,7 +89,7 @@ class ConfigPage
      */
     public function render_component_library()
     {
-        echo '<div id="' . self::COMPONENT_ID . '" class="wrap"></div>';
+        echo '<div id="' . \esc_attr(self::COMPONENT_ID) . '" class="wrap"></div>';
     }
     /**
      * Check if a given page string is this config page or from the current page `pagenow`.
@@ -127,15 +122,15 @@ class ConfigPage
         if (!$wp_admin_bar->get_node(self::ADMIN_BAR_TOP_LEVEL_NODE_ID)) {
             $iconDefault = self::getIconAsSvgSpan();
             $iconWhite = self::getIconAsSvgSpan('white', 'display:none;');
-            $wp_admin_bar->add_menu(['id' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'title' => $iconDefault . $iconWhite . \__('Cookies', RCB_TD), 'href' => $this->getUrl()]);
+            $wp_admin_bar->add_menu(['id' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'title' => $iconDefault . $iconWhite . \__('Cookies', 'real-cookie-banner'), 'href' => $this->getUrl()]);
             // Add a "Settings" node to the end of the menu
             \add_action('wp_before_admin_bar_render', function () use($wp_admin_bar) {
-                $wp_admin_bar->add_menu(['parent' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'id' => 'rcb-settings', 'title' => \__('Settings', RCB_TD), 'href' => $this->getUrl()]);
-                $enabledLabel = \sprintf('<span style="color:#3cb63c;">&#11044;</span> %s', \__('Enabled', RCB_TD));
-                $disabledLabel = \sprintf('<span style="color:#b63c3c;">&#11044;</span> %s', \__('Disabled', RCB_TD));
+                $wp_admin_bar->add_menu(['parent' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'id' => 'rcb-settings', 'title' => \__('Settings', 'real-cookie-banner'), 'href' => $this->getUrl()]);
+                $enabledLabel = \sprintf('<span style="color:#3cb63c;">&#11044;</span> %s', \__('Enabled', 'real-cookie-banner'));
+                $disabledLabel = \sprintf('<span style="color:#b63c3c;">&#11044;</span> %s', \__('Disabled', 'real-cookie-banner'));
                 $isBannerActive = General::getInstance()->isBannerActive();
-                $wp_admin_bar->add_menu(['parent' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'id' => 'rcb-cookie-banner-active', 'title' => \sprintf('%s: %s', \__('Cookie Banner', RCB_TD), $isBannerActive ? $enabledLabel : $disabledLabel)]);
-                $wp_admin_bar->add_menu(['parent' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'id' => 'rcb-content-blocker-active', 'title' => \sprintf('%s: %s', \__('Content Blocker', RCB_TD), $isBannerActive && General::getInstance()->isBlockerActive() ? $enabledLabel : $disabledLabel)]);
+                $wp_admin_bar->add_menu(['parent' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'id' => 'rcb-cookie-banner-active', 'title' => \sprintf('%s: %s', \__('Cookie Banner', 'real-cookie-banner'), $isBannerActive ? $enabledLabel : $disabledLabel)]);
+                $wp_admin_bar->add_menu(['parent' => self::ADMIN_BAR_TOP_LEVEL_NODE_ID, 'id' => 'rcb-content-blocker-active', 'title' => \sprintf('%s: %s', \__('Content Blocker', 'real-cookie-banner'), $isBannerActive && General::getInstance()->isBlockerActive() ? $enabledLabel : $disabledLabel)]);
             }, 9);
         }
         return self::ADMIN_BAR_TOP_LEVEL_NODE_ID;

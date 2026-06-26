@@ -20,10 +20,15 @@ class ScriptInlineMatch extends TagWithContentMatch
     const SKIP_VARIABLES_IF_REGEXP_END = '/};?$/';
     /**
      * Check if the script is javascript.
+     *
+     * Keep this synchronized with `headless-content-unblocker/src/dom/putHtmlCodeToDom.tsx#isJavaScript`.
      */
     public function isJavascript()
     {
         $type = $this->getAttribute('type');
+        if (\in_array($type, ['module'], \true)) {
+            return \true;
+        }
         return empty($type) ? \true : \strpos($type, 'javascript') !== \false;
     }
     /**

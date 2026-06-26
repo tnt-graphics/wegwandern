@@ -1167,7 +1167,7 @@ body .frm_forms.with_frm_style .frm_fields_container .frm_checkbox input[type=ch
     line-height: 30px;
     background: #D9000D;
     font-family: 'Roboto Regular';
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     border-radius: 35px;
     cursor: pointer;
     display: inline-flex;

@@ -26,12 +26,12 @@ class ViewStats extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklis
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Check out statistics about consents', RCB_TD);
+        return \__('Check out statistics about consents', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('All consents are documented, so that you can prove in doubt who, when and how a consent was given. Statistics about this will help you to e. g. extrapolate Google Analytics data. You can use them to estimate how many visitors have visited your website, even if not all of them have consented to use statistics services.', RCB_TD);
+        return \__('All consents are documented, so that you can prove in doubt who, when and how a consent was given. Statistics about this will help you to e. g. extrapolate Google Analytics data. You can use them to estimate how many visitors have visited your website, even if not all of them have consented to use statistics services.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -46,6 +46,6 @@ class ViewStats extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklis
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('View stats', RCB_TD);
+        return \__('View stats', 'real-cookie-banner');
     }
 }

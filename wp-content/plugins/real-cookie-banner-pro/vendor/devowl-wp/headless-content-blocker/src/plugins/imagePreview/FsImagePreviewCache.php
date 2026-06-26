@@ -27,6 +27,7 @@ abstract class FsImagePreviewCache extends ImagePreviewCache
     public function __construct($absolutePath, $prefixUrl, $invalidateSeconds = 0)
     {
         if (!\is_writable($absolutePath)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is internal and not rendered output.
             throw new Exception(\sprintf('%s is not writable or does not exist!', $absolutePath));
         }
         $this->absolutePath = $absolutePath;

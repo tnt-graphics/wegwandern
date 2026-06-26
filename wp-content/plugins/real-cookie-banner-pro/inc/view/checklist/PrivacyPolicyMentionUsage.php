@@ -30,12 +30,12 @@ class PrivacyPolicyMentionUsage extends \DevOwl\RealCookieBanner\view\checklist\
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Explain data processing of cookie banner in privacy policy', RCB_TD);
+        return \__('Explain data processing of cookie banner in privacy policy', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('You must explain to your website visitors in your privacy policy which data Real Cookie Banner processes and stores to obtain consent. We provide you with text suggestion that you can copy and paste into your privacy policy.', RCB_TD);
+        return \__('You must explain to your website visitors in your privacy policy which data Real Cookie Banner processes and stores to obtain consent. We provide you with text suggestion that you can copy and paste into your privacy policy.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -45,7 +45,7 @@ class PrivacyPolicyMentionUsage extends \DevOwl\RealCookieBanner\view\checklist\
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Copy suggested text', RCB_TD);
+        return \__('Copy suggested text', 'real-cookie-banner');
     }
     /**
      * Privacy policy got updated, let's update the checklist accordingly.

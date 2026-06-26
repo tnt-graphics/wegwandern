@@ -34,7 +34,10 @@ class EnhanceComNginxFastCgiImpl extends AbstractCache
         $domains = \json_decode(\wp_remote_retrieve_body($domains), ARRAY_A);
         $domains = $domains['items'] ?? [];
         // Find domain mapped to our WordPress installation
-        $host = $_SERVER['HTTP_HOST'];
+        $host = isset($_SERVER['HTTP_HOST']) ? \sanitize_text_field(\wp_unslash($_SERVER['HTTP_HOST'])) : '';
+        if ($host === '') {
+            return \false;
+        }
         foreach ($domains as $item) {
             if ($item['domain'] === $host) {
                 $clearUrl = \sprintf('%s/api/v2/domains/%s/nginx_fastcgi', $apiEndpoint, $item['id']);

@@ -7,7 +7,7 @@ Plugin URI: https://updraftplus.com
 Update URI: https://updraftplus.com/
 Description: Backup and restore: take backups locally, or backup to Amazon S3, Dropbox, Google Drive, Rackspace, (S)FTP, WebDAV & email, on automatic schedules.
 Author: TeamUpdraft, DavidAnderson
-Version: 2.25.8.1
+Version: 2.26.5.26
 Donate link: https://david.dw-perspective.org.uk/donate
 License: GPLv3 or later
 Text Domain: updraftplus
@@ -163,6 +163,7 @@ function updraftplus_list_cron_schedules() {
 			'interval' => 43200,
 			'display'  => apply_filters('updraftplus_cron_schedule_description', sprintf($every_particular_hour_label, '12'), 'twicedaily'),
 		),
+		// phpcs:disable WordPress.WP.I18n.MissingArgDomain -- The string exists within the WordPress core.
 		'daily' => array(
 			'interval' => 86400,
 			'display'  => apply_filters('updraftplus_cron_schedule_description', __('Daily'), 'daily'),
@@ -179,6 +180,7 @@ function updraftplus_list_cron_schedules() {
 			'interval' => 2592000,
 			'display' => apply_filters('updraftplus_cron_schedule_description', __('Monthly'), 'monthly'),
 		),
+		// phpcs:enable
 	);
 }
 

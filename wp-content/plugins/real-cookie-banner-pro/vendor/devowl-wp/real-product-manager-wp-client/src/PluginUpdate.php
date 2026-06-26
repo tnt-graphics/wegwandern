@@ -92,7 +92,7 @@ class PluginUpdate
             \add_action('admin_notices', [$this->getView(), 'admin_notices_not_licensed']);
         }
         \add_action('admin_notices', [$this->getView(), 'admin_notices_license_hint']);
-        $this->getPluginUpdateChecker()->probablyEnableExternalUpdates();
+        $this->pluginUpdateChecker->probablyEnableExternalUpdates();
         // We do not handle the response as the activation automatically creates a warning for our user
         $this->getCurrentBlogLicense()->activateProgrammatically();
     }
@@ -229,13 +229,14 @@ class PluginUpdate
         return $this->announcementPool;
     }
     /**
-     * Get Plugin Update Checker.
+     * Get check update link. Returns false in the free version, updates are handled by wordpress.org!
      *
+     * @return string|false
      * @codeCoverageIgnore
      */
-    public function getPluginUpdateChecker()
+    public function getCheckUpdateLink()
     {
-        return $this->pluginUpdateChecker;
+        return $this->pluginUpdateChecker->getCheckUpdateLink();
     }
     /**
      * New instance.

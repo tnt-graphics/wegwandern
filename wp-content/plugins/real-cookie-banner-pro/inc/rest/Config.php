@@ -201,7 +201,7 @@ class Config extends WP_REST_Settings_Controller
         if (!$needsRetrigger) {
             Core::getInstance()->getNotices()->getStates()->set(Notices::NOTICE_REVISON_REQUEST_NEW_CONSENT_PREFIX . $revision->getContextVariablesString(), $revision->getCurrent()['calculated']);
         }
-        $current = $revision->getCurrent($needsRetrigger);
+        $current = $revision->getCurrent($needsRetrigger ? 'force' : \false);
         return new WP_REST_Response(\array_merge(['needs_retrigger' => $revision->needsRetrigger($current)], $current));
     }
     /**
@@ -372,13 +372,15 @@ class Config extends WP_REST_Settings_Controller
     {
         $compLanguage = Core::getInstance()->getCompLanguage();
         $fnCreatePost = function () {
-            return \wp_insert_post(['post_type' => 'page', 'post_content' => \sprintf('[%s]', CookiePolicyShortcode::TAG), 'post_title' => \_x('Cookie policy', 'legal-text', Hooks::TD_FORCED), 'post_status' => 'publish'], \true);
+            return \wp_insert_post(['post_type' => 'page', 'post_content' => \sprintf('[%s]', CookiePolicyShortcode::TAG), 'post_title' => \_x('Cookie policy', 'legal-text', 'real-cookie-banner'), 'post_status' => 'publish'], \true);
         };
         if ($compLanguage->isActive() && $compLanguage instanceof AbstractSyncPlugin) {
             $sourceLanguage = $compLanguage->getDefaultLanguage();
             $result = $compLanguage->switchToLanguage($sourceLanguage, function () use($fnCreatePost, $compLanguage) {
                 $td = Hooks::getInstance()->createTemporaryTextDomain();
-                $result = $fnCreatePost();
+                $result = $td->translate(function () use($fnCreatePost) {
+                    return $fnCreatePost();
+                });
                 $td->teardown();
                 return $result;
             });
@@ -469,7 +471,7 @@ class Config extends WP_REST_Settings_Controller
                     $schema['properties']['content']['properties']['rendered']['context'][] = 'embed';
                 }
             }
-            $schema['properties']['type_singular'] = ['description' => \__('The singular name of the post type.'), 'type' => 'string', 'context' => ['view', 'edit', 'embed'], 'readonly' => \true];
+            $schema['properties']['type_singular'] = ['description' => \__('The singular name of the post type.', 'real-cookie-banner'), 'type' => 'string', 'context' => ['view', 'edit', 'embed'], 'readonly' => \true];
             // Iterate through all taxonomies registered for this post type and allow embedding of them
             $taxonomies = \get_object_taxonomies($schema['title'], 'objects');
             foreach ($taxonomies as $taxonomy) {
@@ -509,7 +511,7 @@ class Config extends WP_REST_Settings_Controller
      */
     public function filter_rest_post_collection_params($query_params, $post_type)
     {
-        $query_params['status'] = ['description' => \__('Limit result set to posts with one or more specific statuses.'), 'type' => 'array', 'items' => ['type' => 'string', 'enum' => \array_merge(['any'], \get_post_stati())], 'default' => ['publish']];
+        $query_params['status'] = ['description' => \__('Limit result set to posts with one or more specific statuses.', 'real-cookie-banner'), 'type' => 'array', 'items' => ['type' => 'string', 'enum' => \array_merge(['any'], \get_post_stati())], 'default' => ['publish']];
         return $query_params;
     }
     /**

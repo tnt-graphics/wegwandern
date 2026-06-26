@@ -54,7 +54,7 @@ trait ImportTcfVendorConfigurations
             // Always create the entry
             $create = \wp_insert_post(['post_type' => TcfVendorConfiguration::CPT_NAME, 'post_status' => $post_status, 'meta_input' => $metas], \true);
             if (\is_wp_error($create)) {
-                $this->addMessageCreateFailure($vendorId, \__('TCF Vendor', RCB_TD), $create);
+                $this->addMessageCreateFailure($vendorId, \__('TCF Vendor', 'real-cookie-banner'), $create);
                 continue;
             } else {
                 $this->mapTcfVendorConfigurations[$post_name] = \get_post($create)->ID;
@@ -70,7 +70,7 @@ trait ImportTcfVendorConfigurations
     protected function handleCorruptTcfVendorConfiguration($tcfVendorConfiguration, $index)
     {
         if (!isset($tcfVendorConfiguration['metas'], $tcfVendorConfiguration['post_status']) || !isset($tcfVendorConfiguration['metas']['vendorId'])) {
-            $this->addMessageMissingProperties($index, \__('TCF Vendor configuration', RCB_TD), 'metas.[vendorId], post_status');
+            $this->addMessageMissingProperties($index, \__('TCF Vendor configuration', 'real-cookie-banner'), 'metas.[vendorId], post_status');
             return \false;
         }
         return \true;

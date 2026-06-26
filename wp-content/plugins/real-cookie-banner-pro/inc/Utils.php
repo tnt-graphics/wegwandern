@@ -125,7 +125,7 @@ class Utils
             return $url;
         }
         // Get arguments in requested URL (ported from `add_query_arg`)
-        list(, $query) = \explode('?', $url, 2);
+        [, $query] = \explode('?', $url, 2);
         \wp_parse_str($query, $queryParameters);
         // Get arguments in current permalink settings
         $permalink_structure = \get_option('permalink_structure');
@@ -401,7 +401,7 @@ class Utils
      */
     public static function startsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -416,7 +416,7 @@ class Utils
      */
     public static function endsWith($haystack, $needle)
     {
-        if ($haystack === null || $needle === null) {
+        if (!\is_string($haystack) || !\is_string($needle)) {
             return \false;
         }
         $length = \strlen($needle);
@@ -430,7 +430,7 @@ class Utils
      */
     public static function isFrontend()
     {
-        $isFrontend = !\is_admin() && !\wp_doing_cron() && !\wp_doing_ajax() && !self::isCLI();
+        $isFrontend = !\is_admin() && !\wp_doing_cron() && !\wp_doing_ajax() && !self::isCLI() && !self::isDownload();
         if ($isFrontend && self::isPageBuilder()) {
             return \false;
         }
@@ -458,7 +458,7 @@ class Utils
     {
         foreach (\headers_list() as $line) {
             $header = \strtolower($line);
-            if (\preg_match('/content-disposition\\s*:\\s*(?:attachment|inline)/m', $header) || self::startsWith($header, 'content-type: multipart/form-data') && \strpos($header, 'boundary') !== \false) {
+            if (\preg_match('/content-disposition\\s*:\\s*(?:attachment|inline)/m', $header) || self::startsWith($header, 'content-type: multipart/form-data') && \strpos($header, 'boundary') !== \false || \preg_match('/content-type\\s*:\\s*application\\/octet-stream/m', $header)) {
                 return \true;
             }
         }
@@ -469,7 +469,12 @@ class Utils
      */
     public static function isPageBuilder()
     {
-        return isset($_GET['fl_builder']) || isset($_GET['nf_preview_form']) || isset($_GET['legacy-widget-preview']) || isset($_GET['td_action']) && $_GET['td_action'] === 'tdc_edit' || (isset($_GET['et_fb']) || isset($_GET['et_pb_preview'])) || isset($_GET['tb-preview']) || isset($_GET['fb-edit']) || isset($_GET['builder_id']) || isset($_GET['elementor-preview']) || (isset($_GET['op3editor']) || \preg_match('/\\/op-builder\\/(\\d+)/', $_SERVER['REQUEST_URI'])) || isset($_GET['us-builder']) || isset($_GET['vc_editable']) || \class_exists(MFN_Options::class) && isset($_GET['visual']) && $_GET['visual'] === 'iframe' || isset($_GET['tve']) || isset($_GET['bricks']) && $_GET['bricks'] === 'run' || isset($_GET['ct_builder']) || \function_exists('Breakdance\\isRequestFromBuilderIframe') && (isRequestFromBuilderIframe() || isRequestFromBuilderSsr()) || isset($_GET['action']) && self::startsWith($_GET['action'], 'oxy_') || isset($_POST['cs_preview_time']);
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- probe-only vendor iframe/page-builder markers (GET/POST).
+        // phpcs:disable WordPress.Security.ValidatedSanitizedInput -- isset/compare checks against third-party query keys; semantics must match vendor callbacks.
+        $result = isset($_GET['fl_builder']) || isset($_GET['nf_preview_form']) || isset($_GET['legacy-widget-preview']) || isset($_GET['td_action']) && $_GET['td_action'] === 'tdc_edit' || (isset($_GET['et_fb']) || isset($_GET['et_pb_preview'])) || isset($_GET['tb-preview']) || isset($_GET['fb-edit']) || isset($_GET['builder_id']) || isset($_GET['elementor-preview']) || (isset($_GET['op3editor']) || isset($_SERVER['REQUEST_URI']) && \preg_match('/\\/op-builder\\/(\\d+)/', \sanitize_text_field(\wp_unslash($_SERVER['REQUEST_URI'])))) || isset($_GET['us-builder']) || isset($_GET['vc_editable']) || \class_exists(MFN_Options::class) && isset($_GET['visual']) && $_GET['visual'] === 'iframe' || isset($_GET['tve']) || isset($_GET['bricks']) && $_GET['bricks'] === 'run' || isset($_GET['ct_builder']) || \function_exists('Breakdance\\isRequestFromBuilderIframe') && (isRequestFromBuilderIframe() || isRequestFromBuilderSsr()) || isset($_GET['action']) && self::startsWith($_GET['action'], 'oxy_') || isset($_POST['cs_preview_time']) || isset($_GET['action']) && $_GET['action'] === 'in-front-editor' || isset($_GET['is-editor-iframe']);
+        // phpcs:enable WordPress.Security.ValidatedSanitizedInput
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
+        return $result;
     }
     /**
      * Check if current request is coming from WP CLI.
@@ -559,10 +564,10 @@ class Utils
      */
     public static function getOriginalHomeUrl()
     {
-        // Multisite subdomain installations are forced to use the `home_url` option
-        // See also https://github.com/WordPress/WordPress/blob/4e4016f61fa40abda4c0a0711496f2ba50a10563/wp-includes/ms-blogs.php#L249
-        $isMultisiteSubdomainInstallation = \is_multisite() && \defined('SUBDOMAIN_INSTALL') && \constant('SUBDOMAIN_INSTALL');
-        if (!$isMultisiteSubdomainInstallation && \defined('WP_HOME')) {
+        // In multisite, `switch_to_blog()` must resolve the hostname from the current blog's
+        // persisted options. A global `WP_SITEURL` constant can be request-dependent and would
+        // otherwise make every subsite look like the same host.
+        if (!\is_multisite() && \defined('WP_HOME')) {
             // Constant is defined (https://wordpress.org/support/article/changing-the-site-url/#edit-wp-config-php)
             $home_url = \constant('WP_HOME');
         } else {
@@ -577,9 +582,14 @@ class Utils
      */
     public static function getRequestUrl()
     {
-        $requested_url = \is_ssl() ? 'https://' : 'http://';
-        $requested_url .= $_SERVER['HTTP_HOST'];
-        $requested_url .= $_SERVER['REQUEST_URI'];
-        return \esc_url_raw($requested_url);
+        if (!isset($_SERVER['HTTP_HOST'], $_SERVER['REQUEST_URI'])) {
+            return '';
+        }
+        $scheme = \is_ssl() ? 'https://' : 'http://';
+        $host = \sanitize_text_field(\wp_unslash($_SERVER['HTTP_HOST']));
+        // phpcs:disable WordPress.Security.ValidatedSanitizedInput -- REQUEST_URI is path/query only; full URL sanitized via esc_url_raw() below.
+        $uri = \wp_unslash($_SERVER['REQUEST_URI']);
+        // phpcs:enable WordPress.Security.ValidatedSanitizedInput
+        return \esc_url_raw($scheme . $host . $uri);
     }
 }

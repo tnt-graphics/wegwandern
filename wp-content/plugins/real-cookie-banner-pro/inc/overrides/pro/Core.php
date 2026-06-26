@@ -43,7 +43,7 @@ trait Core
     {
         Affiliate::getInstance()->register();
         // Make this customize option also available in REST API
-        \register_setting('options', StickyLinks::SETTING_ENABLED, ['type' => 'boolean', 'show_in_rest' => \true]);
+        \register_setting('options', StickyLinks::SETTING_ENABLED, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
     }
     // Documented in IOverrideCore
     public function overrideRegisterPostTypes()

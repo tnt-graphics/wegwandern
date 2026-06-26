@@ -29,6 +29,6 @@ msgstr ""
 msgid "This job is already running in another thread on your server."
 msgstr ""
 
-#: queue/Job.php:410
+#: queue/Job.php:412
 msgid "Unexpected exception."
 msgstr ""

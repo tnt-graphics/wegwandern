@@ -15,7 +15,7 @@ class DeprecatedWordPress {
 	/**
 	 * The new minimum version of WordPress.
 	 *
-	 * @since 4.1.2
+	 * @since 4.8.8
 	 *
 	 * @var string
 	 */

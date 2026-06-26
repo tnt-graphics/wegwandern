@@ -116,7 +116,7 @@ class ExponentialRetryPolicy extends RetryPolicy
         // exponential
         $incrementDelta   = (int) (pow(2, $retryCount) - 1);
         $boundedRandDelta = (int) ($this->_deltaBackoffIntervalInMs * 0.8)
-            + mt_rand(
+            + wp_rand(
                 0,
                 (int) ($this->_deltaBackoffIntervalInMs * 1.2)
                 - (int) ($this->_deltaBackoffIntervalInMs * 0.8)

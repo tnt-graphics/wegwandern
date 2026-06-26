@@ -8,7 +8,7 @@ Shop: /shop/migrator/
 Latest Change: 1.23.5
 */
 // @codingStandardsIgnoreEnd
-
+// phpcs:disable WordPress.PHP.DevelopmentFunctions.error_log_print_r -- print_r is intentionally used to convert an array into a readable string or for controlled logging purposes.
 if (!defined('UPDRAFTPLUS_DIR')) die('No direct access allowed');
 
 updraft_try_include_file('includes/migrator-lite.php', 'require_once');
@@ -184,6 +184,19 @@ class UpdraftPlus_Addons_Migrator extends UpdraftPlus_Migrator_Lite {
 				?>
 				<div id="updraft_migrate_tab_alt" style="display:none;"></div>
 			</div>
+
+			<?php
+				if (file_exists(UPDRAFTPLUS_DIR . '/includes/updraftplus-migration.php')) {
+					$is_extendify_migration_active = isset($_GET['source']) && 'extendify' === $_GET['source'] ? true : false;
+					$updraftplus_module_widget_class = ($is_extendify_migration_active) ? 'updraft_simple_migrate_widget_module_content opened' : 'updraft_simple_migrate_widget_module_content';
+					$context = ($is_extendify_migration_active) ? 'extendify' : 'premium';
+					$updraftplus_admin->include_template('wp-admin/settings/migration.php', false, array(
+						'is_extendify_migration_active' => $is_extendify_migration_active,
+						'updraftplus_module_widget_class' => $updraftplus_module_widget_class,
+						'context' => $context
+					));
+				}
+			?>
 		</div>
 		<?php
 	}
@@ -301,13 +314,13 @@ class UpdraftPlus_Addons_Migrator extends UpdraftPlus_Migrator_Lite {
 			$original_error_count = count($err);
 
 			if (!empty($elements['wpcore'])) {
-				$err[] = sprintf(__('You selected %s to be included in the restoration - this cannot / should not be done when importing a single site into a network.', 'updraftplus'), __('WordPress core', 'updraftplus')).' <a href="https://updraftplus.com/information-on-importing-a-single-site-wordpress-backup-into-a-wordpress-network-i-e-multisite/" target="_blank">'.__('Go here for more information.', 'updraftplus').'</a>';
+				$err[] = sprintf(__('You selected %s to be included in the restoration - this cannot / should not be done when importing a single site into a network.', 'updraftplus'), __('WordPress core', 'updraftplus')).' <a href="https://teamupdraft.com/documentation/updraftplus/topics/restoration/faqs/how-do-i-restore-a-single-sub-site-on-a-multisite-network/" target="_blank">'.__('Go here for more information.', 'updraftplus').'</a>';
 			}
 			if (!empty($elements['others'])) {
-				$err[] = sprintf(__('You selected %s to be included in the restoration - this cannot / should not be done when importing a single site into a network.', 'updraftplus'), __('other content from wp-content', 'updraftplus')).' <a href="https://updraftplus.com/information-on-importing-a-single-site-wordpress-backup-into-a-wordpress-network-i-e-multisite/" target="_blank">'.__('Go here for more information.', 'updraftplus').'</a>';
+				$err[] = sprintf(__('You selected %s to be included in the restoration - this cannot / should not be done when importing a single site into a network.', 'updraftplus'), __('other content from wp-content', 'updraftplus')).' <a href="https://teamupdraft.com/documentation/updraftplus/topics/restoration/faqs/how-do-i-restore-a-single-sub-site-on-a-multisite-network/" target="_blank">'.__('Go here for more information.', 'updraftplus').'</a>';
 			}
 			if (!empty($elements['mu-plugins'])) {
-				$err[] = sprintf(__('You selected %s to be included in the restoration - this cannot / should not be done when importing a single site into a network.', 'updraftplus'), __('Must-use plugins', 'updraftplus')).' <a href="https://updraftplus.com/information-on-importing-a-single-site-wordpress-backup-into-a-wordpress-network-i-e-multisite/" target="_blank">'.__('Go here for more information.', 'updraftplus').'</a>';
+				$err[] = sprintf(__('You selected %s to be included in the restoration - this cannot / should not be done when importing a single site into a network.', 'updraftplus'), __('Must-use plugins', 'updraftplus')).' <a href="https://teamupdraft.com/documentation/updraftplus/topics/restoration/faqs/how-do-i-restore-a-single-sub-site-on-a-multisite-network/" target="_blank">'.__('Go here for more information.', 'updraftplus').'</a>';
 			}
 
 			global $updraftplus;

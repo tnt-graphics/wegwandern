@@ -96,7 +96,7 @@ class PluginUpdateChecker
     /**
      * Check if Plugin Update Checker is currently active.
      */
-    public function isEnabled()
+    private function isEnabled()
     {
         return $this->getPuc() !== null;
     }
@@ -105,7 +105,7 @@ class PluginUpdateChecker
      * a multisite environment. WordPress does not allow to update per-site because a plugin
      * is installed network-wide.
      */
-    public function getLicense()
+    private function getLicense()
     {
         return $this->getPluginUpdate()->getFirstFoundLicense();
     }
@@ -119,7 +119,7 @@ class PluginUpdateChecker
     /**
      * Get the instance of `Puc_v4_Factory`.
      */
-    public function getPuc()
+    private function getPuc()
     {
         return $this->puc;
     }
@@ -128,7 +128,7 @@ class PluginUpdateChecker
      *
      * @codeCoverageIgnore
      */
-    public function getPluginUpdate()
+    private function getPluginUpdate()
     {
         return $this->pluginUpdate;
     }

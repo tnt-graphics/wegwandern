@@ -22,12 +22,12 @@ class Scanner extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistI
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Scan your website for services', RCB_TD);
+        return \__('Scan your website for services', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Scan your website to identify services used and external URLs that may transmit personal data and/or set cookies.', RCB_TD);
+        return \__('Scan your website to identify services used and external URLs that may transmit personal data and/or set cookies.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -37,6 +37,6 @@ class Scanner extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistI
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Open scanner', RCB_TD);
+        return \__('Open scanner', 'real-cookie-banner');
     }
 }

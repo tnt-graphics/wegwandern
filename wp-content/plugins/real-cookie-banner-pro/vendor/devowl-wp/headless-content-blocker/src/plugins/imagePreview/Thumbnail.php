@@ -348,7 +348,9 @@ class Thumbnail
             '/.*player\\.vimeo\\.com\\/video\\/(\\d+).*?.*h=(\\w+).*/m',
             // Vimeo private links (https://regex101.com/r/NxzZv0/1)
             '/.*videopress\\.com\\/embed\\/(\\w+).*/m',
-        ], ['https://www.youtube.com/watch?v=$1', 'https://$1.podigee.io/$2', 'https://$1.podigee.io/', 'https://open.spotify.com/$1/$2', 'https://www.reddit.com/r/$1/comments/$2/', 'https://pinterest.com/pin/$1', 'https://music.apple.com/$2/$3/$4', 'https://giphy.com/embed/$1', 'https://api.soundcloud.com/$1/$2?secret_token=$3', 'https://$1.podcaster.de/$2.rss', 'https://www.youtube.com/watch?v=$1', 'https://vimeo.com/$1/$2', 'https://videopress.com/v/$1']];
+            // VideoPress Embed (https://regex101.com/r/huMutL/1)
+            '/\\.wistia\\.net/m',
+        ], ['https://www.youtube.com/watch?v=$1', 'https://$1.podigee.io/$2', 'https://$1.podigee.io/', 'https://open.spotify.com/$1/$2', 'https://www.reddit.com/r/$1/comments/$2/', 'https://pinterest.com/pin/$1', 'https://music.apple.com/$2/$3/$4', 'https://giphy.com/embed/$1', 'https://api.soundcloud.com/$1/$2?secret_token=$3', 'https://$1.podcaster.de/$2.rss', 'https://www.youtube.com/watch?v=$1', 'https://vimeo.com/$1/$2', 'https://videopress.com/v/$1', '.wistia.com']];
         foreach ($patterns[0] as $idx => $pattern) {
             $replace = $patterns[1][$idx];
             if (\preg_match($pattern, $embedUrl, $m)) {

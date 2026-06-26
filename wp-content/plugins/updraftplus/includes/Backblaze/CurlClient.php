@@ -118,7 +118,11 @@ class UpdraftPlus_Backblaze_CurlClient {
 
 		}
 
-		curl_close($session);
+		if (version_compare(PHP_VERSION, '8.0', '<')) {
+			curl_close($session);
+		} else {
+			unset($session); // On PHP 8+, curl_close() is a no-op (deprecated in 8.5); unset the handle instead.
+		}
 
 		if (!empty($sink)) @fclose($sink);
 

@@ -186,14 +186,14 @@ class PEAR_Exception extends Exception
                     break;
                 case self::OBSERVER_TRIGGER :
                     $f = (isset($func[1])) ? $func[1] : E_USER_NOTICE;
-                    trigger_error($this->getMessage(), $f);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
+                    trigger_error($this->getMessage(), $f);// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped, WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- prevent the string from being double-escaped; the escaping should occur when printed. The trigger_error() function is intentionally used to generate user-level error messages.
                     break;
                 case self::OBSERVER_DIE :
                     $f = (isset($func[1])) ? $func[1] : '%s';
                     die(printf($f, $this->getMessage()));// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- prevent the string from being double-escaped; the escaping should occur when printed
                     break;
                 default:
-                    trigger_error('invalid observer type', E_USER_WARNING);
+                    trigger_error('invalid observer type', E_USER_WARNING); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_trigger_error -- The trigger_error() function is intentionally used to generate user-level error messages.
             }
         }
     }

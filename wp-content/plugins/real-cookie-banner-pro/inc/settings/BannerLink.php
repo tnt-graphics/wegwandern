@@ -61,8 +61,8 @@ class BannerLink
     public function register()
     {
         // Keep this array for translation purposes, so it can be used with `@devowl-wp/multilingual` and auto translate
-        [SettingsBannerLink::PAGE_TYPE_GENERAL_TERMS_AND_CONDITIONS => \__('General terms and conditions', RCB_TD), SettingsBannerLink::PAGE_TYPE_TERMS_OF_USE => \__('Terms of use', RCB_TD), SettingsBannerLink::PAGE_TYPE_CANCELLATION_POLICY => \__('Cancellation policy', RCB_TD), SettingsBannerLink::PAGE_TYPE_COOKIE_POLICY => \__('Cookie policy', RCB_TD), SettingsBannerLink::PAGE_TYPE_DATA_PROCESSING_AGREEMENT => \__('Data processing agreement', RCB_TD), SettingsBannerLink::PAGE_TYPE_DISPUTE_RESOLUTION => \__('Dispute resolution', RCB_TD)];
-        $labels = ['name' => \__('Banner links', RCB_TD), 'singular_name' => \__('Banner link', RCB_TD)];
+        [SettingsBannerLink::PAGE_TYPE_GENERAL_TERMS_AND_CONDITIONS => \__('General terms and conditions', 'real-cookie-banner'), SettingsBannerLink::PAGE_TYPE_TERMS_OF_USE => \__('Terms of use', 'real-cookie-banner'), SettingsBannerLink::PAGE_TYPE_CANCELLATION_POLICY => \__('Cancellation policy', 'real-cookie-banner'), SettingsBannerLink::PAGE_TYPE_COOKIE_POLICY => \__('Cookie policy', 'real-cookie-banner'), SettingsBannerLink::PAGE_TYPE_DATA_PROCESSING_AGREEMENT => \__('Data processing agreement', 'real-cookie-banner'), SettingsBannerLink::PAGE_TYPE_DISPUTE_RESOLUTION => \__('Dispute resolution', 'real-cookie-banner')];
+        $labels = ['name' => \__('Banner links', 'real-cookie-banner'), 'singular_name' => \__('Banner link', 'real-cookie-banner')];
         $args = ['label' => $labels['name'], 'labels' => $labels, 'description' => '', 'public' => \false, 'publicly_queryable' => \false, 'show_ui' => \true, 'show_in_rest' => \true, 'rest_base' => self::CPT_NAME, 'rest_controller_class' => WP_REST_Posts_Controller::class, 'has_archive' => \false, 'show_in_menu' => \false, 'show_in_nav_menus' => \false, 'delete_with_user' => \false, 'exclude_from_search' => \true, 'capabilities' => \DevOwl\RealCookieBanner\settings\Cookie::CAPABILITIES, 'map_meta_cap' => \false, 'hierarchical' => \false, 'rewrite' => \false, 'query_var' => \true, 'supports' => ['title', 'editor', 'custom-fields', 'page-attributes']];
         \register_post_type(self::CPT_NAME, $args);
         \register_meta('post', self::META_NAME_PAGE_TYPE, ['object_subtype' => self::CPT_NAME, 'type' => 'boolean', 'single' => \true, 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => [SettingsBannerLink::PAGE_TYPE_LEGAL_NOTICE, SettingsBannerLink::PAGE_TYPE_PRIVACY_POLICY, SettingsBannerLink::PAGE_TYPE_GENERAL_TERMS_AND_CONDITIONS, SettingsBannerLink::PAGE_TYPE_TERMS_OF_USE, SettingsBannerLink::PAGE_TYPE_CANCELLATION_POLICY, SettingsBannerLink::PAGE_TYPE_COOKIE_POLICY, SettingsBannerLink::PAGE_TYPE_DATA_PROCESSING_AGREEMENT, SettingsBannerLink::PAGE_TYPE_DISPUTE_RESOLUTION, SettingsBannerLink::PAGE_TYPE_OTHER]]]]);
@@ -190,7 +190,9 @@ class BannerLink
                 // There are already links created, skip creation
                 return;
             }
-            $entries = ['privacyPolicy' => ['post_type' => self::CPT_NAME, 'post_title' => \_x('Privacy policy', 'legal-text', Hooks::TD_FORCED), 'post_content' => '', 'menu_order' => 0, 'meta_input' => [self::META_NAME_PAGE_TYPE => SettingsBannerLink::PAGE_TYPE_PRIVACY_POLICY, self::META_NAME_IS_EXTERNAL_URL => \false, self::META_NAME_PAGE_ID => \DevOwl\RealCookieBanner\settings\General::getInstance()->getDefaultPrivacyPolicy(), self::META_NAME_EXTERNAL_URL => '', self::META_NAME_HIDE_COOKIE_BANNER => \true, self::META_NAME_IS_TARGET_BLANK => \true], 'post_status' => 'publish']];
+            $entries = $td->translate(function () {
+                return ['privacyPolicy' => ['post_type' => self::CPT_NAME, 'post_title' => \_x('Privacy policy', 'legal-text', 'real-cookie-banner'), 'post_content' => '', 'menu_order' => 0, 'meta_input' => [self::META_NAME_PAGE_TYPE => SettingsBannerLink::PAGE_TYPE_PRIVACY_POLICY, self::META_NAME_IS_EXTERNAL_URL => \false, self::META_NAME_PAGE_ID => \DevOwl\RealCookieBanner\settings\General::getInstance()->getDefaultPrivacyPolicy(), self::META_NAME_EXTERNAL_URL => '', self::META_NAME_HIDE_COOKIE_BANNER => \true, self::META_NAME_IS_TARGET_BLANK => \true], 'post_status' => 'publish']];
+            });
             $backwardsCompatibilityFilters = [];
             // Add legal notice only when the blog language is from DACH
             $wpLanguages = $compLanguage instanceof None ? [\get_locale()] : \array_map([$compLanguage, 'getWordPressCompatibleLanguageCode'], $activeLangauges);
@@ -198,7 +200,9 @@ class BannerLink
                 return Utils::startsWith($l, 'de');
             });
             if ($backwardsCompatibility || \count($dachLanguages) > 0) {
-                $entries['legalNotice'] = ['post_type' => self::CPT_NAME, 'post_title' => \_x('Legal notice', 'legal-text', Hooks::TD_FORCED), 'post_content' => '', 'menu_order' => 1, 'meta_input' => [self::META_NAME_PAGE_TYPE => SettingsBannerLink::PAGE_TYPE_LEGAL_NOTICE, self::META_NAME_IS_EXTERNAL_URL => \false, self::META_NAME_PAGE_ID => 0, self::META_NAME_EXTERNAL_URL => '', self::META_NAME_HIDE_COOKIE_BANNER => \true, self::META_NAME_IS_TARGET_BLANK => \true], 'post_status' => 'publish'];
+                $entries['legalNotice'] = $td->translate(function () {
+                    return ['post_type' => self::CPT_NAME, 'post_title' => \_x('Legal notice', 'legal-text', 'real-cookie-banner'), 'post_content' => '', 'menu_order' => 1, 'meta_input' => [self::META_NAME_PAGE_TYPE => SettingsBannerLink::PAGE_TYPE_LEGAL_NOTICE, self::META_NAME_IS_EXTERNAL_URL => \false, self::META_NAME_PAGE_ID => 0, self::META_NAME_EXTERNAL_URL => '', self::META_NAME_HIDE_COOKIE_BANNER => \true, self::META_NAME_IS_TARGET_BLANK => \true], 'post_status' => 'publish'];
+                });
             }
             if ($backwardsCompatibility) {
                 // Load from `wp_options` to get also the ones with `LanguageDependingOption`

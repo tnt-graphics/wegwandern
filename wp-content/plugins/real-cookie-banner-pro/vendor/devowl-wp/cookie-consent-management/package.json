@@ -1,6 +1,6 @@
 {
     "name": "@devowl-wp/cookie-consent-management",
-    "version": "1.0.21",
+    "version": "1.0.49",
     "private": true,
     "description": "Provide cookie consent management with adapters to your environment",
     "homepage": "https://devowl.io",
@@ -10,7 +10,13 @@
         "**/*.{css,scss,less}",
         "./src/public/ts/*.tsx"
     ],
-    "main": "lib/index.tsx",
+    "type": "module",
+    "exports": {
+        ".": {
+            "devowl-source": "./lib/index.tsx",
+            "default": "./lib/index.js"
+        }
+    },
     "files": [
         "dist",
         "dev"
@@ -27,26 +33,24 @@
         "@devowl-wp/continuous-integration": "workspace:*",
         "@devowl-wp/cookie-consent-web-client": "workspace:*",
         "@devowl-wp/eslint-config": "workspace:*",
+        "@devowl-wp/headless-content-unblocker": "workspace:*",
         "@devowl-wp/node-gitlab-ci": "workspace:*",
         "@devowl-wp/npm-licenses": "workspace:*",
         "@devowl-wp/phpcs-config": "workspace:*",
         "@devowl-wp/react-cookie-banner": "workspace:*",
         "@devowl-wp/react-cookie-banner-admin": "workspace:*",
         "@devowl-wp/ts-config": "workspace:*",
-        "ts-node": "10.9.2",
-        "tslib": "2.6.3",
-        "typescript": "5.4.5",
-        "webpack-cli": "5.1.4"
+        "@swc-node/register": "catalog:build",
+        "tslib": "catalog:build",
+        "typescript": "catalog:build",
+        "webpack-cli": "catalog:webpack"
     },
     "peerDependencies": {
         "@devowl-wp/cookie-consent-web-client": "workspace:*",
         "@devowl-wp/headless-content-unblocker": "workspace:*",
         "@devowl-wp/react-cookie-banner": "workspace:*",
         "@devowl-wp/react-cookie-banner-admin": "workspace:*",
-        "@types/node": "18.19.34"
-    },
-    "engines": {
-        "node": ">=14.15.0"
+        "@types/node": "catalog:types"
     },
     "license-check": {
         "spdx": [

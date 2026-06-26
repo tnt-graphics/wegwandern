@@ -3,6 +3,3218 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 5.2.23 (2026-05-13)
+
+
+### Bug Fixes
+
+* enhance settings registration with sanitization callbacks for improved data validation (CU-869d454p5)
+
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.22</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* enhance settings registration with sanitization callbacks for improved data validation (CU-869d454p5)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.9.0</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Code Refactoring
+
+* docker-compose network governance for devowl-wp stacks, enhancing service exposure and internal network management (CU-869c51h34)
+
+
+##### Continuous Integration
+
+* add endpoint wait functionality for SeaweedFS services readiness (CU-869c7xrrv)
+* every docker review deploy gets a dedicated docker stack name coupled to the Gitlab CI job id (CU-869d915w8)
+
+
+##### Features
+
+* enforce package-tier import boundaries via dependency-cruiser (CU-869d0qyx8)</details>
+
+<details><summary>Development dependency update @devowl-wp/node-gitlab-ci 0.8.20</summary>
+
+
+**_Purpose of dependency:_** _Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!_
+##### Continuous Integration
+
+* every docker review deploy gets a dedicated docker stack name coupled to the Gitlab CI job id (CU-869d915w8)</details>
+
+
+
+
+
+## 5.2.22 (2026-05-07)
+
+
+### Bug Fixes
+
+* allow to translate technical cookie definition purposes via TranslatePress (CU-869ap8eg8)
+* compatibility with Fluent Forms with IPinfo (CU-869cwa620)
+* declare GPL license in plugin headers (CU-869d454p5)
+* g.legalBasisConsentWithoutVisualContentBlocker.map is not a function (CU-869cupn9u)
+* prevent client-side rule tries to block when content blocker is disabled (CU-869cx5jzf)
+* uncaught TypeError: substr(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string, array given (CU-869cx9ua6)
+
+
+### Build System
+
+* improve build tasks for stripping variant markers for free version (CU-869d454p5)
+
+
+### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)
+
+
+### Maintenance
+
+* add security hashes (CU-861mmp30r)
+
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.45</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-management 1.0.48</summary>
+
+
+**_Purpose of dependency:_** _Provide cookie consent management with adapters to your environment_
+##### Bug Fixes
+
+* uncaught TypeError: substr(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string, array given (CU-869cx9ua6)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.13.21</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.46</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.3.8</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Bug Fixes
+
+* uncaught TypeError: substr(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string, array given (CU-869cx9ua6)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/freemium 1.3.138</summary>
+
+
+**_Purpose of dependency:_** _Make your plugin to a freemium plugin with predefined Envato support_
+##### Build System
+
+* improve build tasks for stripping variant markers for free version (CU-869d454p5)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.4.8</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* compatibility with fast.wistia.net and downloading Thumbnails (CU-869cet823)
+* uncaught TypeError: substr(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string, array given (CU-869cx9ua6)
+* update selector syntax in Style plugin to remove tag from generated selector (CU-869cpagbc)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.3.3</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Bug Fixes
+
+* mount click gateway via capture-phase document listener before others delegate (CU-869cpagbc)</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.21</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* allow to translate technical cookie definition purposes via TranslatePress (CU-869ap8eg8)
+* uncaught TypeError: substr(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string, array given (CU-869cx9ua6)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.20.21</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Bug Fixes
+
+* uncaught TypeError: substr(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string, array given (CU-869cx9ua6)
+
+
+##### Build System
+
+* improve build tasks for stripping variant markers for free version (CU-869d454p5)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.1.21</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.14.21</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/service-cloud-consumer 1.0.41</summary>
+
+
+**_Purpose of dependency:_** _Consume service and blocker templates from service cloud_
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.21</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* deduplicate repeated frontend preload links in wp_head output (CU-869chp8wu)
+* free versions Cannot declare InstalledVersions fatal error (CU-8696ru88g)
+
+
+##### Build System
+
+* improve build tasks for stripping variant markers for free version (CU-869d454p5)
+
+
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Development dependency update @devowl-wp/composer-licenses 0.1.21</summary>
+
+
+**_Purpose of dependency:_** _Helper functionalities for your composer project to validate licenses and generate a disclaimer._
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+<details><summary>Development dependency update @devowl-wp/phpcs-config 0.1.20</summary>
+
+
+**_Purpose of dependency:_** _Predefined functionalities for PHPCS._
+##### Code Refactoring
+
+* enable more WPCS rules and use correct wordpress.org text domain (CU-869d454p5)</details>
+
+
+
+
+
+## 5.2.21 (2026-04-29) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+
+### Maintenance
+
+* introduce automated development environments with Ansible (CU-869cxr1cn)
+
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.43</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.4.7</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Tests
+
+* flaky tests (CU-869cyyxer)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.3.2</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Tests
+
+* flaky tests (CU-869cyyxer)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.32</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.33</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-utils 1.0.21</summary>
+
+
+**_Purpose of dependency:_** _Provide various React utils, side effect free and tree shakeable._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Dependency updates @devowl-wp/resolve-none-computed-style 1.1.56</summary>
+
+
+**_Purpose of dependency:_** _Read the actually applied CSS property value instead of the calculated one._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Dependency updates @devowl-wp/web-html-element-interaction-recorder 1.0.21</summary>
+
+
+**_Purpose of dependency:_** _Record and replay interactions on a given HTML element._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.8.3</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Bug Fixes
+
+* patch wp-cli/i18n-command regex bug in Dockerfile to make Real Physical Media translations work (CU-869d346j5)
+
+
+##### Build System
+
+* initially introduce ansible and step-ca (CU-869cxr1cn, CU-869cyyxer)
+* manage swarm-internal-manager-1 via ansible and trust CA for CI access (CU-869cyyxer)
+
+
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)
+
+
+##### Continuous Integration
+
+* custom browserless image with custom TLS certificate support (CU-869cb1mbz)
+
+
+##### Maintenance
+
+* pin Docker DIND version to v28 for GitLab CI compatibility (CU-869crn919)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.37</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* using develop as weblate fallback on non existing branches due to missing pipeline run (CU-869crn919)
+
+
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/monorepo-utils 0.2.27</summary>
+
+
+**_Purpose of dependency:_** _Predefined monorepo utilities and tasks._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/node-gitlab-ci 0.8.19</summary>
+
+
+**_Purpose of dependency:_** _Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!_
+##### Bug Fixes
+
+* add normalization function for GitLab trace line prefixes to improve log parsing in CI summary (CU-319766g)
+* support OCI image manifests and resolve digests correctly (CU-319766g)
+* update container registry image validation to support multiple manifest types in request headers (CU-319766g)
+
+
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/regexp-translation-extractor 0.2.52</summary>
+
+
+**_Purpose of dependency:_** _Provide a performant translation extractor based on regular expression._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-cookie-banner 1.0.26</summary>
+
+
+**_Purpose of dependency:_** _Provide a scoped stylesheet, types and util functionality for a web cookie banner._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-scoped-css 1.0.23</summary>
+
+
+**_Purpose of dependency:_** _Define a scoped stylesheet in JavaScript with performance in mind._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/webpack-config 0.2.57</summary>
+
+
+**_Purpose of dependency:_** _Webpack config builder for multiple ecosystems like standalone React frontends, Antd, Preact and WordPress._
+##### Code Refactoring
+
+* streamline tsconfig.json includes and remove unnecessary test file references across multiple backends (CU-869cb1mbz)</details>
+
+
+
+
+
+## 5.2.20 (2026-04-02) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/api 1.9.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Features
+
+* allow to create type-safe clients from any OpenAPI spec (CU-869br0bp5)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.8.2</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Maintenance
+
+* harden cli provisioning via docker binary stage and extrepo (CU-869cqreex)
+* remove unused file</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.3.0</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Features
+
+* allow to create type-safe clients from any OpenAPI spec (CU-869br0bp5)</details>
+
+<details><summary>Development dependency update @devowl-wp/node-gitlab-ci 0.8.18</summary>
+
+
+**_Purpose of dependency:_** _Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!_
+##### Maintenance
+
+* harden cli provisioning via docker binary stage and extrepo (CU-869cqreex)</details>
+
+
+
+
+
+## 5.2.19 (2026-03-26)
+
+
+### Bug Fixes
+
+* allow to block web requests with client-side rule (CU-869ce8ykw)
+* avoid PHP deprecation for null cookie cache keys (CU-869chvan0)
+* compatibility with Fluent Forms and ipinfo content blocker template (CU-869ce8ykw)
+* compatibility with WP Travel Engine (CU-869ccgymq)
+* cookie banner gets hidden when using FlyingPress and lazy loading of scripts (CU-869ccahh5)
+* correct admin capability check in addInitialContent method to ensure proper access control (CU-869ap8eg8)
+* handle application/octet-stream downloads and do not output cookie banner and blocker there (CU-869cbrzd4)
+* prevent stale vendor records from accumulating in persisted GVL database table and reduce size (CU-869cm29u6)
+* prevent wrong multisite license target selection with WP_SITEURL (CU-869chrw97)
+* service templates could not be downloaded in cookies dashboard manually (CU-869c14a9d)
+
+
+### Maintenance
+
+* compatibility with WordPress 7.0 (CU-869ck49rt)
+
+
+### Performance Improvements
+
+* preload chunks and not wait for resources before rendering the cookie banner to improve Google PageSpeed Insights score (CU-869ccahh5)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.4.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Features
+
+* implement cursor-based pagination for orders retrieval and add reusable pagination metadata schema (CU-869c8thkx)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-management 1.0.45</summary>
+
+
+**_Purpose of dependency:_** _Provide cookie consent management with adapters to your environment_
+##### Bug Fixes
+
+* gzuncompress(): data error in Utils.php (CU-869ap8eg8)
+* some PHP warnings when opening consent history dialog (CU-869ap8eg8)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.41</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Bug Fixes
+
+* ensure default ref element is set in unblock API (CU-869ce8ykw)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.43</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Performance Improvements
+
+* preload chunks and not wait for resources before rendering the cookie banner to improve Google PageSpeed Insights score (CU-869ccahh5)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.4.5</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* compatibility with Bold Theme page builder
+* compatibility with WP Travel Engine (CU-869ccgymq)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.3.0</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Features
+
+* implement hijacking of XMLHttpRequest and fetch for consent-based request handling (CU-869ce8ykw)</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.18</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* scope TranslatePress translation cache by locale (CU-869c0065u)
+* some PHP warnings when TranslatePress is active (CU-869ap8eg8)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.30</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Bug Fixes
+
+* use sync useLayoutEffect for calculating the less-relevant-details toggle link (CU-869ap8eg8)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.20.18</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Bug Fixes
+
+* prevent wrong multisite license target selection with WP_SITEURL (CU-869chrw97)</details>
+
+<details><summary>Dependency updates @devowl-wp/sitemap-crawler 1.0.20</summary>
+
+
+**_Purpose of dependency:_** _Find and crawl sitemaps to get a full list of URLs._
+##### Bug Fixes
+
+* do not scan sitemaps which are not part of a multisite nor the current instance (CU-8698wj46v)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.18</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* compatibility with WP Travel Engine (CU-869ccgymq)
+* prevent Google PageSpeed Insights warnings by excluding deprecated APIs (CU-869cbmc6b)
+
+
+##### Performance Improvements
+
+* preload chunks and not wait for resources before rendering the cookie banner to improve Google PageSpeed Insights score (CU-869ccahh5)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.8.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* flaky tests (CU-8699ywv2h)
+
+
+##### Code Refactoring
+
+* enhance translatable properties schema with refinable structure (CU-869c8thkx)
+
+
+##### Features
+
+* add versionless contracts,  interpolated params and fix GET request ContentType (CU-8699ywv2h)
+* implement cursor-based pagination for orders retrieval and add reusable pagination metadata schema (CU-869c8thkx)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.8.1</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Maintenance
+
+* correctly use peer dependencies (CU-8699tgzbd)
+* introduce complyforce-proxy with OVHcloud storage (CU-8699tgzbd)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.23</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Performance Improvements
+
+* improve CPU/memory usage in development environment (CU-869cjmbyz)</details>
+
+<details><summary>Development dependency update @devowl-wp/monorepo-utils 0.2.25</summary>
+
+
+**_Purpose of dependency:_** _Predefined monorepo utilities and tasks._
+##### Bug Fixes
+
+* changelog dependencies were not processed correctly and broke (CU-869ckaf4m)</details>
+
+<details><summary>Development dependency update @devowl-wp/ts-config 0.1.20</summary>
+
+
+**_Purpose of dependency:_** _Predefined compiler options for our backends._
+##### Code Refactoring
+
+* make backend package more side-effect-free, concurrent-aware and allow to regsiter shutdown callbacks (CU-869cb1mbz)</details>
+
+<details><summary>Development dependency update @devowl-wp/webpack-config 0.2.55</summary>
+
+
+**_Purpose of dependency:_** _Webpack config builder for multiple ecosystems like standalone React frontends, Antd, Preact and WordPress._
+##### Performance Improvements
+
+* preload chunks and not wait for resources before rendering the cookie banner to improve Google PageSpeed Insights score (CU-869ccahh5)</details>
+
+
+
+
+
+## 5.2.18 (2026-03-18) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+
+
+
+
+## 5.2.17 (2026-03-04) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+
+
+
+
+## 5.2.16 (2026-02-24) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.34</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* add compatibilityJSON v4 flag to i18next conversion commands to correctly create plural form in POT file (CU-869bu5atn)
+* correctly set msgstr for generate POT file from i18next JSON (CU-869bu5atn)</details>
+
+
+
+
+
+## 5.2.15 (2026-02-11) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/api 1.6.4</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* flatten Zod issues when request body, params and headers are parsed (CU-869bdvdfh)
+* update OpenAPI requestBody to indicate required status based on schema (CU-869bdvdfh)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.8.0</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Build System
+
+* automatically generate OpenAPI SDK for PHP and TypeScript (CU-869bdvdfh)
+
+
+##### Features
+
+* add support for Postman collection publishing (CU-869bdvdfh)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.33</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Build System
+
+* set defaultValue to an empty string in i18next extraction config (CU-869bu5atn)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.22</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Build System
+
+* automatically generate OpenAPI SDK for PHP and TypeScript (CU-869bdvdfh)</details>
+
+
+
+
+
+## 5.2.14 (2026-02-05)
+
+
+### Bug Fixes
+
+* compatibility for Routiz plugin and Google Map not visually blocked in modal window
+* optimize vendor persistence and cleanup deleted TCF vendors (CU-8699gmyb1)
+
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.4.3</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* compatibiltiy with RafflePress</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.13</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* compatibility with Hostinger and services could not be created (CU-869c14a9d)</details>
+
+
+
+
+
+## 5.2.13 (2026-02-02) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/api 1.6.3</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* avoid passing complete zod schemas to ContractResponse (CU-869bdvdfh)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.32</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* compatibility with Weblate 5.13 (file form params) and correctly create create/update component source file (CU-869bu5atn)
+
+
+##### Build System
+
+* correctly fetch languages for frontends (CU-869bu5atn)</details>
+
+
+
+
+
+## 5.2.12 (2026-01-23)
+
+
+### Maintenance
+
+* upgrade to TCF 2.3 and support disclosure opt-out, description and special purposes fields (CU-8699gmyb1)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.8</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Maintenance
+
+* upgrade to TCF 2.3 and support disclosure opt-out, description and special purposes fields (CU-8699gmyb1)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.36</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Maintenance
+
+* upgrade to TCF 2.3 and support disclosure opt-out, description and special purposes fields (CU-8699gmyb1)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.25</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Maintenance
+
+* upgrade to TCF 2.3 and support disclosure opt-out, description and special purposes fields (CU-8699gmyb1)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.26</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Maintenance
+
+* upgrade to TCF 2.3 and support disclosure opt-out, description and special purposes fields (CU-8699gmyb1)</details>
+
+<details><summary>Development dependency update @devowl-wp/node-gitlab-ci 0.8.15</summary>
+
+
+**_Purpose of dependency:_** _Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!_
+##### Bug Fixes
+
+* validate container registry image did not catch curl errors correctly (CU-86931jwau)</details>
+
+
+
+
+
+## 5.2.11 (2026-01-20) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+
+### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+### Maintenance
+
+* upgrade dependencies (CU-86931jwau)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.7</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.34</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-management 1.0.39</summary>
+
+
+**_Purpose of dependency:_** _Provide cookie consent management with adapters to your environment_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade to Node 24 (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.35</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.13.10</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.35</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.3.2</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/freemium 1.3.127</summary>
+
+
+**_Purpose of dependency:_** _Make your plugin to a freemium plugin with predefined Envato support_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* make CI build work (CU-861mnuuc5)
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.4.1</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Tests
+
+* content blocker JSON file was not found (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.2.2</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.10</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.24</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade to Node 24 (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.25</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-utils 1.0.16</summary>
+
+
+**_Purpose of dependency:_** _Provide various React utils, side effect free and tree shakeable._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.20.10</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.1.10</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade backend and isomoprhic packages (CU-86931jwau)
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.14.10</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/resolve-none-computed-style 1.1.51</summary>
+
+
+**_Purpose of dependency:_** _Read the actually applied CSS property value instead of the calculated one._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/service-cloud-consumer 1.0.32</summary>
+
+
+**_Purpose of dependency:_** _Consume service and blocker templates from service cloud_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/sitemap-crawler 1.0.17</summary>
+
+
+**_Purpose of dependency:_** _Find and crawl sitemaps to get a full list of URLs._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.10</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* make CI build work (CU-861mnuuc5)
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/web-html-element-interaction-recorder 1.0.16</summary>
+
+
+**_Purpose of dependency:_** _Record and replay interactions on a given HTML element._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.6.1</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* add HTTP 410 Gone status for deleted reports in order service (CU-8699tgz5g)
+* add media upload functionality for logos (CU-8699tgz5g)
+* adjust Content-Type handling in fetch client to allow browser to set for FormData (CU-8699tgz5g)
+* do not hide internal routes in OpenAPI in non-production environments (CU-8699tgz5g)
+* improve developer experience as using schema-mutable methods outside the middleware looses validations and refinements (CU-8699tgz5g)
+* prevent duplicate tags in OpenAPI document generation (CU-8699tgz5g)
+* review points including 20 (CU-8699tgz5g)
+* throw runtime error when refine is used in schema definition (CU-8699tgz5g)
+
+
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* update refine function parameter naming for consistency across schemas (CU-8699tgz5g)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Documentation
+
+* enhance group management by introducing parent relationships and sorting (CU-8699tgz5g)
+
+
+##### Maintenance
+
+* upgrade to Node 24 (CU-86931jwau)</details>
+
+<details><summary>Development dependency update @devowl-wp/composer-licenses 0.1.20</summary>
+
+
+**_Purpose of dependency:_** _Helper functionalities for your composer project to validate licenses and generate a disclaimer._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.13</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Bug Fixes
+
+* only scan current branch with gitleaks (CU-869aw6tca)
+
+
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* replace execSync with spawnSync for improved command execution consistency and security (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* use complyforce.com as production domain (CU-8699th190)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.30</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* improve weblate component settings sync for file formats (CU-86931jwau)
+
+
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* replace execSync with spawnSync for improved command execution consistency and security (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* make CI build work (CU-861mnuuc5)
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.21</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Code Refactoring
+
+* migrate from Jest to Vitest and clean up related configurations (CU-86931jwau)
+* migrate to ESM (CU-861mnuuc5)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* replace execSync with spawnSync for improved command execution consistency and security (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade dependencies (CU-86931jwau)
+* upgrade to Node 24 (CU-86931jwau)
+* use Relation type for ESM preparation in TypeORM relations (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/iso-codes 1.2.13</summary>
+
+
+**_Purpose of dependency:_** _Enums and key value getters for all countries in different ISO code standards._
+##### Bug Fixes
+
+* validate vat id syntax for eu and ch (CU-8699tgz5g)
+
+
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/monorepo-utils 0.2.22</summary>
+
+
+**_Purpose of dependency:_** _Predefined monorepo utilities and tasks._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* replace execSync with spawnSync for improved command execution consistency and security (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* make CI build work (CU-861mnuuc5)
+* upgrade dependencies (CU-86931jwau)</details>
+
+<details><summary>Development dependency update @devowl-wp/node-gitlab-ci 0.8.14</summary>
+
+
+**_Purpose of dependency:_** _Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!_
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* replace execSync with spawnSync for improved command execution consistency and security (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* make CI build work (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/npm-licenses 0.1.15</summary>
+
+
+**_Purpose of dependency:_** _Helper functionalities for your project to validate licenses and generate a disclaimer._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/phpcs-config 0.1.19</summary>
+
+
+**_Purpose of dependency:_** _Predefined functionalities for PHPCS._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/regexp-translation-extractor 0.2.47</summary>
+
+
+**_Purpose of dependency:_** _Provide a performant translation extractor based on regular expression._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/ts-config 0.1.19</summary>
+
+
+**_Purpose of dependency:_** _Predefined compiler options for our backends._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-cookie-banner 1.0.21</summary>
+
+
+**_Purpose of dependency:_** _Provide a scoped stylesheet, types and util functionality for a web cookie banner._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* upgrade to Node 24 (CU-86931jwau)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-scoped-css 1.0.18</summary>
+
+
+**_Purpose of dependency:_** _Define a scoped stylesheet in JavaScript with performance in mind._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)</details>
+
+<details><summary>Development dependency update @devowl-wp/webpack-config 0.2.52</summary>
+
+
+**_Purpose of dependency:_** _Webpack config builder for multiple ecosystems like standalone React frontends, Antd, Preact and WordPress._
+##### Code Refactoring
+
+* migrate to ESM (CU-861mnuuc5)
+* remove deprecated packages which are coming with native Node 24 (CU-86931jwau)
+* remove fs-extra, use fs:promise and disallow blocking/sync methods (CU-86931jwau)
+* replace execSync with spawnSync for improved command execution consistency and security (CU-86931jwau)
+* safer usage of imports and exports with TypeScript's verbatimModuleSyntax option (CU-861mhn5rj)
+* use package.json#exports everywhere for ESM preparation (CU-861mnuuc5)
+
+
+##### Maintenance
+
+* make CI build work (CU-861mnuuc5)
+* upgrade dependencies (CU-86931jwau)</details>
+
+
+
+
+
+## 5.2.10 (2026-01-15)
+
+
+### Bug Fixes
+
+* compatibility with Brizy editor not loading in frontend editor (CU-869brchk2)
+* compatibility with WooCommerce and allow to block dynamically loaded fragments in checkout process (CU-863g4qm6a)
+* handle potential SecurityError when accessing window properties and cookie banner is not visible (CU-869bh1a05)
+* uncaught TypeError: count(): Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) ($value) must be of type Countable|array, string given Scanner.php
+
+
+### Code Refactoring
+
+* consent handling to use a transport object for better flexibility and add support for 'or' condition in consent checks (CU-f535x6)
+
+
+### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)
+
+
+### Performance Improvements
+
+* allow to configure to put the huge JSON to the bottom of the HTML via RCB/Experimental/OptimizedWpLocalizeScript hook (CU-869b9znyx)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.6</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.33</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Bug Fixes
+
+* compatibility with Seraphinite Accelorator (CU-86944875q)
+
+
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-management 1.0.38</summary>
+
+
+**_Purpose of dependency:_** _Provide cookie consent management with adapters to your environment_
+##### Bug Fixes
+
+* exclude real_cookie_banner cookies from consent checks notice (CU-869bh0uwq)
+
+
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.34</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Code Refactoring
+
+* consent handling to use a transport object for better flexibility and add support for 'or' condition in consent checks (CU-f535x6)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.13.9</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.34</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.3.1</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Bug Fixes
+
+* allow to block elements with capitalized characters (CU-869bh2c93)
+* in some cases content does not get unblocked when scripts without loading-semantics need to be unblocked first (CU-869brj1eb)
+
+
+##### Maintenance
+
+* code AI review (note 7021, CU-869bh2c93)
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/freemium 1.3.126</summary>
+
+
+**_Purpose of dependency:_** _Make your plugin to a freemium plugin with predefined Envato support_
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.4.0</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* allow to block elements with capitalized characters (CU-869bh2c93)
+* compatibility with Fluent Calendar when not loading in frontend
+* compatibility with PixelYourSite when pysOptions gets blocked (CU-869bra6kz)
+* compatibility with WP Grid Builder and 'wpgb_settings is not defined' error
+
+
+##### Features
+
+* implement SharedAtLeastOne plugin to merge required IDs across blockers using at-least-one logic (CU-f535x6)
+
+
+##### Maintenance
+
+* code AI review (note 7021, CU-869bh2c93)
+* code review AI (note 6992, CU-f535x6)
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.2.1</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Bug Fixes
+
+* in some cases content does not get unblocked when scripts without loading-semantics need to be unblocked first (CU-869brj1eb)
+
+
+##### Code Refactoring
+
+* consent handling to use a transport object for better flexibility and add support for 'or' condition in consent checks (CU-f535x6)
+
+
+##### Maintenance
+
+* code AI review (note 7026, CU-f535x6)</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.9</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* add support for additional ISO 3166-1 alpha-2 country codes (Caribbean Netherlands, Curaçao, Sint Maarten, South Sudan, Kosovo)
+
+
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)
+
+
+##### Performance Improvements
+
+* introduce an in-memory cache for already translated items within translateArray (CU-869bgtjqe)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.20.9</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.1.9</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.14.9</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/service-cloud-consumer 1.0.31</summary>
+
+
+**_Purpose of dependency:_** _Consume service and blocker templates from service cloud_
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.9</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Maintenance
+
+* remove package.json#engines from internal packages (CU-86931jwau)
+
+
+##### Performance Improvements
+
+* allow to configure to put the huge JSON to the bottom of the HTML via RCB/Experimental/OptimizedWpLocalizeScript hook (CU-869b9znyx)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.6.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Features
+
+* refactor new Contract API (CU-8699twn1u)
+
+
+##### Maintenance
+
+* ai review (CU-8699twn1u)
+* fix issues found in testing (CU-8699twn1u)
+* fix purpose in contracts ((CU-8699twn1u)
+* remove package.json#engines from internal packages (CU-86931jwau)</details>
+
+
+
+
+
+## 5.2.9 (2025-12-10)
+
+
+### Bug Fixes
+
+* block dynamically injected scripts and stylesheets until consent (CU-f535x6)
+* compatibility with MailPoet and blocking analytics tracking cookies when no consent given (CU-m3dtuf)
+* compatibility with SolidSecurity reCaptcha, hCaptcha and Cloudflare Turnstile (CU-869apt3a0)
+* introduce new client-side: content blocker rule syntax (CU-f535x6)
+
+
+### Performance Improvements
+
+* tcf vendor list query is slow on MariaDB database (CU-869372e3a)
+
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.33</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Bug Fixes
+
+* introduce new client-side: content blocker rule syntax (CU-f535x6)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.3.0</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Features
+
+* add support for script modules in content blocker (CU-869be7jn7)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.3.15</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* compatibility with latest Bricks Builder when using Google Maps
+* compatibility with SolidSecurity reCaptcha, hCaptcha and Cloudflare Turnstile (CU-869apt3a0)
+
+
+##### Tests
+
+* add HTML fixture for script module consent handling (CU-869be7jn7)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.2.0</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Bug Fixes
+
+* introduce new client-side: content blocker rule syntax (CU-f535x6)
+* prevent iframe location replacement on Firefox Mobile to avoid App-Intent dialog (CU-869be8n2w)
+
+
+##### Features
+
+* add support for script modules in content blocker (CU-869be7jn7)
+* block dynamically injected scripts and stylesheets until consent (CU-f535x6)</details>
+
+
+
+
+
+## 5.2.8 (2025-12-04) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/api 1.5.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Features
+
+* inital implementation of object-storage package (CU-8697h8axv)
+* introduce contract profiles with predefined internal profile to exclude from OpenAPI (CU-8699tgz5g)</details>
+
+
+
+
+
+## 5.2.7 (2025-12-02)
+
+
+### Bug Fixes
+
+* add integration for All In One WP Security template (CU-863g4qm9t)
+* compatibility with the newest Gravity Forms Recaptcha Plugin (CU-86971x71q)
+* compatibility with WP Bakery Page Builder and loading the Pinterest SDK before consent (CU-86958pp6f)
+* remap provider contact information to separate fields while importing (CU-869b6hkuu)
+* scanner fails with SyntaxError: JSON Parse error: Unterminated string (CU-869awjyam)
+
+
+### Maintenance
+
+* compatibility with WordPress 6.9 (CU-869bakzm8)
+
+
+### Performance Improvements
+
+* when using a lot of languages and slow database queries fixed (CU-869b3g7nh)
+
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.1.21</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Bug Fixes
+
+* visual confirm.content blocker is shown a second time on click (CU-869b2p070)
+
+
+##### Performance Improvements
+
+* fix high LCP when using a lot of visual content blockers with confirm() syntax (CU-869b2p070)
+
+
+##### Tests
+
+* better code coverage with c8 (node-executed code) and v8 (client-side executed code) (CU-f535x6)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.20</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Bug Fixes
+
+* privacy policy URL in TCF declarations always linked to about:blank (CU-869b2n4v8)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.4.2</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* implement missing file multipart upload in contracts (CU-869badh12)
+* implement missing file multipart upload in contracts fetch-client (CU-869badh12)</details>
+
+
+
+
+
+## 5.2.6 (2025-11-21)
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.3</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Maintenance
+
+* upgrade zod to latest v4 and refactor to zod imports instead of zod/v4 (CU-8699tgz5g)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.4.1</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* allow to set a x-tagGroups via route details (CU-8699tgz5g)
+* remove redundant delivery ack policy handling (CU-869am6b3b)
+
+
+##### Maintenance
+
+* upgrade zod to latest v4 and refactor to zod imports instead of zod/v4 (CU-8699tgz5g)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.12</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Maintenance
+
+* introduce secret-scanner with gitleaks (CU-869aw6tca)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.20</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Maintenance
+
+* upgrade zod to latest v4 and refactor to zod imports instead of zod/v4 (CU-8699tgz5g)</details>
+
+
+
+
+
+## 5.2.5 (2025-10-15)
+
+
+### Bug Fixes
+
+* add compatibility for Formidable Forms loading form content async (CU-869abc456)
+* add URL validation to prevent SSRF attacks in scanner (CU-869abc123)
+* adding new language in TranslatePress did not immediatly translate the cookie banner (CU-869au2jrc)
+* database error Duplicate entry xxxx for key wp_rcb_consent_decision.hash (CU-869arb2v1)
+* make Request new consent button work with TranslatePress (CU-869akc3kg)
+* make resetting texts more reliable for service groups and services (CU-869akc3kg)
+
+
+### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)
+
+
+### Maintenance
+
+* update TCF vendors for Google AdSense and They Moneytizer network (CU-8694q1nfu)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.2</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Maintenance
+
+* upgrade to PNPM@10 (CU-8697je0ta)</details>
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.29</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Bug Fixes
+
+* false positive when OptimizePress cache got detected when Ocean Pro Demo plugin is active (CU-869ap0337)
+
+
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.13.5</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.30</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/freemium 1.3.122</summary>
+
+
+**_Purpose of dependency:_** _Make your plugin to a freemium plugin with predefined Envato support_
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.3.12</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* compatibiltiy with Total WP Theme and blocking lightboxes</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.5</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* always use the default language for translating an array to make it better work with TranslatePress (CU-869akc3kg)
+* compatibility with TranslatePress 2.9.20 and their REST API changes (CU-869akc3kg)
+* some PHP warnings when TranslatePress is active (CU-869au2jrc)
+
+
+##### Code Refactoring
+
+* rename skipFallbackTranslation to isLocalePotFile for clarity in translation handling (CU-869akc3kg)
+
+
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.18</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Bug Fixes
+
+* accessibility for screen reader users (dialog focus, button order, CU-869813z13)
+
+
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.20.5</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.1.5</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.14.5</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.5</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.4.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* allow to create literal error code responses (CU-8699tgz5g)
+* allow to define routes to be a webhook (CU-8699tgz5g)
+* enhance vendor management contracts with new API endpoints and schema updates (CU-8699tgz5g)
+* make optional recursion schema properties work as expected (CU-8699tgz5g)
+
+
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)
+
+
+##### Documentation
+
+* user session and magic link routes improved (CU-8699tgz5g)
+
+
+##### Features
+
+* enhance vendor and user management with new API endpoints and schema updates (CU-8699tgz5g)
+* introduce a contract-first design for message brokers with delivery-tuning (CU-869am6b3b)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.28</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* compatibility with the new q parameter in autotranslate since Weblate 5.13 (CU-869ar5pcu)
+* update error handling for existing languages (CU-869ar5pcu)</details>
+
+<details><summary>Development dependency update @devowl-wp/regexp-translation-extractor 0.2.45</summary>
+
+
+**_Purpose of dependency:_** _Provide a performant translation extractor based on regular expression._
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Development dependency update @devowl-wp/ts-config 0.1.18</summary>
+
+
+**_Purpose of dependency:_** _Predefined compiler options for our backends._
+##### Continuous Integration
+
+* correctly type check with --project instead of cd into the TypeScript project folder (CU-8697h8axv)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-cookie-banner 1.0.19</summary>
+
+
+**_Purpose of dependency:_** _Provide a scoped stylesheet, types and util functionality for a web cookie banner._
+##### Bug Fixes
+
+* accessibility for screen reader users (dialog focus, button order, CU-869813z13)</details>
+
+
+
+
+
+## 5.2.4 (2025-09-24)
+
+
+### Bug Fixes
+
+* attempt to read property term_id on array in CookieGroup.php (CU-869acc7nw)
+* compatibility with OptimizePress page builder and not able to add images (CU-869aga17c)
+* uncaught TypeError: Illegal offset type in isset or empty in Blocker.php
+* unknown column c.recorder and c.ui_view error in migration dialog (CU-86980grnw)
+
+
+### Documentation
+
+* access to source files of plugin (CU-869ad3694)
+
+
+### Styles
+
+* overlapping visual content blocker in Elementor wrapped containers (CU-869af52we)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.1</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Bug Fixes
+
+* handle too big device disclosures when using TCF and running into memory issues (CU-8696grpwu)
+
+
+##### Build System
+
+* introduce .oss.ts and oss-extract CLI (CU-869ad3694)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.2.24</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Bug Fixes
+
+* correctly handle objects in JSON (CU-869aga17c)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.18</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Bug Fixes
+
+* handle too big device disclosures when using TCF and running into memory issues (CU-8696grpwu)
+
+
+##### Maintenance
+
+* error texts for invalid TCF device storage disclosures (CU-8696grpwu)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.10</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Continuous Integration
+
+* oss-extract only in master pipeline (CU-869ad3694)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.19</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Build System
+
+* introduce .oss.ts and oss-extract CLI (CU-869ad3694)</details>
+
+<details><summary>Development dependency update @devowl-wp/monorepo-utils 0.2.19</summary>
+
+
+**_Purpose of dependency:_** _Predefined monorepo utilities and tasks._
+##### Build System
+
+* introduce .oss.ts and oss-extract CLI (CU-869ad3694)</details>
+
+<details><summary>Development dependency update @devowl-wp/webpack-config 0.2.49</summary>
+
+
+**_Purpose of dependency:_** _Webpack config builder for multiple ecosystems like standalone React frontends, Antd, Preact and WordPress._
+##### Build System
+
+* introduce .oss.ts and oss-extract CLI (CU-869ad3694)</details>
+
+
+
+
+
+## 5.2.3 (2025-09-12) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.3.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Bug Fixes
+
+* ui improments and fixed relation machine translation status calculation (CU-8699vyf8j)
+
+
+##### Code Refactoring
+
+* simple reorg structure discussed and implemented (CU-8699vyf8j)
+
+
+##### Features
+
+* implement untranslatable management to keep brand names and custom phrases (CU-8699vv1ap)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.3.2</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* allow v1, v2, ... versioning beside semantic versioning for contract (CU-8699tgz5g)
+* remove undefined values from URLSearchParams (CU-869ad2n4f)
+
+
+##### Documentation
+
+* add another example for multiple nested recursion objects (CU-8699tgz5g)
+* uncaught Error: Cannot find module 'node:async_hooks'</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.26</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* correctly check when a missing language already existed before (CU-8699tdjp0)</details>
+
+
+
+
+
+## 5.2.2 (2025-09-04) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/api 1.3.1</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* content length is not always respond by server if using e.g. Cloudflare with Transfer-Encoding: chunked (CU-869ac6g7m)</details>
+
+
+
+
+
+## 5.2.1 (2025-09-04)
+
+
+### Bug Fixes
+
+* compatibility with WP Grid Builder maps (CU-1y25df6)
+* in rare cases the cookie banner is frozen after clicking on Accept all (CU-869a875re)
+
+
+### Documentation
+
+* slovenian and croatian as supported languages (CU-869a071q6)
+
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.25</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Bug Fixes
+
+* deprecated tag manager events are not put into dataLayer when using the GTM4WP service (CU-31mpbvp)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.2.23</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Bug Fixes
+
+* modifyAny should return an object/array if passed as object/array (CU-1y25df6)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.15</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Bug Fixes
+
+* deprecated tag manager events are not put into dataLayer when using the GTM4WP service (CU-31mpbvp)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.3.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* a fetch client need to pass the API version (CU-869a8xjjf)
+* run guard schema validations isolated from complete contract schema validation (CU-8699z5dt7)
+
+
+##### Code Refactoring
+
+* migrate from @devowl-wp/api-request to new fetch client (CU-869a8xjjf)
+
+
+##### Documentation
+
+* add README for contract-first instroductions (CU-8699z5dt7)
+
+
+##### Features
+
+* introduce type-safe createFetchClient from all contracts (CU-869a8xjjf)
+
+
+##### Tests
+
+* add Vitest test runner for our contracts and introduce a first draft for a RPC client type generator (CU-869a8xjjf)</details>
+
+<details><summary>Development dependency update @devowl-wp/api-real-product-manager 1.0.15</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Commerce backend._
+##### Bug Fixes
+
+* a fetch client need to pass the API version (CU-869a8xjjf)
+
+
+##### Code Refactoring
+
+* migrate from @devowl-wp/api-request to new fetch client (CU-869a8xjjf)
+* migrate from @devowl-wp/api-request to new fetch client and remove @devowl-wp/api-request (CU-869a8xjjf)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.9</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Build System
+
+* introduce Complyforce API backend (CU-8699tdjp0)
+
+
+##### Continuous Integration
+
+* pnpm-lock.yaml should be considered as common file change (CU-869a875re)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.18</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Bug Fixes
+
+* switch from node fetch to undici request and make it work with streams and content encoding (CU-86997627z)</details>
+
+
+
+
+
+# 5.2.0 (2025-08-25)
+
+
+### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.2.1</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Bug Fixes
+
+* added sl and hr to supported languages (CU-8699ce5ba)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.13.0</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.14.0</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.20.0</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.1.0</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.14.0</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.20.0</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Features
+
+* translate into Slovenian and Croatia (CU-8699ce5ba)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.2.1</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* make API contracts aware of recursion, parameters to object for refinable schema and switch language contexts correctly (CU-8699z5dt7)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.24</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Bug Fixes
+
+* after creating a language wait for component to be idle and no task is running (CU-8699ce5ba)
+
+
+##### Continuous Integration
+
+* handle 404 error correctly after tasks was in progress previously (CU-8699ce5ba)</details>
+
+<details><summary>Development dependency update @devowl-wp/webpack-config 0.2.47</summary>
+
+
+**_Purpose of dependency:_** _Webpack config builder for multiple ecosystems like standalone React frontends, Antd, Preact and WordPress._
+##### Build System
+
+* ignore async_hooks in webpack (CU-8699z5dt7)</details>
+
+
+
+
+
+## 5.1.20 (2025-08-08) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.2.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Features
+
+* make API contracts compatible with OpenAPI, move guards to API definition and automatically generate API UI (CU-8699z5dt7)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.2.0</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Features
+
+* make API contracts compatible with OpenAPI, move guards to API definition and automatically generate API UI (CU-8699z5dt7)</details>
+
+
+
+
+
+## 5.1.19 (2025-08-05)
+
+
+### Bug Fixes
+
+* : lot of PHP warnings: Attempt to read property count when WP Rocket is active and user is logged-in (CU-869a18h6h)
+
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.22</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Bug Fixes
+
+* compatibility with FlyingPress v5 (CU-8696uzcjp)</details>
+
+
+
+
+
+## 5.1.18 (2025-07-29) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.8</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Continuous Integration
+
+* resource group for Docker Review deployments to avoid race condition in Swarm subnet allocation (CU-8699xj5ue)
+
+
+##### Tests
+
+* introduce optional playwright coverage with c8 (CU-8699761na)</details>
+
+<details><summary>Development dependency update @devowl-wp/monorepo-utils 0.2.17</summary>
+
+
+**_Purpose of dependency:_** _Predefined monorepo utilities and tasks._
+##### Bug Fixes
+
+* compatibility with latest version of Taskfile (CU-8699761na)</details>
+
+
+
+
+
+## 5.1.17 (2025-07-27)
+
+
+### Bug Fixes
+
+* hotfix when Weglot and TranslatePress with latest version lead to memory issues (CU-31mpbvp)
+
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.13.36</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* hotfix when Weglot and TranslatePress with latest version lead to memory issues (CU-31mpbvp)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.19.35</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* uncaught InvalidArgument IdnaEncoder::encode() Argument [#1](https://git.owlinfra.de/devowlio/devowl-wp/issues/1) () must be of type string|Stringable, NULL given</details>
+
+
+
+
+
+## 5.1.16 (2025-07-23)
+
+
+### Bug Fixes
+
+* allow to block WordPress server side HTTP requests with rule starting with wordpress-filter:pre_http_request*your-rule (CU-31mpbvp)
+* compatibility with Colibri page builder and website reloads too often (CU-869813z13)
+* do not show notice about missing GTM service when GTM4WP service is created (CU-31mpbvp)
+
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.11</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Maintenance
+
+* update texts (CU-863h7m9h2)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.19.34</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* better anti ad-block system against Ghostery (CU-8697fw0r4)</details>
+
+
+
+
+
+## 5.1.15 (2025-07-18) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+
+
+
+
+
+## 5.1.14 (2025-07-16) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.1.12</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Bug Fixes
+
+* introduce translation options for fields and enhance translation handling in forms (CU-8699f32x9)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.1.8</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* introduce translation options for fields and enhance translation handling in forms (CU-8699f32x9)</details>
+
+
+
+
+
+## 5.1.13 (2025-07-10)
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+<details><summary>Dependency updates @devowl-wp/utils 1.19.32</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* warning is_readable(): open_basedir restriction in effect (CU-8699fqkav)</details>
+
+
+
+
+
+## 5.1.12 (2025-07-10)
+
+
+### Bug Fixes
+
+* accessibility issues with #consent-change links (CU-869813z13)
+* allow to render only specific sections with the rcb-cookie-policy shortcode with sections parameter (CU-8699pvbvb)
+* block the PixelYourSite cookie pys_consent until consent (CU-8692wdhdy)
+* compatibility with BuddyBoss theme and video unblocking (CU-8699q655z)
+* compatibility with Elementor and block the elementor local storage item until consent (CU-863h7m9h2)
+* compatibility with WP REST API Log plugin and infinite scan jobs (CU-8699q681k)
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)
+* output error message when cookie group cannot be created
+
+
+### Maintenance
+
+* update TCF vendors for Google AdSense and They Moneytizer network (CU-8694q1nfu)
+
+
+### Styles
+
+* hide overlay in Bricks builder when a YouTube video is blocked
+
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.16</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-management 1.0.23</summary>
+
+
+**_Purpose of dependency:_** _Provide cookie consent management with adapters to your environment_
+##### Bug Fixes
+
+* allow to render only specific sections with the rcb-cookie-policy shortcode with sections parameter (CU-8699pvbvb)
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.20</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Bug Fixes
+
+* allow to make visual content blockers fixed on bottom with confirm(fixed=true) (CU-8699jz5vc)
+
+
+##### Maintenance
+
+* deprecate Google Tag Manager Event and use Google Consent Mode instead (CU-866ay94xn)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.12.32</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.18</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.2.19</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Bug Fixes
+
+* deprecation notice in PHP 8.4 for utf8_decode (CU-8699fymmg)
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/freemium 1.3.110</summary>
+
+
+**_Purpose of dependency:_** _Make your plugin to a freemium plugin with predefined Envato support_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.3.6</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* allow to make visual content blockers fixed on bottom with confirm(fixed=true) (CU-8699jz5vc)
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)
+* support webp images for image preview files</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.13.32</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.9</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Bug Fixes
+
+* accessibility issues reported by wpaccessibility.day (CU-869813z13)
+* accessibility use aria role button for all buttons in the cookie banner (CU-869813z13)
+* allow to make visual content blockers fixed on bottom with confirm(fixed=true) (CU-8699jz5vc)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.9</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Maintenance
+
+* deprecate Google Tag Manager Event and use Google Consent Mode instead (CU-866ay94xn)
+* show Learn More badge next to legal basis for DSG (Schweiz) (CU-866avtc01)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.19.48</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.0.19</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.13.31</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Dependency updates @devowl-wp/service-cloud-consumer 1.0.18</summary>
+
+
+**_Purpose of dependency:_** _Consume service and blocker templates from service cloud_
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)
+
+
+##### Maintenance
+
+* deprecate Google Tag Manager Event and use Google Consent Mode instead (CU-866ay94xn)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.19.31</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)
+* double slash for the chunked translation files (CU-8699fqkav)</details>
+
+<details><summary>Development dependency update @devowl-wp/composer-licenses 0.1.19</summary>
+
+
+**_Purpose of dependency:_** _Helper functionalities for your composer project to validate licenses and generate a disclaimer._
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.7</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Continuous Integration
+
+* allow to recreate the gitlab-ci image manually (CU-8696heugb)
+* docker review should not rely on manual containerize job (CU-8696heugb)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.17</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Tests
+
+* vitest/prefer-expect-resolves (CU-8698r80f9)</details>
+
+<details><summary>Development dependency update @devowl-wp/phpcs-config 0.1.18</summary>
+
+
+**_Purpose of dependency:_** _Predefined functionalities for PHPCS._
+##### Bug Fixes
+
+* deprecation notices when using PHP 8.4 in plugin-update-checker dependency (CU-8699fymmg)</details>
+
+<details><summary>Development dependency update @devowl-wp/ts-config 0.1.17</summary>
+
+
+**_Purpose of dependency:_** _Predefined compiler options for our backends._
+##### Bug Fixes
+
+* stabilize scrolling and stats with timer (CU-8696heugb)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-cookie-banner 1.0.15</summary>
+
+
+**_Purpose of dependency:_** _Provide a scoped stylesheet, types and util functionality for a web cookie banner._
+##### Bug Fixes
+
+* accessibility issues reported by wpaccessibility.day (CU-869813z13)
+* allow to make visual content blockers fixed on bottom with confirm(fixed=true) (CU-8699jz5vc)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-scoped-css 1.0.12</summary>
+
+
+**_Purpose of dependency:_** _Define a scoped stylesheet in JavaScript with performance in mind._
+##### Bug Fixes
+
+* allow to make visual content blockers fixed on bottom with confirm(fixed=true) (CU-8699jz5vc)</details>
+
+
+
+
+
+## 5.1.11 (2025-07-02) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+**Note:** This package (@devowl-wp/real-cookie-banner) has been updated because a dependency, which is also shipped with this package, has changed.
+
+
+
+
+
+
+
+## 5.1.10 (2025-06-25) (not released)
+
+**Note:** This version of the package has not (yet) been released publicly. This happens if changes have been made in dependencies that do not affect this package (e.g. changes for the development of the package). The changes will be rolled out with the next official update.
+
+
+### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)
+
+
+<details><summary>Dependency updates @devowl-wp/api-real-cookie-banner 1.1.10</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Cookie Banner backend._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/cache-invalidate 1.18.15</summary>
+
+
+**_Purpose of dependency:_** _Provide a single entry point to trigger cache invalidation of known caching plugins_
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-management 1.0.22</summary>
+
+
+**_Purpose of dependency:_** _Provide cookie consent management with adapters to your environment_
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/cookie-consent-web-client 1.0.19</summary>
+
+
+**_Purpose of dependency:_** _Apply cookies consent (opt-in, opt-out) to the current webpage._
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/customize 1.12.31</summary>
+
+
+**_Purpose of dependency:_** _Abstract utility for live preview (customize)_
+##### Maintenance
+
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/deliver-anonymous-asset 1.0.17</summary>
+
+
+**_Purpose of dependency:_** _Provide a functionality to deliver assets anonymous_
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/fast-html-tag 1.2.17</summary>
+
+
+**_Purpose of dependency:_** _Find tags within HTML content and modify it in speed of light_
+##### Bug Fixes
+
+* make the headless content url scanner work in ESM and CJS (CU-8696heugb)
+
+
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)
+
+
+##### Tests
+
+* concurrent test execution and test isolation (CU-8698r80f9)</details>
+
+<details><summary>Dependency updates @devowl-wp/freemium 1.3.109</summary>
+
+
+**_Purpose of dependency:_** _Make your plugin to a freemium plugin with predefined Envato support_
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-blocker 1.3.4</summary>
+
+
+**_Purpose of dependency:_** _Block HTML content by URLs and selector syntax_
+##### Bug Fixes
+
+* make the headless content url scanner work in ESM and CJS (CU-8696heugb)
+
+
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)
+
+
+##### Tests
+
+* concurrent test execution and test isolation (CU-8698r80f9)</details>
+
+<details><summary>Dependency updates @devowl-wp/headless-content-unblocker 1.1.14</summary>
+
+
+**_Purpose of dependency:_** _Unblock mechanism for @devowl-wp/headless-content-blocker with visual capabilities._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/multilingual 1.13.31</summary>
+
+
+**_Purpose of dependency:_** _Provide helper functionality for multilingual plugins like WPML and PolyLang_
+##### Maintenance
+
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner 1.1.8</summary>
+
+
+**_Purpose of dependency:_** _Provide UI for a cookie banner and content blocker for multiple services._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-cookie-banner-admin 1.1.8</summary>
+
+
+**_Purpose of dependency:_** _Provide admin UI for a cookie banner and content blocker for multiple services._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/react-utils 1.0.9</summary>
+
+
+**_Purpose of dependency:_** _Provide various React utils, side effect free and tree shakeable._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-product-manager-wp-client 1.19.47</summary>
+
+
+**_Purpose of dependency:_** _A WordPress client for Real Product Manager_
+##### Maintenance
+
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-queue 1.0.18</summary>
+
+
+**_Purpose of dependency:_** _Provide a promise-based queue system working in frontend for client and server tasks_
+##### Maintenance
+
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/real-utils 1.13.30</summary>
+
+
+**_Purpose of dependency:_** _Create cross-selling ads, about page, rating and newsletter input for WP Real plugins._
+##### Maintenance
+
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/resolve-none-computed-style 1.1.44</summary>
+
+
+**_Purpose of dependency:_** _Read the actually applied CSS property value instead of the calculated one._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/service-cloud-consumer 1.0.17</summary>
+
+
+**_Purpose of dependency:_** _Consume service and blocker templates from service cloud_
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/sitemap-crawler 1.0.10</summary>
+
+
+**_Purpose of dependency:_** _Find and crawl sitemaps to get a full list of URLs._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/utils 1.19.30</summary>
+
+
+**_Purpose of dependency:_** _Utility functionality for all your WordPress plugins._
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use correct remote language in continuous localization (CU-8699ce5ba)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Dependency updates @devowl-wp/web-html-element-interaction-recorder 1.0.9</summary>
+
+
+**_Purpose of dependency:_** _Record and replay interactions on a given HTML element._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/api 1.1.6</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Node.js backends and frontends._
+##### Bug Fixes
+
+* make contract and entity schemas translatable with i18next (CU-8697uqxnq)
+
+
+##### Code Refactoring
+
+* introduce contracts for api case study (CU-8697uqxnq)
+
+
+##### Maintenance
+
+* implement learnings from presentation for API contracts (CU-8697uqxnq)
+* started to work on a type-safe client fetch wrapper (CU-8697uqxnq)
+* use PNPM catalog feature (CU-8699ec2dm)
+* use zod/v4 instead of v4 beta package and use Zod locales for error messages (CU-8697uqxnq9)</details>
+
+<details><summary>Development dependency update @devowl-wp/api-real-product-manager 1.0.9</summary>
+
+
+**_Purpose of dependency:_** _Shared typings for all Real Commerce backend._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-integration 0.7.6</summary>
+
+
+**_Purpose of dependency:_** _DevOps macros, job templates and jobs for Gitlab CI and @devowl-wp/node-gitlab-ci._
+##### Continuous Integration
+
+* only release clouflare worker when changes are made (CU-869954ppf)
+
+
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/continuous-localization 0.8.21</summary>
+
+
+**_Purpose of dependency:_** _Provide a CLI to push and pull localization files from different translation management systems._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/eslint-config 0.2.16</summary>
+
+
+**_Purpose of dependency:_** _Provide eslint configuration for our complete monorepo._
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use PNPM catalog feature (CU-8699ec2dm)
+* use zod/v4 instead of v4 beta package and use Zod locales for error messages (CU-8697uqxnq9)</details>
+
+<details><summary>Development dependency update @devowl-wp/iso-codes 1.2.6</summary>
+
+
+**_Purpose of dependency:_** _Enums and key value getters for all countries in different ISO code standards._
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/monorepo-utils 0.2.15</summary>
+
+
+**_Purpose of dependency:_** _Predefined monorepo utilities and tasks._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/node-gitlab-ci 0.8.8</summary>
+
+
+**_Purpose of dependency:_** _Create dynamic GitLab CI pipelines in JavaScript or TypeScript for each project. Reuse and inherit instructions and avoid duplicate code!_
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/regexp-translation-extractor 0.2.40</summary>
+
+
+**_Purpose of dependency:_** _Provide a performant translation extractor based on regular expression._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/ts-config 0.1.16</summary>
+
+
+**_Purpose of dependency:_** _Predefined compiler options for our backends._
+##### Bug Fixes
+
+* make the headless content url scanner work in ESM and CJS (CU-8696heugb)
+
+
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-cookie-banner 1.0.14</summary>
+
+
+**_Purpose of dependency:_** _Provide a scoped stylesheet, types and util functionality for a web cookie banner._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/web-scoped-css 1.0.11</summary>
+
+
+**_Purpose of dependency:_** _Define a scoped stylesheet in JavaScript with performance in mind._
+##### Maintenance
+
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+<details><summary>Development dependency update @devowl-wp/webpack-config 0.2.44</summary>
+
+
+**_Purpose of dependency:_** _Webpack config builder for multiple ecosystems like standalone React frontends, Antd, Preact and WordPress._
+##### Maintenance
+
+* upgrade to TypeScript 5.8 (CU-8697uqxnq)
+* use PNPM catalog feature (CU-8699ec2dm)</details>
+
+
+
+
+
 ## 5.1.9 (2025-06-11)
 
 

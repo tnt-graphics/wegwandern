@@ -45,20 +45,20 @@
         },
         {
             "name": "components/jquery",
-            "version": "v3.7.1",
-            "version_normalized": "3.7.1.0",
+            "version": "4.0.0",
+            "version_normalized": "4.0.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/components/jquery.git",
-                "reference": "8edc7785239bb8c2ad2b83302b856a1d61de60e7"
+                "reference": "594f9dd922c3b12519c8d52bde744b79fd2ca816"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/components/jquery/zipball/8edc7785239bb8c2ad2b83302b856a1d61de60e7",
-                "reference": "8edc7785239bb8c2ad2b83302b856a1d61de60e7",
+                "url": "https://api.github.com/repos/components/jquery/zipball/594f9dd922c3b12519c8d52bde744b79fd2ca816",
+                "reference": "594f9dd922c3b12519c8d52bde744b79fd2ca816",
                 "shasum": ""
             },
-            "time": "2023-09-22T01:43:46+00:00",
+            "time": "2026-05-11T18:06:23+00:00",
             "type": "component",
             "extra": {
                 "component": {
@@ -642,17 +642,17 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.49",
-            "version_normalized": "2.0.49.0",
+            "version": "2.0.54",
+            "version_normalized": "2.0.54.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "4de468f48f0ab9709fc875aca0762abdc81cfa9b"
+                "reference": "a96a835067c39ee7a709329fe70869817da18081"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/4de468f48f0ab9709fc875aca0762abdc81cfa9b",
-                "reference": "4de468f48f0ab9709fc875aca0762abdc81cfa9b",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/a96a835067c39ee7a709329fe70869817da18081",
+                "reference": "a96a835067c39ee7a709329fe70869817da18081",
                 "shasum": ""
             },
             "require": {
@@ -660,7 +660,7 @@
             },
             "require-dev": {
                 "phing/phing": "~2.7",
-                "phpunit/phpunit": "^4.8.35|^5.7|^6.0|^9.4",
+                "phpunit/phpunit": "^4.8.35|^5.7|^6.0|^8.5|^9.4",
                 "squizlabs/php_codesniffer": "~2.0"
             },
             "suggest": {
@@ -670,7 +670,7 @@
                 "ext-openssl": "Install the OpenSSL extension in order to speed up a wide variety of cryptographic operations.",
                 "ext-xml": "Install the XML extension to load XML formatted public keys."
             },
-            "time": "2025-10-06T01:05:33+00:00",
+            "time": "2026-04-27T06:59:24+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -735,7 +735,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.49"
+                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.54"
             },
             "funding": [
                 {
@@ -1469,17 +1469,17 @@
         },
         {
             "name": "team-updraft/common-libs",
-            "version": "3.0.8",
-            "version_normalized": "3.0.8.0",
+            "version": "3.1.10",
+            "version_normalized": "3.1.10.0",
             "source": {
                 "type": "git",
                 "url": "ssh://git@source.updraftplus.com:20022/team-updraft/common-libs.git",
-                "reference": "65081c07ed5ce99eca7ad40136d90d2f99edf51f"
+                "reference": "027214202c3dbc15a807bb3860da36e764c1a58f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://source.updraftplus.com/api/v4/projects/28/packages/composer/archives/team-updraft/common-libs.zip?sha=65081c07ed5ce99eca7ad40136d90d2f99edf51f",
-                "reference": "65081c07ed5ce99eca7ad40136d90d2f99edf51f",
+                "url": "https://source.updraftplus.com/api/v4/projects/28/packages/composer/archives/team-updraft/common-libs.zip?sha=027214202c3dbc15a807bb3860da36e764c1a58f",
+                "reference": "027214202c3dbc15a807bb3860da36e764c1a58f",
                 "shasum": ""
             },
             "require-dev": {
@@ -1581,19 +1581,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/DavidAnderson684/plugin-update-checker.git",
-                "reference": "6290e88eebcc367f56180e06d14da5f0a2eb2a1b"
+                "reference": "9348efe1b7e6da99bd5951c6d0718656c1bae9d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DavidAnderson684/plugin-update-checker/zipball/6290e88eebcc367f56180e06d14da5f0a2eb2a1b",
-                "reference": "6290e88eebcc367f56180e06d14da5f0a2eb2a1b",
+                "url": "https://api.github.com/repos/DavidAnderson684/plugin-update-checker/zipball/9348efe1b7e6da99bd5951c6d0718656c1bae9d6",
+                "reference": "9348efe1b7e6da99bd5951c6d0718656c1bae9d6",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "php": ">=5.2.0"
             },
-            "time": "2023-09-15T15:39:07+00:00",
+            "time": "2026-01-21T22:11:44+00:00",
             "default-branch": true,
             "type": "library",
             "installation-source": "dist",
@@ -1622,7 +1622,7 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/DavidAnderson684/plugin-update-checker/tree/v4.13.2"
+                "source": "https://github.com/DavidAnderson684/plugin-update-checker/tree/master"
             },
             "install-path": "../yahnis-elsts/plugin-update-checker"
         }

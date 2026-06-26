@@ -6,6 +6,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\consent\Transa
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\MyConsent;
 use DevOwl\RealCookieBanner\settings\Consent as SettingsConsent;
+use DevOwl\RealCookieBanner\settings\General as SettingsGeneral;
 use DevOwl\RealCookieBanner\Utils as RealCookieBannerUtils;
 use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Utils;
 // @codeCoverageIgnoreStart
@@ -25,10 +26,15 @@ trait Consent
     // Documented in IOverrideConsent
     public function overrideRegister()
     {
-        \register_setting(SettingsConsent::OPTION_GROUP, SettingsConsent::SETTING_DATA_PROCESSING_IN_UNSAFE_COUNTRIES, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(SettingsConsent::OPTION_GROUP, SettingsConsent::SETTING_BANNER_LESS_CONSENT, ['type' => 'boolean', 'show_in_rest' => \true]);
-        // WP < 5.3 does not support array types yet, so we need to store serialized
-        \register_setting(SettingsConsent::OPTION_GROUP, SettingsConsent::SETTING_BANNER_LESS_SHOW_ON_PAGE_IDS, ['type' => 'string', 'show_in_rest' => \true]);
+        \register_setting(SettingsConsent::OPTION_GROUP, SettingsConsent::SETTING_DATA_PROCESSING_IN_UNSAFE_COUNTRIES, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(SettingsConsent::OPTION_GROUP, SettingsConsent::SETTING_BANNER_LESS_CONSENT, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        // WP < 5.3 does not support array types yet, so we store the page IDs as a CSV string.
+        \register_setting(SettingsConsent::OPTION_GROUP, SettingsConsent::SETTING_BANNER_LESS_SHOW_ON_PAGE_IDS, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => function ($value) {
+            return SettingsGeneral::sanitize_delimited_list($value, ',', function ($id) {
+                $id = \absint($id);
+                return $id > 0 ? $id : '';
+            });
+        }]);
     }
     // Documented in AbstractConsent
     public function isDataProcessingInUnsafeCountries()
@@ -60,7 +66,8 @@ trait Consent
         if ($result === \false) {
             $transaction = new Transaction();
             $transaction->setIpAddress(RealCookieBannerUtils::getIpAddress());
-            $transaction->setUserAgent($_SERVER['HTTP_USER_AGENT']);
+            $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? \sanitize_text_field(\wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '';
+            $transaction->setUserAgent($userAgent);
             $transaction->setReferer($request->get_param('referer'));
             $transaction->setViewPort($request->get_param('viewPortWidth'), $request->get_param('viewPortHeight'));
             $postId = 0;

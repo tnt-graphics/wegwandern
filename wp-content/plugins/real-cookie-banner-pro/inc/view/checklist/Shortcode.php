@@ -30,12 +30,12 @@ class Shortcode extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklis
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Place legal links to your website', RCB_TD);
+        return \__('Place legal links to your website', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Your website visitors must be able to view their consent history, change their consent, or withdraw their consent at any time. This must be as easy as giving consent. Therefore, the legal links must be included on every subpage of the website (e.g. in the footer or as a floating icon called sticky legal links widget).', RCB_TD);
+        return \__('Your website visitors must be able to view their consent history, change their consent, or withdraw their consent at any time. This must be as easy as giving consent. Therefore, the legal links must be included on every subpage of the website (e.g. in the footer or as a floating icon called sticky legal links widget).', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -45,6 +45,6 @@ class Shortcode extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklis
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Create legal links', RCB_TD);
+        return \__('Create legal links', 'real-cookie-banner');
     }
 }

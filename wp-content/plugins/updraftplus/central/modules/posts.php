@@ -1,6 +1,7 @@
 <?php
-
-if (!defined('UPDRAFTCENTRAL_CLIENT_DIR')) die('No access.');
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery -- Direct $wpdb query is required for this operation.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching -- some query operations need to always receive the most up-to-date or actual data directly from the database, reducing the risk of serving stale information.
+if (!defined('ABSPATH')) die('No direct access allowed');
 
 /**
  * Handles Posts Commands
@@ -682,7 +683,17 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 	protected function get_date_options($type = 'post') {
 		global $wpdb;
 
-		$date_options = $wpdb->get_col("SELECT DATE_FORMAT(`post_date`, '%M %Y') as `formatted_post_date` FROM {$wpdb->posts} WHERE `post_type` = '{$type}' AND `post_status` IN ('publish', 'private', 'draft', 'pending', 'future') GROUP BY `formatted_post_date` ORDER BY `post_date` DESC");
+		$date_options = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT DATE_FORMAT(`post_date`, '%%M %%Y') AS `formatted_post_date`
+				FROM {$wpdb->posts}
+				WHERE `post_type` = %s
+				AND `post_status` IN ('publish', 'private', 'draft', 'pending', 'future')
+				GROUP BY `formatted_post_date`
+				ORDER BY `post_date` DESC",
+				$type
+			)
+		);
 
 		return $date_options;
 	}
@@ -1047,6 +1058,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 				}
 			}
 
+			// phpcs:disable WordPress.DateTime.RestrictedFunctions.date_date -- post_date is stored in WP local timezone; gmdate() would return incorrect UTC values
 			$published_date = array(
 				'jj' => date('d', strtotime($post->post_date)),
 				'mm' => date('m', strtotime($post->post_date)),
@@ -1055,6 +1067,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 				'mn' => date('i', strtotime($post->post_date)),
 				'ss' => date('s', strtotime($post->post_date))
 			);
+			// phpcs:enable WordPress.DateTime.RestrictedFunctions.date_date
 
 			$sample_permalink = get_sample_permalink($post->ID, $post->post_title, '');
 			$permalink = get_permalink($post->ID);
@@ -1097,8 +1110,8 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 					'template' => get_page_template_slug($post->ID),
 					'permalink_template' => get_permalink($post->ID, true),
 					'author_name' => get_the_author_meta('display_name', $post->post_author),
-					'publish_month_year' => date('F Y', strtotime($post->post_date)),
-					'publish_month_year_date' => date('d F Y', strtotime($post->post_date)),
+					'publish_month_year' => date('F Y', strtotime($post->post_date)), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- post_date is stored in WP local timezone; gmdate() would return incorrect UTC values
+					'publish_month_year_date' => date('d F Y', strtotime($post->post_date)), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- post_date is stored in WP local timezone; gmdate() would return incorrect UTC values
 					'post_status_object' => get_post_status_object(get_post_status($post->ID)),
 					'published_date' => $published_date,
 					'format' => get_post_format($post->ID),
@@ -1319,7 +1332,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 			// Attach (new) categories to post
 			wp_set_object_terms($post_id, $category_ids, 'category');
 		} else {
-			wp_set_object_terms($post_id, get_option('default_category'), 'category');
+			wp_set_object_terms($post_id, intval(get_option('default_category')), 'category');
 		}
 	}
 
@@ -1530,7 +1543,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 			// post/publish date
 			if (!empty($params['date'])) {
 				$datetime = strtotime($params['date']);
-				$post_date = date('Y-m-d H:i:s', $datetime);
+				$post_date = date('Y-m-d H:i:s', $datetime); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- post_date must be stored in WP local timezone, not UTC
 
 				$args['post_date'] = $post_date;
 				$args['post_date_gmt'] = gmdate('Y-m-d H:i:s', $datetime);
@@ -1538,7 +1551,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 				// We only change the status to "future" based from the submitted date if the post status
 				// is not empty and equal to 'publish' and the date is for the coming future.
 				if (!empty($params['status']) && 'publish' == $params['status']) {
-					if (strtotime($post_date) > strtotime(date('Y-m-d H:i:s'))) $args['post_status'] = 'future';
+					if (strtotime($post_date) > strtotime(date('Y-m-d H:i:s'))) $args['post_status'] = 'future'; // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- comparing local-timezone post_date against current local time intentionally
 				}
 			}
 
@@ -1552,7 +1565,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 				$post_id = wp_insert_post($args, true);
 			} else {
 				$args['ID'] = $params['id'];
-				$args['post_modified'] = date('Y-m-d H:i:s');
+				$args['post_modified'] = date('Y-m-d H:i:s'); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- post_modified must be stored in WP local timezone, not UTC
 				$args['post_modified_gmt'] = gmdate('Y-m-d H:i:s');
 
 				$post_id = wp_update_post($args, true);
@@ -1736,7 +1749,7 @@ class UpdraftCentral_Posts_Commands extends UpdraftCentral_Commands {
 				'misc' => array(
 					'link' => get_author_posts_url($user->ID, $user->user_nicename),
 					'locale' => function_exists('get_user_locale') ? get_user_locale($user) : $locale,
-					'registered_date' => date('c', strtotime($user->user_registered)),
+					'registered_date' => date('c', strtotime($user->user_registered)), // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- user_registered is stored in UTC; date() used intentionally for ISO 8601 output in local timezone
 				)
 			);
 

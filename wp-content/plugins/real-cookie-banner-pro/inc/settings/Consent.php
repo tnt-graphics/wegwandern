@@ -81,16 +81,16 @@ class Consent extends AbstractConsent implements IOverrideConsent
      */
     public function register()
     {
-        \register_setting(self::OPTION_GROUP, self::SETTING_ACCEPT_ALL_FOR_BOTS, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_RESPECT_DO_NOT_TRACK, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_COOKIE_DURATION, ['type' => 'number', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_COOKIE_VERSION, ['type' => 'number', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_FAILED_CONSENT_DOCUMENTATION_HANDLING, ['type' => 'boolean', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => self::FAILED_CONSENT_DOCUMENTATION_HANDLINGS]]]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_SAVE_IP, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_AGE_NOTICE, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_AGE_NOTICE_AGE_LIMIT, ['type' => 'boolean', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => \array_keys(self::AGE_NOTICE_COUNTRY_AGE_MAP)]]]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_LIST_SERVICES_NOTICE, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(self::OPTION_GROUP, self::SETTING_CONSENT_DURATION, ['type' => 'number', 'show_in_rest' => \true]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_ACCEPT_ALL_FOR_BOTS, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_RESPECT_DO_NOT_TRACK, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_COOKIE_DURATION, ['type' => 'number', 'show_in_rest' => \true, 'sanitize_callback' => [self::class, 'sanitize_cookie_duration_option']]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_COOKIE_VERSION, ['type' => 'number', 'show_in_rest' => \true, 'sanitize_callback' => [self::class, 'sanitize_cookie_version']]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_FAILED_CONSENT_DOCUMENTATION_HANDLING, ['type' => 'string', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => self::FAILED_CONSENT_DOCUMENTATION_HANDLINGS]], 'sanitize_callback' => [self::class, 'sanitize_failed_consent_documentation_handling']]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_SAVE_IP, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_AGE_NOTICE, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_AGE_NOTICE_AGE_LIMIT, ['type' => 'string', 'show_in_rest' => ['schema' => ['type' => 'string', 'enum' => \array_keys(self::AGE_NOTICE_COUNTRY_AGE_MAP)]], 'sanitize_callback' => [self::class, 'sanitize_age_notice_age_limit']]);
+        \register_setting(self::OPTION_GROUP, self::SETTING_LIST_SERVICES_NOTICE, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(self::OPTION_GROUP, self::SETTING_CONSENT_DURATION, ['type' => 'number', 'show_in_rest' => \true, 'sanitize_callback' => [self::class, 'sanitize_consent_duration_option']]);
         $this->overrideRegister();
     }
     // Documented in AbstractConsent
@@ -147,6 +147,75 @@ class Consent extends AbstractConsent implements IOverrideConsent
     public function setCookieVersion($version)
     {
         \update_option(self::SETTING_COOKIE_VERSION, $version);
+    }
+    /**
+     * Sanitize cookie duration (days) with upper and lower bounds.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_cookie_duration_option($value)
+    {
+        if (!\is_numeric($value)) {
+            return self::DEFAULT_COOKIE_DURATION;
+        }
+        $int = \intval($value);
+        if ($int > 365) {
+            return 365;
+        }
+        if ($int < 1) {
+            return self::DEFAULT_COOKIE_DURATION;
+        }
+        return $int;
+    }
+    /**
+     * Sanitize consent duration (months) with upper and lower bounds.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_consent_duration_option($value)
+    {
+        if (!\is_numeric($value)) {
+            return self::DEFAULT_CONSENT_DURATION;
+        }
+        $int = \intval($value);
+        if ($int > 120) {
+            return 120;
+        }
+        if ($int < 1) {
+            return self::DEFAULT_CONSENT_DURATION;
+        }
+        return $int;
+    }
+    /**
+     * Sanitize stored consent cookie format version.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_cookie_version($value)
+    {
+        $v = \absint($value);
+        return \in_array($v, [self::COOKIE_VERSION_1, self::COOKIE_VERSION_2, self::COOKIE_VERSION_3], \true) ? $v : self::DEFAULT_COOKIE_VERSION;
+    }
+    /**
+     * Sanitize failed consent documentation handling mode.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_failed_consent_documentation_handling($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        return \in_array($value, self::FAILED_CONSENT_DOCUMENTATION_HANDLINGS, \true) ? $value : self::DEFAULT_FAILED_CONSENT_DOCUMENTATION_HANDLING;
+    }
+    /**
+     * Sanitize age notice age limit preset key.
+     *
+     * @param mixed $value
+     */
+    public static function sanitize_age_notice_age_limit($value)
+    {
+        $value = \is_string($value) ? \sanitize_text_field($value) : '';
+        $allowed = \array_keys(self::AGE_NOTICE_COUNTRY_AGE_MAP);
+        return \in_array($value, $allowed, \true) ? $value : self::DEFAULT_AGE_NOTICE_AGE_LIMIT;
     }
     /**
      * The cookie duration may not be greater than 365 days.

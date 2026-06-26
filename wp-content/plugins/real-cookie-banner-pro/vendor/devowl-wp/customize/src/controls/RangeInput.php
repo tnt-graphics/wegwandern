@@ -63,7 +63,7 @@ class RangeInput extends WP_Customize_Control
             \printf('<label for="%s" class="customize-control-title">%s</label>', \esc_attr($input_id), \esc_html($this->label));
         }
         if (!empty($this->description)) {
-            \printf('<span id="%s" class="description customize-control-description">%s</span>', \esc_attr($description_id), $this->description);
+            \printf('<span id="%s" class="description customize-control-description">%s</span>', \esc_attr($description_id), \wp_kses_post($this->description));
         }
     }
 }

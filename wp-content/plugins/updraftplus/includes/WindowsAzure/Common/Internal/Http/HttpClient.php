@@ -1,5 +1,4 @@
 <?php
-
 /**
  * LICENSE: Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +29,7 @@ use WindowsAzure\Common\ServiceException;
 use WindowsAzure\Common\Internal\Validate;
 use WindowsAzure\Common\Internal\Http\IUrl;
 
+if (!defined('ABSPATH')) die('No direct access allowed');
 require_once 'HTTP/Request2.php';
 
 /**

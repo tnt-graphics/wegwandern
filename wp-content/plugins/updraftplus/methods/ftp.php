@@ -130,7 +130,7 @@ class UpdraftPlus_BackupModule_ftp extends UpdraftPlus_BackupModule {
 			}
 		}
 		$properties = array(
-			'updraft_sftp_ftps_notice' => wp_kses(apply_filters('updraft_sftp_ftps_notice', '<strong>'.__('Only non-encrypted FTP is supported by regular UpdraftPlus.').'</strong> <a href="https://teamupdraft.com/updraftplus/wordpress-cloud-storage-options/?utm_source=udp-plugin&utm_medium=referral&utm_campaign=paac&utm_content=ftp-encryption&utm_creative_format=text" target="_blank">'.__('If you want encryption (e.g. you are storing sensitive business data), then choose UpdraftPlus Premium.', 'updraftplus')), $this->allowed_html_for_content_sanitisation()),
+			'updraft_sftp_ftps_notice' => wp_kses(apply_filters('updraft_sftp_ftps_notice', '<strong>'.__('Only non-encrypted FTP is supported by regular UpdraftPlus.', 'updraftplus').'</strong> <a href="'.esc_url($updraftplus->get_url('premium_ftp_encryption')).'" target="_blank">'.__('If you want encryption (e.g. you are storing sensitive business data), then choose UpdraftPlus Premium.', 'updraftplus').'</a>'), $this->allowed_html_for_content_sanitisation()),
 			'ftp_not_possible_warnings' => $ftp_not_possible,
 			'input_host_label' => __('FTP server', 'updraftplus'),
 			'input_user_label' => __('FTP login', 'updraftplus'),
@@ -398,7 +398,10 @@ class UpdraftPlus_BackupModule_ftp extends UpdraftPlus_BackupModule {
 		?>
 		<tr class="{{get_template_css_classes true}}">
 			<th>{{input_host_label}}:</th>
-			<td><input class="updraft_input--wide" type="text" size="40" data-updraft_settings_test="server" id="{{get_template_input_attribute_value "id" "host"}}" name="{{get_template_input_attribute_value "name" "host"}}" value="{{host}}" /></td>
+			<td><input class="updraft_ftp_host_settings updraft_input--wide" type="text" size="40" data-updraft_settings_test="server" id="{{get_template_input_attribute_value "id" "host"}}" name="{{get_template_input_attribute_value "name" "host"}}" value="{{host}}" />
+			<br>
+			<em class="updraft_ftp_host_error" style="display: none;">{{hostname_error_label}}</em>
+			</td>
 		</tr>
 		
 		<tr class="{{get_template_css_classes true}}">
@@ -484,6 +487,7 @@ class UpdraftPlus_BackupModule_ftp extends UpdraftPlus_BackupModule {
 			}
 		}
 
+		$this->set_connection_status(true);
 	}
 
 	/**

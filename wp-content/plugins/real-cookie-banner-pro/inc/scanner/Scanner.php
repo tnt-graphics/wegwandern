@@ -9,6 +9,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\plugins\scanner
 use DevOwl\RealCookieBanner\base\UtilsProvider;
 use DevOwl\RealCookieBanner\Cache;
 use DevOwl\RealCookieBanner\comp\ComingSoonPlugins;
+use DevOwl\RealCookieBanner\comp\TemplatesPluginIntegrations;
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\templates\StorageHelper;
 use DevOwl\RealCookieBanner\templates\TemplateConsumers;
@@ -109,14 +110,16 @@ class Scanner
             $this->doActionAddedRemoved($scanEntries, $beforeTemplates, $beforeExternalHosts, $afterTemplates, $afterExternalHosts);
         }
         // Print result as HTML comment
-        \printf('<!--rcb-scan:%s-->', \json_encode($scanEntries));
+        \printf('<!--rcb-scan:%s-->', \wp_json_encode($scanEntries));
         // Get real-queue options so we can use this page request instead of an additional `/status` request
-        $realQueueParams = $_GET[self::QUERY_ARG_TOKEN] ?? null;
+        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- opaque scanner queue payload validated via UtilsUtils::isJson after decode.
+        $realQueueParams = isset($_GET[self::QUERY_ARG_TOKEN]) ? \wp_unslash($_GET[self::QUERY_ARG_TOKEN]) : null;
+        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         if ($realQueueParams !== null) {
             $realQueueParams = UtilsUtils::isJson(\base64_decode(\trim($realQueueParams, '-')));
             if (\is_array($realQueueParams)) {
                 \printf('
-    <!--real-queue-status:%s-->', \json_encode(Core::getInstance()->getRealQueue()->getRestQuery()->buildStatus($realQueueParams)));
+    <!--real-queue-status:%s-->', \wp_json_encode(Core::getInstance()->getRealQueue()->getRestQuery()->buildStatus($realQueueParams)));
             }
         }
         // Mark Job as succeed
@@ -322,6 +325,17 @@ class Scanner
                     $this->isActiveCache = \true;
                 }
             }
+            if ($this->isActiveCache) {
+                // These filters are only applied when the scanner is active; they differ from the ones in `probablyReduceCurrentUserPermissions`
+                // as they are applied as soon as we know that the scanner is active.
+                // [Plugin Comp] Solid Security: Deactivate the "Enable GDPR Opt-In" option so our scanner can find the GDPR Opt-In form as well
+                \add_filter('option_' . TemplatesPluginIntegrations::OPTION_NAME_SOLID_SECURITY_CONFIGS, function ($option) {
+                    if (\is_array($option) && isset($option['recaptcha'])) {
+                        $option['gdpr'] = \false;
+                    }
+                    return $option;
+                });
+            }
         }
         return $this->isActiveCache;
     }
@@ -460,7 +474,7 @@ class Scanner
     public function outputBlogId()
     {
         if (isset($_GET[self::QUERY_ARG_SITEMAP_FILTER]) && \is_user_logged_in()) {
-            $sitemapFilter = $_GET[self::QUERY_ARG_SITEMAP_FILTER];
+            $sitemapFilter = \sanitize_text_field(\wp_unslash($_GET[self::QUERY_ARG_SITEMAP_FILTER]));
             $currentBlogId = \get_current_blog_id();
             $sitemapBlogId = \is_numeric($sitemapFilter) ? \intval($sitemapFilter) : null;
             \header(\sprintf('%s: %s', self::HEADER_SITEMAP_FILTER, $currentBlogId === $sitemapBlogId ? 'true' : 'false'));
@@ -476,9 +490,9 @@ class Scanner
     {
         switch ($originalType) {
             case self::REAL_QUEUE_TYPE:
-                return \__('Real Cookie Banner: Scan of your pages', RCB_TD);
+                return \__('Real Cookie Banner: Scan of your pages', 'real-cookie-banner');
             case \DevOwl\RealCookieBanner\scanner\AutomaticScanStarter::REAL_QUEUE_TYPE:
-                return \__('Real Cookie Banner: Automatic scan of complete website', RCB_TD);
+                return \__('Real Cookie Banner: Automatic scan of complete website', 'real-cookie-banner');
             default:
                 return $label;
         }
@@ -494,9 +508,9 @@ class Scanner
         switch ($type) {
             case self::REAL_QUEUE_TYPE:
             case \DevOwl\RealCookieBanner\scanner\AutomaticScanStarter::REAL_QUEUE_TYPE:
-                $actions[] = ['url' => \__('https://devowl.io/support/', RCB_TD), 'linkText' => \__('Contact support', RCB_TD)];
-                $actions[] = ['action' => 'delete', 'linkText' => \__('Cancel scan', RCB_TD)];
-                $actions[] = ['action' => 'skip', 'linkText' => \__('Skip failed pages', RCB_TD)];
+                $actions[] = ['url' => \__('https://devowl.io/support/', 'real-cookie-banner'), 'linkText' => \__('Contact support', 'real-cookie-banner')];
+                $actions[] = ['action' => 'delete', 'linkText' => \__('Cancel scan', 'real-cookie-banner')];
+                $actions[] = ['action' => 'skip', 'linkText' => \__('Skip failed pages', 'real-cookie-banner')];
                 break;
             default:
         }
@@ -515,11 +529,11 @@ class Scanner
             case self::REAL_QUEUE_TYPE:
                 return \sprintf(
                     // translators:
-                    \_n('%1$d pages failed to be scanned.', '%1$d pages failed to be scanned.', $remaining['failure'], RCB_TD),
+                    \_n('%1$d pages failed to be scanned.', '%1$d pages failed to be scanned.', $remaining['failure'], 'real-cookie-banner'),
                     $remaining['failure']
                 );
             case \DevOwl\RealCookieBanner\scanner\AutomaticScanStarter::REAL_QUEUE_TYPE:
-                return \__('Real Cookie Banner tried to automatically scan your entire website for services and external URLs.', RCB_TD);
+                return \__('Real Cookie Banner tried to automatically scan your entire website for services and external URLs.', 'real-cookie-banner');
             default:
                 return $description;
         }
@@ -642,7 +656,11 @@ class Scanner
         $role_with_least_caps = null;
         $least_capabilities_count = \PHP_INT_MAX;
         foreach ($roles as $role_name => $role_info) {
-            $capabilities_count = \count($role_info['capabilities']);
+            $capabilities = $role_info['capabilities'] ?? [];
+            if (!\is_array($capabilities)) {
+                continue;
+            }
+            $capabilities_count = \count($capabilities);
             if ($capabilities_count < $least_capabilities_count) {
                 $least_capabilities_count = $capabilities_count;
                 $role_with_least_caps = $role_name;

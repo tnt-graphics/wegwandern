@@ -26,12 +26,12 @@ class License extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistI
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Activate your license', RCB_TD);
+        return \__('Activate your license', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('Only users with an activated license get updates and are always up-to-date on legal changes.', RCB_TD);
+        return \__('Only users with an activated license get updates and are always up-to-date on legal changes.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -41,6 +41,6 @@ class License extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistI
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Activate now', RCB_TD);
+        return \__('Activate now', 'real-cookie-banner');
     }
 }

@@ -21,11 +21,11 @@ class Install extends \DevOwl\RealCookieBanner\view\checklist\AbstractChecklistI
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Install Real Cookie Banner', RCB_TD);
+        return \__('Install Real Cookie Banner', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('You have to install and activate the plugin in your WordPress to start with the setup.', RCB_TD);
+        return \__('You have to install and activate the plugin in your WordPress to start with the setup.', 'real-cookie-banner');
     }
 }

@@ -1,5 +1,6 @@
 <?php
-
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fclose, WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.WP.AlternativeFunctions.file_system_operations_fgets, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.WP.AlternativeFunctions.file_system_operations_mkdir, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_chmod, WordPress.WP.AlternativeFunctions.file_system_operations_fputs, WordPress.WP.AlternativeFunctions.file_system_operations_is_writeable, WordPress.WP.AlternativeFunctions.file_system_operations_chown, WordPress.WP.AlternativeFunctions.file_system_operations_chgrp, WordPress.WP.AlternativeFunctions.file_system_operations_touch, WordPress.WP.AlternativeFunctions.file_system_operations_rmdir, WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- Native PHP fileystem function is used for direct control and performance because it can bypass additional layers of abstraction so that no overhead from the WordPress filesystem API's internal handling
+// phpcs:disable WordPress.DateTime.RestrictedFunctions.timezone_change_date_default_timezone_set -- date_default_timezone_set() functions instead of the WP internal functions.
 /**
  * LICENSE: Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -381,7 +382,7 @@ class Utilities
         }
 
         $returnValue = str_replace(
-            '+00:00', '.0000000Z', date('c', $timestamp)
+            '+00:00', '.0000000Z', gmdate('c', $timestamp)
         );
         date_default_timezone_set($tz);
         return $returnValue;
@@ -543,19 +544,19 @@ class Utilities
 
         return sprintf(
             '%04x%04x-%04x-%04x-%02x%02x-%04x%04x%04x',
-            mt_rand(0, 65535),
-            mt_rand(0, 65535),          // 32 bits for "time_low"
-            mt_rand(0, 65535),          // 16 bits for "time_mid"
-            mt_rand(0, 4096) + 16384,   // 16 bits for "time_hi_and_version", with
+            wp_rand(0, 65535),
+            wp_rand(0, 65535),          // 32 bits for "time_low"
+            wp_rand(0, 65535),          // 16 bits for "time_mid"
+            wp_rand(0, 4096) + 16384,   // 16 bits for "time_hi_and_version", with
                                         // the most significant 4 bits being 0100
                                         // to indicate randomly generated version
-            mt_rand(0, 64) + 128,       // 8 bits  for "clock_seq_hi", with
+            wp_rand(0, 64) + 128,       // 8 bits  for "clock_seq_hi", with
                                         // the most significant 2 bits being 10,
                                         // required by version 4 GUIDs.
-            mt_rand(0, 256),            // 8 bits  for "clock_seq_low"
-            mt_rand(0, 65535),          // 16 bits for "node 0" and "node 1"
-            mt_rand(0, 65535),          // 16 bits for "node 2" and "node 3"
-            mt_rand(0, 65535)           // 16 bits for "node 4" and "node 5"
+            wp_rand(0, 256),            // 8 bits  for "clock_seq_low"
+            wp_rand(0, 65535),          // 16 bits for "node 0" and "node 1"
+            wp_rand(0, 65535),          // 16 bits for "node 2" and "node 3"
+            wp_rand(0, 65535)           // 16 bits for "node 4" and "node 5"
         );
 
         // @codingStandardsIgnoreEnd

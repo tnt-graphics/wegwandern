@@ -49,9 +49,9 @@ class TinyMCE extends WP_Customize_Control
         echo '<div class="devowl-tinymce-control">';
         \printf('<label for="_customize-input-%s" class="customize-control-title customize-text_editor">%s</label>', \esc_attr($this->id), \esc_html($this->label));
         if (!empty($this->description)) {
-            \printf('<span id="_customize-description-%s" class="description customize-control-description">%s</span>', \esc_attr($this->id), $this->description);
+            \printf('<span id="_customize-description-%s" class="description customize-control-description">%s</span>', \esc_attr($this->id), \wp_kses_post($this->description));
         }
-        \printf('<textarea id="%s-link" class="customize-control-devowl-tinymce-editor" type="hidden" ', $this->id);
+        \printf('<textarea id="%s-link" class="customize-control-devowl-tinymce-editor" type="hidden" ', \esc_attr($this->id));
         $this->link();
         \printf('>%s</textarea>', \esc_html($value));
         echo '</div>';

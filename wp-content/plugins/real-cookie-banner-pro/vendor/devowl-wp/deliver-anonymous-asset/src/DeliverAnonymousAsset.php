@@ -82,7 +82,8 @@ class DeliverAnonymousAsset
         if (!$builder->ensureAnonymousFolder()) {
             return \false;
         }
-        $script = \wp_scripts()->query($this->getHandle());
+        $scripts = \wp_scripts();
+        $script = $scripts->query($this->getHandle());
         if (!$script) {
             return \false;
         }
@@ -90,6 +91,28 @@ class DeliverAnonymousAsset
         $usedFilenameWithoutExtension = \explode('.', \basename($script->src))[0];
         if (\strlen($usedFilenameWithoutExtension) !== 32) {
             $script->src = $this->generateSrc();
+            // Make it compatible with chunks
+            // Add chunk preloads if desired
+            $chunks = $scripts->get_data($this->getHandle(), 'chunks');
+            if (\is_array($chunks)) {
+                foreach ($chunks as $chunkName => &$chunkUrl) {
+                    $filenameAndQueryString = \explode('?', \basename($chunkUrl), 2);
+                    $filename = $filenameAndQueryString[0];
+                    $queryString = $filenameAndQueryString[1] ?? '';
+                    $anonymousChunkFilename = AnonymousAssetBuilder::generateFilename($this->getBuilder()->getHash(), $filename);
+                    $srcDir = $script->src;
+                    if (\strpos($srcDir, '://') !== \false) {
+                        // Treat as URL
+                        $parsed = \parse_url($srcDir);
+                        $path = isset($parsed['path']) ? \dirname($parsed['path']) : '';
+                        $srcDir = $parsed['scheme'] . '://' . $parsed['host'] . (isset($parsed['port']) ? ':' . $parsed['port'] : '') . $path;
+                    } else {
+                        $srcDir = \dirname($srcDir);
+                    }
+                    $chunkUrl = $srcDir . '/' . $anonymousChunkFilename . (empty($queryString) ? '' : '?' . $queryString);
+                }
+                $scripts->add_data($this->getHandle(), 'chunks', $chunks);
+            }
             return \true;
         }
         return \false;

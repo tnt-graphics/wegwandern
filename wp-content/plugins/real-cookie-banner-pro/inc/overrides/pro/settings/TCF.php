@@ -45,11 +45,11 @@ trait TCF
     // Documented in IOverrideTCF
     public function overrideRegister()
     {
-        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF, ['type' => 'boolean', 'show_in_rest' => \true]);
-        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_ACCEPTED_TIME, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_FIRST_ACCEPTED_TIME, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_SCOPE_OF_CONSENT, ['type' => 'string', 'show_in_rest' => \true]);
-        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_GVL_DOWNLOAD_TIME, ['type' => 'string', 'show_in_rest' => \true]);
+        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_ACCEPTED_TIME, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_text_field']);
+        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_FIRST_ACCEPTED_TIME, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_text_field']);
+        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_SCOPE_OF_CONSENT, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => [SettingsTCF::class, 'sanitize_scope_of_consent']]);
+        \register_setting(SettingsTCF::OPTION_GROUP, SettingsTCF::SETTING_TCF_GVL_DOWNLOAD_TIME, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_text_field']);
         $this->previousActive = $this->isActive();
     }
     // Documented in IOverrideTCF
@@ -76,7 +76,7 @@ trait TCF
             if (\is_wp_error($result)) {
                 return new WP_Error('tcf_gvl_fetch_failed', \sprintf(
                     // translators:
-                    \__('Downloading the GVL has failed. Please try again later! (%1$s: %2$s)', RCB_TD),
+                    \__('Downloading the GVL has failed. Please try again later! (%1$s: %2$s)', 'real-cookie-banner'),
                     $result->get_error_code(),
                     $result->get_error_message()
                 ), $result->get_error_data());
@@ -91,7 +91,7 @@ trait TCF
             }
             return $result;
         }
-        return new WP_Error('rcb_update_gvl_not_active', \__('This functionality is currently not available.', RCB_TD), ['status' => 500]);
+        return new WP_Error('rcb_update_gvl_not_active', \__('This functionality is currently not available.', 'real-cookie-banner'), ['status' => 500]);
     }
     // Documented in IOverrideTCF
     public function clearGvl()

@@ -22,7 +22,7 @@ trait Stats
         $table_name = $this->getTableName(RealCookieBannerStats::TABLE_NAME_TERMS);
         $rows = $wpdb->get_results(
             // phpcs:disable WordPress.DB.PreparedSQL
-            $wpdb->prepare("SELECT IFNULL(t.name, CONCAT(s.term_name, %s)) AS term_name, s.accepted, SUM(s.count) AS `count`\n                FROM {$table_name} AS s\n                LEFT JOIN {$wpdb->terms} AS t\n                ON s.term_id = t.term_id\n                WHERE s.day BETWEEN %s AND %s\n                AND s.context = %s\n                GROUP BY 1, 2\n                ORDER BY s.term_id ASC, s.accepted DESC", ' (' . \__('deleted', RCB_TD) . ')', $from, $to, $context),
+            $wpdb->prepare("SELECT IFNULL(t.name, CONCAT(s.term_name, %s)) AS term_name, s.accepted, SUM(s.count) AS `count`\n                FROM {$table_name} AS s\n                LEFT JOIN {$wpdb->terms} AS t\n                ON s.term_id = t.term_id\n                WHERE s.day BETWEEN %s AND %s\n                AND s.context = %s\n                GROUP BY 1, 2\n                ORDER BY s.term_id ASC, s.accepted DESC", ' (' . \__('deleted', 'real-cookie-banner') . ')', $from, $to, $context),
             ARRAY_A
         );
         // Transform object types
@@ -41,7 +41,7 @@ trait Stats
         $defaultIndividualButtonTexts = IndividualTexts::getDefaultButtonTexts();
         $individualPrivacyButtonText = \get_option(Texts::SETTING_ACCEPT_INDIVIDUAL, $defaultButtonTexts['acceptIndividual']);
         foreach (UserConsent::CLICKABLE_BUTTONS as $btn) {
-            $label = \__('None', RCB_TD);
+            $label = \__('None', 'real-cookie-banner');
             switch ($btn) {
                 case 'main_all':
                     $label = \get_option(Texts::SETTING_ACCEPT_ALL, $defaultButtonTexts['acceptAll']);
@@ -50,7 +50,7 @@ trait Stats
                     $label = \get_option(Texts::SETTING_ACCEPT_ESSENTIALS, $defaultButtonTexts['acceptEssentials']);
                     break;
                 case 'main_close_icon':
-                    $label = \get_option(Texts::SETTING_ACCEPT_ESSENTIALS, $defaultButtonTexts['acceptEssentials']) . ' (' . \__('Close icon', RCB_TD) . ')';
+                    $label = \get_option(Texts::SETTING_ACCEPT_ESSENTIALS, $defaultButtonTexts['acceptEssentials']) . ' (' . \__('Close icon', 'real-cookie-banner') . ')';
                     break;
                 case 'main_custom':
                     $label = \get_option(IndividualTexts::SETTING_SAVE, $defaultIndividualButtonTexts['save']);
@@ -62,16 +62,16 @@ trait Stats
                     $label = $individualPrivacyButtonText . ': ' . \get_option(Texts::SETTING_ACCEPT_ESSENTIALS, $defaultButtonTexts['acceptEssentials']);
                     break;
                 case 'ind_close_icon':
-                    $label = $individualPrivacyButtonText . ': ' . \get_option(Texts::SETTING_ACCEPT_ESSENTIALS, $defaultButtonTexts['acceptEssentials']) . ' (' . \__('Close icon', RCB_TD) . ')';
+                    $label = $individualPrivacyButtonText . ': ' . \get_option(Texts::SETTING_ACCEPT_ESSENTIALS, $defaultButtonTexts['acceptEssentials']) . ' (' . \__('Close icon', 'real-cookie-banner') . ')';
                     break;
                 case 'ind_custom':
                     $label = $individualPrivacyButtonText . ': ' . \get_option(IndividualTexts::SETTING_SAVE, $defaultIndividualButtonTexts['save']);
                     break;
                 case LinkShortcode::BUTTON_CLICKED_IDENTIFIER:
-                    $label = \__('Shortcode revoke', RCB_TD);
+                    $label = \__('Shortcode revoke', 'real-cookie-banner');
                     break;
                 case Blocker::BUTTON_CLICKED_IDENTIFIER:
-                    $label = \__('Button in Content Blocker', RCB_TD);
+                    $label = \__('Button in Content Blocker', 'real-cookie-banner');
                     break;
                 default:
                     break;

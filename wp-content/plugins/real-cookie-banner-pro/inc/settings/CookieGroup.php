@@ -50,7 +50,7 @@ class CookieGroup
      */
     public function register()
     {
-        $labels = ['name' => \__('Service groups', RCB_TD), 'singular_name' => \__('Service group', RCB_TD)];
+        $labels = ['name' => \__('Service groups', 'real-cookie-banner'), 'singular_name' => \__('Service group', 'real-cookie-banner')];
         $args = ['label' => $labels['name'], 'labels' => $labels, 'public' => \false, 'publicly_queryable' => \false, 'hierarchical' => \false, 'show_ui' => \true, 'show_in_menu' => \false, 'show_in_nav_menus' => \false, 'query_var' => \true, 'rewrite' => \false, 'show_admin_column' => \false, 'show_in_rest' => \true, 'capabilities' => ['manage_terms' => Core::MANAGE_MIN_CAPABILITY, 'edit_terms' => Core::MANAGE_MIN_CAPABILITY, 'delete_terms' => Core::MANAGE_MIN_CAPABILITY, 'assign_terms' => Core::MANAGE_MIN_CAPABILITY], 'rest_base' => self::TAXONOMY_NAME, 'rest_controller_class' => WP_REST_Terms_Controller::class, 'show_in_quick_edit' => \false];
         \register_taxonomy(self::TAXONOMY_NAME, [\DevOwl\RealCookieBanner\settings\Cookie::CPT_NAME], $args);
         \register_meta('term', self::META_NAME_ORDER, ['object_subtype' => self::TAXONOMY_NAME, 'type' => 'number', 'single' => \true, 'show_in_rest' => \true]);
@@ -68,18 +68,31 @@ class CookieGroup
             $groupNames = $this->getDefaultGroupNames();
             $result = \wp_insert_term($groupNames['essential'], self::TAXONOMY_NAME, ['description' => $defaultTexts['essential']]);
             if (\is_admin() && \is_wp_error($result)) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_die renders WP_Error safely for admins only.
                 \wp_die($result);
             }
             \update_term_meta($result['term_id'], self::META_NAME_ORDER, 0);
             \update_term_meta($result['term_id'], self::META_NAME_IS_ESSENTIAL, \true);
             \update_term_meta($result['term_id'], self::META_NAME_IS_DEFAULT, \true);
             $result = \wp_insert_term($groupNames['functional'], self::TAXONOMY_NAME, ['description' => $defaultTexts['functional']]);
+            if (\is_admin() && \is_wp_error($result)) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_die renders WP_Error safely for admins only.
+                \wp_die($result);
+            }
             \update_term_meta($result['term_id'], self::META_NAME_ORDER, 1);
             \update_term_meta($result['term_id'], self::META_NAME_IS_DEFAULT, \true);
             $result = \wp_insert_term($groupNames['statistics'], self::TAXONOMY_NAME, ['description' => $defaultTexts['statistics']]);
+            if (\is_admin() && \is_wp_error($result)) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_die renders WP_Error safely for admins only.
+                \wp_die($result);
+            }
             \update_term_meta($result['term_id'], self::META_NAME_ORDER, 2);
             \update_term_meta($result['term_id'], self::META_NAME_IS_DEFAULT, \true);
             $result = \wp_insert_term($groupNames['marketing'], self::TAXONOMY_NAME, ['description' => $defaultTexts['marketing']]);
+            if (\is_admin() && \is_wp_error($result)) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wp_die renders WP_Error safely for admins only.
+                \wp_die($result);
+            }
             \update_term_meta($result['term_id'], self::META_NAME_ORDER, 3);
             \update_term_meta($result['term_id'], self::META_NAME_IS_DEFAULT, \true);
             return !\is_wp_error($result);
@@ -149,6 +162,10 @@ class CookieGroup
         if ($force === \false && isset($this->cacheGetOrdered[$context])) {
             return $this->cacheGetOrdered[$context];
         }
+        // Check if taxonomy is registered
+        if (!\taxonomy_exists(self::TAXONOMY_NAME)) {
+            return [];
+        }
         // Read all including hidden, only the essential term may be empty
         $terms = [];
         $includingHidden = \get_terms(Core::getInstance()->queryArguments(['taxonomy' => self::TAXONOMY_NAME, 'orderby' => 'meta_value_num', 'order' => 'ASC', 'hide_empty' => \false, 'meta_query' => [['key' => self::META_NAME_ORDER, 'type' => 'NUMERIC']]], 'cookieGroupsGetOrdered'));
@@ -211,7 +228,11 @@ class CookieGroup
             }
             $output[] = $value;
         }
-        return Core::getInstance()->getCompLanguage()->translateArray($output, \array_merge(\DevOwl\RealCookieBanner\settings\Cookie::SYNC_META_COPY, Localization::COMMON_SKIP_KEYS, ['poweredBy']), null, ['legal-text']);
+        $skipKeys = \array_merge(\array_diff(\DevOwl\RealCookieBanner\settings\Cookie::SYNC_META_COPY, [
+            // We need to make `purpose` make translatable, but not the technical definitions
+            \DevOwl\RealCookieBanner\settings\Cookie::META_NAME_TECHNICAL_DEFINITIONS,
+        ]), ['/technicalDefinitions\\.\\d+\\.(?!purpose)/'], Localization::COMMON_SKIP_KEYS, ['poweredBy']);
+        return Core::getInstance()->getCompLanguage()->translateArray($output, $skipKeys, null, ['legal-text']);
     }
     /**
      * Get the WP_Term of the essential group.
@@ -235,7 +256,9 @@ class CookieGroup
     public function getDefaultGroupNames()
     {
         $td = Hooks::getInstance()->createTemporaryTextDomain();
-        $texts = ['essential' => \__('Essential', Hooks::TD_FORCED), 'functional' => \__('Functional', Hooks::TD_FORCED), 'statistics' => \__('Statistics', Hooks::TD_FORCED), 'statistic' => \__('Statistic', Hooks::TD_FORCED), 'marketing' => \__('Marketing', Hooks::TD_FORCED)];
+        $texts = $td->translate(function () {
+            return ['essential' => \__('Essential', 'real-cookie-banner'), 'functional' => \__('Functional', 'real-cookie-banner'), 'statistics' => \__('Statistics', 'real-cookie-banner'), 'statistic' => \__('Statistic', 'real-cookie-banner'), 'marketing' => \__('Marketing', 'real-cookie-banner')];
+        });
         $td->teardown();
         return $texts;
     }
@@ -247,14 +270,17 @@ class CookieGroup
     public function getDefaultDescriptions($localizedKeys = \false)
     {
         $td = Hooks::getInstance()->createTemporaryTextDomain();
-        $essentialKey = $localizedKeys ? \__('Essential', Hooks::TD_FORCED) : 'essential';
-        $functionalKey = $localizedKeys ? \__('Functional', Hooks::TD_FORCED) : 'functional';
-        $statisticsKey = $localizedKeys ? \__('Statistics', Hooks::TD_FORCED) : 'statistics';
-        $marketingKey = $localizedKeys ? \__('Marketing', Hooks::TD_FORCED) : 'marketing';
-        $texts = [$essentialKey => \_x('Essential services are required for the basic functionality of the website. They only contain technically necessary services. These services cannot be objected to.', 'legal-text', Hooks::TD_FORCED), $functionalKey => \_x('Functional services are necessary to provide features beyond the essential functionality such as prettier fonts, video playback or interactive web 2.0 features. Content from e.g. video platforms and social media platforms are blocked by default, and can be consented to. If the service is agreed to, this content is loaded automatically without further manual consent.', 'legal-text', Hooks::TD_FORCED), $statisticsKey => \_x('Statistics services are needed to collect pseudonymous data about the visitors of the website. The data enables us to understand visitors better and to optimize the website.', 'legal-text', Hooks::TD_FORCED), $marketingKey => \_x('Marketing services are used by us and third parties to track the behaviour of individual visitors (across multiple pages), analyse the data collected and, for example, display personalized advertisements. These services enable us to track visitors across multiple websites.', 'legal-text', Hooks::TD_FORCED)];
-        // Keep this for backwards-compatibility
-        $statisticKey = $localizedKeys ? \__('Statistic', Hooks::TD_FORCED) : 'statistic';
-        $texts[$statisticKey] = $texts[$statisticsKey];
+        $texts = $td->translate(function () use($localizedKeys) {
+            $essentialKey = $localizedKeys ? \__('Essential', 'real-cookie-banner') : 'essential';
+            $functionalKey = $localizedKeys ? \__('Functional', 'real-cookie-banner') : 'functional';
+            $statisticsKey = $localizedKeys ? \__('Statistics', 'real-cookie-banner') : 'statistics';
+            $marketingKey = $localizedKeys ? \__('Marketing', 'real-cookie-banner') : 'marketing';
+            $texts = [$essentialKey => \_x('Essential services are required for the basic functionality of the website. They only contain technically necessary services. These services cannot be objected to.', 'legal-text', 'real-cookie-banner'), $functionalKey => \_x('Functional services are necessary to provide features beyond the essential functionality such as prettier fonts, video playback or interactive web 2.0 features. Content from e.g. video platforms and social media platforms are blocked by default, and can be consented to. If the service is agreed to, this content is loaded automatically without further manual consent.', 'legal-text', 'real-cookie-banner'), $statisticsKey => \_x('Statistics services are needed to collect pseudonymous data about the visitors of the website. The data enables us to understand visitors better and to optimize the website.', 'legal-text', 'real-cookie-banner'), $marketingKey => \_x('Marketing services are used by us and third parties to track the behaviour of individual visitors (across multiple pages), analyse the data collected and, for example, display personalized advertisements. These services enable us to track visitors across multiple websites.', 'legal-text', 'real-cookie-banner')];
+            // Keep this for backwards-compatibility
+            $statisticKey = $localizedKeys ? \__('Statistic', 'real-cookie-banner') : 'statistic';
+            $texts[$statisticKey] = $texts[$statisticsKey];
+            return $texts;
+        });
         $td->teardown();
         return $texts;
     }

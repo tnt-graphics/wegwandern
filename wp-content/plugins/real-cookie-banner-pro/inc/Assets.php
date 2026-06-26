@@ -144,12 +144,26 @@ class Assets
                 $this->enqueueBlocker(\array_merge($scriptDeps, [$handle]));
             }
         }
+        /**
+         * If you return `true`, the optimized wp_localize_script will be used:
+         *
+         * - Moves the JSON to the footer but keeps the banner script in the header
+         * - Bypasses the JSON.parse call from the HTML parsing process and just exposes the raw JSON string in the inline script in the HTML
+         * - This improves performance as the JSON parsing is offloaded to a deferred script
+         *
+         * @hook RCB/Experimental/OptimizedWpLocalizeScript
+         * @param {boolean} $useOptimizedWpLocalizeScript
+         * @return {boolean}
+         * @since 5.2.10
+         */
+        $useOptimizedWpLocalizeScript = $this->isAdvancedEnqueueEnabled($handle, Constants::ASSETS_ADVANCED_ENQUEUE_FEATURE_DEFER) ? \apply_filters('RCB/Experimental/OptimizedWpLocalizeScript', \false) : \false;
         // Localize script with server-side variables
-        $this->anonymous_localize_script($handle, 'realCookieBanner', $this->localizeScript($type), [
+        $this->anonymous_localize_script($useOptimizedWpLocalizeScript ? $this->enqueueFooterDummyHandle() : $handle, 'realCookieBanner', $this->localizeScript($type), [
             'makeBase64Encoded' => [Cookie::META_NAME_CODE_OPT_IN, Cookie::META_NAME_CODE_OPT_OUT, Cookie::META_NAME_CODE_ON_PAGE_LOAD, 'contactEmail'],
             'useCore' => !\in_array($type, [Constants::ASSETS_TYPE_FRONTEND, Constants::ASSETS_TYPE_LOGIN], \true) && !\is_customize_preview(),
             // Only allow lazy parse in frontend (also not in customizer) as this conflicts with Mobx observables
             'lazyParse' => \in_array($type, [Constants::ASSETS_TYPE_FRONTEND], \true) && !\is_customize_preview() ? ['others.frontend.tcf', 'others.frontend.groups', 'others.customizeValuesBanner'] : [],
+            'bypassJsonParse' => $useOptimizedWpLocalizeScript,
         ]);
     }
     /**
@@ -159,7 +173,6 @@ class Assets
      */
     public function enqueueAdminPage($scriptDeps)
     {
-        $useNonMinifiedSources = $this->useNonMinifiedSources();
         \array_unshift($scriptDeps, 'wp-codemirror', 'jquery-ui-sortable');
         \wp_enqueue_media();
         // Enqueue code mirror to edit JavaScript files
@@ -229,7 +242,7 @@ class Assets
             // Only enable the advanced enqueue when we are not relying on `react-dom` as this could lead to issues with
             // e.g. WP Fastest Cache which moves `react-dom` to the body footer -> "Undefined variable ReactDOM" error.
             if (!\is_customize_preview()) {
-                $this->enableAdvancedEnqueue($preloadJs, $advancedFeatures);
+                $this->enableAdvancedEnqueue($preloadJs, $advancedFeatures, 'script', ['banner-ui', 'banner-lazy', 'banner-common-async', 'vendor-banner-common-async']);
                 $this->enableAdvancedEnqueue($preloadCss, $advancedFeatures, 'style');
             }
             $excludeAssets->byHandle('js', $preloadJs);
@@ -259,6 +272,7 @@ class Assets
         }
         if ($handle !== \false) {
             $this->enableDeferredEnqueue($handle);
+            $this->enablePreloadEnqueue($handle, 'script');
             $excludeAssets = \DevOwl\RealCookieBanner\Core::getInstance()->getExcludeAssets();
             $excludeAssets->byHandle('js', [$handle]);
         }
@@ -351,66 +365,69 @@ class Assets
             $isPreventPreDecision = \apply_filters('RCB/IsPreventPreDecision', $isPreventPreDecision);
         }
         return \apply_filters('RCB/Localize', \array_merge($result, $this->localizeFreemiumScript(), ['frontend' => $frontendJson, 'anonymousContentUrl' => $anonymousAssetBuilder->generateFolderSrc(), 'anonymousHash' => $anonymousAssetBuilder->getContentDir() && !$this->useNonMinifiedSources() && $this->isAntiAdBlockActive() ? $anonymousAssetBuilder->getHash() : null, 'hasDynamicPreDecisions' => \has_filter('RCB/Consent/DynamicPreDecision'), 'isLicensed' => $isLicensed, 'isDevLicense' => $isDevLicense, 'multilingualSkipHTMLForTag' => $core->getCompLanguage()->getSkipHTMLForTag(), 'isCurrentlyInTranslationEditorPreview' => $core->getCompLanguage()->isCurrentlyInEditorPreview(), 'defaultLanguage' => $core->getCompLanguage()->getDefaultLanguage(), 'currentLanguage' => $core->getCompLanguage()->getCurrentLanguage(), 'activeLanguages' => $core->getCompLanguage()->getActiveLanguages(), 'context' => Revision::getInstance()->getContextVariablesString(), 'iso3166OneAlpha2' => Iso3166OneAlpha2::getSortedCodes(), 'visualParentSelectors' => Blocker::VISUAL_PARENT_SELECTORS, 'isPreventPreDecision' => $isPreventPreDecision, 'isInvalidateImplicitUserConsent' => $frontend->isInvalidateImplicitUserConsent($pageIds), 'dependantVisibilityContainers' => Blocker::DEPENDANT_VISIBILITY_CONTAINERS, 'disableDeduplicateExceptions' => Blocker::DISABLE_DEDUPLICATE_EXCEPTIONS, 'bannerDesignVersion' => Banner::DESIGN_VERSION, 'bannerI18n' => \array_merge($core->getCompLanguage()->translateArray([
-            'showMore' => \__('Show more', RCB_TD),
-            'hideMore' => \__('Hide', RCB_TD),
+            'showMore' => \__('Show more', 'real-cookie-banner'),
+            'hideMore' => \__('Hide', 'real-cookie-banner'),
             // translators:
-            'showLessRelevantDetails' => \_x('Show more details (%s)', 'legal-text', RCB_TD),
+            'showLessRelevantDetails' => \_x('Show more details (%s)', 'legal-text', 'real-cookie-banner'),
             // translators:
-            'hideLessRelevantDetails' => \_x('Hide more details (%s)', 'legal-text', RCB_TD),
-            'other' => \_x('Other', 'legal-text', RCB_TD),
-            'legalBasis' => ['label' => \_x('Use on legal basis of', 'legal-text', RCB_TD), 'consentPersonalData' => \_x('Consent for processing personal data', 'legal-text', RCB_TD), 'consentStorage' => \_x('Consent for storing or accessing information on the terminal equipment of the user', 'legal-text', RCB_TD), 'legitimateInterestPersonalData' => \_x('Legitimate interest for the processing of personal data', 'legal-text', RCB_TD), 'legitimateInterestStorage' => \_x('Provision of explicitly requested digital service for storing or accessing information on the terminal equipment of the user', 'legal-text', RCB_TD), 'legalRequirementPersonalData' => \_x('Compliance with a legal obligation for processing of personal data', 'legal-text', RCB_TD)],
+            'hideLessRelevantDetails' => \_x('Hide more details (%s)', 'legal-text', 'real-cookie-banner'),
+            'other' => \_x('Other', 'legal-text', 'real-cookie-banner'),
+            'legalBasis' => ['label' => \_x('Use on legal basis of', 'legal-text', 'real-cookie-banner'), 'consentPersonalData' => \_x('Consent for processing personal data', 'legal-text', 'real-cookie-banner'), 'consentStorage' => \_x('Consent for storing or accessing information on the terminal equipment of the user', 'legal-text', 'real-cookie-banner'), 'legitimateInterestPersonalData' => \_x('Legitimate interest for the processing of personal data', 'legal-text', 'real-cookie-banner'), 'legitimateInterestStorage' => \_x('Provision of explicitly requested digital service for storing or accessing information on the terminal equipment of the user', 'legal-text', 'real-cookie-banner'), 'legalRequirementPersonalData' => \_x('Compliance with a legal obligation for processing of personal data', 'legal-text', 'real-cookie-banner')],
             // See als `useTerritorialLegalBasisArticles.tsx`
-            'territorialLegalBasisArticles' => [General::TERRITORIAL_LEGAL_BASIS_GDPR => ['dataProcessingInUnsafeCountries' => \_x('Art. 49 (1) (a) GDPR', 'legal-text', RCB_TD)], General::TERRITORIAL_LEGAL_BASIS_DSG_SWITZERLAND => ['dataProcessingInUnsafeCountries' => \_x('Art. 17 (1) (a) DSG (Switzerland)', 'legal-text', RCB_TD)]],
-            'legitimateInterest' => \_x('Legitimate interest', 'legal-text', RCB_TD),
-            'consent' => \_x('Consent', 'legal-text', RCB_TD),
-            'crawlerLinkAlert' => \_x('We have recognized that you are a crawler/bot. Only natural persons must consent to cookies and processing of personal data. Therefore, the link has no function for you.', 'legal-text', RCB_TD),
-            'technicalCookieDefinitions' => \_x('Technical cookie definitions', 'legal-text', RCB_TD),
-            'technicalCookieName' => \_x('Technical cookie name', 'legal-text', RCB_TD),
-            'usesCookies' => \_x('Uses cookies', 'legal-text', RCB_TD),
-            'cookieRefresh' => \_x('Cookie refresh', 'legal-text', RCB_TD),
-            'usesNonCookieAccess' => \_x('Uses cookie-like information (LocalStorage, SessionStorage, IndexDB, etc.)', 'legal-text', RCB_TD),
-            'host' => \_x('Host', 'legal-text', RCB_TD),
-            'duration' => \_x('Duration', 'legal-text', RCB_TD),
-            'noExpiration' => \_x('No expiration', 'legal-text', RCB_TD),
-            'type' => \_x('Type', 'legal-text', RCB_TD),
-            'purpose' => \_x('Purpose', 'legal-text', RCB_TD),
-            'purposes' => \_x('Purposes', 'legal-text', RCB_TD),
-            'headerTitlePrivacyPolicyHistory' => \_x('History of your privacy settings', 'legal-text', RCB_TD),
-            'skipToConsentChoices' => \_x('Skip to consent choices', 'legal-text', RCB_TD),
-            'historyLabel' => \_x('Show consent from', 'legal-text', RCB_TD),
-            'historyItemLoadError' => \_x('Reading the consent has failed. Please try again later!', 'legal-text', RCB_TD),
-            'historySelectNone' => \_x('Not yet consented to', 'legal-text', RCB_TD),
-            'provider' => \_x('Provider', 'legal-text', RCB_TD),
-            'providerContactPhone' => \_x('Phone', 'legal-text', RCB_TD),
-            'providerContactEmail' => \_x('Email', 'legal-text', RCB_TD),
-            'providerContactLink' => \_x('Contact form', 'legal-text', RCB_TD),
-            'providerPrivacyPolicyUrl' => \_x('Privacy Policy', 'legal-text', RCB_TD),
-            'providerLegalNoticeUrl' => \_x('Legal notice', 'legal-text', RCB_TD),
-            'nonStandard' => \_x('Non-standardized data processing', 'legal-text', RCB_TD),
-            'nonStandardDesc' => \_x('Some services set cookies and/or process personal data without complying with consent communication standards. These services are divided into several groups. So-called "essential services" are used based on legitimate interest and cannot be opted out (an objection may have to be made by email or letter in accordance with the privacy policy), while all other services are used only after consent has been given.', 'legal-text', RCB_TD),
+            'territorialLegalBasisArticles' => [General::TERRITORIAL_LEGAL_BASIS_GDPR => ['dataProcessingInUnsafeCountries' => \_x('Art. 49 (1) (a) GDPR', 'legal-text', 'real-cookie-banner')], General::TERRITORIAL_LEGAL_BASIS_DSG_SWITZERLAND => ['dataProcessingInUnsafeCountries' => \_x('Art. 17 (1) (a) DSG (Switzerland)', 'legal-text', 'real-cookie-banner')]],
+            'legitimateInterest' => \_x('Legitimate interest', 'legal-text', 'real-cookie-banner'),
+            'consent' => \_x('Consent', 'legal-text', 'real-cookie-banner'),
+            'crawlerLinkAlert' => \_x('We have recognized that you are a crawler/bot. Only natural persons must consent to cookies and processing of personal data. Therefore, the link has no function for you.', 'legal-text', 'real-cookie-banner'),
+            'technicalCookieDefinitions' => \_x('Technical cookie definitions', 'legal-text', 'real-cookie-banner'),
+            'technicalCookieName' => \_x('Technical cookie name', 'legal-text', 'real-cookie-banner'),
+            'usesCookies' => \_x('Uses cookies', 'legal-text', 'real-cookie-banner'),
+            'cookieRefresh' => \_x('Cookie refresh', 'legal-text', 'real-cookie-banner'),
+            'usesNonCookieAccess' => \_x('Uses cookie-like information (LocalStorage, SessionStorage, IndexDB, etc.)', 'legal-text', 'real-cookie-banner'),
+            'host' => \_x('Host', 'legal-text', 'real-cookie-banner'),
+            'duration' => \_x('Duration', 'legal-text', 'real-cookie-banner'),
+            'noExpiration' => \_x('No expiration', 'legal-text', 'real-cookie-banner'),
+            'type' => \_x('Type', 'legal-text', 'real-cookie-banner'),
+            'purpose' => \_x('Purpose', 'legal-text', 'real-cookie-banner'),
+            'purposes' => \_x('Purposes', 'legal-text', 'real-cookie-banner'),
+            'description' => \_x('Description', 'legal-text', 'real-cookie-banner'),
+            'optOut' => \_x('Opt-out', 'legal-text', 'real-cookie-banner'),
+            'optOutDesc' => \_x('Cookie can be set to store opt-out of the described behaviour.', 'legal-text', 'real-cookie-banner'),
+            'headerTitlePrivacyPolicyHistory' => \_x('History of your privacy settings', 'legal-text', 'real-cookie-banner'),
+            'skipToConsentChoices' => \_x('Skip to consent choices', 'legal-text', 'real-cookie-banner'),
+            'historyLabel' => \_x('Show consent from', 'legal-text', 'real-cookie-banner'),
+            'historyItemLoadError' => \_x('Reading the consent has failed. Please try again later!', 'legal-text', 'real-cookie-banner'),
+            'historySelectNone' => \_x('Not yet consented to', 'legal-text', 'real-cookie-banner'),
+            'provider' => \_x('Provider', 'legal-text', 'real-cookie-banner'),
+            'providerContactPhone' => \_x('Phone', 'legal-text', 'real-cookie-banner'),
+            'providerContactEmail' => \_x('Email', 'legal-text', 'real-cookie-banner'),
+            'providerContactLink' => \_x('Contact form', 'legal-text', 'real-cookie-banner'),
+            'providerPrivacyPolicyUrl' => \_x('Privacy Policy', 'legal-text', 'real-cookie-banner'),
+            'providerLegalNoticeUrl' => \_x('Legal notice', 'legal-text', 'real-cookie-banner'),
+            'nonStandard' => \_x('Non-standardized data processing', 'legal-text', 'real-cookie-banner'),
+            'nonStandardDesc' => \_x('Some services set cookies and/or process personal data without complying with consent communication standards. These services are divided into several groups. So-called "essential services" are used based on legitimate interest and cannot be opted out (an objection may have to be made by email or letter in accordance with the privacy policy), while all other services are used only after consent has been given.', 'legal-text', 'real-cookie-banner'),
             // translators:
-            'dataProcessingInThirdCountries' => \_x('Data processing in third countries', 'legal-text', RCB_TD),
-            'safetyMechanisms' => ['label' => \_x('Safety mechanisms for data transmission', 'legal-text', RCB_TD), 'standardContractualClauses' => \_x('Standard contractual clauses', 'legal-text', RCB_TD), 'adequacyDecision' => \_x('Adequacy decision', 'legal-text', RCB_TD), 'eu' => \_x('EU', 'legal-text', RCB_TD), 'switzerland' => \_x('Switzerland', 'legal-text', RCB_TD), 'bindingCorporateRules' => \_x('Binding corporate rules', 'legal-text', RCB_TD), 'contractualGuaranteeSccSubprocessors' => \_x('Contractual guarantee for standard contractual clauses with sub-processors', 'legal-text', RCB_TD)],
-            'durationUnit' => ['n1' => ['s' => \__('second', RCB_TD), 'm' => \__('minute', RCB_TD), 'h' => \__('hour', RCB_TD), 'd' => \__('day', RCB_TD), 'mo' => \__('month', RCB_TD), 'y' => \__('year', RCB_TD)], 'nx' => ['s' => \__('seconds', RCB_TD), 'm' => \__('minutes', RCB_TD), 'h' => \__('hours', RCB_TD), 'd' => \__('days', RCB_TD), 'mo' => \__('months', RCB_TD), 'y' => \__('years', RCB_TD)]],
-            'close' => \__('Close', RCB_TD),
-            'closeWithoutSaving' => \__('Close without saving', RCB_TD),
-            'yes' => \__('Yes', RCB_TD),
-            'no' => \__('No', RCB_TD),
-            'unknown' => \__('Unknown', RCB_TD),
-            'none' => \__('None', RCB_TD),
-            'noLicense' => \__('No license activated - not for production use!', RCB_TD),
-            'devLicense' => \__('Product license not for production use!', RCB_TD),
-            'devLicenseLearnMore' => \__('Learn more', RCB_TD),
-            'devLicenseLink' => \__('https://devowl.io/knowledge-base/license-installation-type/', RCB_TD),
+            'dataProcessingInThirdCountries' => \_x('Data processing in third countries', 'legal-text', 'real-cookie-banner'),
+            'safetyMechanisms' => ['label' => \_x('Safety mechanisms for data transmission', 'legal-text', 'real-cookie-banner'), 'standardContractualClauses' => \_x('Standard contractual clauses', 'legal-text', 'real-cookie-banner'), 'adequacyDecision' => \_x('Adequacy decision', 'legal-text', 'real-cookie-banner'), 'eu' => \_x('EU', 'legal-text', 'real-cookie-banner'), 'switzerland' => \_x('Switzerland', 'legal-text', 'real-cookie-banner'), 'bindingCorporateRules' => \_x('Binding corporate rules', 'legal-text', 'real-cookie-banner'), 'contractualGuaranteeSccSubprocessors' => \_x('Contractual guarantee for standard contractual clauses with sub-processors', 'legal-text', 'real-cookie-banner')],
+            'durationUnit' => ['n1' => ['s' => \__('second', 'real-cookie-banner'), 'm' => \__('minute', 'real-cookie-banner'), 'h' => \__('hour', 'real-cookie-banner'), 'd' => \__('day', 'real-cookie-banner'), 'mo' => \__('month', 'real-cookie-banner'), 'y' => \__('year', 'real-cookie-banner')], 'nx' => ['s' => \__('seconds', 'real-cookie-banner'), 'm' => \__('minutes', 'real-cookie-banner'), 'h' => \__('hours', 'real-cookie-banner'), 'd' => \__('days', 'real-cookie-banner'), 'mo' => \__('months', 'real-cookie-banner'), 'y' => \__('years', 'real-cookie-banner')]],
+            'close' => \__('Close', 'real-cookie-banner'),
+            'closeWithoutSaving' => \__('Close without saving', 'real-cookie-banner'),
+            'yes' => \__('Yes', 'real-cookie-banner'),
+            'no' => \__('No', 'real-cookie-banner'),
+            'unknown' => \__('Unknown', 'real-cookie-banner'),
+            'none' => \__('None', 'real-cookie-banner'),
+            'noLicense' => \__('No license activated - not for production use!', 'real-cookie-banner'),
+            'devLicense' => \__('Product license not for production use!', 'real-cookie-banner'),
+            'devLicenseLearnMore' => \__('Learn more', 'real-cookie-banner'),
+            'devLicenseLink' => \__('https://devowl.io/knowledge-base/license-installation-type/', 'real-cookie-banner'),
             // translators:
-            'andSeparator' => \__(' and ', RCB_TD),
+            'andSeparator' => \__(' and ', 'real-cookie-banner'),
             'deprecated' => [
                 // @deprecated Replaced by `safetyMechanisms`
-                'appropriateSafeguard' => \_x('Appropriate safeguard', 'legal-text', RCB_TD),
+                'appropriateSafeguard' => \_x('Appropriate safeguard', 'legal-text', 'real-cookie-banner'),
                 // @deprecated Replaced by `dataProcessingInThirdCountries`
-                'dataProcessingInUnsafeCountries' => \_x('Data processing in unsafe third countries', 'legal-text', RCB_TD),
+                'dataProcessingInUnsafeCountries' => \_x('Data processing in unsafe third countries', 'legal-text', 'real-cookie-banner'),
                 // @deprecated Replaced by `legalRequirementPersonalData`
-                'legalRequirement' => \_x('Compliance with a legal obligation', 'legal-text', RCB_TD),
+                'legalRequirement' => \_x('Compliance with a legal obligation', 'legal-text', 'real-cookie-banner'),
             ],
         ], [], null, ['legal-text'])), 'pageRequestUuid4' => $core->getPageRequestUuid4(), 'pageByIdUrl' => \add_query_arg('page_id', '', \home_url()), 'pluginUrl' => $core->getPluginData('PluginURI')]), $context);
     }
@@ -425,7 +442,7 @@ class Assets
             if (isset($tile['links'])) {
                 foreach ($tile['links'] as &$link) {
                     if ($link === 'learnAboutPro') {
-                        $link = ['link' => \sprintf('%s&feature=partner-dashboard-tile', RCB_PRO_VERSION), 'linkText' => \__('Learn more', RCB_TD)];
+                        $link = ['link' => \sprintf('%s&feature=partner-dashboard-tile', RCB_PRO_VERSION), 'linkText' => \__('Learn more', 'real-cookie-banner')];
                     }
                 }
             }

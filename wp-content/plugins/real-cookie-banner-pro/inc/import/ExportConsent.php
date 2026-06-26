@@ -45,16 +45,16 @@ class ExportConsent
             // Pick up by date range
             $sql = $userConsent->byCriteria(['revisionJson' => \true, 'from' => $from . ' 00:00:00', 'to' => $to . ' 23:59:59', 'perPage' => $count], UserConsent::BY_CRITERIA_RESULT_TYPE_SQL_QUERY);
         } else {
-            return new WP_Error('rest_rcb_data', \__('Please provide a UUID or a date range.', RCB_TD));
+            return new WP_Error('rest_rcb_data', \__('Please provide a UUID or a date range.', 'real-cookie-banner'));
         }
         // We need to fetch directly via `mysql(i)_` functions so we can use `mysql(i)_fetch_array` in a while-loop
         $dbh = $wpdb->dbh;
         $functionPrefix = $wpdb->use_mysqli ? 'mysqli' : 'mysql';
-        $result = \call_user_func($functionPrefix . '_query', $wpdb->dbh, $sql) or \wp_die(\call_user_func($functionPrefix . '_error', $dbh));
+        $result = \call_user_func($functionPrefix . '_query', $wpdb->dbh, $sql) or \wp_die(\esc_html(\call_user_func($functionPrefix . '_error', $dbh)));
         $count = \call_user_func($functionPrefix . '_num_rows', $result);
         if ($count === 0) {
             // As this is a download, we can use `wp_die` to show an error message
-            \wp_die(\__('No consents found. Please navigate back and check your input.', RCB_TD));
+            \wp_die(\esc_html__('No consents found. Please navigate back and check your input.', 'real-cookie-banner'));
         }
         // Output headers
         \header('Content-Disposition: attachment; filename=' . self::EXPORT_CONSENT_OUTPUT_FILENAME);

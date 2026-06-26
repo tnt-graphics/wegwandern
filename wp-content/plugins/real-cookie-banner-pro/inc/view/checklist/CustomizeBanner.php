@@ -28,12 +28,12 @@ class CustomizeBanner extends \DevOwl\RealCookieBanner\view\checklist\AbstractCh
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Customize the design of the cookie banner', RCB_TD);
+        return \__('Customize the design of the cookie banner', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('You can customize the design of the cookie banner. Match it perfectly to your website!', RCB_TD);
+        return \__('You can customize the design of the cookie banner. Match it perfectly to your website!', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -43,6 +43,6 @@ class CustomizeBanner extends \DevOwl\RealCookieBanner\view\checklist\AbstractCh
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Start customizing', RCB_TD);
+        return \__('Start customizing', 'real-cookie-banner');
     }
 }

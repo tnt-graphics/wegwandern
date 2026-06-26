@@ -52,12 +52,14 @@ class ThirdPartyNotices
             if (\is_array($option)) {
                 $showNotice = isset($option['shop']['cookie_consent_mgmt']['explicit_consent']) ? \intval($option['shop']['cookie_consent_mgmt']['explicit_consent']) < 1 : \true;
                 if ($showNotice) {
-                    echo \sprintf('<div class="notice notice-warning"><p>%s</p></div>', \sprintf(
-                        // translators:
-                        \__('<strong>Pixel Manager for WooCommerce</strong> embed trackers by default without waiting for consent. Please activate "Enable Explicit Consent Mode" under <a href="%1$s"><i>WooCommerce > Pixel Manager > Advanced > Cookie Consent Management</i></a> to embed trackers only after consent. In addition, since you are using Real Cookie Banner, you need to enable all the suggested service templates in <a href="%2$s"><i>Cookies > Scanner</i></a> for the trackers embedded with "Pixel Manager for WooCommerce".', RCB_TD),
-                        \admin_url('admin.php?page=wpm&section=advanced&subsection=cookie-consent-mgmt&' . self::PIXEL_MANAGER_ACTIVATE_PRO_FEATURES_QUERY_ARG),
-                        $configPage->getUrl() . '#/scanner'
-                    ) . ($isFreeVersion ? '<br /><br />' . \__('Pixel Manager for WooCommerce allows to check consents only in its PRO version (paid version). Therefore, you won\'t see the "Enable Explicit Consent Mode" option.', RCB_TD) : ''));
+                    $pixelManagerUrl = \esc_url(\admin_url('admin.php?page=wpm&section=advanced&subsection=cookie-consent-mgmt&' . self::PIXEL_MANAGER_ACTIVATE_PRO_FEATURES_QUERY_ARG));
+                    $scannerUrl = \esc_url($configPage->getUrl() . '#/scanner');
+                    echo \sprintf('<div class="notice notice-warning"><p>%s</p></div>', \wp_kses_post(\sprintf(
+                        // translators: %1$s: Pixel Manager settings URL, %2$s: RCB scanner URL.
+                        \__('<strong>Pixel Manager for WooCommerce</strong> embed trackers by default without waiting for consent. Please activate "Enable Explicit Consent Mode" under <a href="%1$s"><i>WooCommerce > Pixel Manager > Advanced > Cookie Consent Management</i></a> to embed trackers only after consent. In addition, since you are using Real Cookie Banner, you need to enable all the suggested service templates in <a href="%2$s"><i>Cookies > Scanner</i></a> for the trackers embedded with "Pixel Manager for WooCommerce".', 'real-cookie-banner'),
+                        $pixelManagerUrl,
+                        $scannerUrl
+                    )) . ($isFreeVersion ? '<br /><br />' . \esc_html__('Pixel Manager for WooCommerce allows to check consents only in its PRO version (paid version). Therefore, you won\'t see the "Enable Explicit Consent Mode" option.', 'real-cookie-banner') : ''));
                 }
             }
         }
@@ -76,12 +78,14 @@ class ThirdPartyNotices
             if (\is_array($option)) {
                 $showNotice = !($option[self::PIXEL_YOUR_SITE_OPTION_ARRAY_NAME] ?? \false);
                 if ($showNotice) {
-                    echo \sprintf('<div class="notice notice-warning"><p>%s</p></div>', \sprintf(
-                        // translators:
-                        \__('<strong>Pixel Your Site</strong> embed trackers by default without waiting for consent. Please activate the Real Cookie Banner integration under <a href="%1$s"><i>PixelYourSite > Consent</i></a> to embed trackers only after consent. In addition, since you are using Real Cookie Banner, you need to enable all the suggested service templates in <a href="%2$s"><i>Cookies > Scanner</i></a> for the trackers embedded with "PixelYourSite".', RCB_TD),
-                        \admin_url('admin.php?page=pixelyoursite&tab=gdpr'),
-                        $configPage->getUrl() . '#/scanner'
-                    ));
+                    $pysUrl = \esc_url(\admin_url('admin.php?page=pixelyoursite&tab=gdpr'));
+                    $scannerUrl = \esc_url($configPage->getUrl() . '#/scanner');
+                    echo \sprintf('<div class="notice notice-warning"><p>%s</p></div>', \wp_kses_post(\sprintf(
+                        // translators: %1$s: PixelYourSite consent URL, %2$s: RCB scanner URL.
+                        \__('<strong>Pixel Your Site</strong> embed trackers by default without waiting for consent. Please activate the Real Cookie Banner integration under <a href="%1$s"><i>PixelYourSite > Consent</i></a> to embed trackers only after consent. In addition, since you are using Real Cookie Banner, you need to enable all the suggested service templates in <a href="%2$s"><i>Cookies > Scanner</i></a> for the trackers embedded with "PixelYourSite".', 'real-cookie-banner'),
+                        $pysUrl,
+                        $scannerUrl
+                    )));
                 }
             }
         }

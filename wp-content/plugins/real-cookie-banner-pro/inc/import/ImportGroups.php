@@ -75,7 +75,7 @@ trait ImportGroups
         // Try to create
         $create = \wp_insert_term($name, CookieGroup::TAXONOMY_NAME, ['name' => $name, 'description' => $description, 'slug' => $slug]);
         if (\is_wp_error($create)) {
-            $this->addMessageCreateFailure($name, \__('Service Group', RCB_TD), $create);
+            $this->addMessageCreateFailure($name, \__('Service Group', 'real-cookie-banner'), $create);
             return \false;
         } else {
             \update_term_meta($create['term_id'], CookieGroup::META_NAME_ORDER, $order);
@@ -91,7 +91,7 @@ trait ImportGroups
     protected function handleCorruptGroup($group, $index)
     {
         if (!isset($group['slug'], $group['name'], $group['description'])) {
-            $this->addMessageMissingProperties($index, \__('Service Group', RCB_TD), 'slug, name, description');
+            $this->addMessageMissingProperties($index, \__('Service Group', 'real-cookie-banner'), 'slug, name, description');
             return \false;
         }
         return \true;

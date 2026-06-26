@@ -43,7 +43,9 @@ class CloudDataSource extends AbstractDataSource
         // have templates persisted, skip the download entirely
         if ($shouldFetchFromApi && \count($result) === 0) {
             if ($this->allowAsyncCacheCalculation()) {
-                throw new AbortDataSourceDownloadException($this, ['retryIn' => self::RETRY_IN_SECONDS_WHEN_DOWNLOAD_FAILED]);
+                $retrySeconds = self::RETRY_IN_SECONDS_WHEN_DOWNLOAD_FAILED;
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception payload is internal flow control.
+                throw new AbortDataSourceDownloadException($this, ['retryIn' => $retrySeconds]);
             } else {
                 // When we do not have any templates, still hold the `ServiceLocalDataSource` templates (e.g. Real Cookie Banner template)
                 $this->setData('retryIn', self::RETRY_IN_SECONDS_WHEN_DOWNLOAD_FAILED);
@@ -108,7 +110,9 @@ class CloudDataSource extends AbstractDataSource
         if ($cacheInfo !== null) {
             $cacheStatus = \strtoupper($cacheInfo['cacheStatus'] ?? 'DISABLED');
             if (\in_array($cacheStatus, ['PENDING', 'REQUESTED'], \true)) {
-                throw new AbortDataSourceDownloadException($this, ['retryIn' => self::RETRY_IN_SECONDS_WHEN_ASYNC_RESPONSE]);
+                $retrySeconds = self::RETRY_IN_SECONDS_WHEN_ASYNC_RESPONSE;
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception payload is internal flow control.
+                throw new AbortDataSourceDownloadException($this, ['retryIn' => $retrySeconds]);
             }
         }
         // Load next page

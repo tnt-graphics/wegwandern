@@ -6,6 +6,7 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\CookieConsentManagement\settings\Abstr
 use DevOwl\RealCookieBanner\comp\RevisionContextDependingOption;
 use DevOwl\RealCookieBanner\Core;
 use DevOwl\RealCookieBanner\lite\rest\Forwarding as RestForwarding;
+use DevOwl\RealCookieBanner\settings\General as SettingsGeneral;
 use DevOwl\RealCookieBanner\settings\Multisite as SettingsMultisite;
 use DevOwl\RealCookieBanner\Utils;
 use DevOwl\RealCookieBanner\Vendor\MatthiasWeb\Utils\Service;
@@ -31,9 +32,13 @@ trait Multisite
     // Documented in IOverrideMultisite
     public function overrideRegister()
     {
-        \register_setting(SettingsMultisite::OPTION_GROUP, SettingsMultisite::SETTING_CONSENT_FORWARDING, ['type' => 'boolean', 'show_in_rest' => \true]);
-        // WP < 5.3 does not support array types yet, so we need to store serialized
-        \register_setting(SettingsMultisite::OPTION_GROUP, SettingsMultisite::SETTING_FORWARD_TO, ['type' => 'string', 'show_in_rest' => \true]);
+        \register_setting(SettingsMultisite::OPTION_GROUP, SettingsMultisite::SETTING_CONSENT_FORWARDING, ['type' => 'boolean', 'show_in_rest' => \true, 'sanitize_callback' => 'rest_sanitize_boolean']);
+        // WP < 5.3 does not support array types yet, so we store the forward-to URLs as a pipe-separated string.
+        \register_setting(SettingsMultisite::OPTION_GROUP, SettingsMultisite::SETTING_FORWARD_TO, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => function ($value) {
+            return SettingsGeneral::sanitize_delimited_list($value, '|', function ($url) {
+                return \esc_url_raw(\trim($url));
+            });
+        }]);
         \register_setting(SettingsMultisite::OPTION_GROUP, SettingsMultisite::SETTING_CROSS_DOMAINS, ['type' => 'string', 'show_in_rest' => \true, 'sanitize_callback' => 'sanitize_textarea_field']);
     }
     /**

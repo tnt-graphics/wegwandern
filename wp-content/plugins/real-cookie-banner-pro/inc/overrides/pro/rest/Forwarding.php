@@ -99,7 +99,7 @@ class Forwarding
             return new WP_Error('rest_rcb_forbidden');
         }
         if (!Multisite::getInstance()->isConsentForwarding()) {
-            return new WP_Error('rest_rcb_forbidden', \__('Consent Forwarding is not active.', RCB_TD));
+            return new WP_Error('rest_rcb_forbidden', \__('Consent Forwarding is not active.', 'real-cookie-banner'));
         }
         $transaction = new Transaction();
         $transaction->setForwarded($consentId, $uuid, $blocker);

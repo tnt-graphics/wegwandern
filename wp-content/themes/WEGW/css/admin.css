@@ -44,3 +44,69 @@ input[type=checkbox]:checked{
     margin-top:10px;
 }
 
+/* === Backend-Schrift: Groteskschrift & grösser ===================== */
+
+/* Roboto (Grotesk) aus dem Theme laden */
+@font-face {
+    font-family: "Roboto";
+    src: url("../fonts/Roboto-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Roboto";
+    src: url("../fonts/Roboto-Bold.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
+    --wegw-admin-font: "Roboto", "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif;
+}
+
+/* Groteskschrift im ganzen Backend */
+body.wp-admin,
+.wp-admin .wp-core-ui,
+.wp-admin #wpbody-content,
+.wp-admin #adminmenu,
+.wp-admin #adminmenu a,
+.wp-admin #wpadminbar,
+.wp-admin .wrap,
+.wp-admin .wp-editor-area,
+.wp-admin input,
+.wp-admin select,
+.wp-admin textarea,
+.wp-admin button,
+.block-editor-writing-flow,
+.editor-styles-wrapper {
+    font-family: var(--wegw-admin-font) !important;
+}
+
+/* Grösser */
+body.wp-admin,
+.wp-admin #wpbody-content,
+.wp-admin .wrap p,
+.wp-admin .wrap label,
+.wp-admin td,
+.wp-admin th,
+.wp-admin input,
+.wp-admin select,
+.wp-admin textarea {
+    font-size: 15px;
+}
+
+.wp-admin #adminmenu .wp-menu-name,
+.wp-admin #adminmenu a {
+    font-size: 15px;
+}
+
+.wp-admin .wrap h1 {
+    font-size: 28px;
+}
+
+.wp-admin .wrap h2 {
+    font-size: 22px;
+}
+

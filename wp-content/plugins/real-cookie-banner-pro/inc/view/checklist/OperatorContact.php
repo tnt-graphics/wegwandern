@@ -27,12 +27,12 @@ class OperatorContact extends \DevOwl\RealCookieBanner\view\checklist\AbstractCh
     // Documented in AbstractChecklistItem
     public function getTitle()
     {
-        return \__('Set website operator details', RCB_TD);
+        return \__('Set website operator details', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getDescription()
     {
-        return \__('You as a website operator should provide your address and at least one contact option to fulfill your information obligations for self-hosted services.', RCB_TD);
+        return \__('You as a website operator should provide your address and at least one contact option to fulfill your information obligations for self-hosted services.', 'real-cookie-banner');
     }
     // Documented in AbstractChecklistItem
     public function getLink()
@@ -42,6 +42,6 @@ class OperatorContact extends \DevOwl\RealCookieBanner\view\checklist\AbstractCh
     // Documented in AbstractChecklistItem
     public function getLinkText()
     {
-        return \__('Add operator details', RCB_TD);
+        return \__('Add operator details', 'real-cookie-banner');
     }
 }

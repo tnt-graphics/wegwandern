@@ -77,6 +77,12 @@ trait ImportCookies
             if (isset($metas[Cookie::META_NAME_CODE_DYNAMICS])) {
                 $metas[Cookie::META_NAME_CODE_DYNAMICS] = \wp_slash(\json_encode($metas[Cookie::META_NAME_CODE_DYNAMICS]));
             }
+            // Remap provider contact to provider contact phone, email and link
+            if (isset($metas['providerContact']) && \is_array($metas['providerContact'])) {
+                $metas[Cookie::META_NAME_PROVIDER_CONTACT_PHONE] = $metas['providerContact']['phone'];
+                $metas[Cookie::META_NAME_PROVIDER_CONTACT_EMAIL] = $metas['providerContact']['email'];
+                $metas[Cookie::META_NAME_PROVIDER_CONTACT_LINK] = $metas['providerContact']['link'];
+            }
             // Find current cookie with same post_name
             $found = \false;
             foreach ($currentCookies as $currentCookie) {
@@ -103,7 +109,7 @@ trait ImportCookies
             // Always create the entry
             $create = \wp_insert_post(['post_type' => Cookie::CPT_NAME, 'post_content' => $post_content, 'post_title' => $post_title, 'post_status' => $post_status, 'menu_order' => $order, 'meta_input' => $metas], \true);
             if (\is_wp_error($create)) {
-                $this->addMessageCreateFailure($post_title, \__('Cookie', RCB_TD), $create);
+                $this->addMessageCreateFailure($post_title, \__('Cookie', 'real-cookie-banner'), $create);
             } elseif ($this->handleCookieAssign($create, $group)) {
                 ++$order;
                 $this->mapCookies[$post_name] = \get_post($create)->ID;
@@ -138,7 +144,7 @@ trait ImportCookies
     protected function handleCorruptCookie($cookie, $index)
     {
         if (!isset($cookie['group'], $cookie['metas'], $cookie['post_name'], $cookie['post_content'], $cookie['post_status'], $cookie['post_title'])) {
-            $this->addMessageMissingProperties($index, \__('Cookie', RCB_TD), 'ID, group, metas, post_content, post_name, post_status, post_title');
+            $this->addMessageMissingProperties($index, \__('Cookie', 'real-cookie-banner'), 'ID, group, metas, post_content, post_name, post_status, post_title');
             return \false;
         }
         return \true;

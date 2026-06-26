@@ -45,7 +45,7 @@ class Scanner
             \check_admin_referer('rcb-scan-this-site');
             $added = Core::getInstance()->getScanner()->addUrlsToQueue([\get_permalink()], \false);
         }
-        $admin_bar->add_menu(['parent' => $configPage->ensureAdminBarTopLevelNode(), 'id' => 'rcb-scanner-scan-again', 'title' => \__('Scan this page', RCB_TD), 'href' => \esc_url_raw(\add_query_arg([self::ACTION_SCAN_THIS_SITE => \true, '_wpnonce' => \wp_create_nonce('rcb-scan-this-site')]))]);
+        $admin_bar->add_menu(['parent' => $configPage->ensureAdminBarTopLevelNode(), 'id' => 'rcb-scanner-scan-again', 'title' => \__('Scan this page', 'real-cookie-banner'), 'href' => \esc_url_raw(\add_query_arg([self::ACTION_SCAN_THIS_SITE => \true, '_wpnonce' => \wp_create_nonce('rcb-scan-this-site')]))]);
         list($services, $countAll) = $this->getServicesForNotice(self::MAX_FOUND_SERVICES_LIST_ITEMS);
         if (\count($services) === 0) {
             return;
@@ -53,7 +53,7 @@ class Scanner
         $scannerUrl = $configPage->getUrl() . '#/scanner';
         $admin_bar->add_menu(['parent' => $configPage->ensureAdminBarTopLevelNode(), 'id' => 'rcb-scanner-found-services', 'title' => \sprintf(
             // translators:
-            \_n('%d recommendation found', '%d recommendations found', $countAll, RCB_TD),
+            \_n('%d recommendation found', '%d recommendations found', $countAll, 'real-cookie-banner'),
             $countAll
         ), 'href' => $scannerUrl, 'meta' => ['class' => 'menupop', 'html' => \sprintf('<div class="ab-sub-wrapper">
     <style>
@@ -107,7 +107,7 @@ class Scanner
             <a class="ab-item" href="%4$s"><span class="wp-exclude-emoji">&#10140</span> %3$s</a>
         </li>
     </ul>
-</div>', self::ACTION_SCANNER_FOUND_SERVICES, $this->generateNoticeTextFromServices($services, $countAll), \__('Review', RCB_TD), $scannerUrl, \DevOwl\RealCookieBanner\view\ConfigPage::ADMIN_BAR_TOP_LEVEL_NODE_ID)]]);
+</div>', self::ACTION_SCANNER_FOUND_SERVICES, $this->generateNoticeTextFromServices($services, $countAll), \__('Review', 'real-cookie-banner'), $scannerUrl, \DevOwl\RealCookieBanner\view\ConfigPage::ADMIN_BAR_TOP_LEVEL_NODE_ID)]]);
     }
     /**
      * Generate the notice text from services.
@@ -125,7 +125,7 @@ class Scanner
         $text = \sprintf('<ul><li>%s</li></ul>', \join('</li><li>', $liElements));
         $text = \sprintf(
             // translators:
-            \__('You have embedded the following services on your website: %s You may need to obtain consent for these services via your cookie banner to be able to use them in accordance with data protection regulations.', RCB_TD),
+            \__('You have embedded the following services on your website: %s You may need to obtain consent for these services via your cookie banner to be able to use them in accordance with data protection regulations.', 'real-cookie-banner'),
             $text
         );
         return $text;

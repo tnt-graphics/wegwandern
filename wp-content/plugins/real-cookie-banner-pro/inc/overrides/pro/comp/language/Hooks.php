@@ -55,7 +55,7 @@ class Hooks
                     $restUrl = \add_query_arg('_dataLocale', $lang, $restUrl);
                     $endpoints[$restUrl] = \sprintf(
                         // translators:
-                        \__('Multilingual %1$s: %2$s', RCB_TD),
+                        \__('Multilingual %1$s: %2$s', 'real-cookie-banner'),
                         $comp->getTranslatedName($lang),
                         \get_bloginfo('name')
                     );

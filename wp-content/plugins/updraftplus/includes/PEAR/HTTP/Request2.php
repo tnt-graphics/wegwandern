@@ -1,5 +1,6 @@
 <?php
 // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped -- all exceptions thrown in this class are captured and escaped during output.
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Using the default PHP fopen() function instead of the WP Filesystem API.
 /**
  * Class representing a HTTP request message
  *
