@@ -21,31 +21,6 @@ function wegwandern_summit_book_can_submit_commentsform() {
 	return in_array( SUMMIT_BOOK_USER_ROLE, (array) $user->roles, true );
 }
 
-add_filter( 'frm_validate_entry', 'wegwandern_summit_book_validate_commentsform_entry', 20, 2 );
-
-/**
- * Reject comment form submissions from bots and non-summit-book users.
- *
- * @param array $errors Validation errors.
- * @param array $values Submitted form values.
- */
-function wegwandern_summit_book_validate_commentsform_entry( $errors, $values ) {
-	if ( empty( $values['form_id'] ) ) {
-		return $errors;
-	}
-
-	$comments_form_id = FrmForm::get_id_by_key( 'commentsform' );
-	if ( ! $comments_form_id || (int) $comments_form_id !== (int) $values['form_id'] ) {
-		return $errors;
-	}
-
-	if ( ! wegwandern_summit_book_can_submit_commentsform() ) {
-		$errors['form'] = __( 'Sie müssen als Gipfelbuch-Benutzer angemeldet sein, um eine Bewertung abzugeben.', 'wegwandern-summit-book' );
-	}
-
-	return $errors;
-}
-
 add_filter( 'frm_send_email', 'wegwandern_summit_book_block_commentsform_email', 10, 2 );
 
 /**
