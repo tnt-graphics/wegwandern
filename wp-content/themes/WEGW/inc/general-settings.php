@@ -639,20 +639,6 @@ function wpdocs_my_admin_scripts($hook)
 }
 
 /**
- * Backend-Schrift (Groteskschrift & grösser) im ganzen wp-admin laden.
- */
-function wegw_admin_font_styles()
-{
-	wp_enqueue_style(
-		'wegw-admin-font',
-		get_template_directory_uri() . '/css/admin.css',
-		array(),
-		filemtime(get_template_directory() . '/css/admin.css')
-	);
-}
-add_action('admin_enqueue_scripts', 'wegw_admin_font_styles');
-
-/**
  * Function to add meta box for taxonomy Saison
  */
 function wegwandern_saison_taxonomy_meta_box_markup()

@@ -5,6 +5,67 @@
  * @package wegwandern-summit-book
  */
 
+/**
+ * Check if the current user may submit the hike comment form.
+ */
+function wegwandern_summit_book_can_submit_commentsform() {
+	if ( ! is_user_logged_in() ) {
+		return false;
+	}
+
+	$user = wp_get_current_user();
+	if ( ! $user || 0 === $user->ID ) {
+		return false;
+	}
+
+	return in_array( SUMMIT_BOOK_USER_ROLE, (array) $user->roles, true );
+}
+
+add_filter( 'frm_validate_entry', 'wegwandern_summit_book_validate_commentsform_entry', 20, 2 );
+
+/**
+ * Reject comment form submissions from bots and non-summit-book users.
+ *
+ * @param array $errors Validation errors.
+ * @param array $values Submitted form values.
+ */
+function wegwandern_summit_book_validate_commentsform_entry( $errors, $values ) {
+	if ( empty( $values['form_id'] ) ) {
+		return $errors;
+	}
+
+	$comments_form_id = FrmForm::get_id_by_key( 'commentsform' );
+	if ( ! $comments_form_id || (int) $comments_form_id !== (int) $values['form_id'] ) {
+		return $errors;
+	}
+
+	if ( ! wegwandern_summit_book_can_submit_commentsform() ) {
+		$errors['form'] = __( 'Sie müssen als Gipfelbuch-Benutzer angemeldet sein, um eine Bewertung abzugeben.', 'wegwandern-summit-book' );
+	}
+
+	return $errors;
+}
+
+add_filter( 'frm_send_email', 'wegwandern_summit_book_block_commentsform_email', 10, 2 );
+
+/**
+ * Fallback: block admin notification if a comment form entry slips through validation.
+ *
+ * @param bool  $send Whether to send the email.
+ * @param array $args Email arguments including subject and message.
+ */
+function wegwandern_summit_book_block_commentsform_email( $send, $args ) {
+	if ( ! $send || empty( $args['subject'] ) || 'Neuer Kommentar' !== $args['subject'] ) {
+		return $send;
+	}
+
+	if ( ! wegwandern_summit_book_can_submit_commentsform() ) {
+		return false;
+	}
+
+	return $send;
+}
+
 add_action( 'frm_after_create_entry', 'after_entry_created', 30, 2 );
 
 /**
@@ -19,14 +80,11 @@ function after_entry_created( $entry_id, $form_id ) {
 	 */
 	$comments_form_id = FrmForm::get_id_by_key( 'commentsform' );
 	if ( $comments_form_id === $form_id ) {
-		if ( ! is_user_logged_in() ) {
+		if ( ! wegwandern_summit_book_can_submit_commentsform() ) {
 			return;
 		}
 
-		$current_user            = wp_get_current_user();
-		if ( ! $current_user || 0 === $current_user->ID ) {
-			return;
-		}
+		$current_user = wp_get_current_user();
 
 		$post_array              = $_POST;
 		$star_rating_field_id    = FrmField::get_id_by_key( '30zuy' );

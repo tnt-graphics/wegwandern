@@ -9,9 +9,37 @@
  * Add custom meta box to display map in admin backend
  */
 add_action( 'add_meta_boxes', 'wegwandern_add_custom_meta_box' );
+add_action( 'admin_enqueue_scripts', 'wegwandern_admin_map_assets' );
 
 function wegwandern_add_custom_meta_box() {
 	add_meta_box( 'map-meta-box', 'Karte', 'wegwandern_map_custom_meta_box_markup', 'wanderung', 'normal', 'low', null );
+}
+
+/**
+ * Load OpenLayers in the wanderung admin editor so the map does not depend on dynamic script injection.
+ */
+function wegwandern_admin_map_assets( $hook ) {
+	global $post_type, $post;
+
+	if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+
+	if ( 'post.php' === $hook && $post instanceof WP_Post ) {
+		$screen_post_type = $post->post_type;
+	} else {
+		$screen_post_type = isset( $_GET['post_type'] ) ? sanitize_key( wp_unslash( $_GET['post_type'] ) ) : 'post';
+	}
+
+	if ( 'wanderung' !== $screen_post_type ) {
+		return;
+	}
+
+	wp_enqueue_style( 'wegw-admin-ol-css', get_template_directory_uri() . '/lib/ol@v7.1.0/ol.css', array(), _S_VERSION );
+	wp_enqueue_style( 'wegw-admin-ol-ext-css', get_template_directory_uri() . '/lib/ol-ext/ol-ext.css', array(), _S_VERSION );
+	wp_enqueue_script( 'wegw-admin-ol-js', get_template_directory_uri() . '/lib/ol@v7.1.0/ol.js', array(), _S_VERSION, true );
+	wp_enqueue_script( 'wegw-admin-ol-ext-js', get_template_directory_uri() . '/lib/ol-ext/ol-ext.min.js', array( 'wegw-admin-ol-js' ), _S_VERSION, true );
+	wp_enqueue_script( 'wegw-admin-ol-proj4-js', get_template_directory_uri() . '/lib/ol-ext/proj4.js', array( 'wegw-admin-ol-js' ), _S_VERSION, true );
 }
 
 /**
@@ -31,23 +59,89 @@ function wegwandern_map_custom_meta_box_markup() {
 		$current_hike_activity_taxonomy = "";
 	}
 
-	$json_gpx_data                  = ( $gpx_file ) ? get_field( 'json_gpx_file_data', $current_hike_id ) : 'undefined';
+	$json_gpx_raw = $gpx_file ? get_field( 'json_gpx_file_data', $current_hike_id ) : null;
+	if ( empty( $json_gpx_raw ) ) {
+		$json_gpx_js = 'undefined';
+	} elseif ( is_string( $json_gpx_raw ) ) {
+		$json_gpx_decoded = json_decode( $json_gpx_raw, true );
+		$json_gpx_js      = ( JSON_ERROR_NONE === json_last_error() )
+			? wp_json_encode( $json_gpx_decoded )
+			: wp_json_encode( $json_gpx_raw );
+	} else {
+		$json_gpx_js = wp_json_encode( $json_gpx_raw );
+	}
 ?>
 	<script type="text/javascript">
-		var recalculateGpx = "<?php echo $recalculate_gpx; ?>";
-		console.log("recalculateGpx: " + recalculateGpx);
+		var recalculateGpx = "<?php echo esc_js( $recalculate_gpx ); ?>";
+		var json_gpx_data = <?php echo $json_gpx_js; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
+		var wegAdminMap = null;
 
-		/* Get GPX XML file and parsing it to get the longitude and latitude of the `Track Points(trkpt)` */
-		var json_gpx_data = <?php echo $json_gpx_data; ?>;
+		jQuery(function() {
+			if (recalculateGpx == 1) {
+				try {
+					calculateGPX();
+				} catch (error) {
+					console.error('calculateGPX failed:', error);
+				}
+			}
 
-		if(recalculateGpx == 1){
-			calculateGPX();
+			wegwBindDisplayMapButton();
+		});
+
+		if (typeof acf !== 'undefined') {
+			acf.addAction('ready', wegwBindDisplayMapButton);
+			acf.addAction('append', wegwBindDisplayMapButton);
 		}
 
-		/**load map, ploat track to get lat and lon on click on a button */
-		jQuery('#ol_map_display_btn input').on('click', function() {
-			loadMap();	
-		});
+		/**
+		 * Bind the ACF "Display Map" button_group field.
+		 * ACF 6.x hides the radio input and handles clicks on the label instead.
+		 */
+		function wegwBindDisplayMapButton() {
+			jQuery('[data-name="display_map"], #ol_map_display_btn').each(function() {
+				var $field = jQuery(this);
+
+				if ($field.data('weg-map-bound')) {
+					return;
+				}
+
+				$field.data('weg-map-bound', true);
+
+				$field.on('click.wegwMap', '.acf-button-group label', function(event) {
+					event.preventDefault();
+					loadMap();
+				});
+
+				$field.on('change.wegwMap', 'input[type="radio"]', function() {
+					if (jQuery(this).is(':checked') && jQuery(this).val() === 'open_map') {
+						loadMap();
+					}
+				});
+			});
+		}
+
+		/**
+		 * The "Karte" meta box is a classic meta box that may be collapsed by default
+		 * (especially in the block editor). Expand it, scroll to it and refresh the map.
+		 */
+		function wegwRevealKarteBox() {
+			var $box = jQuery('#map-meta-box');
+
+			if ($box.length) {
+				$box.removeClass('closed');
+				$box.find('.handlediv').attr('aria-expanded', 'true');
+				$box.find('.inside').show();
+
+				var boxTop = $box.offset() ? $box.offset().top : 0;
+				jQuery('html, body').animate({ scrollTop: Math.max(boxTop - 60, 0) }, 300);
+			}
+
+			if (wegAdminMap) {
+				setTimeout(function () {
+					wegAdminMap.updateSize();
+				}, 350);
+			}
+		}
 
 		function calculateGPX(){
 			
@@ -258,40 +352,60 @@ function wegwandern_map_custom_meta_box_markup() {
 		}
 
 		function loadMap(){
-			//ol lib css
-			var cssURLs = [
-				"<?php echo get_template_directory_uri(); ?>/lib/ol@v7.1.0/ol.css",
-				"<?php echo get_template_directory_uri(); ?>/lib/ol-ext/ol-ext.css"
-			];
-			//ol lib js
-			var jsURLs = [
-				"<?php echo get_template_directory_uri(); ?>/lib/ol@v7.1.0/ol.js", // OpenLayers library
-				"<?php echo get_template_directory_uri(); ?>/lib/ol-ext/ol-ext.min.js",
-				"<?php echo get_template_directory_uri(); ?>/lib/ol-ext/proj4.js",
-				
-			];
+			wegwRevealKarteBox();
 
-			// Function to insert CSS dynamically
-			function insertCSS(url) {
-				var link = document.createElement("link");
-				link.rel = "stylesheet";
-				link.type = "text/css";
-				link.href = url;
-				var head = document.head || document.getElementsByTagName('head')[0];
-				head.insertBefore(link, head.lastChild.nextSibling);
+			if (wegAdminMap) {
+				return;
 			}
 
-			// Function to insert JavaScript dynamically
-			function insertJS(url, callback) {
-				var script = document.createElement("script");
-				script.src = url;
-				script.onload = callback;
-				var head = document.head || document.getElementsByTagName('head')[0];
-				head.insertBefore(script, head.lastChild.nextSibling);
+			function runWhenOpenLayersReady(callback) {
+				if (typeof ol !== 'undefined') {
+					callback();
+					return;
+				}
+
+				var cssURLs = [
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol@v7.1.0/ol.css' ); ?>",
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol-ext/ol-ext.css' ); ?>"
+				];
+				var jsURLs = [
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol@v7.1.0/ol.js' ); ?>",
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol-ext/ol-ext.min.js' ); ?>",
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol-ext/proj4.js' ); ?>"
+				];
+
+				function insertCSS(url) {
+					var link = document.createElement("link");
+					link.rel = "stylesheet";
+					link.type = "text/css";
+					link.href = url;
+					document.head.appendChild(link);
+				}
+
+				function insertJS(url, onLoad) {
+					var script = document.createElement("script");
+					script.src = url;
+					script.onload = onLoad;
+					document.head.appendChild(script);
+				}
+
+				cssURLs.forEach(insertCSS);
+
+				var loadedScripts = 0;
+				function checkAllScriptsLoaded() {
+					loadedScripts++;
+					if (loadedScripts === jsURLs.length) {
+						callback();
+					}
+				}
+
+				jsURLs.forEach(function(url) {
+					insertJS(url, checkAllScriptsLoaded);
+				});
 			}
 
-			// Callback function(to load map) to execute after all scripts are loaded
-			function initializeMap() {
+			runWhenOpenLayersReady(function initializeMap() {
+				try {
 				/* Swisstopo Layer */
 				var swisstopo_layer = new ol.layer.Tile({
 					source: new ol.source.XYZ({
@@ -307,7 +421,7 @@ function wegwandern_map_custom_meta_box_markup() {
 					var lon = parseFloat(gpx_trackpoints[gpx_middle_cordinates]["@attributes"].lon);
 
 					/* Initialise Map */
-					var map = new ol.Map({
+					wegAdminMap = new ol.Map({
 						target: 'map',
 						view: new ol.View({
 							zoom: 14,
@@ -315,6 +429,7 @@ function wegwandern_map_custom_meta_box_markup() {
 						}),
 						layers: [swisstopo_layer]
 					});
+					var map = wegAdminMap;
 					
 					/* Get the longitude and latitude of the `Way Points(wpt)` to plot event icons */
 					var gpx_waypoints = json_gpx_data.trk.wpt;
@@ -419,7 +534,7 @@ function wegwandern_map_custom_meta_box_markup() {
 
 				} else {
 					/* Initialise Map without coordinates */
-					var map = new ol.Map({
+					wegAdminMap = new ol.Map({
 						target: 'map',
 						view: new ol.View({	
 							zoom: 14,
@@ -427,37 +542,24 @@ function wegwandern_map_custom_meta_box_markup() {
 						}),
 						layers: [swisstopo_layer]
 					});
+					var map = wegAdminMap;
 				}
 
-				setTimeout(function () {
-					map.updateSize();
-				}, 300);
-			}
-
-			// Insert CSS files
-			cssURLs.forEach(function(url) {
-				insertCSS(url);
-			});
-
-			// Insert files checkAllScriptsLoaded
-			var loadedScripts = 0;
-			function checkAllScriptsLoaded() {
-				loadedScripts++;
-				if (loadedScripts === jsURLs.length) {
-					initializeMap();
+				[100, 400, 800, 1500].forEach(function (delay) {
+					setTimeout(function () {
+						map.updateSize();
+					}, delay);
+				});
+				} catch (error) {
+					console.error('OpenLayers map init failed:', error);
 				}
-			}
-
-			// Insert JavaScript files
-			jsURLs.forEach(function(url) {
-				insertJS(url, checkAllScriptsLoaded);
 			});
 		}
 	</script>
 
 	<div id="map-view-coordinates-wrapper"></div>
 	<br>
-	<div id="map" class="map" style="width: 900px; height: 500px;"></div>
+	<div id="map" class="map" style="width: 900px; height: 500px; background: #e9eef2;"></div>
 
 	<?php
 }
