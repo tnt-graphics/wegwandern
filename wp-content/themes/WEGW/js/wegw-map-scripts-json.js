@@ -1503,6 +1503,11 @@ var hikeDescriptionLetterCount = 197;
             });
         },
         _wayPoints: function(map, json_gpx_data, target, hikeID){
+            if (!markerLayer) {
+                markerLayer = new ol.layer.Vector({
+                    source: new ol.source.Vector(),
+                });
+            }
             /* Popup for hike detail page */
             const container = document.getElementById('detailPgPopup');
             if($('.ol-overlay-container').length === 0 && (map.getTarget() !== 'map_desktop' || map.getTarget() !== 'map-resp' )){
@@ -1536,6 +1541,15 @@ var hikeDescriptionLetterCount = 197;
             let gpx_waypoints = json_gpx_data.trk && json_gpx_data.trk.wpt;
             if (gpx_waypoints && !Array.isArray(gpx_waypoints)) {
                 gpx_waypoints = [gpx_waypoints];
+            }
+            if (typeof overlay_waypoints_single_hike !== 'undefined' && overlay_waypoints_single_hike.length) {
+                gpx_waypoints = overlay_waypoints_single_hike.map(function(pt) {
+                    return {
+                        '@attributes': { lat: pt.lat, lon: pt.lon },
+                        wptImage: pt.icon,
+                        wpt_info: pt.info
+                    };
+                });
             }
             /* Get the longitude and latitude of the `Way Points(wpt)` to plot event icons */
             if (gpx_waypoints !== undefined) {
@@ -1571,7 +1585,8 @@ var hikeDescriptionLetterCount = 197;
                     var markerStyle = new ol.style.Style({
                     image: new ol.style.Icon({
                         src: event_icon,
-                        scale: 0.3, // adjust the scale as needed
+                        width: 64,
+                        height: 64
                     }),
                     });
                     
