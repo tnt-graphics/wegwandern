@@ -1547,6 +1547,14 @@ var hikeDescriptionLetterCount = 197;
                         if (event_icon && typeof event_icon === 'object') {
                             event_icon = event_icon.url || '';
                         }
+                        if (event_icon && typeof event_icon === 'string') {
+                            try {
+                                var iconUrl = new URL(event_icon, window.location.origin);
+                                if (iconUrl.pathname.indexOf('/wp-content/') !== -1) {
+                                    event_icon = window.location.origin + iconUrl.pathname + iconUrl.search;
+                                }
+                            } catch (e) {}
+                        }
                     } else {
                         event_icon = url_path +"/home.png";
                     }

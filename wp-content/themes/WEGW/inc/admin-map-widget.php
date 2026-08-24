@@ -760,17 +760,26 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
  * The map reads `json_gpx_file_data.trk.wpt` — sync on every hike save, not only when GPX is recalculated.
  */
 function wegw_get_overlay_waypoint_icon_url( $icon ) {
+	$url = '';
 	if ( is_array( $icon ) && ! empty( $icon['url'] ) ) {
-		return $icon['url'];
+		$url = $icon['url'];
+	} elseif ( is_numeric( $icon ) ) {
+		$attachment_url = wp_get_attachment_url( (int) $icon );
+		$url            = $attachment_url ? $attachment_url : '';
+	} elseif ( is_string( $icon ) && $icon !== '' ) {
+		$url = $icon;
 	}
-	if ( is_numeric( $icon ) ) {
-		$url = wp_get_attachment_url( (int) $icon );
-		return $url ? $url : '';
+
+	if ( $url === '' ) {
+		return '';
 	}
-	if ( is_string( $icon ) && $icon !== '' ) {
-		return $icon;
+
+	$path = wp_parse_url( $url, PHP_URL_PATH );
+	if ( is_string( $path ) && false !== strpos( $path, '/wp-content/' ) ) {
+		return home_url( $path );
 	}
-	return '';
+
+	return $url;
 }
 
 function wegw_sync_overlay_waypoints_to_gpx_json( $post_id ) {
