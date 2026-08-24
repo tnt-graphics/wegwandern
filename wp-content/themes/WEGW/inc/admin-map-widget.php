@@ -740,47 +740,6 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
 				}
 			}
 
-			if ( have_rows( 'wpt-coordinates' ) ) :
-				$wpt_coordinates = array();
-				while ( have_rows( 'wpt-coordinates' ) ) :
-					the_row();
-					$wpt_latitude  = get_sub_field( 'latitude' );
-					$wpt_longitude = get_sub_field( 'longitude' );
-					$wpt_info      = get_sub_field( 'wegpunkt_info' );
-					// $wpt_elevation     = get_sub_field( 'elevation' );
-					$wpt_icon          = get_sub_field( 'icon' );
-					$wpt_image         = isset( $wpt_icon ) ? $wpt_icon : '';
-					$wpt_coordinates[] = array(
-						'@attributes' => array(
-							'lat' => $wpt_latitude,
-							'lon' => $wpt_longitude,
-						),
-						// "ele" => $wpt_elevation,
-						'name'        => '',
-						'wptImage'    => $wpt_image,
-						'wpt_info'    => $wpt_info,
-					);
-
-				endwhile;
-			endif;
-
-			if ( isset( $wpt_coordinates ) && $wpt_coordinates != '' ) {
-				/* set empty array $gpx_data_arr['trk']['wpt'] */
-				$gpx_data_arr['trk']['wpt'] = array();
-				foreach ( $wpt_coordinates as $wptc ) {
-					if ( isset( $gpx_data_arr['trk']['wpt'] ) && $gpx_data_arr['trk']['wpt'] != '' ) {
-						array_push( $gpx_data_arr['trk']['wpt'], $wptc );
-					} elseif ( isset( $gpx_data_arr['wpt'] ) && $gpx_data_arr['wpt'] != '' ) {
-						$already_exist_wpt = $gpx_data_arr['wpt'];
-						unset( $gpx_data_arr['wpt'] );
-						$gpx_data_arr['trk']['wpt'][] = $wptc;
-						array_push( $gpx_data_arr['trk']['wpt'], $already_exist_wpt );
-					} else {
-						array_push( $gpx_data_arr['trk']['wpt'], $wptc );
-					}
-				}
-			}
-
 			$dauer = number_format( $dauer, 2 );
 			$dauer_converted = wegwandern_convert_decimal_time( $dauer );
 			update_field( 'dauer', $dauer_converted, $post_id );
@@ -792,6 +751,64 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
 			wegw_gpx_fields_update_on_import( $post_id );
 		}
 	}
+
+	wegw_sync_overlay_waypoints_to_gpx_json( $post_id );
+}
+
+/**
+ * Overlay icons live in ACF repeater `wpt-coordinates`.
+ * The map reads `json_gpx_file_data.trk.wpt` — sync on every hike save, not only when GPX is recalculated.
+ */
+function wegw_get_overlay_waypoint_icon_url( $icon ) {
+	if ( is_array( $icon ) && ! empty( $icon['url'] ) ) {
+		return $icon['url'];
+	}
+	if ( is_numeric( $icon ) ) {
+		$url = wp_get_attachment_url( (int) $icon );
+		return $url ? $url : '';
+	}
+	if ( is_string( $icon ) && $icon !== '' ) {
+		return $icon;
+	}
+	return '';
+}
+
+function wegw_sync_overlay_waypoints_to_gpx_json( $post_id ) {
+	if ( 'wanderung' !== get_post_type( $post_id ) ) {
+		return;
+	}
+
+	$raw = get_field( 'json_gpx_file_data', $post_id );
+	if ( empty( $raw ) ) {
+		return;
+	}
+
+	$gpx = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+	if ( ! is_array( $gpx ) ) {
+		return;
+	}
+	if ( ! isset( $gpx['trk'] ) || ! is_array( $gpx['trk'] ) ) {
+		$gpx['trk'] = array();
+	}
+
+	$wpts = array();
+	if ( have_rows( 'wpt-coordinates', $post_id ) ) {
+		while ( have_rows( 'wpt-coordinates', $post_id ) ) {
+			the_row();
+			$wpts[] = array(
+				'@attributes' => array(
+					'lat' => get_sub_field( 'latitude' ),
+					'lon' => get_sub_field( 'longitude' ),
+				),
+				'name'     => '',
+				'wptImage' => wegw_get_overlay_waypoint_icon_url( get_sub_field( 'icon' ) ),
+				'wpt_info' => get_sub_field( 'wegpunkt_info' ),
+			);
+		}
+	}
+
+	$gpx['trk']['wpt'] = $wpts;
+	update_field( 'json_gpx_file_data', wp_json_encode( $gpx, JSON_UNESCAPED_UNICODE ), $post_id );
 }
 
 /*
