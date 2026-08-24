@@ -14,14 +14,13 @@ class FrmProFieldSummary extends FrmFieldType {
 	protected $has_for_label = false;
 
 	public function default_html() {
-		$default_html = <<<DEFAULT_HTML
+		return <<<DEFAULT_HTML
 <div id="frm_field_[id]_container" class="frm_form_field form-field">
 	<h3 class="frm_pos_[label_position]">[field_name]</h3>
 	[if description]<div class="frm_description" id="frm_desc_field_[key]">[description]</div>[/if description]
     [input]
 </div>
 DEFAULT_HTML;
-		return $default_html;
 	}
 
 	protected function field_settings_for_type() {
@@ -73,13 +72,14 @@ DEFAULT_HTML;
 	 */
 	protected function get_excluded_ids() {
 		$ids = trim( FrmField::get_option( $this->field, 'exclude_fields' ) );
-		if ( ! empty( $ids ) ) {
+
+		if ( $ids ) {
 			$ids = explode( ',', $ids );
-			// trim to avoid mismatch - due to empty space - when doing in_array.
+			// Trim to avoid mismatch - due to empty space - when doing in_array.
 			// array_filter to remove empty spaces caused by e.g. trailing comma.
-			$ids = array_filter( array_map( 'trim', $ids ) );
-			return $ids;
+			return array_filter( array_map( 'trim', $ids ) );
 		}
+
 		return array();
 	}
 
@@ -167,6 +167,7 @@ DEFAULT_HTML;
 		}
 
 		$has_break = FrmAppHelper::get_post_param( 'has_break', '', 'sanitize_text_field' );
+
 		if ( ! $has_break ) {
 			FrmFieldsController::include_new_field( 'break', $form_id );
 		}

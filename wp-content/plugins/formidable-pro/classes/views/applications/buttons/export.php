@@ -4,5 +4,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <a href="#" class="button-secondary frm-button-secondary frm-button-sm frm-export-application-button">
-	<?php esc_html_e( 'Export', 'formidable-pro' ); ?>
+	<?php esc_html_e( 'Export', 'formidable' ); ?>
 </a>

@@ -7,11 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div id="frm_top_bar">
         <a href="<?php echo esc_url( admin_url( 'admin.php?page=formidable' ) ); ?>" class="frm-header-logo">
             <?php FrmAppHelper::show_header_logo(); ?>
-            <span class="screen-reader-text"><?php esc_html_e( 'View Forms', 'formidable-pro' ); ?></span>
+            <span class="screen-reader-text"><?php esc_html_e( 'View Forms', 'formidable' ); ?></span>
         </a>
         <div class="frm_top_left">
             <h1>
-                <?php esc_html_e( 'Import/Export', 'formidable-pro' ); ?>
+                <?php esc_html_e( 'Import/Export', 'formidable' ); ?>
             </h1>
         </div>
     </div>
@@ -25,7 +25,12 @@ if ( ! defined( 'ABSPATH' ) ) {
                     <div class="inside">
                         <div class="with_frm_style" id="frm_import_message">
                             <span class="frm_message" style="display: inline-block; padding: 7px;">
-                                <?php printf( __( '%1$s entries are importing', 'formidable-pro' ), '<span class="frm_csv_remaining">' . $left . '</span>' ); ?>
+                                <?php
+                                printf(
+                                    esc_html__( '%1$s entries are importing', 'formidable-pro' ),
+                                    '<span class="frm_csv_remaining">' . esc_html( $left ) . '</span>'
+                                );
+                                ?>
                             </span>
                         </div>
 

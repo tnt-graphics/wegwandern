@@ -40,6 +40,8 @@ class FrmProFieldNumber extends FrmFieldNumber {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -69,6 +71,14 @@ class FrmProFieldNumber extends FrmFieldNumber {
 	 */
 	public function validate( $args ) {
 		if ( 'number' === $this->html5_input_type() ) {
+			if ( strpos( $args['value'], ',' ) ) {
+				$format = FrmField::get_option( $this->field, 'format' );
+
+				if ( FrmCurrencyHelper::is_currency_format( $format ) ) {
+					$args['value'] = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $args['value'] );
+				}
+			}
+
 			return parent::validate( $args );
 		}
 
@@ -88,9 +98,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 			$errors[ 'field' . $args['id'] ] = __( 'Please select a lower number', 'formidable' );
 		}
 
-		if ( is_callable( parent::class . '::validate_step' ) ) {
-			$this->validate_step( $errors, $args );
-		}
+		$this->validate_step( $errors, $args );
 
 		return $errors;
 	}
@@ -101,7 +109,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 	 * {@inheritdoc}
 	 */
 	protected function check_value_is_valid_with_step( $value, $step ) {
-		if ( 'number' === $this->html5_input_type() && is_callable( parent::class . '::check_value_is_valid_with_step' ) ) {
+		if ( 'number' === $this->html5_input_type() ) {
 			return parent::check_value_is_valid_with_step( $value, $step );
 		}
 
@@ -120,12 +128,12 @@ class FrmProFieldNumber extends FrmFieldNumber {
 		$value = intval( $pow * $value );
 		$step  = intval( $pow * $step );
 		$div   = $value / $step;
+
 		if ( is_int( $div ) ) {
 			return 0;
 		}
 
-		$div = floor( $div );
-
+		$div            = floor( $div );
 		$first_nearest  = $div * $step / $pow;
 		$second_nearest = ( $div + 1 ) * $step / $pow;
 
@@ -156,7 +164,9 @@ class FrmProFieldNumber extends FrmFieldNumber {
 		$this->add_aria_description( $args, $input_html );
 		$this->add_extra_html_atts( $args, $input_html );
 
-		if ( 'text' === $this->html5_input_type() ) {
+		$is_text_type = 'text' === $this->html5_input_type();
+
+		if ( $is_text_type ) {
 			$this->field['value'] = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $this->field['value'] );
 		}
 
@@ -166,6 +176,10 @@ class FrmProFieldNumber extends FrmFieldNumber {
 			'name'  => $args['field_name'],
 			'value' => $this->prepare_esc_value(),
 		);
+
+		if ( $is_text_type ) {
+			$attributes['inputmode'] = 'decimal';
+		}
 
 		return '<input' . FrmAppHelper::array_to_html_params( $attributes ) . $input_html . ' />';
 	}
@@ -189,16 +203,16 @@ class FrmProFieldNumber extends FrmFieldNumber {
 	}
 
 	protected function prepare_display_value( $value, $atts ) {
-
 		$new_val = array();
 		$value   = array_filter(
 			(array) $value,
 			/**
 			 * @param string $string
+			 *
 			 * @return bool
 			 */
 			function ( $string ) {
-				return strlen( $string ) > 0;
+				return $string !== '';
 			}
 		);
 
@@ -222,14 +236,16 @@ class FrmProFieldNumber extends FrmFieldNumber {
 
 			unset( $v );
 		}
+
 		$new_val = array_filter(
 			$new_val,
 			/**
 			 * @param string $string
+			 *
 			 * @return bool
 			 */
 			function ( $string ) {
-				return strlen( $string ) > 0;
+				return $string !== '';
 			}
 		);
 
@@ -241,6 +257,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 	 *
 	 * @param string $number
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private function number_format_and_maintain_leading_zeroes( $number, $atts ) {
@@ -251,6 +268,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 
 	/**
 	 * @param string $number
+	 *
 	 * @return int
 	 */
 	private function count_number_of_leading_zeroes( $number ) {
@@ -274,11 +292,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 			++$index;
 		}
 
-		if ( $index === $max_length ) {
-			return $max_length - 1;
-		}
-
-		return $index;
+		return $index === $max_length ? $max_length - 1 : $index;
 	}
 
 	protected function fill_default_atts( &$atts ) {
@@ -291,10 +305,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 	}
 
 	protected function prepare_import_value( $value, $atts ) {
-		if ( is_numeric( $value ) ) {
-			$value = (string) $value;
-		}
-		return $value;
+		return is_numeric( $value ) ? (string) $value : $value;
 	}
 
 	/**
@@ -304,6 +315,7 @@ class FrmProFieldNumber extends FrmFieldNumber {
 	 */
 	public function set_value_before_save( $value ) {
 		$input_type = $this->html5_input_type();
+
 		if ( 'number' === $input_type ) {
 			if ( ! is_numeric( $value ) ) {
 				$value = is_scalar( $value ) ? (float) $value : 0;

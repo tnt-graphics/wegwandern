@@ -66,6 +66,7 @@ class FrmProSummaryValues {
 
 		if ( $this->is_main_form() ) {
 			$this->get_page_break_before_summary();
+
 			if ( isset( $this->break_before_summary ) ) {
 				$this->init_field_values();
 			}
@@ -76,6 +77,7 @@ class FrmProSummaryValues {
 
 	/**
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	protected function init_child_form_args( $args ) {
@@ -84,6 +86,7 @@ class FrmProSummaryValues {
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	protected function init_excluded_ids( $atts ) {
@@ -94,6 +97,7 @@ class FrmProSummaryValues {
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	protected function init_excluded_types( $atts ) {
@@ -144,6 +148,7 @@ class FrmProSummaryValues {
 	private function remove_empty_sections() {
 		foreach ( $this->field_values as $key => $field_value ) {
 			$field = $field_value->get_field();
+
 			if ( 'divider' !== $field->type || ! empty( $field->field_options['repeat'] ) ) {
 				continue;
 			}
@@ -155,6 +160,7 @@ class FrmProSummaryValues {
 			unset( $this->field_values[ $key ] );
 
 			$end_divider_id = $this->get_end_divider_id( (int) $field->id );
+
 			if ( $end_divider_id ) {
 				$this->unset_field_values_field_id( $end_divider_id );
 			}
@@ -167,11 +173,13 @@ class FrmProSummaryValues {
 	 * @since 6.8.3
 	 *
 	 * @param int $section_id
+	 *
 	 * @return bool
 	 */
 	private function section_is_empty( $section_id ) {
 		foreach ( $this->field_values as $field_value ) {
 			$field = $field_value->get_field();
+
 			if ( 'end_divider' === $field->type ) {
 				continue;
 			}
@@ -197,10 +205,12 @@ class FrmProSummaryValues {
 	 * @since 6.8.3
 	 *
 	 * @param int $section_id
+	 *
 	 * @return false|int False if no end divider can be found in the array of fields.
 	 */
 	private function get_end_divider_id( $section_id ) {
 		$matched_section_id = false;
+
 		foreach ( $this->fields as $field ) {
 			if ( $matched_section_id ) {
 				if ( 'end_divider' === $field->type ) {
@@ -223,6 +233,7 @@ class FrmProSummaryValues {
 	 * @since 6.8.3
 	 *
 	 * @param int $field_id
+	 *
 	 * @return void
 	 */
 	private function unset_field_values_field_id( $field_id ) {
@@ -252,6 +263,7 @@ class FrmProSummaryValues {
 
 		foreach ( $this->field_values as $field_id => $field_value ) {
 			$value = $field_value->get_posted_value();
+
 			if ( $field_value->is_repeater() || 'form' === $field_value->get_field_type() ) {
 				$entry->metas[ $field_id ] = $this->fake_repeater_entry( $value, $field_value );
 			} elseif ( 'date' === $field_value->get_field_type() ) {
@@ -265,10 +277,13 @@ class FrmProSummaryValues {
 	}
 
 	/**
+	 * @param mixed                   $value
 	 * @param FrmProFieldSummaryValue $field_value
+	 *
+	 * @return mixed
 	 */
 	private function fake_repeater_entry( $value, $field_value ) {
-		if ( empty( $value ) || ! is_array( $value ) || ! isset( $value['row_ids'] ) ) {
+		if ( ! $value || ! is_array( $value ) || ! isset( $value['row_ids'] ) ) {
 			return $value;
 		}
 
@@ -277,17 +292,20 @@ class FrmProSummaryValues {
 
 		foreach ( $value['row_ids'] as $v ) {
 			$child_entry = $this->base_entry( $form_id );
+
 			foreach ( $value[ $v ] as $child_field => $child_value ) {
 				if ( $child_field === 0 ) {
 					continue;
 				}
 
 				$child_field = FrmField::getOne( $child_field );
+
 				if ( ! $child_field ) {
 					continue;
 				}
 
 				$child_field->temp_id = $child_field->id . '-' . $field_value->get_field_id() . '-' . $v;
+
 				if ( $this->is_excluded_type( $child_field ) ) {
 					continue;
 				}
@@ -295,6 +313,7 @@ class FrmProSummaryValues {
 				$child_entry->metas[ $child_field->id ] = $child_value;
 				unset( $child_field, $child_value );
 			}
+
 			$children[ $v ] = $child_entry;
 		}
 
@@ -342,11 +361,11 @@ class FrmProSummaryValues {
 			 */
 			if ( 'break' === $field->type ) {
 				if ( ! isset( $this->current_section ) && ! isset( $this->current_embedded_form ) ) {
-					// break is directly in the main form
+					// Break is directly in the main form
 					$this->break_before_summary = $field;
 				}
 			} elseif ( 'summary' === $field->type ) {
-				// reset because of subsequent operations
+				// Reset because of subsequent operations
 				$this->current_section       = null;
 				$this->current_embedded_form = null;
 
@@ -371,10 +390,12 @@ class FrmProSummaryValues {
 	 */
 	private function is_excluded_type( $field ) {
 		$is_excluded = false;
+
 		foreach ( $this->excluded_types as $type ) {
-			if ( 0 === strpos( $type, '[' ) ) {
-				// it's a field option
+			if ( str_starts_with( $type, '[' ) ) {
+				// It's a field option
 				$opt = $this->get_option( $type );
+
 				if ( ! FrmField::is_option_empty( $field, $opt ) ) {
 					if ( 'admin_only' === $opt ) {
 						$is_excluded = ! FrmProFieldsHelper::is_field_visible_to_user( $field );
@@ -406,6 +427,8 @@ class FrmProSummaryValues {
 
 	/**
 	 * @param stdClass $field
+	 *
+	 * @return bool
 	 */
 	private function field_val_is_blank( $field ) {
 		if ( in_array( $field->type, $this->no_blank_check_fields(), true ) ) {
@@ -414,6 +437,7 @@ class FrmProSummaryValues {
 
 		$value = '';
 		$args  = array();
+
 		if ( ! $this->is_main_form() ) {
 			$args = array(
 				'parent_field_id' => $this->child_form_args['parent'],
@@ -428,6 +452,9 @@ class FrmProSummaryValues {
 
 	/*
 	 * Fields that blankness shouldn't be checked for.
+	 */
+	/**
+	 * @return array
 	 */
 	private function no_blank_check_fields() {
 		return array( 'divider', 'end_divider', 'captcha', 'break', 'form', 'html' );
@@ -472,8 +499,9 @@ class FrmProSummaryValues {
 
 		$is_included = true;
 
-		if ( ! empty( $this->excluded_ids ) ) {
+		if ( $this->excluded_ids ) {
 			$is_included = ! $this->is_self_or_parent_excluded_id( $field );
+
 			if ( ! $is_included ) {
 				/**
 				 * Return now before another 'if' test turns it back to true;
@@ -484,8 +512,9 @@ class FrmProSummaryValues {
 			}
 		}
 
-		if ( ! empty( $this->excluded_types ) ) {
+		if ( $this->excluded_types ) {
 			$is_included = ! $this->is_self_or_parent_excluded_type( $field );
+
 			if ( ! $is_included ) {
 				$this->maybe_set_current_container( $field );
 				return $is_included;

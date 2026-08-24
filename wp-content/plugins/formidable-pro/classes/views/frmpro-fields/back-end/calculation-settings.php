@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 FrmAppHelper::show_search_box(
 	array(
 		'input_id'    => 'frm_calc_' . $field['id'],
-		'placeholder' => __( 'Search Fields', 'formidable-pro' ),
+		'placeholder' => __( 'Search Fields', 'formidable' ),
 		'tosearch'    => 'frm-field-list-' . $field['id'],
 	)
 );

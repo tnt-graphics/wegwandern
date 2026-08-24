@@ -295,6 +295,33 @@ class TemplateConsumers
         }
     }
     /**
+     * Query posts that were created from a cloud template, scoped to the resolver context language.
+     *
+     * @param VariableResolver $resolver
+     * @param string $postType
+     * @param string $queryContext
+     * @param boolean $global When true, return posts across all languages.
+     * @return WP_Post[]
+     */
+    protected function queryPostsWithPresetForResolverContext($resolver, $postType, $queryContext, $global)
+    {
+        $compLanguage = Core::getInstance()->getCompLanguage();
+        $languageCode = $global || !$compLanguage->isActive() ? null : $compLanguage->matchLanguageCodeFromWordPressCompatibleLocale($resolver->resolveRequired('context'));
+        $args = [
+            'post_type' => $postType,
+            'numberposts' => -1,
+            'nopaging' => \true,
+            'meta_query' => [['key' => Blocker::META_NAME_PRESET_ID, 'compare' => 'EXISTS']],
+            'post_status' => ['publish', 'private', 'draft'],
+            // global=true: bypass WPML (all languages). global=false: WPML + explicit lang for template context.
+            'suppress_filters' => $global,
+        ];
+        if ($languageCode !== null) {
+            $args['lang'] = $languageCode;
+        }
+        return \get_posts(Core::getInstance()->queryArguments($args, $queryContext));
+    }
+    /**
      * Implementation of created content blocker.
      *
      * @param VariableResolver $resolver
@@ -304,7 +331,7 @@ class TemplateConsumers
     {
         $consumer = $resolver->getConsumer();
         $result = [];
-        $existing = Blocker::getInstance()->getOrdered(\false, \get_posts(Core::getInstance()->queryArguments(['post_type' => Blocker::CPT_NAME, 'numberposts' => -1, 'nopaging' => \true, 'meta_query' => [['key' => Blocker::META_NAME_PRESET_ID, 'compare' => 'EXISTS']], 'post_status' => ['publish', 'private', 'draft'], 'suppress_filters' => !$global], 'blockerWithTemplate')));
+        $existing = Blocker::getInstance()->getOrdered(\false, $this->queryPostsWithPresetForResolverContext($resolver, Blocker::CPT_NAME, 'blockerWithTemplate', $global));
         foreach ($existing as $post) {
             $tmp = new BlockerTemplate($consumer);
             $tmp->identifier = $post->metas[Blocker::META_NAME_PRESET_ID];
@@ -324,7 +351,7 @@ class TemplateConsumers
     {
         $consumer = $resolver->getConsumer();
         $result = [];
-        $existing = Cookie::getInstance()->getOrdered(null, \false, \get_posts(Core::getInstance()->queryArguments(['post_type' => Cookie::CPT_NAME, 'numberposts' => -1, 'nopaging' => \true, 'meta_query' => [['key' => Blocker::META_NAME_PRESET_ID, 'compare' => 'EXISTS']], 'post_status' => ['publish', 'private', 'draft'], 'suppress_filters' => !$global], 'servicesWithTemplate')));
+        $existing = Cookie::getInstance()->getOrdered(null, \false, $this->queryPostsWithPresetForResolverContext($resolver, Cookie::CPT_NAME, 'servicesWithTemplate', $global));
         foreach ($existing as $post) {
             $tmp = new ServiceTemplate($consumer);
             $tmp->identifier = $post->metas[Blocker::META_NAME_PRESET_ID];

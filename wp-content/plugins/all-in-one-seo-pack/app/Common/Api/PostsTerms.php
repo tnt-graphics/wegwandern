@@ -103,12 +103,18 @@ class PostsTerms {
 					'link'  => get_permalink( $object->ID )
 				];
 			} elseif ( 'terms' === $body['type'] ) {
+				// Always pass the taxonomy so get_term_link() can resolve the term, and coerce
+				// the result to a string — get_term_link() can return WP_Error and the
+				// term_link filter may also return false/null. Without this, the non-string
+				// gets JSON-serialized and the frontend coerces it to "[object Object]" in
+				// the href. See issue #8094.
+				$termLink = get_term_link( (int) $object->term_id, $object->taxonomy );
 				$parsed[] = [
 					'type'  => $object->taxonomy,
 					'value' => (int) $object->term_id,
 					'slug'  => $object->slug,
 					'label' => $object->name,
-					'link'  => get_term_link( $object->term_id )
+					'link'  => is_wp_error( $termLink ) ? '' : (string) $termLink
 				];
 			}
 		}
@@ -354,9 +360,15 @@ class PostsTerms {
 			update_post_meta( $postId, '_wp_attachment_image_alt', sanitize_text_field( $body['imageAltTag'] ) );
 		}
 
-		$aioseoPost->title       = $body['title'];
-		$aioseoPost->description = $body['description'];
-		$aioseoPost->updated     = gmdate( 'Y-m-d H:i:s' );
+		if ( array_key_exists( 'title', $body ) ) {
+			$aioseoPost->title = ! empty( $body['title'] ) ? sanitize_text_field( $body['title'] ) : null;
+		}
+
+		if ( array_key_exists( 'description', $body ) ) {
+			$aioseoPost->description = ! empty( $body['description'] ) ? sanitize_textarea_field( $body['description'] ) : null;
+		}
+
+		$aioseoPost->updated = gmdate( 'Y-m-d H:i:s' );
 		$aioseoPost->save();
 
 		// Trigger the action hook so we can create a revision.
@@ -564,7 +576,7 @@ class PostsTerms {
 		}
 
 		// Check if we can process it using a page builder integration.
-		$pageBuilder = aioseo()->helpers->getPostPageBuilderName( $args['postId'] );
+		$pageBuilder = $body['integration'] ?? aioseo()->helpers->getPostPageBuilderName( $args['postId'] );
 		if ( ! empty( $pageBuilder ) ) {
 			return new \WP_REST_Response( [
 				'success' => true,
@@ -577,7 +589,7 @@ class PostsTerms {
 
 		return new \WP_REST_Response( [
 			'success' => true,
-			'content' => apply_filters( 'the_content', $content ),
+			'content' => apply_filters( 'the_content', $content ), // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		], 200 );
 	}
 }

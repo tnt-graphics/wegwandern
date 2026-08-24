@@ -1,11 +1,13 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
+
 include_once WP_MEDIA_FOLDER_PLUGIN_DIR . 'class/physical-folder' . DIRECTORY_SEPARATOR . 'helper.php';
 global $wpdb;
 // phpcs:ignore WordPress.WP.PreparedSQL.NotPrepared -- No variable needs to be prepared
 $folder_fields = JUQueueHelper::getDbColumns(true);
-$tables = wpmfGetOption('wp-media-folder-tables');
+$tables = WpmfHelper::wpmfGetOption('wp-media-folder-tables');
 $folder_options = get_option('wpmf_queue_options');
 if (empty($folder_options)) {
     $folder_options = array(

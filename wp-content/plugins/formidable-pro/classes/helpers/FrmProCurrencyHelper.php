@@ -8,6 +8,8 @@ class FrmProCurrencyHelper {
 
 	/**
 	 * @since 4.04
+	 *
+	 * @param int|object $form
 	 */
 	public static function get_currency( $form ) {
 		$settings      = FrmProAppHelper::get_settings();
@@ -34,12 +36,11 @@ class FrmProCurrencyHelper {
 		 * Allow custom code to change the currency for different currencies per form.
 		 *
 		 * @since 4.04
+		 *
 		 * @param array      $currency  The currency information.
 		 * @param int|object $form      The ID of the form or the form object.
 		 */
-		$currency = apply_filters( 'frm_currency', $currency, $form );
-
-		return $currency;
+		return apply_filters( 'frm_currency', $currency, $form );
 	}
 
 	/**
@@ -47,9 +48,12 @@ class FrmProCurrencyHelper {
 	 * This is later included in the footer.
 	 *
 	 * @since 4.04
+	 *
+	 * @param int|string $form_id
 	 */
 	public static function add_currency_to_global( $form_id ) {
 		global $frm_vars;
+
 		if ( ! isset( $frm_vars['currency'] ) ) {
 			$frm_vars['currency'] = array();
 		}
@@ -65,13 +69,16 @@ class FrmProCurrencyHelper {
 	 * @since 5.0.16
 	 *
 	 * @param array $currency
+	 *
 	 * @return array
 	 */
 	private static function normalize_decimal_separators( $currency ) {
 		$currency['decimal_separator'] = trim( $currency['decimal_separator'] );
+
 		if ( ! $currency['decimal_separator'] && 0 === (int) $currency['decimals'] ) {
 			$currency['decimal_separator'] = '.';
 		}
+
 		return $currency;
 	}
 
@@ -133,6 +140,7 @@ class FrmProCurrencyHelper {
 	 *
 	 * @param array $currency
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	public static function apply_shortcode_atts( $currency, $atts ) {
@@ -147,6 +155,7 @@ class FrmProCurrencyHelper {
 		);
 
 		$args = array();
+
 		foreach ( $map as $key => $value ) {
 			if ( isset( $atts[ $key ] ) ) {
 				$args[ $value ] = $atts[ $key ];
@@ -162,6 +171,7 @@ class FrmProCurrencyHelper {
 	 * @since 5.5.4 This was moved from self::maybe_format_currency.
 	 *
 	 * @param array|object $field The field data.
+	 *
 	 * @return array|null An array is only returned for a custom currency.
 	 */
 	private static function get_currency_for_field( $field ) {
@@ -177,12 +187,13 @@ class FrmProCurrencyHelper {
 	 * @since 5.0.16
 	 *
 	 * @param array $field_options
+	 *
 	 * @return array
 	 */
 	public static function get_custom_currency( $field_options ) {
 		if (
 			'currency' === FrmField::get_option( $field_options, 'format' ) &&
-			'1' === FrmField::get_option( $field_options, 'use_global_currency' ) &&
+			FrmField::get_option( $field_options, 'use_global_currency' ) &&
 			! FrmField::get_option( $field_options, 'custom_currency' )
 		) {
 			return self::get_global_currency( $field_options );
@@ -210,6 +221,7 @@ class FrmProCurrencyHelper {
 	 * @since 6.19
 	 *
 	 * @param array $field_options Field options.
+	 *
 	 * @return array Currency settings.
 	 */
 	public static function get_global_currency( $field_options ) {
@@ -227,12 +239,12 @@ class FrmProCurrencyHelper {
 	 * @since 4.04
 	 * @since 6.23 Added $field parameter.
 	 *
-	 * @param int|object        $form   Form object or ID.
-	 * @param float|string      $amount The string could contain the currency symbol.
+	 * @param int|object|null   $form   Form object or ID.
+	 * @param float|int|string  $amount The string could contain the currency symbol.
 	 * @param array|null        $currency
 	 * @param array|object|null $field
 	 *
-	 * @return float|string
+	 * @return float|string|null
 	 */
 	public static function format_amount_for_currency( $form = null, $amount = 0, $currency = null, $field = null ) {
 		if ( null === $form ) {
@@ -257,6 +269,7 @@ class FrmProCurrencyHelper {
 			if ( '' !== $currency['symbol_right'] ) {
 				$amount .= $currency['symbol_padding'] . $currency['symbol_right'];
 			}
+
 			return $amount;
 		};
 
@@ -274,15 +287,20 @@ class FrmProCurrencyHelper {
 
 	/**
 	 * @since 4.04
+	 *
+	 * @param string $price
+	 * @param array  $currency
 	 */
 	public static function prepare_price( $price, $currency ) {
 		$price = trim( $price );
+
 		if ( ! $price ) {
 			return 0;
 		}
 
 		preg_match_all( '/[\-]*[0-9,.]*\.?\,?[0-9]+/', $price, $matches );
 		$price = $matches ? end( $matches[0] ) : 0;
+
 		if ( $price ) {
 			$price = self::maybe_use_decimal( $price, $currency );
 			$price = str_replace( $currency['decimal_separator'], '.', str_replace( $currency['thousand_separator'], '', $price ) );
@@ -293,15 +311,22 @@ class FrmProCurrencyHelper {
 
 	/**
 	 * @since 4.04
+	 *
+	 * @param string $amount
+	 * @param array  $currency
 	 */
 	private static function maybe_use_decimal( $amount, $currency ) {
-		if ( $currency['thousand_separator'] === '.' ) {
-			$amount_parts     = explode( '.', $amount );
-			$used_for_decimal = count( $amount_parts ) === 2 && in_array( strlen( $amount_parts[1] ), array( 1, 2 ), true );
-			if ( $used_for_decimal ) {
-				$amount = str_replace( '.', $currency['decimal_separator'], $amount );
-			}
+		if ( $currency['thousand_separator'] !== '.' ) {
+			return $amount;
 		}
+
+		$amount_parts     = explode( '.', $amount );
+		$used_for_decimal = count( $amount_parts ) === 2 && in_array( strlen( $amount_parts[1] ), array( 1, 2 ), true );
+
+		if ( $used_for_decimal ) {
+			return str_replace( '.', $currency['decimal_separator'], $amount );
+		}
+
 		return $amount;
 	}
 
@@ -311,6 +336,7 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param string $format_value The format value to check.
+	 *
 	 * @return bool
 	 */
 	public static function is_currency_format( $format_value ) {
@@ -319,12 +345,15 @@ class FrmProCurrencyHelper {
 
 	/**
 	 * @since 4.04
+	 *
+	 * @param false|string $currency
 	 */
 	public static function get_currencies( $currency = false ) {
 		$currencies = is_callable( 'FrmCurrencyHelper::get_currencies' ) ? FrmCurrencyHelper::get_currencies() : array();
 
 		if ( $currency ) {
 			$currency = strtoupper( $currency );
+
 			if ( isset( $currencies[ $currency ] ) ) {
 				$currencies = $currencies[ $currency ];
 			}
@@ -341,6 +370,7 @@ class FrmProCurrencyHelper {
 	 * @param array|object $field           The field settings containing custom formatting options.
 	 * @param string       $formatted_value The input string containing numbers and text.
 	 * @param array|null   $config          Configuration settings for number formatting.
+	 *
 	 * @return string The processed string with normalized numbers.
 	 */
 	public static function normalize_formatted_numbers( $field, $formatted_value, $config = null ) {
@@ -361,7 +391,8 @@ class FrmProCurrencyHelper {
 	 * @since 6.20
 	 *
 	 * @param array|object $field             The field settings containing custom formatting options.
-	 * @param array        &$formatted_values Array of formatted number strings to be normalized.
+	 * @param array        $formatted_values Array of formatted number strings to be normalized.
+	 *
 	 * @return void
 	 */
 	public static function normalize_formatted_number_collection( $field, &$formatted_values ) {
@@ -384,6 +415,7 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param array|object $field The field settings containing custom formatting options.
+	 *
 	 * @return array The configuration array with both raw and regex-quoted values.
 	 */
 	private static function get_formatting_config( $field ) {
@@ -418,6 +450,7 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param array $config The configuration array containing formatting options.
+	 *
 	 * @return string The regex pattern for matching numbers.
 	 */
 	private static function build_number_pattern( $config ) {
@@ -426,6 +459,7 @@ class FrmProCurrencyHelper {
 		// Add left symbol, if provided.
 		if ( $config['quoted_symbol_left'] ) {
 			$pattern .= '(' . $config['quoted_symbol_left'] . ')?';
+
 			if ( ! empty( $config['symbol_padding'] ) ) {
 				$pattern .= '(' . $config['quoted_symbol_padding'] . ')?';
 			}
@@ -453,12 +487,11 @@ class FrmProCurrencyHelper {
 			if ( ! empty( $config['symbol_padding'] ) ) {
 				$pattern .= '(' . $config['quoted_symbol_padding'] . ')?';
 			}
+
 			$pattern .= '(' . $config['quoted_symbol_right'] . ')?';
 		}
 
-		$pattern .= '$/';
-
-		return $pattern;
+		return $pattern . '$/';
 	}
 
 	/**
@@ -470,6 +503,7 @@ class FrmProCurrencyHelper {
 	 *
 	 * @param string $formatted_value The input string containing formatted numbers.
 	 * @param array  $config          The configuration array containing formatting options.
+	 *
 	 * @return string The processed string with unformatted numbers.
 	 */
 	private static function unformat_numbers_in_string( $formatted_value, $config ) {
@@ -514,6 +548,7 @@ class FrmProCurrencyHelper {
 	 *
 	 * @param array $words Array of exploded words.
 	 * @param array $config Currency configuration.
+	 *
 	 * @return array
 	 */
 	private static function prepare_currency_words( $words, $config ) {
@@ -538,12 +573,10 @@ class FrmProCurrencyHelper {
 		$i      = 0;
 
 		while ( $i < $count ) {
-			$has_next = $i + 1 < $count;
-
-			$is_left_symbol    = $has_symbol_left && $has_next && $words[ $i ] === $config['symbol_left'];
-			$next_is_number    = $has_next && $is_valid_number( $words[ $i + 1 ] );
-			$current_is_number = $is_valid_number( $words[ $i ] );
-			$is_right_symbol   = $has_symbol_right && $has_next && $words[ $i + 1 ] === $config['symbol_right'];
+			$has_next        = $i + 1 < $count;
+			$is_left_symbol  = $has_symbol_left && $has_next && $words[ $i ] === $config['symbol_left'];
+			$next_is_number  = $has_next && $is_valid_number( $words[ $i + 1 ] );
+			$is_right_symbol = $has_symbol_right && $has_next && $words[ $i + 1 ] === $config['symbol_right'];
 
 			// Process left symbol + number pattern with optional right symbol.
 			if ( $is_left_symbol && $next_is_number ) {
@@ -562,7 +595,7 @@ class FrmProCurrencyHelper {
 				$result[] = $text;
 
 				// Process number + right symbol pattern.
-			} elseif ( $current_is_number && $is_right_symbol ) {
+			} elseif ( $is_valid_number( $words[ $i ] ) && $is_right_symbol ) {
 				// Merge numeric value with symbol.
 				$result[] = $words[ $i ] . ' ' . $config['symbol_right'];
 				$i       += 2;
@@ -586,6 +619,7 @@ class FrmProCurrencyHelper {
 	 *
 	 * @param string $word   The word to process.
 	 * @param array  $config The configuration array containing formatting options and patterns.
+	 *
 	 * @return string The unformatted number if the word represents a formatted number; otherwise, the original word.
 	 */
 	private static function unformat_number( $word, array $config ) {
@@ -599,6 +633,7 @@ class FrmProCurrencyHelper {
 		if ( $config['symbol_left'] ) {
 			$unformatted = preg_replace( '/^' . $config['quoted_symbol_left'] . '/', '', $unformatted );
 		}
+
 		if ( $config['symbol_right'] ) {
 			$unformatted = preg_replace( '/' . $config['quoted_symbol_right'] . '$/', '', $unformatted );
 		}
@@ -617,11 +652,12 @@ class FrmProCurrencyHelper {
 		} elseif ( ! empty( $config['decimal_separator'] ) ) {
 			// Handle the decimal part.
 			$parts = explode( $config['decimal_separator'], $unformatted );
+
 			if ( count( $parts ) > 1 ) {
 				$integer_part = array_shift( $parts );
 				$decimal_part = implode( '', $parts );
 
-				$unformatted  = (int) $decimal_part === 0
+				$unformatted = (int) $decimal_part === 0
 					? $integer_part
 					: $integer_part . '.' . $decimal_part;
 			}
@@ -637,6 +673,7 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param array|stdClass $field
+	 *
 	 * @return string 'text' or 'select'.
 	 */
 	public static function get_decimal_setting_type( $field ) {
@@ -650,25 +687,30 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param array|stdClass $field
+	 *
 	 * @return bool
 	 */
 	public static function uses_legacy_decimal_places_calc( $field ) {
 		$format = FrmField::get_option( $field, 'format' );
+
 		if ( '' !== $format ) {
 			return false;
 		}
 
 		$calc_type = FrmField::get_option( $field, 'calc_type' );
+
 		if ( $calc_type ) {
 			return false;
 		}
 
 		$calc = FrmField::get_option( $field, 'calc' );
+
 		if ( ! $calc && '0' !== $calc ) {
 			return false;
 		}
 
 		$is_currency = FrmField::get_option( $field, 'is_currency' );
+
 		if ( $is_currency ) {
 			return false;
 		}
@@ -682,6 +724,7 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param array|stdClass $field
+	 *
 	 * @return string 'calc_dec' or 'custom_decimals'.
 	 */
 	private static function get_decimal_setting_key( $field ) {
@@ -697,9 +740,25 @@ class FrmProCurrencyHelper {
 	 * @since 6.18
 	 *
 	 * @param array|stdClass $field
+	 *
 	 * @return int
 	 */
 	private static function get_decimal_setting( $field ) {
+		if (
+			'currency' === FrmField::get_option( $field, 'format' ) &&
+			FrmField::get_option( $field, 'use_global_currency' ) &&
+			! FrmField::get_option( $field, 'custom_currency' )
+		) {
+			$currency = self::get_global_currency(
+				array(
+					'form_id' => is_object( $field ) ? $field->form_id : $field['form_id'],
+				)
+			);
+
+			// Return the decimals from the global currency.
+			return (int) $currency['decimals'];
+		}
+
 		$key = self::get_decimal_setting_key( $field );
 		return (int) FrmField::get_option( $field, $key );
 	}

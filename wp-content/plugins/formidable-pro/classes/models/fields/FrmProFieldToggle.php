@@ -11,6 +11,7 @@ class FrmProFieldToggle extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'toggle';
@@ -57,25 +58,25 @@ class FrmProFieldToggle extends FrmFieldType {
 				),
 			),
 			$active_value   => array(
-				'label'      => __( 'Active', 'formidable-pro' ),
+				'label'      => __( 'Active', 'formidable' ),
 				'attributes' => array(
 					'data-label' => $on_label,
 				),
 			),
 			$custom_value   => array(
-				'label'      => __( 'Custom', 'formidable-pro' ),
+				'label'      => __( 'Custom', 'formidable' ),
 				'attributes' => array(
 					'data-label' => '',
 				),
 			),
 		);
 
-		if ( ! in_array( $default_value, array( '', $off_label, $on_label ), true ) ) {
-			$selected = $custom_value;
-		} else {
+		if ( in_array( $default_value, array( '', $off_label, $on_label ), true ) ) {
 			$selected = FrmAppHelper::check_selected( $default_value, $on_label )
 				? $active_value
 				: $inactive_value;
+		} else {
+			$selected = $custom_value;
 		}
 
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/select-default-value-field.php';
@@ -83,6 +84,7 @@ class FrmProFieldToggle extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -139,13 +141,16 @@ class FrmProFieldToggle extends FrmFieldType {
 	 * If no value is saved, set the off label if it's not 0.
 	 *
 	 * @since 3.06.01
+	 *
 	 * @param array $args
+	 *
 	 * @return array errors
 	 */
 	public function validate( $args ) {
 		if ( empty( $args['value'] ) ) {
 			$off_label = FrmField::get_option( $this->field, 'toggle_off' );
-			if ( ! empty( $off_label ) ) {
+
+			if ( $off_label ) {
 				FrmEntriesHelper::set_posted_value( $this->field, $off_label, $args );
 			}
 		}

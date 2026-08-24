@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <thead>
     <tr>
     <?php if ( in_array( 'id', $atts['fields'], true ) ) { ?>
-		<th><?php esc_html_e( 'ID', 'formidable-pro' ); ?></th>
+		<th><?php esc_html_e( 'ID', 'formidable' ); ?></th>
 	<?php
 	}
 
@@ -50,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
             <td valign="top">
 				<?php
-				echo FrmEntriesHelper::display_value( ( $entry->metas[ $col->id ] ?? false ), $col, array( 'type' => $col->type, 'post_id' => $entry->post_id, 'entry_id' => $entry->id ) );
+				echo FrmEntriesHelper::display_value( $entry->metas[ $col->id ] ?? false, $col, array( 'type' => $col->type, 'post_id' => $entry->post_id, 'entry_id' => $entry->id ) );
                 ?>
             </td>
 <?php
@@ -70,7 +70,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
 		<td><?php
 			if ( FrmProEntriesHelper::user_can_delete( $entry ) ) {
-				$delete_link = FrmProEntriesController::create_delete_link( $entry->id );
+			$delete_link = FrmProEntriesController::create_delete_link( $entry->id );
         ?><a href="<?php echo esc_url( $delete_link ); ?>" class="frm_delete_link" data-frmconfirm="<?php echo esc_attr( $atts['confirm'] ); ?>"><?php echo $atts['delete_link']; ?></a><?php
 			}
 		?></td>
@@ -87,7 +87,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <tfoot>
     <tr>
 		<?php if ( in_array( 'id', $atts['fields'], true ) ) { ?>
-			<th><?php esc_html_e( 'ID', 'formidable-pro' ); ?></th>
+			<th><?php esc_html_e( 'ID', 'formidable' ); ?></th>
 		<?php } ?>
 		<?php foreach ( $atts['form_cols'] as $col ) { ?>
             <th><?php echo $col->name; ?></th>

@@ -33,12 +33,12 @@
 			if ( ! data.applications.length ) {
 				const noApplicationsPlaceholder = getNoApplicationsPlaceholder();
 				if ( false !== noApplicationsPlaceholder ) {
-					container.appendChild( noApplicationsPlaceholder );
+					container.append( noApplicationsPlaceholder );
 				}
 				return;
 			}
 
-			container.appendChild( table );
+			container.append( table );
 			addDataToTable( data );
 		}
 	);
@@ -71,7 +71,7 @@
 	function handleApplicationSearch({ foundSomething, notEmptySearchText }) {
 		if ( false === elements.noApplicationSearchResultsPlaceholder ) {
 			elements.noApplicationSearchResultsPlaceholder = getNoResultsPlaceholder();
-			document.getElementById( 'frm-custom-applications-index-container' ).appendChild( elements.noApplicationSearchResultsPlaceholder );
+			document.getElementById( 'frm-custom-applications-index-container' ).append( elements.noApplicationSearchResultsPlaceholder );
 		}
 
 		const showTable = ! notEmptySearchText || foundSomething;
@@ -91,9 +91,9 @@
 		const tbody = tag( 'tbody' );
 		addHeadersToTable();
 		data.applications.forEach(
-			rowData => tbody.appendChild( getTableRow( rowData ) )
+			rowData => tbody.append( getTableRow( rowData ) )
 		);
-		table.appendChild( tbody );
+		table.append( tbody );
 	}
 
 	function addHeadersToTable() {
@@ -105,7 +105,7 @@
 			__( 'Date Created', 'formidable-pro' ),
 			__( 'Date Modified', 'formidable-pro' )
 		];
-		table.appendChild(
+		table.append(
 			tag(
 				'thead',
 				{
@@ -213,7 +213,7 @@
 			if ( ! tbody.children.length ) {
 				const noApplicationsPlaceholder = getNoApplicationsPlaceholder();
 				if ( false !== noApplicationsPlaceholder ) {
-					container.appendChild( getNoApplicationsPlaceholder() );
+					container.append( getNoApplicationsPlaceholder() );
 				}
 				table.remove();
 			}

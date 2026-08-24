@@ -44,6 +44,9 @@ class TagAttributeFinder extends AbstractRegexFinder
             return \false;
         }
         // @codeCoverageIgnoreEnd
+        if (!\is_string($link)) {
+            return \false;
+        }
         if ($this->isLinkEscaped($link) && Utils::isJson($link) === \false) {
             return \false;
         }

@@ -68,6 +68,12 @@ class WpmfMediaRename
             $folderslug = 'uncategorized';
         }
 
+        //hook skip rename for folder
+        $excludedFolders = apply_filters('wpmf_skip_rename_for_folder', []);
+        if (!empty($excludedFolders) && in_array($parent, $excludedFolders)) {
+            return $file;
+        }
+
         $sitename          = sanitize_title(get_bloginfo('name'));
         $original_filename = $info['filename'];
         $date              = str_replace('/', '', $upload_dir['subdir']);

@@ -14,6 +14,7 @@ class FrmProXMLHelper {
 	/**
 	 * @param array<stdClass> $entries
 	 * @param array           $imported
+	 *
 	 * @return array
 	 */
 	public static function import_xml_entries( $entries, $imported ) {
@@ -32,8 +33,8 @@ class FrmProXMLHelper {
 				'name'           => (string) $item->name,
 				'description'    => FrmAppHelper::maybe_json_decode( (string) $item->description ),
 				'ip'             => (string) $item->ip,
-				'form_id'        => ( $imported['forms'][ (int) $item->form_id ] ?? (int) $item->form_id ),
-				'post_id'        => ( $imported['posts'][ (int) $item->post_id ] ?? (int) $item->post_id ),
+				'form_id'        => $imported['forms'][ (int) $item->form_id ] ?? (int) $item->form_id,
+				'post_id'        => $imported['posts'][ (int) $item->post_id ] ?? (int) $item->post_id,
 				'user_id'        => FrmAppHelper::get_user_id_param( (string) $item->user_id ),
 				'parent_item_id' => (int) $item->parent_item_id,
 				'is_draft'       => (int) $item->is_draft,
@@ -43,11 +44,14 @@ class FrmProXMLHelper {
 			);
 
 			$metas = array();
+
 			foreach ( $item->item_meta as $meta ) {
 				$field_id = (int) $meta->field_id;
+
 				if ( is_array( $frm_duplicate_ids ) && isset( $frm_duplicate_ids[ $field_id ] ) ) {
 					$field_id = $frm_duplicate_ids[ $field_id ];
 				}
+
 				$field = FrmField::getOne( $field_id );
 
 				if ( ! $field ) {
@@ -80,14 +84,18 @@ class FrmProXMLHelper {
 
 			if ( $editing ) {
 				FrmEntry::update_entry_from_xml( $entry['id'], $entry );
+
 				if ( empty( $entry['parent_item_id'] ) ) {
 					++$imported['updated']['items'];
 				}
+
 				$saved_entries[ $entry['id'] ] = $entry['id'];
 			} else {
 				$e = FrmEntry::create_entry_from_xml( $entry );
+
 				if ( $e ) {
 					$saved_entries[ $entry['id'] ] = $e;
+
 					if ( empty( $entry['parent_item_id'] ) ) {
 						++$imported['imported']['items'];
 					}
@@ -104,8 +112,6 @@ class FrmProXMLHelper {
 		}
 
 		self::update_parent_item_ids( $track_child_ids, $saved_entries );
-
-		unset( $entries );
 
 		return $imported;
 	}
@@ -131,6 +137,7 @@ class FrmProXMLHelper {
 
 	/**
 	 * @param array $entries
+	 *
 	 * @return void
 	 */
 	private static function put_child_entries_first( &$entries ) {
@@ -157,6 +164,7 @@ class FrmProXMLHelper {
 	 * @param bool|int $child_id
 	 * @param int         $parent_id
 	 * @param array       $track_child_ids - pass by reference
+	 *
 	 * @return void
 	 */
 	private static function track_imported_child_entries( $child_id, $parent_id, &$track_child_ids ) {
@@ -207,6 +215,7 @@ class FrmProXMLHelper {
 		}
 
 		$form_id = (int) $form_id;
+
 		if ( ! $form_id ) {
 			return $start_row;
 		}
@@ -240,17 +249,21 @@ class FrmProXMLHelper {
 		self::check_csv_filename_for_legacy_format( $path );
 
 		$f = fopen( $path, 'r' );
+
 		if ( $f ) {
 			unset( $path );
 			$row       = 0;
 			$headers   = array();
 			$enclosure = '"';
 			$escape    = '\\';
+
 			while ( ( $data = fgetcsv( $f, 100000, $del, $enclosure, $escape ) ) !== false ) {
 				++$row;
+
 				if ( $row === 1 ) {
 					$headers = $data;
 				}
+
 				if ( $start_row > $row ) {
 					continue;
 				}
@@ -329,9 +342,13 @@ class FrmProXMLHelper {
 	 * @param string $path the path we're importing. If it includes -legacy, the flag will be set to true.
 	 */
 	private static function check_csv_filename_for_legacy_format( $path ) {
-		self::$legacy_import_format = false !== strpos( basename( $path ), '-legacy' );
+		self::$legacy_import_format = str_contains( basename( $path ), '-legacy' );
 	}
 
+	/**
+	 * @param array $data
+	 * @param array $values
+	 */
 	private static function csv_to_entry_value( $key, $field_id, $data, &$values ) {
 		$data[ $key ] = $data[ $key ] ?? '';
 
@@ -347,6 +364,7 @@ class FrmProXMLHelper {
 
 		// If this has format `{field_id_number}_{subfield_name}`, this is the combo subfield.
 		$check_combo = self::check_combo_field_export_col( $field_id );
+
 		if ( $check_combo ) {
 			self::set_values_for_combo_fields( $data[ $key ], $check_combo[0], $check_combo[1], $values );
 			return;
@@ -361,6 +379,7 @@ class FrmProXMLHelper {
 	 * @since 4.10.02
 	 *
 	 * @param string $col_id Column ID.
+	 *
 	 * @return array|false Return array with first item is the field ID and second item is subfield name.
 	 */
 	private static function check_combo_field_export_col( $col_id ) {
@@ -370,6 +389,7 @@ class FrmProXMLHelper {
 
 		$sep   = '_';
 		$parts = explode( $sep, $col_id );
+
 		if ( 2 > count( $parts ) ) {
 			return false;
 		}
@@ -385,6 +405,11 @@ class FrmProXMLHelper {
 
 	/**
 	 * Called by self::csv_to_entry_value
+	 *
+	 * @param int        $key
+	 * @param int|string $field_id
+	 * @param array      $data
+	 * @param array      $values
 	 */
 	private static function set_values_for_fields( $key, $field_id, $data, &$values ) {
 		$field = self::get_field( $field_id );
@@ -417,6 +442,7 @@ class FrmProXMLHelper {
 
 		$item_meta     = FrmAppHelper::get_post_param( 'item_meta', array() );
 		$is_array_type = $field->type === 'checkbox' || ( $field->type === 'data' && $field->field_options['data_type'] !== 'checkbox' );
+
 		if ( $value && $is_array_type && ! empty( $item_meta[ $field_id ] ) ) {
 			$value = array_merge( (array) $item_meta[ $field_id ], (array) $value );
 		}
@@ -449,19 +475,19 @@ class FrmProXMLHelper {
 			return;
 		}
 
-		if ( ! isset( $values['item_meta'][ $section_id ] ) ) {
+		if ( isset( $values['item_meta'][ $section_id ] ) ) {
+			$index = count( $values['item_meta'][ $section_id ] ) - 2; // Because of 'form' element.
+		} else {
 			$values['item_meta'][ $section_id ] = array( 'form' => $field->form_id );
 			$index                              = 0;
-		} else {
-			$index = count( $values['item_meta'][ $section_id ] ) - 2; // Because of 'form' element.
 		}
 
-		if ( ! isset( $values['item_meta'][ $section_id ][ $index ][ $field_id ][ $sub_field_name ] ) ) {
-			$values['item_meta'][ $section_id ][ $index ][ $field_id ][ $sub_field_name ] = $value;
-		} else {
+		if ( isset( $values['item_meta'][ $section_id ][ $index ][ $field_id ][ $sub_field_name ] ) ) {
 			++$index;
 			$values['item_meta'][ $section_id ][ $index ]                                 = array();
 			$values['item_meta'][ $section_id ][ $index ][ $field_id ]                    = array();
+			$values['item_meta'][ $section_id ][ $index ][ $field_id ][ $sub_field_name ] = $value;
+		} else {
 			$values['item_meta'][ $section_id ][ $index ][ $field_id ][ $sub_field_name ] = $value;
 		}
 
@@ -474,6 +500,7 @@ class FrmProXMLHelper {
 	 * @since 5.4 This method is public.
 	 *
 	 * @param int $field_id Field ID.
+	 *
 	 * @return false|object|null
 	 */
 	public static function get_field( $field_id ) {
@@ -495,6 +522,7 @@ class FrmProXMLHelper {
 
 	/**
 	 * @param object $field
+	 *
 	 * @return false|int
 	 */
 	private static function check_field_for_section_id( $field ) {
@@ -503,6 +531,7 @@ class FrmProXMLHelper {
 		}
 
 		$form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
+
 		if ( $form_id && self::field_is_embedded( $field ) ) {
 			return self::get_section_id_from_form_fields( $form_id, $field->form_id );
 		}
@@ -512,6 +541,7 @@ class FrmProXMLHelper {
 
 	/**
 	 * @param object $field
+	 *
 	 * @return bool
 	 */
 	private static function field_is_embedded( $field ) {
@@ -520,16 +550,19 @@ class FrmProXMLHelper {
 
 	private static function get_section_id_from_form_fields( $parent_form_id, $embedded_form_id ) {
 		$fields = FrmField::get_all_types_in_form( $parent_form_id, 'form' );
+
 		foreach ( $fields as $parent_form_field ) {
 			if ( ! empty( $parent_form_field->field_options['form_select'] ) && (int) $parent_form_field->field_options['form_select'] === (int) $embedded_form_id ) {
 				return $parent_form_field->id;
 			}
 		}
+
 		return false;
 	}
 
 	/**
 	 * @param object $field
+	 *
 	 * @return bool
 	 */
 	private static function is_the_child_of_a_repeater( $field ) {
@@ -542,24 +575,20 @@ class FrmProXMLHelper {
 		$section_id = $field->field_options['in_section'];
 		$section    = self::get_field( $section_id );
 
-		if ( ! $section ) {
-			return false;
-		}
-
-		return FrmField::is_repeating_field( $section );
+		return $section ? FrmField::is_repeating_field( $section ) : false;
 	}
 
 	/**
 	 * Update section data when importing, for populating repeater fields.
 	 *
-	 * @param int   $section_id
-	 * @param int   $form_id
-	 * @param int   $field_id
-	 * @param mixed $value
-	 * @param array $values
+	 * @param int          $section_id
+	 * @param int          $form_id
+	 * @param int          $field_id
+	 * @param array|string $value
+	 * @param array        $values
 	 */
 	private static function set_section_field_value( $section_id, $form_id, $field_id, $value, &$values ) {
-		if ( ! empty( self::$legacy_import_format ) ) {
+		if ( self::$legacy_import_format ) {
 			$section_data = self::get_new_section_data_for_legacy_format( $section_id, $form_id, $field_id, $value );
 		} else {
 			$section_data = self::get_new_section_data_for_multiple_row_format( $section_id, $form_id, $field_id, $value );
@@ -572,20 +601,17 @@ class FrmProXMLHelper {
 	/**
 	 * Get the new section data for legacy single-row format.
 	 *
-	 * @param int   $section_id
-	 * @param int   $form_id
-	 * @param int   $field_id
-	 * @param mixed $value
+	 * @param int          $section_id
+	 * @param int          $form_id
+	 * @param int          $field_id
+	 * @param array|string $value
 	 */
 	private static function get_new_section_data_for_legacy_format( $section_id, $form_id, $field_id, $value ) {
 		$value     = array_map( 'trim', explode( ',', $value ) );
 		$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+
 		foreach ( $value as $index => $current ) {
-			if ( isset( $item_meta[ $section_id ] ) ) {
-				$section_data = (array) $item_meta[ $section_id ];
-			} else {
-				$section_data = array( 'form' => $form_id );
-			}
+			$section_data = isset( $item_meta[ $section_id ] ) ? (array) $item_meta[ $section_id ] : array( 'form' => $form_id );
 
 			foreach ( $value as $index => $current ) {
 				if ( ! isset( $section_data[ $index ] ) ) {
@@ -594,19 +620,23 @@ class FrmProXMLHelper {
 				$section_data[ $index ][ $field_id ] = $current;
 			}
 		}
+
 		return $section_data;
 	}
 
 	/**
 	 * Get the new section data for current multiple row format.
 	 *
-	 * @param int   $section_id
-	 * @param int   $form_id
-	 * @param int   $field_id
-	 * @param mixed $value
+	 * @param int          $section_id
+	 * @param int          $form_id
+	 * @param int          $field_id
+	 * @param array|string $value
+	 *
+	 * @return array
 	 */
 	private static function get_new_section_data_for_multiple_row_format( $section_id, $form_id, $field_id, $value ) {
 		$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+
 		if ( ! isset( $item_meta[ $section_id ] ) ) {
 			return array(
 				'form' => $form_id,
@@ -616,6 +646,7 @@ class FrmProXMLHelper {
 
 		$section_data = $item_meta[ $section_id ];
 		$index        = 0;
+
 		while ( true ) {
 			if ( ! array_key_exists( $index, $section_data ) ) {
 				$section_data[ $index ] = array();
@@ -636,7 +667,11 @@ class FrmProXMLHelper {
 	/**
 	 * Called by self::csv_to_entry_value
 	 *
+	 * @param int   $key
 	 * @param array $field_id
+	 * @param array $data
+	 * @param array $values
+	 *
 	 * @return void
 	 */
 	private static function set_values_for_data_fields( $key, $field_id, $data, &$values ) {
@@ -659,7 +694,7 @@ class FrmProXMLHelper {
 				'item_id'
 			);
 		} else {
-			//get entry id of entry with item_key == $data[$key]
+			// get entry id of entry with item_key == $data[$key]
 			$entry_id = FrmDb::get_var( 'frm_items', array( 'item_key' => $data[ $key ] ) );
 		}
 
@@ -669,8 +704,11 @@ class FrmProXMLHelper {
 	}
 
 	/**
-	 * @param array $metas
-	 * @param int[] $saved_entries
+	 * @param stdClass $field
+	 * @param int      $field_id
+	 * @param array    $metas
+	 * @param int[]    $saved_entries
+	 *
 	 * @return void
 	 */
 	private static function convert_field_values( $field, $field_id, &$metas, $saved_entries = array() ) {
@@ -680,18 +718,20 @@ class FrmProXMLHelper {
 
 	/**
 	 * Convert timestamps to the database format
+	 *
+	 * @param array $values
 	 */
 	private static function convert_timestamps( &$values ) {
-		$offset = get_option( 'gmt_offset' ) * 60 * 60;
-
+		$offset          = get_option( 'gmt_offset' ) * 60 * 60;
 		$frmpro_settings = FrmProAppHelper::get_settings();
+
 		foreach ( array( 'created_at', 'updated_at' ) as $stamp ) {
 			if ( ! isset( $values[ $stamp ] ) ) {
 				continue;
 			}
 
-			// adjust the date format if it starts with the day
-			if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}/', trim( $values[ $stamp ] ) ) && substr( $frmpro_settings->date_format, 0, 1 ) === 'd' ) {
+			// Adjust the date format if it starts with the day
+			if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}/', trim( $values[ $stamp ] ) ) && str_starts_with( $frmpro_settings->date_format, 'd' ) ) {
 				$reg_ex = str_replace(
 					array( '/', '.', '-', 'd', 'j', 'm', 'y', 'Y' ),
 					array( '\/', '\.', '\-', '\d{2}', '\d', '\d{2}', '\d{2}', '\d{4}' ),
@@ -713,6 +753,7 @@ class FrmProXMLHelper {
 	 * Make sure values are in the format they should be saved in
 	 *
 	 * @param array $values
+	 *
 	 * @return void
 	 */
 	private static function convert_db_cols( &$values ) {
@@ -740,9 +781,13 @@ class FrmProXMLHelper {
 
 	/**
 	 * Save the entry after checking if it should be created or updated
+	 *
+	 * @param array $values
+	 * @param array $comments
 	 */
 	private static function save_or_edit_entry( $values, $comments ) {
 		$entry_id = self::get_entry_to_edit( $values );
+
 		if ( $entry_id ) {
 			FrmEntry::update( $entry_id, $values );
 		} else {
@@ -790,9 +835,9 @@ class FrmProXMLHelper {
 	 */
 	private static function get_comment_strings() {
 		return array(
-			'comment'      => __( 'Comment', 'formidable-pro' ),
-			'comment_user' => __( 'Comment User', 'formidable-pro' ),
-			'comment_date' => __( 'Comment Date', 'formidable-pro' ),
+			'comment'      => __( 'Comment', 'formidable' ),
+			'comment_user' => __( 'Comment User', 'formidable' ),
+			'comment_date' => __( 'Comment Date', 'formidable' ),
 		);
 	}
 
@@ -835,6 +880,7 @@ class FrmProXMLHelper {
 	 * @since 3.01.03
 	 *
 	 * @param array $values
+	 *
 	 * @return int
 	 */
 	private static function get_entry_to_edit( $values ) {
@@ -865,6 +911,7 @@ class FrmProXMLHelper {
 		 * When importing entries via CSV set the id of the entry that should be edited
 		 *
 		 * @since 3.01.03
+		 *
 		 * @param int $entry_id - The ID of the entry to edit. 0 means a new entry will be created.
 		 * @param array $values - The mapped values for this entry
 		 */
@@ -876,19 +923,19 @@ class FrmProXMLHelper {
 	 *
 	 * @since 2.03.08
 	 *
-	 * @param mixed $imported_value
+	 * @param array|string $imported_value
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public static function convert_imported_value_to_array( $imported_value ) {
-		if ( is_string( $imported_value ) && strpos( $imported_value, ',' ) !== false ) {
-			FrmProAppHelper::unserialize_or_decode( $imported_value );
+		if ( ! is_string( $imported_value ) || ! str_contains( $imported_value, ',' ) ) {
+			return (array) $imported_value;
+		}
 
-			if ( ! is_array( $imported_value ) ) {
-				$imported_value = array_map( 'ltrim', explode( ',', $imported_value ) );
-			}
-		} else {
-			$imported_value = (array) $imported_value;
+		FrmAppHelper::unserialize_or_decode( $imported_value );
+
+		if ( ! is_array( $imported_value ) ) {
+			return array_map( 'ltrim', explode( ',', $imported_value ) );
 		}
 
 		return $imported_value;
@@ -900,10 +947,12 @@ class FrmProXMLHelper {
 	 * @since 4.0
 	 *
 	 * @param array $field
+	 *
 	 * @return array
 	 */
 	public static function run_field_migrations( $field ) {
 		$update = self::migrate_dyn_default_value( $field['type'], $field['field_options'] );
+
 		foreach ( $update as $k => $v ) {
 			$field[ $k ] = $v;
 		}
@@ -916,7 +965,9 @@ class FrmProXMLHelper {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $field_options
+	 *
 	 * @return void
 	 */
 	public static function migrate_lookup_placeholder( &$field_options ) {
@@ -935,6 +986,9 @@ class FrmProXMLHelper {
 
 	/**
 	 * @since 4.0
+	 *
+	 * @param array $field_options
+	 *
 	 * @return void
 	 */
 	public static function migrate_lookup_checkbox_setting( &$field_options ) {
@@ -956,11 +1010,13 @@ class FrmProXMLHelper {
 	 *
 	 * @param string $type
 	 * @param array  $field_options
+	 *
 	 * @return array
 	 */
 	public static function migrate_dyn_default_value( $type, $field_options ) {
 		$field_types = array( 'file', 'range', 'scale', 'star', 'time', 'toggle', 'user_id' );
 		$has_default = ! empty( $field_options['dyn_default_value'] );
+
 		if ( ! in_array( $type, $field_types, true ) || ! $has_default ) {
 			return array();
 		}
@@ -977,6 +1033,7 @@ class FrmProXMLHelper {
 	 *
 	 * @param array $field_array
 	 * @param int $field_id
+	 *
 	 * @return void
 	 */
 	public static function after_field_is_imported( $field_array, $field_id ) {
@@ -990,6 +1047,7 @@ class FrmProXMLHelper {
 	 * @since 6.6
 	 *
 	 * @param array $imported
+	 *
 	 * @return array
 	 */
 	public static function after_xml_imported( $imported ) {
@@ -1007,9 +1065,11 @@ class FrmProXMLHelper {
 		foreach ( $imported_fields as $field ) {
 			$field_options = $field->field_options;
 			FrmAppHelper::unserialize_or_decode( $field_options );
+
 			if ( empty( $field_options['form_select'] ) || empty( $imported_forms[ $field_options['form_select'] ] ) ) {
 				continue;
 			}
+
 			$field_options['form_select'] = $imported_forms[ $field_options['form_select'] ];
 			FrmField::update( $field->id, array( 'field_options' => $field_options ) );
 		}
@@ -1024,56 +1084,69 @@ class FrmProXMLHelper {
 	 *
 	 * @param array $field_array
 	 * @param int|string $new_id
+	 *
 	 * @return void
 	 */
 	private static function update_page_titles( $field_array, $new_id ) {
-		if ( $field_array['type'] === 'break' ) {
-			$form   = FrmForm::getOne( $field_array['form_id'] );
-			$old_id = $field_array['id'];
-			if ( isset( $form->options['rootline_titles'][ $old_id ] ) ) {
-				$form->options['rootline_titles'][ $new_id ] = $form->options['rootline_titles'][ $old_id ];
-				unset( $form->options['rootline_titles'][ $old_id ] );
-				FrmForm::update( $form->id, array( 'options' => $form->options ) );
-			}
+		if ( $field_array['type'] !== 'break' ) {
+			return;
 		}
+
+		$form   = FrmForm::getOne( $field_array['form_id'] );
+		$old_id = $field_array['id'];
+
+		if ( ! isset( $form->options['rootline_titles'][ $old_id ] ) ) {
+			return;
+		}
+
+		$form->options['rootline_titles'][ $new_id ] = $form->options['rootline_titles'][ $old_id ];
+		unset( $form->options['rootline_titles'][ $old_id ] );
+		FrmForm::update( $form->id, array( 'options' => $form->options ) );
 	}
 
 	/**
 	 * Add the in_section value to fields in a repeating section
 	 *
 	 * @since 2.0.25
+	 *
 	 * @param array $f
 	 * @param int $section_id
+	 *
 	 * @return void
 	 */
 	private static function add_in_section_value_to_repeating_fields( $f, $section_id ) {
-		if ( $f['type'] === 'divider'
+		$is_repeating_section = $f['type'] === 'divider'
 			&& FrmField::is_option_true( $f['field_options'], 'repeat' )
-			&& FrmField::is_option_true( $f['field_options'], 'form_select' )
-		) {
-			$new_form_id  = $f['field_options']['form_select'];
-			$child_fields = FrmDb::get_col( 'frm_fields', array( 'form_id' => $new_form_id ), 'id' );
+			&& FrmField::is_option_true( $f['field_options'], 'form_select' );
 
-			if ( ! $child_fields ) {
-				return;
-			}
-
-			self::add_in_section_value_to_field_ids( $child_fields, $section_id );
+		if ( ! $is_repeating_section ) {
+			return;
 		}
+
+		$new_form_id  = $f['field_options']['form_select'];
+		$child_fields = FrmDb::get_col( 'frm_fields', array( 'form_id' => $new_form_id ), 'id' );
+
+		if ( ! $child_fields ) {
+			return;
+		}
+
+		self::add_in_section_value_to_field_ids( $child_fields, $section_id );
 	}
 
 	/**
 	 * Add specific in_section value to an array of field IDs
 	 *
 	 * @since 2.0.25
+	 *
 	 * @param array $field_ids
 	 * @param int $section_id
+	 *
 	 * @return void
 	 */
 	public static function add_in_section_value_to_field_ids( $field_ids, $section_id ) {
 		foreach ( $field_ids as $child_id ) {
 			$child_field_options = FrmDb::get_var( 'frm_fields', array( 'id' => $child_id ), 'field_options' );
-			FrmProAppHelper::unserialize_or_decode( $child_field_options );
+			FrmAppHelper::unserialize_or_decode( $child_field_options );
 			$child_field_options['in_section'] = $section_id;
 
 			// Update now
@@ -1089,10 +1162,12 @@ class FrmProXMLHelper {
 	 *
 	 * @param int $child_form_id
 	 * @param int $parent_form_id
+	 *
 	 * @return void
 	 */
 	public static function maybe_update_in_section_variables_for_repeater_children( $child_form_id, $parent_form_id ) {
 		$child_form_fields = FrmField::get_all_for_form( $child_form_id );
+
 		foreach ( $child_form_fields as $child_field ) {
 			if ( $child_field->field_options['in_section'] ) {
 				continue;

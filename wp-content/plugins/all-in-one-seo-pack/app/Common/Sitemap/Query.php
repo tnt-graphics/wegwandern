@@ -6,8 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use AIOSEO\Plugin\Common\Utils as CommonUtils;
-
 /**
  * Handles all complex queries for the sitemap.
  *
@@ -85,7 +83,8 @@ class Query {
 			->select( $fields )
 			->leftJoin( 'aioseo_posts as ap', 'ap.post_id = p.ID' )
 			->where( 'p.post_status', 'attachment' === $includedPostTypes ? 'inherit' : 'publish' )
-			->whereRaw( "p.post_type IN ( '$includedPostTypes' )" );
+			->where( 'p.post_password', '' )
+			->whereIn( 'p.post_type', $postTypesArray );
 
 		$homePageId = (int) get_option( 'page_on_front' );
 
@@ -128,7 +127,7 @@ class Query {
 		}
 
 		if ( $maxAge ) {
-			$query->whereRaw( "( `p`.`post_date_gmt` >= '$maxAge' )" );
+			$query->where( 'p.post_date_gmt >=', $maxAge );
 		}
 
 		if (
@@ -150,7 +149,7 @@ class Query {
 			if ( in_array( 'page', $postTypesArray, true ) ) {
 				// Exclude the blog page from the pages post type.
 				if ( $blogPageId ) {
-					$query->whereRaw( "`p`.`ID` != $blogPageId" );
+					$query->where( 'p.ID !=', $blogPageId );
 				}
 
 				// Custom order by statement to always move the home page to the top.
@@ -233,14 +232,21 @@ class Query {
 
 		static $hiddenProductIds = null;
 		if ( null === $hiddenProductIds ) {
-			$tempDb         = new CommonUtils\Database();
-			$hiddenProducts = $tempDb->start( 'term_relationships as tr' )
-				->select( 'tr.object_id' )
-				->join( 'term_taxonomy as tt', 'tr.term_taxonomy_id = tt.term_taxonomy_id' )
-				->join( 'terms as t', 'tt.term_id = t.term_id' )
-				->where( 't.name', 'exclude-from-catalog' )
-				->run()
-				->result();
+			$termRelationshipsTable = aioseo()->core->db->db->prefix . 'term_relationships';
+			$termTaxonomyTable      = aioseo()->core->db->db->prefix . 'term_taxonomy';
+			$termsTable             = aioseo()->core->db->db->prefix . 'terms';
+
+			// Exclude products when excluded from both catalog and search.
+			$hiddenProducts = aioseo()->core->db->execute(
+				"SELECT tr.object_id
+				FROM {$termRelationshipsTable} AS tr
+				JOIN {$termTaxonomyTable} AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+				JOIN {$termsTable} AS t ON tt.term_id = t.term_id
+				WHERE t.name IN ('exclude-from-catalog', 'exclude-from-search')
+				GROUP BY tr.object_id
+				HAVING COUNT(DISTINCT t.name) = 2",
+				true
+			)->result();
 
 			if ( empty( $hiddenProducts ) ) {
 				return $query;
@@ -250,10 +256,11 @@ class Query {
 			foreach ( $hiddenProducts as $hiddenProduct ) {
 				$hiddenProductIds[] = (int) $hiddenProduct->object_id;
 			}
-			$hiddenProductIds = esc_sql( implode( ', ', $hiddenProductIds ) );
-		}
 
-		$query->whereRaw( "p.ID NOT IN ( $hiddenProductIds )" );
+			if ( ! empty( $hiddenProductIds ) ) {
+				$query->whereNotIn( 'p.ID', $hiddenProductIds );
+			}
+		}
 
 		return $query;
 	}

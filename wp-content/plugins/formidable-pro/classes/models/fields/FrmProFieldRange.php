@@ -40,6 +40,7 @@ class FrmProFieldRange extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'range';
@@ -72,7 +73,7 @@ class FrmProFieldRange extends FrmFieldType {
 	 * @return bool
 	 */
 	private function get_slider_checked_value() {
-		$has_unit          = ! empty( FrmField::get_option( $this->field, 'prepend' ) ) || ! empty( FrmField::get_option( $this->field, 'append' ) );
+		$has_unit          = FrmField::get_option( $this->field, 'prepend' ) || FrmField::get_option( $this->field, 'append' );
 		$show_slider_range = FrmField::get_option( $this->field, 'show_slider_range' );
 		return '' === $show_slider_range ? $has_unit : $show_slider_range;
 	}
@@ -81,13 +82,16 @@ class FrmProFieldRange extends FrmFieldType {
 	 * @since 5.4.3
 	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
+	 *
 	 * @return void
 	 */
 	public function show_primary_options( $args ) {
 		$field = $args['field'];
+
 		if ( ! empty( $field['is_range_slider'] ) ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/gap-range.php';
 		}
+
 		$show_range_checked = $this->get_slider_checked_value();
 		$value_position     = $this->get_value_position();
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/slider-options.php';
@@ -105,8 +109,9 @@ class FrmProFieldRange extends FrmFieldType {
 	 */
 	private function get_value_position() {
 		$value_position = FrmField::get_option( $this->field, 'value_position' );
+
 		if ( '' === $value_position ) {
-			$has_unit = ! empty( FrmField::get_option( $this->field, 'prepend' ) ) || ! empty( FrmField::get_option( $this->field, 'append' ) );
+			$has_unit = FrmField::get_option( $this->field, 'prepend' ) || FrmField::get_option( $this->field, 'append' );
 			return $has_unit ? 'top-left' : 'bottom-center';
 		}
 
@@ -123,39 +128,40 @@ class FrmProFieldRange extends FrmFieldType {
 		}
 
 		$default_value        = $this->get_default_value( $min, $max );
-		$value_position       = $this->get_value_position();
-		$show_value_at_bottom = strpos( $value_position, 'bottom' ) !== false;
+		$show_value_at_bottom = str_contains( $this->get_value_position(), 'bottom' );
 		$output               = '<div>' . $this->output_selected_value( $default_value, true ) . '</div>';
 		$is_range_slider      = FrmField::get_option( $this->field, 'is_range_slider' );
+
 		if ( ! $is_range_slider ) {
 			$output = $this->add_classes_to_displayed_value( $output );
 		}
 
 		$type  = $is_range_slider ? 'hidden' : 'range';
 		$input = '<div class="frm_range_container">';
+
 		if ( ! $show_value_at_bottom ) {
 			$input .= $output;
 		}
+
 		$input_html = '';
-		if ( is_callable( array( $this, 'add_min_max' ) ) ) {
-			$this->add_min_max( array(), $input_html );
-		}
+		$this->add_min_max( array(), $input_html );
 		$input .= '<input type="' . $type . '" name="' . esc_attr( $this->html_name( $name ) ) . '" value="' . esc_attr( $default_value ) . '" ' . $input_html . ' ';
+
 		if ( 'hidden' === $type ) {
-			$data_atts = $this->get_gap_data_atts();
-			$input    .= FrmAppHelper::array_to_html_params( $data_atts ) . ' />';
+			$input .= FrmAppHelper::array_to_html_params( $this->get_gap_data_atts() ) . ' />';
 		} else {
 			$input .= 'min="' . esc_attr( $min ) . '" max="' . esc_attr( $max ) . '" />';
 		}
+
 		if ( ! $is_range_slider ) {
 			$input .= $this->output_min_max_value();
 		}
+
 		if ( $show_value_at_bottom ) {
 			$input .= $output;
 		}
-		$input .= '</div>';
 
-		return $input;
+		return $input . '</div>';
 	}
 
 	/**
@@ -167,6 +173,7 @@ class FrmProFieldRange extends FrmFieldType {
 		$min_gap = FrmField::get_option( $this->field, 'mingap' );
 		$max_gap = FrmField::get_option( $this->field, 'maxgap' );
 		$min_gap = $min_gap ? $min_gap : self::DEFAULT_MIN_GAP;
+
 		if ( ! $max_gap ) {
 			$min     = FrmField::get_option( $this->field, 'minnum' );
 			$max     = FrmField::get_option( $this->field, 'maxnum' );
@@ -174,6 +181,7 @@ class FrmProFieldRange extends FrmFieldType {
 			$max     = $max ? $max : self::DEFAULT_MAX;
 			$max_gap = $max - $min;
 		}
+
 		return array(
 			'data-min-gap' => $min_gap,
 			'data-max-gap' => $max_gap,
@@ -184,13 +192,18 @@ class FrmProFieldRange extends FrmFieldType {
 	 * Reset the default value if it's out of range
 	 *
 	 * @since 3.0.06
+	 *
+	 * @param mixed $min
+	 * @param mixed $max
 	 */
 	private function get_default_value( $min, $max ) {
 		$default_value = $this->get_field_column( 'default_value' );
 		$out_of_range  = $default_value < $min || $default_value > $max;
+
 		if ( $default_value !== '' && $out_of_range ) {
-			$default_value = '';
+			return '';
 		}
+
 		return $default_value;
 	}
 
@@ -218,28 +231,23 @@ class FrmProFieldRange extends FrmFieldType {
 	public function front_field_input( $args, $shortcode_atts ) {
 		$input_html = $this->get_field_input_html_hook( $this->field );
 		$this->add_aria_description( $args, $input_html );
-		if ( is_callable( array( $this, 'add_min_max' ) ) ) {
-			$this->add_min_max( $args, $input_html );
-		}
+		$this->add_min_max( $args, $input_html );
 
 		$default = $this->get_field_column( 'default_value' );
-		if ( is_object( $this->field ) ) {
-			$field = $this->field;
-		} else {
-			$field = FrmField::getOne( $this->field_id );
-		}
+		$field   = is_object( $this->field ) ? $this->field : FrmField::getOne( $this->field_id );
 		$default = apply_filters( 'frm_get_default_value', $default, $field, true );
 
 		$output = $this->output_selected_value( $default );
 		$output = apply_filters( 'frm_range_output', $output, array( 'field' => $this->field ) );
 		$input  = '<div class="frm_range_container">';
 
-		$value_position       = $this->get_value_position();
-		$show_value_at_bottom = strpos( $value_position, 'bottom' ) !== false;
+		$show_value_at_bottom = str_contains( $this->get_value_position(), 'bottom' );
 		$output               = '<div>' . $output . '</div>';
+
 		if ( ! FrmField::get_option( $this->field, 'is_range_slider' ) ) {
 			$output = $this->add_classes_to_displayed_value( $output );
 		}
+
 		if ( ! $show_value_at_bottom ) {
 			$input .= $output;
 		}
@@ -254,7 +262,7 @@ class FrmProFieldRange extends FrmFieldType {
 				'type'  => $type,
 				'id'    => $args['html_id'],
 				'name'  => $args['field_name'],
-				'value' => $this->field['value'],
+				'value' => $this->get_unformatted_value( $this->field['value'] ),
 			)
 		);
 
@@ -263,32 +271,52 @@ class FrmProFieldRange extends FrmFieldType {
 		} else {
 			$input .= $frmval . ' data-frmrange />';
 		}
+
 		if ( ! FrmField::get_option( $this->field, 'is_range_slider' ) ) {
 			$input .= $this->output_min_max_value();
 		}
+
 		if ( $show_value_at_bottom ) {
 			$input .= $output;
 		}
-		$input .= '</div>';
 
-		return $input;
+		return $input . '</div>';
+	}
+
+	/**
+	 * Returns the unformatted value.
+	 *
+	 * @since 6.29
+	 *
+	 * @param string $value
+	 *
+	 * @return string
+	 */
+	private function get_unformatted_value( $value ) {
+		if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) ) ) {
+			return FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+		}
+
+		return $value;
 	}
 
 	/**
 	 * @since 6.20
 	 *
 	 * @param string $output
+	 *
 	 * @return string
 	 */
 	private function add_classes_to_displayed_value( $output ) {
 		$value_position = $this->get_value_position();
 		$class          = 'frm-text-';
 		$class         .= $value_position ? str_replace( array( 'top-', 'bottom-' ), '', $value_position ) : 'left';
+
 		if ( FrmField::get_option( $this->field, 'is_range_slider' ) ) {
 			$class .= ' range-value';
 		}
-		$output = str_replace( '<div', '<div class="' . esc_attr( $class ) . '"', $output );
-		return $output;
+
+		return str_replace( '<div', '<div class="' . esc_attr( $class ) . '"', $output );
 	}
 
 	/**
@@ -304,10 +332,13 @@ class FrmProFieldRange extends FrmFieldType {
 		}
 		// phpcs:ignore
 		$values = wp_unslash( $_POST );
-		if ( FrmProFieldsHelper::is_field_hidden( $field, $values ) ) {
-			$this->field['value']             = 0;
-			$_POST['item_meta'][ $field->id ] = 0;
+
+		if ( ! FrmProFieldsHelper::is_field_hidden( $field, $values ) ) {
+			return;
 		}
+
+		$this->field['value']             = 0;
+		$_POST['item_meta'][ $field->id ] = 0;
 	}
 
 	private function format_min_max_value( $value ) {
@@ -315,8 +346,9 @@ class FrmProFieldRange extends FrmFieldType {
 			|| isset( $this->field->field_options['format'] ) && FrmProCurrencyHelper::is_currency_format( $this->field->field_options['format'] );
 
 		if ( $is_currency ) {
-			$value = FrmProCurrencyHelper::maybe_format_currency( $value, $this->field, array() );
+			return FrmProCurrencyHelper::maybe_format_currency( $value, $this->field, array() );
 		}
+
 		return $value;
 	}
 
@@ -350,10 +382,12 @@ class FrmProFieldRange extends FrmFieldType {
 		';
 
 		$slider_html         .= $this->output_min_max_value();
-		$show_value_at_bottom = strpos( $this->get_value_position(), 'bottom' ) !== false;
+		$show_value_at_bottom = str_contains( $this->get_value_position(), 'bottom' );
+
 		if ( $show_value_at_bottom ) {
 			return $slider_html . $value_html;
 		}
+
 		return $value_html . $slider_html;
 	}
 
@@ -378,15 +412,16 @@ class FrmProFieldRange extends FrmFieldType {
 		$html .= wp_kses_post( $pre );
 		$html .= '<span class="max-value">' . esc_html( $max_value ) . '</span>';
 		$html .= wp_kses_post( $unit );
-		$html .= '</div>';
 
-		return $html;
+		return $html . '</div>';
 	}
 
 	/**
 	 * @since 4.03.05
 	 *
-	 * @param bool $is_builder
+	 * @param mixed $default
+	 * @param bool  $is_builder
+	 *
 	 * @return string
 	 */
 	private function output_selected_value( $default, $is_builder = false ) {
@@ -423,7 +458,7 @@ class FrmProFieldRange extends FrmFieldType {
 	 */
 	protected function prepare_display_value( $value, $atts ) {
 		if ( FrmField::get_option( $this->field, 'is_range_slider' ) ) {
-			$value = $this->prepare_range_slider_value( $value, $atts );
+			return $this->prepare_range_slider_value( $value, $atts );
 		}
 
 		return $value;
@@ -437,6 +472,7 @@ class FrmProFieldRange extends FrmFieldType {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	private function prepare_range_slider_value( $value, $atts ) {
@@ -447,27 +483,30 @@ class FrmProFieldRange extends FrmFieldType {
 		$value = str_replace( ',', ' - ', $value );
 
 		// Support show="min" and show="max" options.
-		if ( ! empty( $atts['show'] ) ) {
-			$split              = explode( ' - ', $value );
-			$in_expected_format = 2 === count( $split );
-			switch ( $atts['show'] ) {
-				case 'min':
-					$value = $in_expected_format ? $split[0] : '';
-					break;
-				case 'max':
-					$value = $in_expected_format ? $split[1] : '';
-					break;
-			}
+		if ( empty( $atts['show'] ) ) {
+			return $value;
+		}
+
+		$split              = explode( ' - ', $value );
+		$in_expected_format = 2 === count( $split );
+		switch ( $atts['show'] ) {
+			case 'min':
+				$value = $in_expected_format ? $split[0] : '';
+				break;
+			case 'max':
+				$value = $in_expected_format ? $split[1] : '';
+				break;
 		}
 
 		return $value;
 	}
 
-
 	/**
 	 * Get the middle value so the label isn't alone.
 	 *
 	 * @since 4.06
+	 *
+	 * @param mixed $value
 	 */
 	private function get_mid_value( $value ) {
 		if ( $value !== '' && $value !== false ) {
@@ -475,8 +514,8 @@ class FrmProFieldRange extends FrmFieldType {
 		}
 
 		$defaults = $this->extra_field_opts();
-		$min      = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, FrmField::get_option( $this->field, 'minnum' ) );
-		$max      = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, FrmField::get_option( $this->field, 'maxnum' ) );
+		$min      = $this->get_unformatted_value( FrmField::get_option( $this->field, 'minnum' ) );
+		$max      = $this->get_unformatted_value( FrmField::get_option( $this->field, 'maxnum' ) );
 
 		if ( ! is_numeric( $min ) ) {
 			$min = $defaults['minnum'];
@@ -486,20 +525,16 @@ class FrmProFieldRange extends FrmFieldType {
 			$max = $defaults['maxnum'];
 		}
 
-		$mid = ( $max - $min ) / 2 + $min;
-
+		$mid  = ( $max - $min ) / 2 + $min;
 		$step = FrmField::get_option( $this->field, 'step' );
+
 		if ( ! $step || ! is_numeric( $step ) ) {
 			// Avoid division by zero or division by non-numeric string.
 			$step = $defaults['step'];
 		}
 
 		$mid_steps = round( $mid / $step ) * $step; // Get the minimum valid value for the step.
-		if ( is_int( $mid_steps ) ) {
-			return $mid_steps;
-		}
-
-		return round( $mid / $step ) * $step;
+		return is_int( $mid_steps ) ? $mid_steps : round( $mid / $step ) * $step;
 	}
 
 	/**
@@ -508,12 +543,12 @@ class FrmProFieldRange extends FrmFieldType {
 	 * @since 4.05
 	 *
 	 * @param bool $is_builder
+	 *
 	 * @return string
 	 */
 	private function output_min_max_value( $is_builder = false ) {
-		$pre  = $this->format_unit( 'prepend', $is_builder );
-		$unit = $this->format_unit( 'append', $is_builder );
-
+		$pre                 = $this->format_unit( 'prepend', $is_builder );
+		$unit                = $this->format_unit( 'append', $is_builder );
 		$show_slider_setting = $this->get_slider_checked_value();
 
 		if ( ! $show_slider_setting ) {
@@ -533,9 +568,8 @@ class FrmProFieldRange extends FrmFieldType {
 		$output  = '<div class="frm_description">';
 		$output .= '<span class="frm_range_min">' . $min . '</span>';
 		$output .= '<span class="frm_range_max">' . $max . '</span>';
-		$output .= '</div>';
 
-		return $output;
+		return $output . '</div>';
 	}
 
 	/**
@@ -543,22 +577,26 @@ class FrmProFieldRange extends FrmFieldType {
 	 *
 	 * @param string $setting
 	 * @param bool   $is_builder
+	 *
 	 * @return string
 	 */
 	private function format_unit( $setting, $is_builder = false ) {
-		$unit   = FrmField::get_option( $this->field, $setting );
-		$output = '';
+		$unit = FrmField::get_option( $this->field, $setting );
 
-		if ( ! empty( $unit ) ) {
-			$output = '<span class="frm_range_unit"' . ( $is_builder ? ' id="range_unit_' . esc_attr( $this->get_field_column( 'id' ) ) . '"' : '' ) . '>' . esc_html( $unit ) . '</span>';
+		if ( $unit ) {
+			return '<span class="frm_range_unit"' . ( $is_builder ? ' id="range_unit_' . esc_attr( $this->get_field_column( 'id' ) ) . '"' : '' ) . '>' . esc_html( $unit ) . '</span>';
 		}
-		return $output;
+
+		return '';
 	}
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
+		$value = $this->get_unformatted_value( $value );
 	}
 }

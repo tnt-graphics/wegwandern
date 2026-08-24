@@ -252,7 +252,8 @@ trait WpUri {
 	* Retrieves a post by its given path.
 	* Based on the built-in get_page_by_path() function, but only checks ancestry if the post type is actually hierarchical.
 	*
-	* @since 4.1.4
+	* @since   4.1.4
+	* @version 4.9.9 Validate URL prefix against the post type's rewrite slug.
 	*
 	* @param  string       $path     The path.
 	* @param  string       $output   The output type. OBJECT, ARRAY_A, or ARRAY_N.
@@ -284,16 +285,14 @@ trait WpUri {
 		$path          = str_replace( '%20', ' ', $path );
 		$parts         = explode( '/', trim( $path, '/' ) );
 		$reversedParts = array_reverse( $parts );
-		$postNames     = "'" . implode( "','", $parts ) . "'";
 
 		$postTypes = is_array( $postType ) ? $postType : [ $postType ];
-		$postTypes = "'" . implode( "','", $postTypes ) . "'";
 
 		$posts = aioseo()->core->db->start( 'posts' )
 			->select( 'ID, post_name, post_parent, post_type' )
-			->whereRaw( "post_name in ( $postNames )" )
-			->whereRaw( "post_type in ( $postTypes )" )
-			->whereRaw( "post_status = 'publish'" )
+			->whereIn( 'post_name', $parts )
+			->whereIn( 'post_type', $postTypes )
+			->whereIn( 'post_status', [ 'publish' ] )
 			->run()
 			->result();
 
@@ -329,7 +328,7 @@ trait WpUri {
 
 				if (
 					0 === (int) $p->post_parent &&
-					( ! is_post_type_hierarchical( $p->post_type ) || count( $reversedParts ) === $count + 1 ) &&
+					$this->urlPathMatchesPostType( $p->post_type, $reversedParts, $count ) &&
 					$p->post_name === $reversedParts[ $count ]
 				) {
 					$foundId = $post->ID;
@@ -350,6 +349,37 @@ trait WpUri {
 		wp_cache_set( $cacheKey, $foundId, 'aioseo_posts_by_path' );
 
 		return $foundId ? get_post( $foundId, $output ) : false;
+	}
+
+	/**
+	 * Checks that the URL prefix preceding the matched slug is compatible with the candidate's post type.
+	 *
+	 * @since 4.9.9
+	 *
+	 * @param  string $postType      The candidate's post type.
+	 * @param  array  $reversedParts The path segments in reverse order.
+	 * @param  int    $count         The ancestry depth already consumed.
+	 * @return bool                  True if the URL path is compatible with the post type.
+	 */
+	private function urlPathMatchesPostType( $postType, $reversedParts, $count ) {
+		static $expectedPrefixes = [];
+
+		if ( ! array_key_exists( $postType, $expectedPrefixes ) ) {
+			$expectedPrefixes[ $postType ] = $this->getPostTypeUrlPrefix( $postType );
+		}
+
+		$expectedPrefix = $expectedPrefixes[ $postType ];
+
+		// No rewrite registration (e.g. built-in `post`/`page`): keep historical behavior.
+		if ( null === $expectedPrefix ) {
+			return is_post_type_hierarchical( $postType )
+				? count( $reversedParts ) === $count + 1
+				: true;
+		}
+
+		$actualPrefix = implode( '/', array_reverse( array_slice( $reversedParts, $count + 1 ) ) );
+
+		return $actualPrefix === $expectedPrefix;
 	}
 
 	/**
@@ -550,26 +580,26 @@ trait WpUri {
 			return false;
 		}
 
-		$canonical_url = get_permalink( $post ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		$canonicalUrl = get_permalink( $post );
 
 		// If a canonical is being generated for the current page, make sure it has pagination if needed.
 		if ( get_queried_object_id() === $post->ID ) {
 			$page = get_query_var( 'page', 0 );
 			if ( $page >= 2 ) {
 				if ( ! get_option( 'permalink_structure' ) ) {
-					$canonical_url = add_query_arg( 'page', $page, $canonical_url ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+					$canonicalUrl = add_query_arg( 'page', $page, $canonicalUrl );
 				} else {
-					$canonical_url = trailingslashit( $canonical_url ) . user_trailingslashit( $page, 'single_paged' ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+					$canonicalUrl = trailingslashit( $canonicalUrl ) . user_trailingslashit( $page, 'single_paged' );
 				}
 			}
 
 			$cpage = aioseo()->helpers->getCommentPageNumber(); // We're calling our own function here to get the correct cpage number.
 			if ( $cpage ) {
-				$canonical_url = get_comments_pagenum_link( $cpage ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+				$canonicalUrl = get_comments_pagenum_link( $cpage );
 			}
 		}
 
-		return apply_filters( 'get_canonical_url', $canonical_url, $post ); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		return apply_filters( 'get_canonical_url', $canonicalUrl, $post ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 
 	/**
@@ -582,6 +612,6 @@ trait WpUri {
 	public function usingPermalinks() {
 		global $wp_rewrite; // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 
-		return $wp_rewrite->using_permalinks();  // phpcs:ignore Squiz.NamingConventions.ValidVariableName
+		return $wp_rewrite->using_permalinks(); // phpcs:ignore Squiz.NamingConventions.ValidVariableName
 	}
 }

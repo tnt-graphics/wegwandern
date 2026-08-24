@@ -254,11 +254,24 @@ var wpmfFoldersTreeModule = void 0;
                 if (!$current_frame.find('.wpmf-toggle-media-menu').length) {
                     $current_frame.addClass('wpmf_hide_media_menu');
                     $current_frame.find('.media-frame-menu-heading').append('<span class="material-icons wpmf-toggle-media-menu wpmf-toggle-down"> arrow_drop_down </span><span class="material-icons wpmf-toggle-media-menu wpmf-toggle-up"> arrow_drop_up </span>');
-                    $current_frame.find('.wpmf-toggle-media-menu').off('click').bind('click', function () {
+                    $current_frame.find('.wpmf-toggle-media-menu').off('click').on('click', function (e) {
+                        e.stopPropagation();
+                        toggleMediaMenu();
+                    });
+
+                    $current_frame.find('.media-frame-menu-heading').off('click').on('click', function (e) {
+                        if ($(e.target).closest('.wpmf-toggle-media-menu').length) {
+                            return;
+                        }
+                        toggleMediaMenu();
+                    });
+
+                    function toggleMediaMenu() {
                         var h = 220;
                         if ($menu.find('.wpmf-all-tree').hasClass('wpmf-tree-loadmore')) {
                             h += 70;
                         }
+
                         if ($current_frame.hasClass('wpmf_hide_media_menu')) {
                             $current_frame.removeClass('wpmf_hide_media_menu').addClass('wpmf_show_media_menu');
                             var a = $menu.find(".media-menu-item").length;
@@ -267,7 +280,7 @@ var wpmfFoldersTreeModule = void 0;
                             $current_frame.removeClass('wpmf_show_media_menu').addClass('wpmf_hide_media_menu');
                             $menu.find('.wpmf-all-tree').height($menu.height() - h);
                         }
-                    });
+                    }
                 }
             }
 
@@ -869,8 +882,16 @@ var wpmfFoldersTreeModule = void 0;
                 loadmore = '<a class="wpmf-loadmore-folder" data-count="' + wpmfFoldersModule.categories_order.length + '"><span class="material-icons"> expand_more </span>' + wpmf.l18n.load_more + '</a>';
             }
 
+            var newFolderBtn = '';
+            if (wpmf.vars.use_multisite_share && parseInt(wpmf.vars.is_main_site) === 0) {
+                //disabled if use multisite
+                newFolderBtn = '<a class="wpmf-new-folder disabled" style="pointer-events: none; opacity: 0.5; cursor: not-allowed;"><i class="material-icons">add</i>' + wpmf.l18n.create_folder + '</a>';
+            } else {
+                newFolderBtn = '<a class="wpmf-new-folder" onclick="wpmfFoldersModule.newFolder(wpmfFoldersModule.last_selected_folder)"><i class="material-icons">add</i>' + wpmf.l18n.create_folder + '</a>';
+            }
+
             // Add the new folder button
-            content = '<div class="wpmf-tree-actions"><a class="wpmf-new-folder" onclick="wpmfFoldersModule.newFolder(wpmfFoldersModule.last_selected_folder)"><i class="material-icons">add</i>' + wpmf.l18n.create_folder + '</a>' + remove_folder + '</div>' + search_folder + content + loadmore + search_no_result;
+            content = '<div class="wpmf-tree-actions">' + newFolderBtn + remove_folder + '</div>' + search_folder + content + loadmore + search_no_result;
 
             return content;
         },

@@ -13,7 +13,7 @@ if ( isset( $default_value ) && is_array( $default_value ) ) {
 	?>
 	<p class="frm6 frm_form_field">
 		<label for="default_value_<?php echo esc_attr( $name . '_' . $field['id'] ); ?>" class="frm_description" id="label_default_<?php echo esc_attr( $name . '_' . $field['id'] ); ?>">
-			<?php esc_html_e( 'Default Value', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Default Value', 'formidable' ); ?>
 		</label>
 		<span class="frm-with-right-icon frm-block">
 			<?php if ( $has_more_icon_tabindex ) { // Backwards compatibility condition "@since 6.25". ?>
@@ -21,8 +21,8 @@ if ( isset( $default_value ) && is_array( $default_value ) ) {
 <?php
 			}
 
-			FrmProAppHelper::icon_by_class(
-				'frm_icon_font frm_more_horiz_solid_icon frm-show-inline-modal frm-input-icon',
+			FrmAppHelper::icon_by_class(
+				'frmfont frm_more_horiz_solid_icon frm-show-inline-modal frm-input-icon',
 				array(
 					'data-open' => 'frm-smart-values-box',
 					'tabindex'  => 0,
@@ -31,16 +31,16 @@ if ( isset( $default_value ) && is_array( $default_value ) ) {
 
 			// Backwards compatibility "@since 6.25".
 			if ( ! $has_more_icon_tabindex ) {
-				?>
+		?>
 				<input type="text" name="default_value_<?php echo esc_attr( $field['id'] ); ?>[<?php echo esc_attr( $name ); ?>]" id="default_value_<?php echo esc_attr( $name . '_' . $field['id'] ); ?>" value="<?php echo esc_attr( $default_value[ $name ] ?? '' ); ?>" aria-labelledby="<?php echo esc_attr( $name . '_' . $field['id'] ); ?> label_default_<?php echo esc_attr( $name . '_' . $field['id'] ); ?>" data-changeme="field_<?php echo esc_attr( $field['field_key'] . '_' . $name ); ?>" data-changeatt="value" />
-			<?php } ?>
+	<?php } ?>
 		</span>
 	</p>
 	<?php
 }
 
 $sub      = 'placeholder';
-$label    = __( 'Placeholder Text', 'formidable-pro' );
+$label    = __( 'Placeholder Text', 'formidable' );
 $subname  = $name . '_' . $sub;
 $field_id = 'field_options_' . $subname . '_' . $field['id'];
 ?>
@@ -53,7 +53,7 @@ $field_id = 'field_options_' . $subname . '_' . $field['id'];
 
 <?php
 $sub      = 'desc';
-$label    = __( 'Description', 'formidable-pro' );
+$label    = __( 'Description', 'formidable' );
 $subname  = $name . '_' . $sub;
 $field_id = 'field_options_' . $subname . '_' . $field['id'];
 ?>

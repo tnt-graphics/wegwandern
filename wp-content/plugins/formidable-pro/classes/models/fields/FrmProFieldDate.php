@@ -11,6 +11,7 @@ class FrmProFieldDate extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'date';
@@ -36,6 +37,8 @@ class FrmProFieldDate extends FrmFieldType {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -70,11 +73,16 @@ class FrmProFieldDate extends FrmFieldType {
 
 	/**
 	 * @since 3.01.01
+	 *
+	 * @param array|object $field
+	 * @param array        $display
+	 * @param array        $values
 	 */
 	public function show_options( $field, $display, $values ) {
-		if ( ! function_exists( 'frm_dates_autoloader' ) && is_callable( 'FrmProAddonsController::install_link' ) ) {
+		if ( ! function_exists( 'frm_dates_autoloader' ) ) {
 			$upgrade_data = self::get_dates_add_on_upgrade_link_data( true );
 			$class        = '';
+
 			if ( empty( $upgrade_data['oneclick'] ) ) {
 				$class = ' frm_noallow';
 			}
@@ -90,6 +98,7 @@ class FrmProFieldDate extends FrmFieldType {
 	 * Gets data attributes for dates add on upgrade link.
 	 *
 	 * @param bool $prepend_data Prepend `data-` to the array key.
+	 *
 	 * @return array
 	 */
 	public static function get_dates_add_on_upgrade_link_data( $prepend_data = false ) {
@@ -101,21 +110,24 @@ class FrmProFieldDate extends FrmFieldType {
 		);
 
 		$upgrading = FrmProAddonsController::install_link( 'dates' );
+
 		if ( isset( $upgrading['url'] ) ) {
 			$data['oneclick'] = json_encode( $upgrading );
 		} else {
 			$data['requires'] = self::get_dates_add_on_required_plan();
 		}
 
-		if ( $prepend_data ) {
-			$new_data = array();
-			foreach ( $data as $key => $value ) {
-				$new_data[ 'data-' . $key ] = $value;
-			}
-			return $new_data;
+		if ( ! $prepend_data ) {
+			return $data;
 		}
 
-		return $data;
+		$new_data = array();
+
+		foreach ( $data as $key => $value ) {
+			$new_data[ 'data-' . $key ] = $value;
+		}
+
+		return $new_data;
 	}
 
 	/**
@@ -126,28 +138,12 @@ class FrmProFieldDate extends FrmFieldType {
 	 * @return string Empty string if no plan is required for active license.
 	 */
 	private static function get_dates_add_on_required_plan() {
-		if ( method_exists( 'FrmAddonsController', 'get_addon_required_plan' ) ) {
-			return FrmAddonsController::get_addon_required_plan( 20247260 );
-		}
-
-		$api      = new FrmFormApi();
-		$addons   = $api->get_api_info();
-		$dates_id = 20247260;
-
-		if ( is_array( $addons ) && array_key_exists( $dates_id, $addons ) ) {
-			$dates    = $addons[ $dates_id ];
-			$requires = FrmFormsHelper::get_plan_required( $dates );
-		}
-
-		if ( ! isset( $requires ) || ! is_string( $requires ) ) {
-			$requires = '';
-		}
-
-		return $requires;
+		return FrmAddonsController::get_addon_required_plan( 20247260 );
 	}
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -172,35 +168,38 @@ class FrmProFieldDate extends FrmFieldType {
 	 */
 	protected function get_input_class() {
 		$class = '';
+
 		if ( ! FrmField::is_read_only( $this->field ) ) {
 			$class = 'frm_date';
 		}
 
-		$class .= FrmField::get_option( $this->field, 'range_field' ) || FrmField::get_option( $this->field, 'is_range_end_field' ) ? ' frm_date_range' : '';
-
-		return $class;
+		return $class . ( FrmField::get_option( $this->field, 'range_field' ) || FrmField::get_option( $this->field, 'is_range_end_field' ) ? ' frm_date_range' : '' );
 	}
 
 	protected function load_field_scripts( $args ) {
-		if ( ! FrmField::is_read_only( $this->field ) ) {
-			global $frm_vars;
-			if ( ! isset( $frm_vars['datepicker_loaded'] ) || ! is_array( $frm_vars['datepicker_loaded'] ) ) {
-				$frm_vars['datepicker_loaded'] = array();
-			}
-
-			if ( ! isset( $frm_vars['datepicker_loaded'][ $args['html_id'] ] ) ) {
-				$static_html_id = $this->html_id();
-				if ( $args['html_id'] != $static_html_id ) {
-					// user wildcard for repeating fields
-					$frm_vars['datepicker_loaded'][ '^' . $static_html_id ] = true;
-				} else {
-					$frm_vars['datepicker_loaded'][ $args['html_id'] ] = true;
-				}
-			}
-
-			$entry_id = $frm_vars['editing_entry'] ?? 0;
-			FrmProFieldsHelper::set_field_js( $this->field, $entry_id );
+		if ( FrmField::is_read_only( $this->field ) ) {
+			return;
 		}
+
+		global $frm_vars;
+
+		if ( ! isset( $frm_vars['datepicker_loaded'] ) || ! is_array( $frm_vars['datepicker_loaded'] ) ) {
+			$frm_vars['datepicker_loaded'] = array();
+		}
+
+		if ( ! isset( $frm_vars['datepicker_loaded'][ $args['html_id'] ] ) ) {
+			$static_html_id = $this->html_id();
+
+			if ( $args['html_id'] == $static_html_id ) {
+				$frm_vars['datepicker_loaded'][ $args['html_id'] ] = true;
+			} else {
+				// User wildcard for repeating fields
+				$frm_vars['datepicker_loaded'][ '^' . $static_html_id ] = true;
+			}
+		}
+
+		$entry_id = $frm_vars['editing_entry'] ?? 0;
+		FrmProFieldsHelper::set_field_js( $this->field, $entry_id );
 	}
 
 	public function validate( $args ) {
@@ -215,7 +214,7 @@ class FrmProFieldDate extends FrmFieldType {
 			$frmpro_settings = FrmProAppHelper::get_settings();
 			$formatted_date  = FrmProAppHelper::convert_date( $value, $frmpro_settings->date_format, 'Y-m-d' );
 
-			//check format before converting
+			// Check format before converting
 			if ( $value != gmdate( $frmpro_settings->date_format, strtotime( $formatted_date ) ) ) {
 				$allow_it = apply_filters(
 					'frm_allow_date_mismatch',
@@ -225,6 +224,7 @@ class FrmProFieldDate extends FrmFieldType {
 						'formatted_date' => $formatted_date,
 					)
 				);
+
 				if ( ! $allow_it ) {
 					$errors[ 'field' . $args['id'] ] = FrmFieldsHelper::get_error_msg( $this->field, 'invalid' );
 				}
@@ -236,7 +236,7 @@ class FrmProFieldDate extends FrmFieldType {
 
 		$date = explode( '-', $value );
 
-		if ( count( $date ) != 3 || ! checkdate( (int) $date[1], (int) $date[2], (int) $date[0] ) ) {
+		if ( count( $date ) !== 3 || ! checkdate( (int) $date[1], (int) $date[2], (int) $date[0] ) ) {
 			$errors[ 'field' . $args['id'] ] = FrmFieldsHelper::get_error_msg( $this->field, 'invalid' );
 		}
 
@@ -249,6 +249,7 @@ class FrmProFieldDate extends FrmFieldType {
 
 	/**
 	 * @param string $year
+	 *
 	 * @return bool
 	 */
 	private function validate_year_is_within_range( $year ) {
@@ -256,17 +257,18 @@ class FrmProFieldDate extends FrmFieldType {
 		$start_year = $this->maybe_convert_relative_year_to_int( 'start_year' );
 		$end_year   = $this->maybe_convert_relative_year_to_int( 'end_year' );
 
-		return ( ( ! $start_year || ( $start_year <= $year ) ) && ( ! $end_year || ( $year <= $end_year ) ) );
+		return ( ! $start_year || $start_year <= $year ) && ( ! $end_year || $year <= $end_year );
 	}
 
 	/**
 	 * @param string $start_end
+	 *
 	 * @return int
 	 */
 	private function maybe_convert_relative_year_to_int( $start_end ) {
 		$rel_year = FrmField::get_option( $this->field, $start_end );
 
-		if ( is_string( $rel_year ) && strlen( $rel_year ) > 0 && ( '0' === $rel_year || '+' == $rel_year[0] || '-' == $rel_year[0] || strlen( $rel_year ) < 4 ) ) {
+		if ( is_string( $rel_year ) && $rel_year !== '' && ( '0' === $rel_year || '+' === $rel_year[0] || '-' === $rel_year[0] || strlen( $rel_year ) < 4 ) ) {
 			$rel_year = gmdate( 'Y', strtotime( $rel_year . ' year' ) );
 		}
 
@@ -289,11 +291,13 @@ class FrmProFieldDate extends FrmFieldType {
 
 		if ( isset( $atts['offset'] ) ) {
 			$value = FrmProFieldsHelper::get_date( $value, 'Y-m-d H:i:s' );
+
 			if ( isset( $atts['time_ago'] ) ) {
 				$atts['format'] = 'Y-m-d H:i:s';
 			} elseif ( empty( $atts['format'] ) ) {
 				$atts['format'] = get_option( 'date_format' );
 			}
+
 			$value = FrmProFieldsHelper::get_date( gmdate( 'Y-m-d H:i:s', strtotime( $atts['offset'], strtotime( $value ) ) ), $atts['format'] );
 		}
 
@@ -318,19 +322,17 @@ class FrmProFieldDate extends FrmFieldType {
 	/**
 	 * @param mixed $value
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	protected function prepare_import_value( $value, $atts ) {
-		if ( ! is_string( $value ) || empty( $value ) ) {
-			$value = '';
-		} else {
-			$value = gmdate( 'Y-m-d', strtotime( $value ) );
-		}
-		return $value;
+		return ! is_string( $value ) || ! $value ? '' : gmdate( 'Y-m-d', strtotime( $value ) );
 	}
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
@@ -339,13 +341,12 @@ class FrmProFieldDate extends FrmFieldType {
 	/**
 	 * Add extra HTML attributes to the input.
 	 *
-	 * @param mixed $args       Field arguments.
+	 * @param array $args       Field arguments.
 	 * @param mixed $input_html HTML input.
 	 *
 	 * @return void
 	 */
 	protected function add_extra_html_atts( $args, &$input_html ) {
-
 		if ( ! empty( $this->field['range_field'] ) ) {
 			$input_html .= ' data-field-id="' . (int) $this->field['id'] . '"';
 		}

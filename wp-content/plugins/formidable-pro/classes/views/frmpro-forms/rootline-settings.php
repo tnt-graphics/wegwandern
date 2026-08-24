@@ -3,6 +3,7 @@
  * Rootline settings view
  *
  * @since 6.9
+ *
  * @package FormidablePro
  *
  * @var FrmProRootline $rootline Rootline object.
@@ -12,11 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 
-$rootline_types = FrmProRootlineController::get_rootline_types();
-
-$i                = 1;
-$first_page_title = $rootline->titles[0] ?? sprintf( __( 'Page %d', 'formidable-pro' ), $i );
-
+$rootline_types            = FrmProRootlineController::get_rootline_types();
+$i                         = 1;
+$first_page_title          = $rootline->titles[0] ?? sprintf( __( 'Page %d', 'formidable-pro' ), $i );
 $hide_rootline_class       = $rootline->is_enabled() ? '' : 'frm_hidden';
 $hide_rootline_title_class = $rootline->show_titles ? '' : 'frm_hidden';
 ?>
@@ -31,7 +30,7 @@ $hide_rootline_title_class = $rootline->show_titles ? '' : 'frm_hidden';
 </p>
 
 <p class="hide_rootline <?php echo esc_attr( $hide_rootline_class ); ?>">
-	<label for="frm-pagination-position"><?php esc_html_e( 'Position', 'formidable-pro' ); ?></label>
+	<label for="frm-pagination-position"><?php esc_html_e( 'Position', 'formidable' ); ?></label>
 	<select name="frm_rootline[position]" id="frm-pagination-position">
 		<option value=""><?php esc_html_e( 'Below form title (default)', 'formidable-pro' ); ?></option>
 		<option value="above_title" <?php selected( $rootline->position, 'above_title' ); ?>>

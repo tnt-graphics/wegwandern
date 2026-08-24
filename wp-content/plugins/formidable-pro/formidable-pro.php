@@ -2,7 +2,7 @@
 /*
 Plugin Name: Formidable Forms Pro
 Description: Add more power to your forms, and bring your reports and data management to the front-end.
-Version: 6.25
+Version: 6.32
 Plugin URI: https://formidableforms.com/
 Author URI: https://formidableforms.com/
 Author: Strategy11
@@ -14,10 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! function_exists( 'load_formidable_pro' ) ) {
-
 	add_action( 'plugins_loaded', 'load_formidable_pro', 1 );
 	function load_formidable_pro() {
 		$is_free_installed = function_exists( 'load_formidable_forms' );
+
 		if ( $is_free_installed ) {
 			// Add the autoloader
 			spl_autoload_register( 'frm_pro_forms_autoloader' );
@@ -30,6 +30,10 @@ if ( ! function_exists( 'load_formidable_pro' ) ) {
 
 	/**
 	 * @since 3.0
+	 *
+	 * @param string $class_name
+	 *
+	 * @return void
 	 */
 	function frm_pro_forms_autoloader( $class_name ) {
 		// Only load Frm classes here
@@ -38,8 +42,10 @@ if ( ! function_exists( 'load_formidable_pro' ) ) {
 		}
 
 		$filepath = __DIR__;
+
 		if ( frm_pro_is_deprecated_class( $class_name ) ) {
 			$filepath .= '/deprecated/' . $class_name . '.php';
+
 			if ( file_exists( $filepath ) ) {
 				require $filepath;
 			}
@@ -50,6 +56,7 @@ if ( ! function_exists( 'load_formidable_pro' ) ) {
 
 	/**
 	 * @param string $class
+	 *
 	 * @return bool
 	 */
 	function frm_pro_is_deprecated_class( $class ) {
@@ -68,11 +75,12 @@ if ( ! function_exists( 'load_formidable_pro' ) ) {
 	 */
 	function frm_pro_forms_incompatible_version() {
 		$ran_auto_install = get_option( 'frm_ran_auto_install' );
+
 		if ( false === $ran_auto_install ) {
 			global $pagenow;
 
 			if ( 'update.php' !== $pagenow && 'update-core.php' !== $pagenow ) {
-				update_option( 'frm_ran_auto_install', true, 'no' );
+				update_option( 'frm_ran_auto_install', true, false );
 
 				include_once __DIR__ . '/classes/models/FrmProInstallPlugin.php';
 
@@ -108,6 +116,7 @@ register_activation_hook(
 	function () {
 		// Check if free version of Formidable Forms is installed.
 		$is_free_installed = function_exists( 'load_formidable_forms' );
+
 		if ( ! $is_free_installed ) {
 			return;
 		}
@@ -122,6 +131,9 @@ register_activation_hook(
 		// Updates the default stylesheet.
 		FrmProHooksController::load_pro();
 		FrmProAppController::update_stylesheet();
+
+		// Clear embed posts transient since Pro adds nested forms support.
+		delete_transient( 'frm_posts_contain_form' );
 	}
 );
 
@@ -143,9 +155,13 @@ register_deactivation_hook(
 
 		// Check if free version of Formidable Forms is installed.
 		$is_free_installed = function_exists( 'load_formidable_forms' );
+
 		if ( ! $is_free_installed ) {
 			return;
 		}
+
+		// Clear embed posts transient since Pro adds nested forms support.
+		delete_transient( 'frm_posts_contain_form' );
 
 		if ( is_callable( 'FrmInbox::clear_cache' ) ) {
 			FrmInbox::clear_cache();

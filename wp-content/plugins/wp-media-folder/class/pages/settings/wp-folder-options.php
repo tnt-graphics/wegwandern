@@ -93,12 +93,6 @@ $tabs_data = array(
         'title'    => __('Physical folders', 'wpmf'),
         'icon'     => 'folder',
         'sub_tabs' => array()
-    ),
-    array(
-        'id'       => 'image_compression',
-        'title'    => __('Image compression', 'wpmf'),
-        'icon'     => 'img-compression',
-        'sub_tabs' => array()
     )
 );
 
@@ -137,7 +131,7 @@ $tabs_data[] = array(
     )
 );
 
-$excluded_tabs = array('files_folders', 'ai_tools', 'image_compression', 'cloud', 'import_export', 'server_sync', 'system_license');
+$excluded_tabs = array('files_folders', 'ai_tools', 'cloud', 'import_export', 'server_sync', 'system_license');
 
 $dropbox_config = get_option('_wpmfAddon_dropbox_config');
 $google_config = get_option('_wpmfAddon_cloud_config');

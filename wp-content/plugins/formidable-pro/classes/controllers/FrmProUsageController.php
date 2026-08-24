@@ -13,6 +13,9 @@ class FrmProUsageController {
 	 * Add Pro settings to the settings array.
 	 *
 	 * @since 3.06.04
+	 *
+	 * @param mixed $settings
+	 *
 	 * @return array
 	 */
 	public static function settings( $settings ) {
@@ -25,6 +28,7 @@ class FrmProUsageController {
 		}
 
 		$messages = array( 'edit_msg', 'update_value', 'already_submitted' );
+
 		foreach ( $messages as $message ) {
 			$settings['messages'][ 'changed-' . $message ] = $setting_list->{$message} === $default[ $message ] ? 0 : 1;
 		}
@@ -42,10 +46,15 @@ class FrmProUsageController {
 	 * Combine the rootline settings for usage analysis.
 	 *
 	 * @since 3.06.04
+	 *
+	 * @param array $form
+	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	public static function form( $form, $atts ) {
 		$saved_form = $atts['form'];
+
 		if ( ! empty( $saved_form->options['rootline'] ) ) {
 			$form['rootline'] = array(
 				'type'        => $saved_form->options['rootline'],
@@ -65,6 +74,7 @@ class FrmProUsageController {
 	 * @since 6.18
 	 *
 	 * @param array $snapshot Usage snapshot.
+	 *
 	 * @return array
 	 */
 	public static function add_application_count( $snapshot ) {
@@ -88,6 +98,7 @@ class FrmProUsageController {
 		}
 
 		preg_match_all( '/\/(.+\/)(.+)\.xml/', $args['url'], $matches );
+
 		if ( ! $matches || empty( $matches[2][0] ) ) {
 			// Can't extract the xml name from the URL.
 			return;

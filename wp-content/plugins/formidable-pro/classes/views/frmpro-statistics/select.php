@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php
 	FrmAppHelper::get_admin_header(
 		array(
-			'label' => __( 'Reports', 'formidable-pro' ),
+			'label' => __( 'Reports', 'formidable' ),
 		)
 	);
 	?>

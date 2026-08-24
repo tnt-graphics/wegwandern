@@ -12,6 +12,7 @@ class FrmProHtmlHelper {
 	 * @param string $id
 	 * @param string $name
 	 * @param array  $args
+	 *
 	 * @return string|void
 	 */
 	public static function toggle( $id, $name, $args ) {
@@ -19,7 +20,8 @@ class FrmProHtmlHelper {
 			// Load keyboard shortcuts. If this is a setting, use admin_toggle() instead.
 			wp_enqueue_script( 'formidable_pro_settings', FrmProAppHelper::plugin_url() . '/js/admin/settings.js', array(), FrmProDb::$plug_version, true );
 		}
-		return self::clip(
+
+		return FrmAppHelper::clip(
 			function () use ( $id, $name, $args ) {
 				require FrmProAppHelper::plugin_path() . '/classes/views/shared/toggle.php';
 			},
@@ -33,33 +35,11 @@ class FrmProHtmlHelper {
 	 * @param string $id
 	 * @param string $name
 	 * @param array  $args
+	 *
 	 * @return string|void
 	 */
 	public static function admin_toggle( $id, $name, $args ) {
 		return FrmHtmlHelper::toggle( $id, $name, $args );
-	}
-
-	/**
-	 * Call an echo function and either echo it or return the result as a string.
-	 *
-	 * @since 5.0.17
-	 *
-	 * @param Closure $echo_function
-	 * @param bool    $echo
-	 * @return string|null
-	 */
-	private static function clip( $echo_function, $echo = false ) {
-		if ( ! $echo ) {
-			ob_start();
-		}
-
-		$echo_function();
-
-		if ( ! $echo ) {
-			$return = ob_get_contents();
-			ob_end_clean();
-			return $return;
-		}
 	}
 
 	/**
@@ -72,6 +52,7 @@ class FrmProHtmlHelper {
 	 * @param string $option   The string used as the option label.
 	 * @param bool   $selected True if the option should be selected.
 	 * @param array  $params   Other HTML params for the option.
+	 *
 	 * @return void
 	 */
 	public static function echo_dropdown_option( $option, $selected, $params = array() ) {
@@ -88,10 +69,11 @@ class FrmProHtmlHelper {
 	 *
 	 * @since 6.24
 	 *
-	 * @param string $name      The name attribute for the radio group
-	 * @param array  $options   Array of options with value => label pairs
-	 * @param mixed  $selected  The selected value
-	 * @param bool   $horizontal Whether to display horizontally (default: true = horizontal)
+	 * @param string          $name       The name attribute for the radio group
+	 * @param array           $options    Array of options with value => label pairs
+	 * @param int|string|null $selected   The selected value
+	 * @param bool            $horizontal Whether to display horizontally (default: true = horizontal)
+	 *
 	 * @return void
 	 */
 	public static function echo_radio_group( $name, $options, $selected, $horizontal = true ) {
@@ -111,5 +93,30 @@ class FrmProHtmlHelper {
 			<?php } ?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Echo the NPS score to gather more feedback on the plugin.
+	 *
+	 * @since 6.26.1
+	 *
+	 * @param array $args
+	 *
+	 * @return void
+	 */
+	public static function echo_nps( $args = array() ) {
+		wp_enqueue_style( 'formidable-pro-nps', FrmProAppHelper::plugin_url() . '/css/components/nps.css', array(), FrmProDb::$plug_version );
+
+		$defaults = array(
+			'id'                 => '',
+			'class'              => '',
+			'name'               => 'nps_score',
+			'value'              => '0',
+			'negative_statement' => __( 'Not satisfied', 'formidable-pro' ),
+			'positive_statement' => __( 'Very satisfied', 'formidable-pro' ),
+		);
+		$args     = wp_parse_args( $args, $defaults );
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/shared/nps.php';
 	}
 }

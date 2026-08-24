@@ -1,6 +1,8 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
+
 wp_enqueue_script('jquery-masonry');
 wp_enqueue_script('wpmf-gallery');
 $class[] = 'gallery_life wpmf_gallery_default gallery_default gallery-portfolio ';
@@ -99,7 +101,17 @@ target="' . $link_target . '" data-index="'. esc_attr($pos) .'">+</a>';
             $icon .= '<a class="portfolio_lightbox ' . $tclass . '" data-href="' . $url_image . '" target="' . $link_target . '" data-index="'. esc_attr($pos) .'">+</a>';
             break;
         case 'none':
-            $image_output = wp_get_attachment_image($item_id, $size, false, array('data-type' => 'wpmfgalleryimg'));
+            $preview_url = function_exists('wpmfResolveAttachmentUrl')
+                ? wpmfResolveAttachmentUrl($item_id, 'preview', $size)
+                : wp_get_attachment_image_url($item_id, $size);
+            if ($preview_url === '') {
+                $preview_url = wp_get_attachment_url($item_id);
+            }
+            $alt = trim(strip_tags(get_post_meta($item_id, '_wp_attachment_image_alt', true)));
+            if ($alt === '') {
+                $alt = $attachment->post_title;
+            }
+            $image_output = '<img src="' . esc_url($preview_url) . '" data-type="wpmfgalleryimg" data-attachment-id="' . (int) $item_id . '" data-wpmf-size="' . esc_attr($size) . '" alt="' . esc_attr($alt) . '">';
             $icon = '<span class="wpmf_overlay" data-index="'. esc_attr($pos) .'"></span><span class="hide_icon portfolio_lightbox" data-index="'. esc_attr($pos) .'">+</span>';
             break;
         case 'custom':
@@ -123,7 +135,7 @@ target="' . $link_target . '" data-index="'. esc_attr($pos) .'">+</a>';
     $output .= '<figure class="wpmf-gallery-item
      wpmf-gallery-item-position-'. $pos .' wpmf-gallery-item-attachment-' . $item_id . '" data-index="'. esc_attr($pos) .'">';
     $output .= '<div class="wpmf-gallery-icon">';
-    $output .= wpmfRenderVideoIcon($attachment->ID);
+    $output .= WpmfHelper::wpmfRenderVideoIcon($attachment->ID);
     $output .= $icon;
     $output .= '<div class="square_thumbnail">';
     $output .= '<div class="img_centered">';

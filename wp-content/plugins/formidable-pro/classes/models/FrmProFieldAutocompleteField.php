@@ -15,8 +15,9 @@ trait FrmProFieldAutocompleteField {
 	public function autocomplete_options() {
 		$options     = FrmProFieldsHelper::get_autocomplete_options();
 		$filter_keys = $this->get_filter_keys();
+
 		if ( $filter_keys ) {
-			$options = array_filter(
+			return array_filter(
 				$options,
 				function ( $key ) use ( $filter_keys ) {
 					return in_array( $key, $filter_keys, true );
@@ -24,6 +25,7 @@ trait FrmProFieldAutocompleteField {
 				ARRAY_FILTER_USE_KEY
 			);
 		}
+
 		return $options;
 	}
 

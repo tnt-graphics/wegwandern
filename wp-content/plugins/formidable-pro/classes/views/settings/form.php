@@ -5,8 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <p class="frm_grid_container">
 	<label for="frm_date_format" class="frm4 frm_form_field">
-		<?php esc_html_e( 'Date Format', 'formidable-pro' ); ?>
-		<?php FrmProAppHelper::tooltip_icon( __( 'Change the format of the date used in the date field.', 'formidable-pro' ) ); ?>
+		<?php esc_html_e( 'Date Format', 'formidable' ); ?>
+		<?php FrmAppHelper::tooltip_icon( __( 'Change the format of the date used in the date field.', 'formidable-pro' ) ); ?>
 	</label>
 	<?php $formats = array_keys( FrmProAppHelper::display_to_datepicker_format() ); ?>
 	<select id="frm_date_format" name="frm_date_format" class="frm8 frm_form_field">
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<select id="frm_datepicker_library" name="frm_datepicker_library" class="frm_form_field frm-12">
 			<?php
 				foreach ( $datepicker_libraries as $key => $name ) {
-					FrmProHtmlHelper::echo_dropdown_option( $name, $frmpro_settings->datepicker_library === $key, array( 'value' => $key ) );
+				FrmProHtmlHelper::echo_dropdown_option( $name, $frmpro_settings->datepicker_library === $key, array( 'value' => $key ) );
 				}
 			?>
 		</select>

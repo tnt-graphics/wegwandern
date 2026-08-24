@@ -1,17 +1,17 @@
 <?php
-// Cachebusters generated on 2026-05-13 06:33:25
+// Cachebusters generated on 2026-08-18 12:15:36
 return [
-	'@ant-design/icons' => '5.3.7',
+	'@ant-design/icons' => '6.2.5',
 	'@antv/g2' => '5.2.1',
 	'@iabtechlabtcf/cmpapi' => '1.5.20',
 	'@iabtechlabtcf/core' => '1.5.20',
 	'@iabtechlabtcf/stub' => '1.5.20',
 	'@remix-run/router' => '1.23.0',
 	'animate.css' => '4.1.1',
-	'antd' => '5.18.1',
+	'antd' => '6.3.7',
 	'jquery' => '3.7.1',
-	'mobx' => '4.15.7',
-	'mobx-react' => '6.3.1',
+	'mobx' => '6.12.4',
+	'mobx-react' => '9.2.0',
 	'moment' => '2.30.1',
 	'preact' => '10.27.2',
 	'rc-picker' => '4.11.3',

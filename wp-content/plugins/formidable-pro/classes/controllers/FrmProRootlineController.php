@@ -3,6 +3,7 @@
  * Rootline controller
  *
  * @since 6.9
+ *
  * @package FormidablePro
  */
 
@@ -57,6 +58,7 @@ class FrmProRootlineController {
 	 * Gets rootline type class.
 	 *
 	 * @param array $form_array Form array.
+	 *
 	 * @return string
 	 */
 	private static function get_rootline_type_class( $form_array ) {
@@ -75,10 +77,12 @@ class FrmProRootlineController {
 	 * Gets rootline object.
 	 *
 	 * @param array $form_array Form array.
+	 *
 	 * @return object
 	 */
 	public static function get_rootline_obj( $form_array ) {
 		$class = self::get_rootline_type_class( $form_array );
+
 		if ( ! $class || ! class_exists( $class ) ) {
 			return new FrmProRootline( $form_array );
 		}
@@ -95,8 +99,12 @@ class FrmProRootlineController {
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-forms/rootline-settings.php';
 	}
 
+	/**
+	 * @param array $options
+	 */
 	public static function save_rootline_to_form_options( &$options ) {
 		$post_data = FrmAppHelper::get_post_param( 'frm_rootline', array() );
+
 		if ( ! $post_data ) {
 			return;
 		}

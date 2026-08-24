@@ -20,6 +20,48 @@ class WpmfOrderbyMedia
         add_filter('manage_media_custom_column', array($this, 'manageMediaCustomColumn'), 10, 2);
         add_action('pre_get_posts', array($this, 'filter'), 0, 1);
         add_filter('post_mime_types', array($this, 'modifyPostMimeTypes'));
+        add_filter('posts_clauses', array($this, 'sortMediaCustomOrderAndGuid'), 10, 2);
+    }
+
+    /**
+     * Sort media attachments by custom order meta value and GUID.
+     *
+     * This function modifies the SQL ORDER BY clause to:
+     *  - Sort first by numeric meta value `wpmf_order` (ASC)
+     *  - Then sort by attachment GUID using the order provided via filter
+     *
+     * Filter:
+     *  - sort_media_custom_order_and_guid
+     *    Expected values: 'ASC', 'DESC' or false to disable.
+     *
+     * @param array    $clauses SQL clauses for the query.
+     * @param WP_Query $query   The current WP_Query instance.
+     *
+     * @return array Modified SQL clauses.
+     */
+    public function sortMediaCustomOrderAndGuid($clauses, $query)
+    {
+        $guid_order = apply_filters('sort_media_custom_order_and_guid', false);
+        $guid_order = strtoupper($guid_order);
+        $guid_order = in_array($guid_order, array( 'ASC', 'DESC' ), true) ? $guid_order : 'ASC';
+        if ($guid_order) {
+            if (!is_admin() ||
+                !$query->get('post_type') ||
+                $query->get('post_type') !== 'attachment'
+            ) {
+                return $clauses;
+            }
+
+            if ($query->get('orderby') !== 'meta_value_num' ||
+                $query->get('meta_key') !== 'wpmf_order'
+            ) {
+                return $clauses;
+            }
+
+            global $wpdb;
+            $clauses['orderby'] = 'CAST('.$wpdb->postmeta.'.meta_value AS UNSIGNED) ASC,'.$wpdb->posts.'.guid '.$guid_order;
+        }
+        return $clauses;
     }
 
     /**
@@ -395,7 +437,7 @@ class WpmfOrderbyMedia
                 $iptc = get_post_meta($id, 'wpmf_iptc', true);
                 $iptchtml = '';
                 if (!empty($iptc)) {
-                    $iptcHeaderArray = getIptcHeader();
+                    $iptcHeaderArray = WpmfHelper::getIptcHeader();
                     $iptchtml .= '<div class="wpmf_iptc_wrap">';
                     foreach ($iptc as $code => $iptcValue) {
                         $iptchtml .= '<span><b>' . $iptcHeaderArray[$code] . ': </b>'. implode(',', $iptcValue) .'</span><br>';

@@ -20,7 +20,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
     var InspectorControls = wpBlockEditor.InspectorControls,
         MediaUpload = wpBlockEditor.MediaUpload,
         BlockControls = wpBlockEditor.BlockControls,
-        PanelColorSettings = wpBlockEditor.PanelColorSettings;
+        PanelColorSettings = wpBlockEditor.PanelColorSettings,
+        useBlockProps = wpBlockEditor.useBlockProps;
     var mediaUpload = wpEditor.mediaUpload;
     var PanelBody = wpComponents.PanelBody,
         ToggleControl = wpComponents.ToggleControl,
@@ -28,6 +29,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         TextControl = wpComponents.TextControl,
         Text = wpComponents.Text,
         Button = wpComponents.Button,
+        ToolbarButton = wpComponents.ToolbarButton,
         Tooltip = wpComponents.Tooltip,
         ToolbarGroup = wpComponents.ToolbarGroup,
         FormFileUpload = wpComponents.FormFileUpload,
@@ -140,12 +142,15 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     hoverShadowV = attributes.hoverShadowV,
                     hoverShadowBlur = attributes.hoverShadowBlur,
                     hoverShadowSpread = attributes.hoverShadowSpread,
+                    hoverShadowSpread = attributes.hoverShadowSpread,
                     hoverShadowColor = attributes.hoverShadowColor;
+
+                var blockProps = this.props.blockProps;
 
 
                 return React.createElement(
                     'div',
-                    { className: 'wpmf-gallery-block wpmfDefault', onClick: this.unSelectedImage.bind(this) },
+                    _extends({ className: 'wpmf-gallery-block wpmfDefault', onClick: this.unSelectedImage.bind(this) }, blockProps),
                     React.createElement(
                         'style',
                         null,
@@ -155,7 +160,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     React.createElement(
                         'ul',
                         {
-                            className: 'wpmf-gallery-list-items gallery-columns-' + columns + ' ratio_' + aspect_ratio + ' wpmf-has-border-radius-' + img_border_radius + ' wpmf-has-gutter-width-' + gutterwidth },
+                            className: 'wpmf-gallery-list-items gallery-columns-' + columns + ' ratio_' + aspect_ratio + ' wpmf-has-border-radius-' + img_border_radius + ' wpmf-has-gutter-width-' + gutterwidth
+                        },
                         images.map(function (image, index) {
                             var url = '';
                             if (typeof image.media_details !== "undefined" && typeof image.media_details.sizes !== "undefined" && typeof image.media_details.sizes[size] !== "undefined") {
@@ -171,14 +177,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     'li',
                                     {
                                         className: isBlobURL(url) ? "wpmf-gallery-block-item is-transient" : "wpmf-gallery-block-item ",
-                                        key: index },
+                                        key: index
+                                    },
                                     React.createElement(
                                         'div',
                                         { className: _this2.props.selectedImageId === image.id ? 'wpmf-gallery-block-item-infos is-selected' : 'wpmf-gallery-block-item-infos' },
                                         _this2.props.gallery_loading && React.createElement(
                                             'span',
                                             {
-                                                className: 'spinner wpmf_spiner_block_gallery_loading' },
+                                                className: 'spinner wpmf_spiner_block_gallery_loading'
+                                            },
                                             ' '
                                         ),
                                         React.createElement(
@@ -372,11 +380,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     hoverShadowV = attributes.hoverShadowV,
                     hoverShadowBlur = attributes.hoverShadowBlur,
                     hoverShadowSpread = attributes.hoverShadowSpread,
+                    hoverShadowSpread = attributes.hoverShadowSpread,
                     hoverShadowColor = attributes.hoverShadowColor;
+
+                var blockProps = this.props.blockProps;
 
                 return React.createElement(
                     'div',
-                    { className: 'wpmf-gallery-block wpmf-has-columns-' + columns + ' wpmf-slick-crop-' + (parseInt(columns) === 1 ? 0 : crop_image) + ' wpmf-has-gutter-width-' + gutterwidth + ' wpmf-has-border-radius-' + img_border_radius, onClick: this.unSelectedImage.bind(this) },
+                    _extends({ className: 'wpmf-gallery-block wpmf-has-columns-' + columns + ' wpmf-slick-crop-' + (parseInt(columns) === 1 ? 0 : crop_image) + ' wpmf-has-gutter-width-' + gutterwidth + ' wpmf-has-border-radius-' + img_border_radius, onClick: this.unSelectedImage.bind(this) }, blockProps),
                     React.createElement(
                         'style',
                         null,
@@ -386,7 +397,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     React.createElement(
                         'ul',
                         {
-                            className: 'wpmf-gallery-list-items wpmfslick ratio_' + aspect_ratio },
+                            className: 'wpmf-gallery-list-items wpmfslick ratio_' + aspect_ratio
+                        },
                         images.map(function (image, index) {
                             var url = '';
                             if (typeof image.media_details !== "undefined" && typeof image.media_details.sizes !== "undefined" && typeof image.media_details.sizes[size] !== "undefined") {
@@ -402,14 +414,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     'li',
                                     {
                                         className: isBlobURL(url) ? "wpmf-gallery-block-item is-transient" : "wpmf-gallery-block-item ",
-                                        key: index },
+                                        key: index
+                                    },
                                     React.createElement(
                                         'div',
                                         { className: _this4.props.selectedImageId === image.id ? 'wpmf-gallery-block-item-infos is-selected' : 'wpmf-gallery-block-item-infos' },
                                         _this4.props.gallery_loading && React.createElement(
                                             'span',
                                             {
-                                                className: 'spinner wpmf_spiner_block_gallery_loading' },
+                                                className: 'spinner wpmf_spiner_block_gallery_loading'
+                                            },
                                             ' '
                                         ),
                                         React.createElement(
@@ -574,9 +588,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     hoverShadowColor = attributes.hoverShadowColor,
                     align = attributes.align;
 
+                var blockProps = this.props.blockProps;
+
                 return React.createElement(
                     'div',
-                    { className: 'wpmf-gallery-block wpmfBlockMasonry', onClick: this.unSelectedImage.bind(this) },
+                    _extends({ className: 'wpmf-gallery-block wpmfBlockMasonry', onClick: this.unSelectedImage.bind(this) }, blockProps),
                     React.createElement(
                         'style',
                         null,
@@ -586,7 +602,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     React.createElement(
                         'ul',
                         {
-                            className: 'wpmf-gallery-list-items gallery-columns-' + columns + ' wpmf-has-border-radius-' + img_border_radius + ' wpmf-has-gutter-width-' + gutterwidth },
+                            className: 'wpmf-gallery-list-items gallery-columns-' + columns + ' wpmf-has-border-radius-' + img_border_radius + ' wpmf-has-gutter-width-' + gutterwidth
+                        },
                         images.map(function (image, index) {
                             var url = '';
                             if (typeof image.media_details !== "undefined" && typeof image.media_details.sizes !== "undefined" && typeof image.media_details.sizes[size] !== "undefined") {
@@ -602,14 +619,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     'li',
                                     {
                                         className: isBlobURL(url) ? "wpmf-gallery-block-item is-transient" : "wpmf-gallery-block-item ",
-                                        key: index },
+                                        key: index
+                                    },
                                     React.createElement(
                                         'div',
                                         { className: _this6.props.selectedImageId === image.id ? 'wpmf-gallery-block-item-infos is-selected' : 'wpmf-gallery-block-item-infos' },
                                         _this6.props.gallery_loading && React.createElement(
                                             'span',
                                             {
-                                                className: 'spinner wpmf_spiner_block_gallery_loading' },
+                                                className: 'spinner wpmf_spiner_block_gallery_loading'
+                                            },
                                             ' '
                                         ),
                                         React.createElement('img', {
@@ -749,11 +768,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     hoverShadowV = attributes.hoverShadowV,
                     hoverShadowBlur = attributes.hoverShadowBlur,
                     hoverShadowSpread = attributes.hoverShadowSpread,
+                    hoverShadowSpread = attributes.hoverShadowSpread,
                     hoverShadowColor = attributes.hoverShadowColor;
+
+                var blockProps = this.props.blockProps;
 
                 return React.createElement(
                     'div',
-                    { className: 'wpmf-gallery-block wpmfBlockMasonry', onClick: this.unSelectedImage.bind(this) },
+                    _extends({ className: 'wpmf-gallery-block wpmfBlockMasonry', onClick: this.unSelectedImage.bind(this) }, blockProps),
                     React.createElement(
                         'style',
                         null,
@@ -763,7 +785,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     React.createElement(
                         'ul',
                         {
-                            className: 'wpmf-gallery-list-items ratio_' + aspect_ratio + ' gallery-columns-' + columns + ' wpmf-has-border-radius-' + img_border_radius + ' wpmf-has-gutter-width-' + gutterwidth },
+                            className: 'wpmf-gallery-list-items ratio_' + aspect_ratio + ' gallery-columns-' + columns + ' wpmf-has-border-radius-' + img_border_radius + ' wpmf-has-gutter-width-' + gutterwidth
+                        },
                         images.map(function (image, index) {
                             var url = '';
                             if (typeof image.media_details !== "undefined" && typeof image.media_details.sizes !== "undefined" && typeof image.media_details.sizes[size] !== "undefined") {
@@ -779,21 +802,25 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     'li',
                                     {
                                         className: isBlobURL(url) ? "wpmf-gallery-block-item is-transient" : "wpmf-gallery-block-item ",
-                                        key: index },
+                                        key: index
+                                    },
                                     React.createElement(
                                         'div',
                                         { className: _this8.props.selectedImageId === image.id ? 'wpmf-gallery-block-item-infos is-selected' : 'wpmf-gallery-block-item-infos' },
                                         _this8.props.gallery_loading && React.createElement(
                                             'span',
                                             {
-                                                className: 'spinner wpmf_spiner_block_gallery_loading' },
+                                                className: 'spinner wpmf_spiner_block_gallery_loading'
+                                            },
                                             ' '
                                         ),
                                         React.createElement(
                                             'div',
-                                            { onClick: function onClick() {
+                                            {
+                                                onClick: function onClick() {
                                                     return _this8.loadImageInfos(image);
-                                                }, className: 'wpmf_overlay' },
+                                                }, className: 'wpmf_overlay'
+                                            },
                                             ' '
                                         ),
                                         React.createElement(
@@ -886,40 +913,41 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
             };
             _this9.addFiles = _this9.addFiles.bind(_this9);
             _this9.uploadFromFiles = _this9.uploadFromFiles.bind(_this9);
+
+            var attributes = _this9.props.attributes;
+            var display = attributes.display;
+
+            var currentBlockConfig = wpmf_blocks.vars.gallery_configs.theme[display + '_theme'];
+
+            if (!attributes.changed) {
+                if ((typeof currentBlockConfig === 'undefined' ? 'undefined' : _typeof(currentBlockConfig)) === 'object' && currentBlockConfig !== null) {
+                    Object.keys(currentBlockConfig).map(function (attribute) {
+                        if (attribute === 'orderby' || attribute === 'order') {
+                            attributes['wpmf_' + attribute] = currentBlockConfig[attribute];
+                        } else {
+                            attributes[attribute] = currentBlockConfig[attribute];
+                        }
+                    });
+                }
+
+                _this9.props.setAttributes({ changed: true });
+            }
+            
             return _this9;
         }
 
         _createClass(wpmfWordpressGallery, [{
-            key: 'componentWillMount',
-            value: function componentWillMount() {
+            key: 'componentDidMount',
+            value: function componentDidMount() {
                 var _this10 = this;
 
                 var _props9 = this.props,
-                    attributes = _props9.attributes,
-                    setAttributes = _props9.setAttributes;
-                var images = attributes.images,
+                    attributes = _props9.attributes;
+                var images = attributes.images || [],
                     image_sortable = attributes.image_sortable,
-                    display = attributes.display,
                     wpmf_autoinsert = attributes.wpmf_autoinsert,
-                    wpmf_folder_id = attributes.wpmf_folder_id;
-
-                var currentBlockConfig = wpmf_blocks.vars.gallery_configs.theme[display + '_theme'];
-                // No override attributes of blocks inserted before
-                if (!attributes.changed) {
-                    if ((typeof currentBlockConfig === 'undefined' ? 'undefined' : _typeof(currentBlockConfig)) === 'object' && currentBlockConfig !== null) {
-                        Object.keys(currentBlockConfig).map(function (attribute) {
-                            if (attribute === 'orderby' || attribute === 'order') {
-                                attributes['wpmf_' + attribute] = currentBlockConfig[attribute];
-                            } else {
-                                attributes[attribute] = currentBlockConfig[attribute];
-                            }
-                        });
-                    }
-
-                    // Finally set changed attribute to true, so we don't modify anything again
-                    setAttributes({ changed: true });
-                }
-
+                    wpmf_folder_id = attributes.wpmf_folder_id || [];
+                
                 var wpmf_orderby = attributes.wpmf_orderby,
                     wpmf_order = attributes.wpmf_order;
 
@@ -930,6 +958,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                         return img.id;
                     });
                     this.setState({ gallery_loading: true });
+                    
                     fetch(wpmf_blocks.vars.ajaxurl + ('?action=gallery_block_load_image_infos&ids=' + imgsId.join() + '&wpmf_nonce=' + wpmf_blocks.vars.wpmf_nonce)).then(function (res) {
                         return res.json();
                     }).then(function (result) {
@@ -952,36 +981,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             _this10.setState({ gallery_loading: false });
                         }
                     },
-                    // errors
-                    function (error) {});
-                }
-            }
-        }, {
-            key: 'componentWillReceiveProps',
-            value: function componentWillReceiveProps(nextProps) {
-                var _props10 = this.props,
-                    attributes = _props10.attributes,
-                    setAttributes = _props10.setAttributes;
-
-                if (nextProps.attributes.display !== attributes.display) {
-                    // set default settings by theme
-                    var currentBlockConfig = wpmf_blocks.vars.gallery_configs.theme[nextProps.attributes.display + '_theme'];
-                    if ((typeof currentBlockConfig === 'undefined' ? 'undefined' : _typeof(currentBlockConfig)) === 'object' && currentBlockConfig !== null) {
-                        Object.keys(currentBlockConfig).map(function (attribute) {
-                            if (attribute === 'orderby' || attribute === 'order') {
-                                nextProps.attributes['wpmf_' + attribute] = currentBlockConfig[attribute];
-                            } else {
-                                nextProps.attributes[attribute] = currentBlockConfig[attribute];
-                            }
-                        });
-                        setAttributes(nextProps.attributes);
-                    }
+                        function (error) { });
                 }
             }
         }, {
             key: 'componentDidUpdate',
             value: function componentDidUpdate(prevProps) {
-                // Deselect images when deselecting the block
                 var _props11 = this.props,
                     attributes = _props11.attributes,
                     setAttributes = _props11.setAttributes,
@@ -990,6 +995,26 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                 if (!isSelected && prevProps.isSelected) {
                     this.setStateImgSelectedID();
                     this.setStateImgInfos();
+                }
+
+                if (prevProps.attributes.display !== attributes.display) {
+                    
+                    var newAttributes = Object.assign({}, attributes);
+                    
+                    var currentBlockConfig = wpmf_blocks.vars.gallery_configs.theme[newAttributes.display + '_theme'];
+
+                    if (currentBlockConfig && typeof currentBlockConfig === 'object' && currentBlockConfig !== null) {
+                        
+                        Object.keys(currentBlockConfig).map(function (attribute) {
+                            if (attribute === 'orderby' || attribute === 'order') {
+                                newAttributes['wpmf_' + attribute] = currentBlockConfig[attribute];
+                            } else {
+                                newAttributes[attribute] = currentBlockConfig[attribute];
+                            }
+                        });
+                        
+                        setAttributes(newAttributes);
+                    }
                 }
             }
         }, {
@@ -1018,10 +1043,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                         }
 
                         if (!allImages.length) {
-                            if (!$('#block-' + clientId + ' .wpmf_gallery_img_msg').length) {
-                                $('#block-' + clientId + ' .wpmf_select_folders').after('<span class="wpmf_gallery_img_msg">' + wpmf.l18n.folder_no_image + '</span>');
-                            }
+                            alert(wpmf.l18n.folder_no_image);
                         }
+                    } else {
+                        _this11.setState({ gallery_loading: false });
                     }
                 });
             }
@@ -1210,10 +1235,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                         });
                     }
                 },
-                // errors
-                function (error) {
-                    _this12.setStateImgInfos();
-                });
+                    // errors
+                    function (error) {
+                        _this12.setStateImgInfos();
+                    });
             }
 
             /**
@@ -1356,7 +1381,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     setAttributes = _props19.setAttributes,
                     className = _props19.className,
                     isSelected = _props19.isSelected,
-                    clientId = _props19.clientId;
+                    clientId = _props19.clientId,
+                    blockProps = _props19.blockProps;
                 var images = attributes.images,
                     display = attributes.display,
                     aspect_ratio = attributes.aspect_ratio,
@@ -1379,7 +1405,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     hoverShadowColor = attributes.hoverShadowColor,
                     gutterwidth = attributes.gutterwidth,
                     wpmf_autoinsert = attributes.wpmf_autoinsert,
-                    wpmf_folder_id = attributes.wpmf_folder_id,
+                    wpmf_folder_id = attributes.wpmf_folder_id || [],
                     cover = attributes.cover,
                     align = attributes.align;
 
@@ -1408,7 +1434,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             }),
                             render: function render(_ref) {
                                 var open = _ref.open;
-                                return React.createElement(Button, {
+                                return React.createElement(ToolbarButton, {
                                     className: 'components-toolbar__control',
                                     label: wpmf.l18n.edit_gallery,
                                     icon: 'edit',
@@ -1429,6 +1455,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             PanelBody,
                             { title: wpmf.l18n.gallery_settings },
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.theme,
                                 value: display,
                                 options: [{ label: wpmf.l18n.default, value: 'default' }, { label: wpmf.l18n.masonry, value: 'masonry' }, { label: wpmf.l18n.portfolio, value: 'portfolio' }, { label: wpmf.l18n.slider, value: 'slider' }],
@@ -1446,9 +1474,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 ),
                                 React.createElement(
                                     'select',
-                                    { size: folders_length, className: 'wpmf_select_folders_controll', multiple: true, onChange: function onChange() {
-                                            return _this13.setFoldersGallery($('.wpmf_select_folders_controll').val(), false);
-                                        } },
+                                    {
+                                        size: folders_length, className: 'wpmf_select_folders_controll', multiple: true, onChange: function onChange(e) {
+                                            return _this13.setFoldersGallery($(e.target).val(), false);
+                                        }
+                                    },
                                     wpmf_categories.map(function (category, index) {
                                         if (wpmf_folder_id.indexOf(category.value.toString()) !== -1) {
                                             return React.createElement(
@@ -1467,6 +1497,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 )
                             ),
                             (display === 'slider' || display === 'default' || display === 'portfolio') && React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: __('Aspect ratio', 'wpmf'),
                                 value: aspect_ratio,
                                 options: [{ label: 'Default', value: 'default' }, { label: '1:1', value: '1_1' }, { label: '3:2', value: '3_2' }, { label: '2:3', value: '2_3' }, { label: '4:3', value: '4_3' }, { label: '3:4', value: '3_4' }, { label: '16:9', value: '16_9' }, { label: '9:16', value: '9_16' }, { label: '21:9', value: '21_9' }, { label: '9:21', value: '9_21' }],
@@ -1475,6 +1507,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 }
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.columns,
                                 value: columns,
                                 options: [{ label: 1, value: '1' }, { label: 2, value: '2' }, { label: 3, value: '3' }, { label: 4, value: '4' }, { label: 5, value: '5' }, { label: 6, value: '6' }, { label: 7, value: '7' }, { label: 8, value: '8' }, { label: 9, value: '9' }],
@@ -1483,6 +1517,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 }
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.gallery_image_size,
                                 value: size,
                                 options: list_sizes,
@@ -1498,6 +1534,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 }
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.lightbox_size,
                                 value: targetsize,
                                 options: list_sizes,
@@ -1506,6 +1544,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 }
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.action_on_click,
                                 value: link,
                                 options: [{ label: wpmf.l18n.lightbox, value: 'file' }, { label: wpmf.l18n.attachment_page, value: 'post' }, { label: wpmf.l18n.none, value: 'none' }, { label: wpmf.l18n.custom_link, value: 'custom' }],
@@ -1514,18 +1554,24 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 }
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.orderby,
                                 value: wpmf_orderby,
                                 options: [{ label: wpmf.l18n.custom, value: 'post__in' }, { label: wpmf.l18n.random, value: 'rand' }, { label: wpmf.l18n.title, value: 'title' }, { label: wpmf.l18n.date, value: 'date' }],
                                 onChange: this.sortImageOrderBy.bind(this)
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.order,
                                 value: wpmf_order,
                                 options: [{ label: wpmf.l18n.ascending, value: 'ASC' }, { label: wpmf.l18n.descending, value: 'DESC' }],
                                 onChange: this.sortImageOrder.bind(this)
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.update_with_new_folder,
                                 value: wpmf_autoinsert,
                                 options: [{ label: wpmf.l18n.no, value: '0' }, { label: wpmf.l18n.yes, value: '1' }],
@@ -1552,6 +1598,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 step: 1
                             }),
                             React.createElement(SelectControl, {
+                                __next40pxDefaultSize: true,
+                                __nextHasNoMarginBottom: true,
                                 label: wpmf.l18n.border_style,
                                 value: borderStyle,
                                 options: listBorderStyles,
@@ -1687,6 +1735,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             }
                         }),
                         React.createElement(SelectControl, {
+                            __next40pxDefaultSize: true,
+                            __nextHasNoMarginBottom: true,
                             label: wpmf.l18n.link_target,
                             value: this.state.selectedImageInfos.link_target,
                             options: [{ label: wpmf.l18n.same_window, value: '_self' }, { label: wpmf.l18n.new_window, value: '_blank' }],
@@ -1703,8 +1753,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             { className: 'save_img_action' },
                             React.createElement(
                                 Button,
-                                { className: 'is-button is-default is-primary is-large',
-                                    onClick: this.updateImageInfos.bind(this) },
+                                {
+                                    className: 'is-button is-default is-primary is-large',
+                                    onClick: this.updateImageInfos.bind(this)
+                                },
                                 wpmf.l18n.save
                             ),
                             React.createElement(
@@ -1719,89 +1771,96 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                 if (typeof cover !== "undefined" && images.length === 0) {
                     return React.createElement(
                         'div',
-                        { className: 'wpmf-cover' },
+                        _extends({}, blockProps, { className: 'wpmf-cover ' + blockProps.className }),
                         React.createElement('img', { src: cover })
                     );
                 }
 
                 if (typeof cover === "undefined" && images.length === 0) {
                     return React.createElement(
-                        Placeholder,
-                        {
-                            icon: 'format-gallery',
-                            label: wpmf.l18n.media_gallery,
-                            instructions: wpmf.l18n.media_gallery_desc,
-                            className: className
-                        },
+                        'div',
+                        blockProps,
                         React.createElement(
-                            'div',
-                            { className: 'wpmf_sl_gallery_folders' },
+                            Placeholder,
+                            {
+                                icon: 'format-gallery',
+                                label: wpmf.l18n.media_gallery,
+                                instructions: wpmf.l18n.media_gallery_desc,
+                                className: className
+                            },
                             React.createElement(
-                                'select',
-                                { size: folders_length, className: 'wpmf_select_folders', multiple: true, onChange: function onChange() {
-                                        return setAttributes({ wpmf_folder_id: $('#block-' + clientId + ' .wpmf_select_folders').val() });
-                                    } },
-                                wpmf_categories.map(function (category, index) {
-                                    if (wpmf_folder_id.indexOf(category.value.toString()) !== -1) {
-                                        return React.createElement(
-                                            'option',
-                                            { selected: true, key: index, value: category.value },
-                                            category.label
-                                        );
-                                    } else {
-                                        return React.createElement(
-                                            'option',
-                                            { key: index, value: category.value },
-                                            category.label
-                                        );
-                                    }
-                                })
-                            )
-                        ),
-                        React.createElement(
-                            FormFileUpload,
-                            {
-                                multiple: true,
-                                islarge: 'true',
-                                className: 'editor-media-placeholder__button wpmf_btn_upload_img',
-                                onChange: this.uploadFromFiles,
-                                accept: 'image/*',
-                                icon: 'upload'
-                            },
-                            wpmf.l18n.upload
-                        ),
-                        React.createElement(MediaUpload, {
-                            gallery: true,
-                            multiple: true,
-                            onSelect: function onSelect(imgs) {
-                                return _this13.onSelectImages(imgs);
-                            },
-                            accept: 'image/*',
-                            allowedTypes: ALLOWED_MEDIA_TYPES,
-                            render: function render(_ref2) {
-                                var open = _ref2.open;
-                                return React.createElement(
-                                    Button,
+                                'div',
+                                { className: 'wpmf_sl_gallery_folders' },
+                                React.createElement(
+                                    'select',
                                     {
-                                        islarge: 'true',
-                                        className: 'editor-media-placeholder__button wpmfLibrary',
-                                        onClick: open
+                                        size: folders_length, className: 'wpmf_select_folders', multiple: true, onChange: function onChange(e) {
+                                            return setAttributes({ wpmf_folder_id: $(e.target).val() });
+                                        }
                                     },
-                                    wpmf.l18n.media_folder
-                                );
-                            }
-                        }),
-                        React.createElement(
-                            Button,
-                            {
-                                islarge: 'true',
-                                isPrimary: true,
-                                className: 'editor-media-placeholder__button',
-                                onClick: function onClick() {
-                                    return _this13.setFoldersGallery(wpmf_folder_id, true);
+                                    wpmf_categories.map(function (category, index) {
+                                        if (wpmf_folder_id.indexOf(category.value.toString()) !== -1) {
+                                            return React.createElement(
+                                                'option',
+                                                { selected: true, key: index, value: category.value },
+                                                category.label
+                                            );
+                                        } else {
+                                            return React.createElement(
+                                                'option',
+                                                { key: index, value: category.value },
+                                                category.label
+                                            );
+                                        }
+                                    })
+                                )
+                            ),
+                            React.createElement(
+                                FormFileUpload,
+                                {
+                                    __next40pxDefaultSize: true,
+                                    multiple: true,
+                                    islarge: 'true',
+                                    className: 'editor-media-placeholder__button wpmf_btn_upload_img',
+                                    onChange: this.uploadFromFiles,
+                                    accept: 'image/*',
+                                    icon: 'upload'
+                                },
+                                wpmf.l18n.upload
+                            ),
+                            React.createElement(MediaUpload, {
+                                gallery: true,
+                                multiple: true,
+                                onSelect: function onSelect(imgs) {
+                                    return _this13.onSelectImages(imgs);
+                                },
+                                accept: 'image/*',
+                                allowedTypes: ALLOWED_MEDIA_TYPES,
+                                render: function render(_ref2) {
+                                    var open = _ref2.open;
+                                    return React.createElement(
+                                        Button,
+                                        {
+                                            islarge: 'true',
+                                            className: 'editor-media-placeholder__button wpmfLibrary',
+                                            onClick: open
+                                        },
+                                        wpmf.l18n.media_folder
+                                    );
                                 }
-                            },
-                            wpmf.l18n.create_gallery
+                            }),
+                            React.createElement(
+                                Button,
+                                {
+                                    islarge: 'true',
+                                    isPrimary: true,
+                                    className: 'editor-media-placeholder__button',
+                                    onClick: function onClick() {
+                                        return _this13.setFoldersGallery(wpmf_folder_id, true);
+                                    }
+                                },
+                                wpmf.l18n.create_gallery
+                            )
                         )
                     );
                 }
@@ -1812,28 +1871,37 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                         null,
                         controls,
                         inspect_controls,
-                        display === 'slider' && React.createElement(WpmfSliderTheme, _extends({}, this.props, { selectedImageId: this.state.selectedImageId,
+                        display === 'slider' && React.createElement(WpmfSliderTheme, _extends({}, this.props, {
+                            selectedImageId: this.state.selectedImageId,
                             gallery_loading: this.state.gallery_loading,
                             setStateImgInfos: this.setStateImgInfos.bind(this),
-                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this) })),
-                        display === 'default' && React.createElement(WpmfDefaultTheme, _extends({}, this.props, { selectedImageId: this.state.selectedImageId,
+                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this)
+                        })),
+                        display === 'default' && React.createElement(WpmfDefaultTheme, _extends({}, this.props, {
+                            selectedImageId: this.state.selectedImageId,
                             gallery_loading: this.state.gallery_loading,
                             setStateImgInfos: this.setStateImgInfos.bind(this),
-                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this) })),
-                        display === 'masonry' && React.createElement(WpmfMasonryTheme, _extends({}, this.props, { selectedImageId: this.state.selectedImageId,
+                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this)
+                        })),
+                        display === 'masonry' && React.createElement(WpmfMasonryTheme, _extends({}, this.props, {
+                            selectedImageId: this.state.selectedImageId,
                             gallery_loading: this.state.gallery_loading,
                             setStateImgInfos: this.setStateImgInfos.bind(this),
-                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this) })),
-                        display === 'portfolio' && React.createElement(WpmfPortfolioTheme, _extends({}, this.props, { selectedImageId: this.state.selectedImageId,
+                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this)
+                        })),
+                        display === 'portfolio' && React.createElement(WpmfPortfolioTheme, _extends({}, this.props, {
+                            selectedImageId: this.state.selectedImageId,
                             gallery_loading: this.state.gallery_loading,
                             setStateImgInfos: this.setStateImgInfos.bind(this),
-                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this) })),
+                            setStateImgSelectedID: this.setStateImgSelectedID.bind(this)
+                        })),
                         isSelected && parseInt(wpmf_autoinsert) === 0 && React.createElement(
                             'div',
                             { className: 'blocks-gallery-item has-add-item-button' },
                             React.createElement(
                                 FormFileUpload,
                                 {
+                                    __next40pxDefaultSize: true,
                                     multiple: true,
                                     islarge: 'true',
                                     className: 'block-library-gallery-add-item-button',
@@ -1852,129 +1920,15 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         return wpmfWordpressGallery;
     }(Component);
 
-    var galleryAttrs = {
-        images: {
-            type: 'array',
-            default: []
-        },
-        image_sortable: {
-            type: 'array',
-            default: []
-        },
-        display: {
-            type: 'string',
-            default: 'masonry'
-        },
-        aspect_ratio: {
-            type: 'string',
-            default: 'default'
-        },
-        columns: {
-            type: 'string',
-            default: '3'
-        },
-        size: {
-            type: 'string',
-            default: 'medium'
-        },
-        crop_image: {
-            type: 'number',
-            default: 1
-        },
-        targetsize: {
-            type: 'string',
-            default: 'large'
-        },
-        link: {
-            type: 'string',
-            default: 'file'
-        },
-        wpmf_orderby: {
-            type: 'string',
-            default: 'post__in'
-        },
-        wpmf_order: {
-            type: 'string',
-            default: 'ASC'
-        },
-        autoplay: {
-            type: 'number',
-            default: 1
-        },
-        wpmf_folder_id: {
-            type: 'array',
-            default: []
-        },
-        wpmf_autoinsert: {
-            type: 'string',
-            default: '0'
-        },
-        img_border_radius: {
-            type: 'number',
-            default: 0
-        },
-        borderWidth: {
-            type: 'number',
-            default: 1
-        },
-        borderColor: {
-            type: 'string',
-            default: 'transparent'
-        },
-        borderStyle: {
-            type: 'string',
-            default: 'none'
-        },
-        hoverShadowH: {
-            type: 'number',
-            default: 0
-        },
-        hoverShadowV: {
-            type: 'number',
-            default: 0
-        },
-        hoverShadowBlur: {
-            type: 'number',
-            default: 0
-        },
-        hoverShadowSpread: {
-            type: 'number',
-            default: 0
-        },
-        hoverShadowColor: {
-            type: 'string',
-            default: '#ccc'
-        },
-        gutterwidth: {
-            type: 'number',
-            default: 15
-        },
-        changed: {
-            type: 'boolean',
-            default: false
-        },
-        cover: {
-            type: 'string',
-            source: 'attribute',
-            selector: 'img',
-            attribute: 'src'
-        }
+
+
+    var wpmfWordpressGalleryEdit = function wpmfWordpressGalleryEdit(props) {
+        var blockProps = useBlockProps();
+        return React.createElement(wpmfWordpressGallery, Object.assign({}, props, { blockProps: blockProps }));
     };
 
     registerBlockType('wpmf/wordpress-gallery', {
-        title: wpmf_blocks.l18n.block_gallery_title,
-        icon: 'format-gallery',
-        category: 'wp-media-folder',
-        supports: {
-            align: ['none', 'left', 'right', 'full', 'wide', 'center']
-        },
-        example: {
-            attributes: {
-                cover: wpmf_blocks.vars.block_cover
-            }
-        },
-        attributes: galleryAttrs,
-        edit: wpmfWordpressGallery,
+        edit: wpmfWordpressGalleryEdit,
         save: function save(_ref3) {
             var attributes = _ref3.attributes;
             var images = attributes.images,
@@ -1987,7 +1941,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                 wpmf_orderby = attributes.wpmf_orderby,
                 wpmf_order = attributes.wpmf_order,
                 wpmf_autoinsert = attributes.wpmf_autoinsert,
-                wpmf_folder_id = attributes.wpmf_folder_id,
+                wpmf_folder_id = attributes.wpmf_folder_id || [],
                 autoplay = attributes.autoplay,
                 crop_image = attributes.crop_image,
                 img_border_radius = attributes.img_border_radius,

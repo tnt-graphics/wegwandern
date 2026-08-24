@@ -17,6 +17,7 @@ use WP_Term;
  */
 abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
 {
+    use SyncFromExternalSourceTrait;
     /**
      * `copyTermToOtherLanguage` and `copyPostToOtherLanguage` create a duplicate of a term and post. This map
      * holds the mapping of original-ID to translation-ID. This map is filled with the translations like this:
@@ -32,6 +33,34 @@ abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
      * ```
      */
     protected $copyToOtherLanguageMap = ['post' => [], 'term' => []];
+    /**
+     * During `syncPostFromExternalSource()`, the duplicate post id excluded from WPML taxonomy
+     * sibling fallback (the in-progress translation must not supply term assignments as source).
+     *
+     * @var int|null
+     */
+    protected $taxonomySourceResolutionExcludePostId = null;
+    /**
+     * Set while `assignTranslatedPostTerms()` calls `wp_set_object_terms()`.
+     *
+     * Without this, `onSetObjectTermsCopyPostTaxonomies()` would fan out again on the same write and
+     * recurse until PHP memory is exhausted (observed on WPML TM batch duplicate).
+     */
+    private $postTaxonomyCopyingInProgress = \false;
+    /**
+     * Master post id => { sourceLocale, taxonomies, to: locale => translation post id }.
+     *
+     * Feeds the single global `set_object_terms` listener below. Replaces registering a new closure
+     * on every `copyPostTaxonomies()` call (the old pattern grew `$wp_filter` without bound during
+     * duplicate batches and contributed to OOM).
+     *
+     * @var array<int, array{sourceLocale: string, taxonomies: string[], to: array<string, int>}>
+     */
+    private $postTaxonomyCopyTargets = [];
+    /**
+     * Ensures exactly one `set_object_terms` hook exists for the whole request.
+     */
+    private static $postTaxonomySetObjectTermsHookRegistered = \false;
     // Documented in AbstractLanguagePlugin
     public function getSkipHTMLForTag($force = \false)
     {
@@ -109,6 +138,16 @@ abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
      */
     public function copyTermToOtherLanguage($locale, $currentLanguage, $term_id, $taxonomy, $meta)
     {
+        // WPML/PolyLang may already link this term (e.g. after `CopyContent::copyAll()` on reset).
+        // Creating another translation fires `created_term` again and multiplies terms + hook work
+        // (duplicate service groups on `edit-tags.php`, extra memory on TM duplicate).
+        $translations = $this->getTaxonomyTranslationIds($term_id, $taxonomy);
+        if (isset($translations[$locale])) {
+            $existing = (int) $translations[$locale];
+            if ($existing > 0 && $existing !== (int) $term_id) {
+                return $existing;
+            }
+        }
         // Read term
         $term = \get_term($term_id);
         // Create
@@ -154,7 +193,6 @@ abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
      */
     protected function duplicateTerm($term, $taxonomy)
     {
-        // Translate name and description
         list(, $name) = $this->translateInput($term->name);
         list(, $description) = $this->translateInput($term->description);
         // Create
@@ -209,6 +247,29 @@ abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
         $this->duplicateMeta('post', $from, $to, $meta);
     }
     /**
+     * Run a callback with the source-language PO/MO catalog snapshotted (same as `CopyContent::copy`).
+     *
+     * While locked, `translateInput()` resolves msgids from the snapshot and translates via the active
+     * target-language text domain inside nested `switchToLanguage()` calls.
+     *
+     * @param string $sourceLocale
+     * @param callable $callback
+     */
+    public function withSourceTranslationCatalog($sourceLocale, $callback)
+    {
+        $this->switchToLanguage($sourceLocale, function () use($callback) {
+            $this->snapshotCurrentTranslations();
+            $this->lockCurrentTranslations(\true);
+            $this->teardownTemporaryTextDomain();
+            try {
+                \call_user_func($callback);
+            } finally {
+                $this->lockCurrentTranslations(\false);
+                $this->unsetCurrentTranslations();
+            }
+        });
+    }
+    /**
      * Listen to meta (term, post, ...) addition and copy.
      *
      * @param string $type E. g. 'post'
@@ -234,6 +295,77 @@ abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
         }, 10, 4);
     }
     /**
+     * Term ids assigned to a post in a specific language context (avoids WPML read fallbacks).
+     *
+     * @param int $postId
+     * @param string $taxonomy
+     * @param string|null $locale When empty, uses the post's language
+     * @return int[]
+     */
+    public function getObjectTermIdsForPostLanguage($postId, $taxonomy, $locale = null)
+    {
+        if ($locale === null || $locale === '') {
+            $locale = $this->getPostLanguage($postId);
+        }
+        if ($locale === '') {
+            return $this->fetchObjectTermIds($postId, $taxonomy);
+        }
+        // Read assignments under the post's language. WPML otherwise returns EN term ids for DE posts
+        // (wrong REST field + admin list filter); not an OOM issue but breaks Phase C assignment checks.
+        $ids = [];
+        $this->switchToLanguage($locale, function () use($postId, $taxonomy, &$ids) {
+            $ids = $this->fetchObjectTermIds($postId, $taxonomy);
+        });
+        return $ids;
+    }
+    /**
+     * Read taxonomy term ids currently assigned to a post.
+     *
+     * @param int $postId
+     * @param string $taxonomy
+     * @return int[]
+     */
+    private function fetchObjectTermIds($postId, $taxonomy)
+    {
+        $terms = \wp_get_object_terms($postId, $taxonomy, ['fields' => 'ids', 'limit' => 0]);
+        return \is_wp_error($terms) ? [] : \array_values(\array_map('intval', (array) $terms));
+    }
+    /**
+     * Read assigned term ids bypassing WPML `get_object_terms` filters.
+     *
+     * @param int $postId
+     * @param string $taxonomy
+     * @return int[]
+     */
+    protected function fetchObjectTermIdsWithoutFilters($postId, $taxonomy)
+    {
+        return Utils::withoutFilters('get_object_terms', function () use($postId, $taxonomy) {
+            return $this->fetchObjectTermIds($postId, $taxonomy);
+        });
+    }
+    /**
+     * Taxonomy term ids assigned to the source post before remapping onto a translation.
+     *
+     * Default: unfiltered read on `$from` only. {@see WPML::resolveSourceTermsByTaxonomyForPostCopy()}
+     * adds WPML-specific fallbacks (snapshot at `icl_before_make_duplicate`, then trid siblings)
+     * when the live read is empty after WPML duplicate housekeeping.
+     *
+     * @param int $from Source post id
+     * @param string[] $taxonomies
+     * @return array<string, int[]>
+     */
+    protected function resolveSourceTermsByTaxonomyForPostCopy($from, array $taxonomies)
+    {
+        $sourceTermsByTaxonomy = [];
+        foreach ($taxonomies as $taxonomy) {
+            $termIds = $this->fetchObjectTermIdsWithoutFilters($from, $taxonomy);
+            if ($termIds !== []) {
+                $sourceTermsByTaxonomy[$taxonomy] = $termIds;
+            }
+        }
+        return $sourceTermsByTaxonomy;
+    }
+    /**
      * Copy already existing taxonomies as it can be inserted with `tax_input` directly.
      * Additionally listen to term additions and copy.
      *
@@ -244,31 +376,139 @@ abstract class AbstractSyncPlugin extends AbstractLanguagePlugin
      */
     public function copyPostTaxonomies($from, $to, $taxonomies, $locale)
     {
-        $doCopy = function ($post_id, $terms, $taxonomy) use($locale) {
-            $copyIds = [];
-            foreach ($terms as $term) {
-                // Get category id of the original term id for the other language
-                $newTermId = $this->getCurrentTermId(\get_term($term)->term_id, $taxonomy, $locale);
-                if ($newTermId > 0) {
-                    $copyIds[] = \intval($newTermId);
-                }
+        // Remap master taxonomy ids to the target locale after WPML `make_duplicate` (and for later
+        // `set_object_terms` on the master). Bounded by configured taxonomies × active languages.
+        $sourceLocale = $this->getPostLanguage($from);
+        if ($sourceLocale === '') {
+            $sourceLocale = $this->getDefaultLanguage();
+        }
+        if (!isset($this->postTaxonomyCopyTargets[$from])) {
+            $this->postTaxonomyCopyTargets[$from] = ['sourceLocale' => $sourceLocale, 'taxonomies' => $taxonomies, 'to' => []];
+        }
+        $this->postTaxonomyCopyTargets[$from]['to'][$locale] = $to;
+        $this->postTaxonomyCopyTargets[$from]['taxonomies'] = \array_values(\array_unique(\array_merge($this->postTaxonomyCopyTargets[$from]['taxonomies'], $taxonomies)));
+        // One listener per request — do not `add_action` inside this method on every duplicate/locale pair.
+        if (!self::$postTaxonomySetObjectTermsHookRegistered) {
+            self::$postTaxonomySetObjectTermsHookRegistered = \true;
+            \add_action('set_object_terms', [$this, 'onSetObjectTermsCopyPostTaxonomies'], 10, 5);
+        }
+        $sourceTermsByTaxonomy = $this->resolveSourceTermsByTaxonomyForPostCopy($from, $taxonomies);
+        if ($sourceTermsByTaxonomy === []) {
+            return;
+        }
+        $this->switchToLanguage($locale, function () use($to, $sourceTermsByTaxonomy, $locale) {
+            foreach ($sourceTermsByTaxonomy as $taxonomy => $sourceTermIds) {
+                $this->assignTranslatedPostTerms($to, $sourceTermIds, $taxonomy, $locale);
             }
-            // Avoid that e.g. PolyLang sets the term id of the current language
-            Utils::withoutFilters('set_object_terms', function () use($post_id, $copyIds, $taxonomy) {
-                \wp_set_object_terms($post_id, $copyIds, $taxonomy);
-            });
-        };
-        foreach ($taxonomies as $taxonomy) {
-            $originalTerms = \get_the_terms($from, $taxonomy);
-            if (\is_array($originalTerms)) {
-                $doCopy($to, $originalTerms, $taxonomy);
+        });
+    }
+    /**
+     * Map source term ids to the target locale and assign them on a translation post.
+     *
+     * WordPress stores only numeric term ids in `wp_term_relationships` — no language. A DE
+     * translation post can therefore reference an EN group term (e.g. after reset when only EN
+     * `rcb-cookie-group` rows exist, then WPML `make_duplicate` copies those relationships and
+     * `getCurrentTermId()` returns the same id when no linked DE term exists). That is valid data
+     * for remap: when resolved id equals source id, check `getTermLanguage()` — assign if the term
+     * already belongs to `$locale`, otherwise `copyTermToOtherLanguage()`. Do not call
+     * `wp_set_object_terms(…, [])` when the source had terms but nothing could be mapped (would
+     * wipe groups on the new translation, notably DE → EN duplicate of a DE cookie still wired to EN Essential).
+     *
+     * @param int $postId
+     * @param int[] $sourceTermIds
+     * @param string $taxonomy
+     * @param string $locale
+     */
+    private function assignTranslatedPostTerms($postId, array $sourceTermIds, $taxonomy, $locale)
+    {
+        if ($this->postTaxonomyCopyingInProgress) {
+            return;
+        }
+        $copyIds = [];
+        foreach ($sourceTermIds as $sourceTermId) {
+            $sourceTermId = (int) $sourceTermId;
+            $resolvedTermId = (int) $this->getCurrentTermId($sourceTermId, $taxonomy, $locale);
+            if ($resolvedTermId <= 0) {
+                continue;
+            }
+            if ($resolvedTermId !== $sourceTermId) {
+                $copyIds[] = $resolvedTermId;
+                continue;
+            }
+            $term = \get_term($sourceTermId, $taxonomy);
+            if (!$term instanceof WP_Term) {
+                continue;
+            }
+            $termLocale = $this->getTermLanguage((int) $term->term_taxonomy_id, $taxonomy);
+            if ($termLocale === $locale) {
+                $copyIds[] = $resolvedTermId;
+                continue;
+            }
+            $sourceLocale = $termLocale !== '' ? $termLocale : $this->getDefaultLanguage();
+            $createdTermId = (int) $this->copyTermToOtherLanguage($locale, $sourceLocale, $sourceTermId, $taxonomy, []);
+            if ($createdTermId > 0 && $createdTermId !== $sourceTermId) {
+                $copyIds[] = $createdTermId;
             }
         }
-        \add_action('set_object_terms', function ($object_id, $terms, $tt_ids, $taxonomy, $append) use($from, $to, $taxonomies, $doCopy) {
-            if ($object_id === $from && \in_array($taxonomy, $taxonomies, \true) && $from !== $to) {
-                $doCopy($to, $terms, $taxonomy);
+        if ($copyIds === [] && $sourceTermIds !== []) {
+            return;
+        }
+        $this->postTaxonomyCopyingInProgress = \true;
+        try {
+            Utils::withoutFilters('set_object_terms', function () use($postId, $copyIds, $taxonomy) {
+                \wp_set_object_terms($postId, $copyIds, $taxonomy);
+            });
+        } finally {
+            $this->postTaxonomyCopyingInProgress = \false;
+        }
+    }
+    /**
+     * Copy taxonomy assignments from a master post to its translations when terms are set on the master.
+     *
+     * @param int $object_id
+     * @param int[]|string[] $terms
+     * @param int[] $tt_ids
+     * @param string $taxonomy
+     * @param boolean $append
+     */
+    public function onSetObjectTermsCopyPostTaxonomies($object_id, $terms, $tt_ids, $taxonomy, $append)
+    {
+        if ($this->postTaxonomyCopyingInProgress) {
+            return;
+        }
+        $config = $this->postTaxonomyCopyTargets[$object_id] ?? null;
+        if ($config === null || !\in_array($taxonomy, $config['taxonomies'], \true)) {
+            return;
+        }
+        // Master post was updated: push the same taxonomy set to every registered translation.
+        $sourceTermIds = [];
+        $this->switchToLanguage($config['sourceLocale'], function () use($terms, &$sourceTermIds) {
+            foreach ((array) $terms as $term) {
+                if (\is_numeric($term)) {
+                    $sourceTermIds[] = (int) $term;
+                    continue;
+                }
+                if ($term instanceof WP_Term) {
+                    $sourceTermIds[] = $term->term_id;
+                    continue;
+                }
+                $resolved = \get_term($term);
+                if ($resolved instanceof WP_Term) {
+                    $sourceTermIds[] = $resolved->term_id;
+                }
             }
-        }, 10, 5);
+        });
+        if ($sourceTermIds === []) {
+            return;
+        }
+        foreach ($config['to'] as $locale => $toPostId) {
+            if ($toPostId === $object_id) {
+                continue;
+            }
+            $this->switchToLanguage($locale, function () use($toPostId, $sourceTermIds, $taxonomy, $locale) {
+                $this->assignTranslatedPostTerms($toPostId, $sourceTermIds, $taxonomy, $locale);
+            });
+        }
     }
     /**
      * Apply a WordPress filter so a meta value can be modified for copy process

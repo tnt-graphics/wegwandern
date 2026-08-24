@@ -11,18 +11,21 @@ class FrmProEntriesHelper {
 	 *
 	 * @param string   $action
 	 * @param stdClass $form
+	 *
 	 * @return string
 	 */
 	public static function allow_form_edit( $action, $form ) {
 		if ( $action !== 'new' ) {
-			// make sure there is an entry id in the url if the action is being set in the url
+			// Make sure there is an entry id in the url if the action is being set in the url
 			$entry_id = FrmAppHelper::simple_get( 'entry', 'sanitize_title', 0 );
-			if ( empty( $entry_id ) && ( ! $_POST || ! isset( $_POST['frm_action'] ) ) ) {
+
+			if ( ! $entry_id && ( ! $_POST || ! isset( $_POST['frm_action'] ) ) ) {
 				$action = 'new';
 			}
 		}
 
 		$user_ID = get_current_user_id();
+
 		if ( ! $form || ! $user_ID ) {
 			return $action;
 		}
@@ -37,7 +40,8 @@ class FrmProEntriesHelper {
 
 		$is_draft = false;
 
-		global $wpdb, $frm_vars;
+		global $frm_vars;
+
 		if ( ( $form->editable && FrmProFormsHelper::check_single_entry_type( $form->options, 'user' ) ) || ! empty( $form->options['save_draft'] ) ) {
 			if ( $action === 'update' && $form->id == FrmAppHelper::get_param( 'form_id', '', 'get', 'absint' ) ) {
 				// Don't change the action if this is the wrong form.
@@ -56,18 +60,14 @@ class FrmProEntriesHelper {
 			}
 		}
 
-		//do not allow editing if user does not have permission
-		if ( $action != 'edit' || $is_draft ) {
+		// Do not allow editing if user does not have permission
+		if ( $action !== 'edit' || $is_draft ) {
 			return $action;
 		}
 
 		$entry = FrmAppHelper::get_param( 'entry', 0, 'get', 'sanitize_text_field' );
 
-		if ( ! self::user_can_edit( $entry, $form ) ) {
-			$action = 'new';
-		}
-
-		return $action;
+		return self::user_can_edit( $entry, $form ) ? $action : 'new';
 	}
 
 	/**
@@ -78,6 +78,7 @@ class FrmProEntriesHelper {
 	 * @param int      $user_ID
 	 * @param stdClass $form
 	 * @param bool     $is_draft
+	 *
 	 * @return array|false
 	 */
 	public static function check_for_user_entry( $user_ID, $form, $is_draft ) {
@@ -85,6 +86,7 @@ class FrmProEntriesHelper {
 			'user_id' => $user_ID,
 			'form_id' => $form->id,
 		);
+
 		if ( $is_draft ) {
 			$query['is_draft'] = 1;
 		}
@@ -93,11 +95,11 @@ class FrmProEntriesHelper {
 	}
 
 	/**
-	 * @param int            $entry
+	 * @param int|object            $entry
 	 * @param false|stdClass $form
 	 */
 	public static function user_can_edit( $entry, $form = false ) {
-		if ( empty( $form ) ) {
+		if ( ! $form ) {
 			FrmEntry::maybe_get_entry( $entry );
 
 			if ( is_object( $entry ) ) {
@@ -117,6 +119,7 @@ class FrmProEntriesHelper {
 	 * If a form is a child form, get the parent form. Then if the entry is a child entry, get the parent entry.
 	 *
 	 * @since 2.0.13
+	 *
 	 * @param int|object $form - pass by reference
 	 * @param int|object $entry - pass by reference
 	 */
@@ -127,6 +130,7 @@ class FrmProEntriesHelper {
 
 			// Make sure we're also checking the parent entry's permissions
 			FrmEntry::maybe_get_entry( $entry );
+
 			if ( $entry->parent_item_id ) {
 				$entry = FrmEntry::getOne( $entry->parent_item_id );
 			}
@@ -134,21 +138,21 @@ class FrmProEntriesHelper {
 	}
 
 	/**
-	 * @param int|object $entry
+	 * @param int|object|string $entry
 	 * @param int|object $form
+	 *
+	 * @return bool
 	 */
 	public static function user_can_edit_check( $entry, $form ) {
 		$user_ID = get_current_user_id();
 
-		if ( ! $user_ID || empty( $form ) || ( is_object( $entry ) && $entry->form_id != $form->id ) ) {
+		if ( ! $user_ID || ! $form || ( is_object( $entry ) && $entry->form_id != $form->id ) ) {
 			return false;
 		}
 
-		if ( is_object( $entry ) ) {
-			if ( ( $entry->is_draft && $entry->user_id == $user_ID ) || self::user_can_edit_others( $form ) ) {
-				//if editable and user can edit this entry
-				return true;
-			}
+		if ( is_object( $entry ) && ( ( $entry->is_draft && $entry->user_id == $user_ID ) || self::user_can_edit_others( $form ) ) ) {
+			// If editable and user can edit this entry
+			return true;
 		}
 
 		$where = array( 'fr.id' => $form->id );
@@ -160,7 +164,7 @@ class FrmProEntriesHelper {
 				return false;
 			}
 
-			//only allow editing of drafts
+			// Only allow editing of drafts
 			$where['user_id']  = $user_ID;
 			$where['is_draft'] = 1;
 		}
@@ -174,16 +178,17 @@ class FrmProEntriesHelper {
 
 			// Check if open_editable_role and editable_role is set for reverse compatibility
 			if ( $form->editable && isset( $form->options['open_editable_role'] ) && ! FrmProFieldsHelper::user_has_permission( $form->options['open_editable_role'] ) && isset( $form->options['editable_role'] ) && ! FrmProFieldsHelper::user_has_permission( $form->options['editable_role'] ) ) {
-				// make sure user cannot edit their own entry, even if a higher user role can unless it's a draft
+				// Make sure user cannot edit their own entry, even if a higher user role can unless it's a draft
 				if ( is_object( $entry ) && ! $entry->is_draft ) {
 					return false;
 				}
+
 				if ( ! is_object( $entry ) ) {
 					$where['is_draft'] = 1;
 				}
 			}
-		} elseif ( $form->editable && $user_ID && empty( $entry ) ) {
-			// make sure user is editing their own draft by default, even if they have permission to edit others' entries
+		} elseif ( $form->editable && $user_ID && ! $entry ) {
+			// Make sure user is editing their own draft by default, even if they have permission to edit others' entries
 			$where['user_id'] = $user_ID;
 		}
 
@@ -200,7 +205,7 @@ class FrmProEntriesHelper {
 			return true;
 		}
 
-		if ( ! empty( $entry ) ) {
+		if ( $entry ) {
 			$where_key           = is_numeric( $entry ) ? 'it.id' : 'item_key';
 			$where[ $where_key ] = $entry;
 		}
@@ -215,27 +220,29 @@ class FrmProEntriesHelper {
 	 *
 	 * @param object       $form The form object.
 	 * @param false|object $entry The entry object.
+	 *
 	 * @return bool True if the entry should be a draft.
 	 */
 	private static function should_check_for_draft( $form, $entry ) {
-		$check_draft = ! $form->editable;
-		if ( $form->editable && empty( $entry ) && is_user_logged_in() ) {
+		if ( $form->editable && ! $entry && is_user_logged_in() ) {
 			global $frm_vars;
 			// Check if the form is expecting a draft entry.
-			$check_draft = ! empty( $frm_vars['edit_draft'] ) && (int) $frm_vars['edit_draft'] === (int) $form->id;
+			return ! empty( $frm_vars['edit_draft'] ) && (int) $frm_vars['edit_draft'] === (int) $form->id;
 		}
 
-		return $check_draft;
+		return ! $form->editable;
 	}
 
 	/**
 	 * Check if this user can edit entry from another user
 	 *
 	 * @param object $form
+	 *
 	 * @return bool True if user can edit
 	 */
 	public static function user_can_edit_others( $form ) {
 		$open_editable = $form->editable && isset( $form->options['open_editable_role'] );
+
 		if ( ! $open_editable ) {
 			return false;
 		}
@@ -247,6 +254,7 @@ class FrmProEntriesHelper {
 	 * Only allow editing of drafts
 	 *
 	 * @param object $form
+	 *
 	 * @return bool True if editing is not allowed.
 	 */
 	public static function user_can_only_edit_draft( $form ) {
@@ -257,11 +265,14 @@ class FrmProEntriesHelper {
 	 * Before checking the database for entries, know which entries we should retrieve.
 	 *
 	 * @since 4.07
+	 *
 	 * @param object $form
+	 *
 	 * @return bool True if editing is enabled in the form and user has correct role.
 	 */
 	private static function maybe_user_can_edit_entries( $form ) {
 		$can_edit_own = $form->editable && FrmProFieldsHelper::user_has_permission( $form->options['editable_role'] );
+
 		if ( $can_edit_own ) {
 			// User can edit their own entries if any exist.
 			return true;
@@ -270,8 +281,12 @@ class FrmProEntriesHelper {
 		return self::user_can_edit_others( $form );
 	}
 
+	/**
+	 * @return bool
+	 */
 	public static function user_can_delete( $entry ) {
 		FrmEntry::maybe_get_entry( $entry );
+
 		if ( ! $entry ) {
 			return false;
 		}
@@ -280,7 +295,8 @@ class FrmProEntriesHelper {
 			$allowed = true;
 		} else {
 			$allowed = self::user_can_edit( $entry );
-			if ( ! empty( $allowed ) ) {
+
+			if ( $allowed ) {
 				$allowed = true;
 			}
 		}
@@ -290,6 +306,9 @@ class FrmProEntriesHelper {
 
 	/**
 	 * @since 4.0
+	 *
+	 * @param int|stdClass|string $form
+	 * @param array               $args
 	 */
 	private static function show_list_entry_buttons( $form, $args = array() ) {
 		$form_id = is_numeric( $form ) ? $form : $form->id;
@@ -310,21 +329,23 @@ class FrmProEntriesHelper {
 		}
 
 		$link = '<a href="?page=formidable-entries&frm_action=new';
+
 		if ( $form ) {
 			$form_id = is_numeric( $form ) ? $form : $form->id;
 			$link   .= '&form=' . $form_id;
 		}
-		$link .= '" class="button-primary frm-button-primary frm-with-plus">';
-		$link .= FrmProAppHelper::icon_by_class( 'frmfont frm_plus_icon frm_svg15', array( 'echo' => false ) );
-		$link .= __( 'Add New', 'formidable-pro' ) . '</a>';
 
-		return $link;
+		$link .= '" class="button-primary frm-button-primary frm-with-plus">';
+		$link .= FrmAppHelper::icon_by_class( 'frmfont frm_plus_icon frm_svg15', array( 'echo' => false ) );
+
+		return $link . esc_html__( 'Add New', 'formidable' ) . '</a>';
 	}
 
 	/**
 	 * Add links to the entry actions including edit and resend emails.
 	 *
 	 * @since 3.0
+	 *
 	 * @param array $actions
 	 * @param array $atts Includes 'id' and 'entry'.
 	 */
@@ -338,7 +359,7 @@ class FrmProEntriesHelper {
 				'frm_add' => array(
 					'url'   => admin_url( 'admin.php?page=formidable-entries&frm_action=new&form=' . $entry->form_id ),
 					'label' => __( 'Add Entry', 'formidable' ),
-					'icon'  => 'frm_icon_font frm_plus_icon',
+					'icon'  => 'frmfont frm_plus_icon',
 				),
 			) + $actions;
 		}
@@ -364,22 +385,20 @@ class FrmProEntriesHelper {
 			unset( $actions['frm_edit'] );
 		}
 
-		if ( current_user_can( 'frm_delete_entries' ) ) {
-			if ( ! empty( $entry->post_id ) ) {
-				$actions['frm_delete_post'] = array(
-					'url'   => wp_nonce_url( admin_url( 'admin.php?page=formidable-entries&frm_action=destroy&keep_post=1&id=' . $entry->id . '&form=' . $entry->form_id ) ),
-					'label' => __( 'Delete without Post' ),
-					'icon'  => 'frm_icon_font frm_delete_icon',
-					'data'  => array( 'frmverify' => __( 'Really delete?', 'formidable' ) ),
-				);
-			}
+		if ( current_user_can( 'frm_delete_entries' ) && ! empty( $entry->post_id ) ) {
+			$actions['frm_delete_post'] = array(
+				'url'   => wp_nonce_url( admin_url( 'admin.php?page=formidable-entries&frm_action=destroy&keep_post=1&id=' . $entry->id . '&form=' . $entry->form_id ) ),
+				'label' => __( 'Delete without Post' ),
+				'icon'  => 'frmfont frm_delete_icon',
+				'data'  => array( 'frmverify' => __( 'Really delete?', 'formidable-pro' ) ),
+			);
 		}
 
 		if ( current_user_can( 'frm_create_entries' ) ) {
 			$actions['frm_duplicate'] = array(
 				'url'   => wp_nonce_url( admin_url( 'admin.php?page=formidable-entries&frm_action=duplicate&id=' . $entry->id . '&form=' . $entry->form_id ) ),
-				'label' => __( 'Duplicate', 'formidable-pro' ),
-				'icon'  => 'frm_icon_font frm_clone_icon',
+				'label' => __( 'Duplicate', 'formidable' ),
+				'icon'  => 'frmfont frm_clone_icon',
 			);
 		}
 
@@ -399,19 +418,15 @@ class FrmProEntriesHelper {
 	 */
 	public static function prepare_child_display_value( $entry, $field, $atts ) {
 		$child_entries_data = self::get_display_value_child_entries_data( $entry, $field, $atts );
-
-		$child_entries = $child_entries_data['child_entries'];
-
-		if ( count( $child_entries ) > $child_entries_data['child_entries_limit'] ) {
-			$truncated = true;
-		}
+		$child_entries      = $child_entries_data['child_entries'];
 
 		// Remove the extra item since we used '$child_entries_limit + 1' when querying db.
 		if ( count( $child_entries ) > $child_entries_data['child_entries_limit'] ) {
+			$truncated = true;
 			array_pop( $child_entries );
 		}
 
-		if ( empty( $child_entries ) ) {
+		if ( ! $child_entries ) {
 			return '';
 		}
 
@@ -425,7 +440,7 @@ class FrmProEntriesHelper {
 			$entry_val = FrmProEntryMetaHelper::get_post_or_meta_value( $child_entry, $field );
 
 			if ( $entry_val || '0' === $entry_val ) {
-				// foreach entry get display_value.
+				// For each entry get display_value.
 				$field_value[] = FrmEntriesHelper::display_value( $entry_val, $field, $atts );
 			}
 
@@ -433,9 +448,11 @@ class FrmProEntriesHelper {
 		}
 
 		$sep = ', ';
-		if ( strpos( implode( ' ', $field_value ), '<img' ) !== false ) {
+
+		if ( str_contains( implode( ' ', $field_value ), '<img' ) ) {
 			$sep = '<br/>';
 		}
+
 		$val = implode( $sep, $field_value );
 
 		if ( ! empty( $truncated ) ) {
@@ -449,6 +466,7 @@ class FrmProEntriesHelper {
 	 * Returns child entries data from repeater or embedded forms.
 	 *
 	 * @since 6.12
+	 *
 	 * @param stdClass $entry
 	 * @param stdClass $field
 	 * @param array    $atts
@@ -456,13 +474,16 @@ class FrmProEntriesHelper {
 	 * @return array
 	 */
 	private static function get_display_value_child_entries_data( $entry, $field, $atts ) {
-		$is_repeating_section = strpos( $atts['embedded_field_id'], 'form' ) === 0;
+		$is_repeating_section = str_starts_with( $atts['embedded_field_id'], 'form' );
+
 		if ( $is_repeating_section ) {
 			/**
 			 * This filter allows updating the limit of child entries in entry list page. The default is 5.
 			 *
 			 * @since 6.12
+			 *
 			 * @param array $args {
+			 *
 			 *    @type object $field
 			 *    @type array  $atts
 			 * }
@@ -507,7 +528,7 @@ class FrmProEntriesHelper {
 	 * @return string
 	 */
 	private static function maybe_append_ellipses( $val ) {
-		if ( '' === $val || substr( $val, -3 ) === '...' ) {
+		if ( '' === $val || str_ends_with( $val, '...' ) ) {
 			return $val;
 		}
 
@@ -518,6 +539,7 @@ class FrmProEntriesHelper {
 	 * @param int|string $entry_id
 	 * @param int|string $form_id
 	 * @param array      $args
+	 *
 	 * @return string
 	 */
 	public static function resend_email_links( $entry_id, $form_id, $args = array() ) {
@@ -527,18 +549,21 @@ class FrmProEntriesHelper {
 		);
 
 		$args = wp_parse_args( $args, $defaults );
-
 		$link = '<a href="#" data-eid="' . esc_attr( $entry_id ) . '" data-fid="' . esc_attr( $form_id ) . '" id="frm_resend_email" title="' . esc_attr( $args['label'] ) . '">' . $args['label'] . '</a>';
+
 		if ( $args['echo'] ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo $link;
 		}
+
 		return $link;
 	}
 
 	/**
-	 * @param bool  $footer
-	 * @param array $args
+	 * @param bool             $footer
+	 * @param false|int|string $form_id
+	 * @param array            $args
+	 *
 	 * @return void
 	 */
 	public static function before_table( $footer, $form_id = false, $args = array() ) {
@@ -546,23 +571,27 @@ class FrmProEntriesHelper {
 			return;
 		}
 
-		if ( ! $footer ) {
-			self::show_list_entry_buttons( $form_id, $args );
-			do_action( 'frm_before_entries_table', $form_id );
+		if ( $footer ) {
+			return;
 		}
+
+		self::show_list_entry_buttons( $form_id, $args );
+		do_action( 'frm_before_entries_table', $form_id );
 	}
 
 	/**
 	 * @since 4.0
-	 * @param int $form_id
+	 *
+	 * @param int|string $form_id
+	 * @param array $args
 	 */
 	private static function delete_all_button( $form_id, $args = array() ) {
 		if ( ! apply_filters( 'frm_show_delete_all', current_user_can( 'frm_delete_entries' ), $form_id ) ) {
 			return;
 		}
 
-		$entries_count = ( $args['entries_count'] ?? 0 );
-		$verify        = ( $args['bulk_delete_confirmation_message'] ?? '' );
+		$entries_count = $args['entries_count'] ?? 0;
+		$verify        = $args['bulk_delete_confirmation_message'] ?? '';
 
 		?>
 		<span class="frm_uninstall">
@@ -581,16 +610,19 @@ class FrmProEntriesHelper {
 		);
 
 		$s = FrmAppHelper::get_param( 's', '', 'request', 'sanitize_text_field' );
+
 		if ( $s ) {
 			$page_params['s'] = $s;
 		}
 
 		$search = FrmAppHelper::get_param( 'search', '', 'request', 'sanitize_text_field' );
+
 		if ( $search ) {
 			$page_params['search'] = $search;
 		}
 
 		$fid = trim( FrmAppHelper::get_param( 'fid', '', 'request', 'sanitize_text_field' ) );
+
 		if ( $fid ) {
 			$page_params['fid'] = $fid;
 		}
@@ -606,30 +638,31 @@ class FrmProEntriesHelper {
 	 * Check if entry being updated just switched draft status
 	 *
 	 * @param int $entry
+	 *
 	 * @return bool
 	 */
 	public static function is_new_entry( $entry ) {
 		FrmEntry::maybe_get_entry( $entry );
 
 		// this function will only be correct if the entry has already gone through FrmProEntriesController::check_draft_status
-		return ( $entry->created_at == $entry->updated_at );
+		return $entry->created_at == $entry->updated_at;
 	}
 
 	public static function get_field( $field, $id ) {
 		$entry = FrmDb::check_cache( $id, 'frm_entry' );
+
 		if ( $entry && isset( $entry->$field ) ) {
 			return $entry->{$field};
 		}
 
-		$var = FrmDb::get_var( 'frm_items', array( 'id' => $id ), $field );
-
-		return $var;
+		return FrmDb::get_var( 'frm_items', array( 'id' => $id ), $field );
 	}
 
 	/**
 	 * Get the values for Dynamic List fields based on the conditional logic settings
 	 *
 	 * @since 2.0.08
+	 *
 	 * @param object $field
 	 * @param object $entry
 	 * @param array|int|string $field_value, pass by reference
@@ -641,13 +674,16 @@ class FrmProEntriesHelper {
 		}
 
 		$field_value = array();
+
 		foreach ( (array) $field->field_options['hide_field'] as $hfield ) {
 			if ( isset( $entry->metas[ $hfield ] ) ) {
 				// Check if field in conditional logic is a Dynamic field
 				$cl_field_type = FrmField::get_type( $hfield );
+
 				if ( $cl_field_type === 'data' ) {
 					$cl_field_val = $entry->metas[ $hfield ];
-					FrmProAppHelper::unserialize_or_decode( $cl_field_val );
+					FrmAppHelper::unserialize_or_decode( $cl_field_val );
+
 					if ( is_array( $cl_field_val ) ) {
 						$field_value += $cl_field_val;
 					} else {
@@ -677,6 +713,7 @@ class FrmProEntriesHelper {
 	 * @since 6.8.4
 	 *
 	 * @param string $string
+	 *
 	 * @return array
 	 */
 	private static function explode_search_terms( $string ) {
@@ -684,6 +721,7 @@ class FrmProEntriesHelper {
 		return array_map(
 			/**
 			 * @param string $term
+			 *
 			 * @return string
 			 */
 			function ( $term ) {
@@ -701,6 +739,7 @@ class FrmProEntriesHelper {
 	 * @param int|string $fid
 	 * @param int        $form_id
 	 * @param array      $search_param
+	 *
 	 * @return array
 	 */
 	private static function get_where_clause_for_entries_search( $fid, $form_id, $search_param ) {
@@ -722,8 +761,10 @@ class FrmProEntriesHelper {
 	 * Set up the where arguments for a general entry query in the back-end Entries tab
 	 *
 	 * @since 2.02.01
+	 *
 	 * @param int $form_id
 	 * @param array $search_param
+	 *
 	 * @return array
 	 */
 	private static function get_where_arguments_for_general_entry_query( $form_id, $search_param ) {
@@ -735,11 +776,9 @@ class FrmProEntriesHelper {
 			'it.created_at like' => implode( ' ', $search_param ),
 		);
 
-		$ids_in_search_param = array_filter( $search_param, 'is_numeric' );
-
+		$ids_in_search_param     = array_filter( $search_param, 'is_numeric' );
 		$ids_from_field_searches = self::search_entry_metas_for_value( $form_id, $search_param );
-
-		$where['it.id'] = array_merge( $ids_in_search_param, $ids_from_field_searches );
+		$where['it.id']          = array_merge( $ids_in_search_param, $ids_from_field_searches );
 
 		self::append_entry_ids_for_matching_posts( $form_id, $search_param, $where );
 
@@ -755,19 +794,20 @@ class FrmProEntriesHelper {
 		 * @param array $where
 		 * @param array $search_param
 		 * @param int   $form_id
+		 *
 		 * @return array
 		 */
-		$where = apply_filters( 'frm_where_arguments_for_general_entry_list_query', $where, $search_param, $form_id );
-
-		return $where;
+		return apply_filters( 'frm_where_arguments_for_general_entry_list_query', $where, $search_param, $form_id );
 	}
 
 	/**
 	 * Search the whole entry metas table for a matching value and return entry IDs
 	 *
 	 * @since 2.02.01
+	 *
 	 * @param int $form_id
 	 * @param array $search_param
+	 *
 	 * @return array
 	 */
 	private static function search_entry_metas_for_value( $form_id, $search_param ) {
@@ -776,15 +816,17 @@ class FrmProEntriesHelper {
 		);
 
 		$dynamic_field_query = self::get_linked_field_query( $form_id, $search_param );
-		if ( empty( $dynamic_field_query ) ) {
+
+		if ( ! $dynamic_field_query ) {
 			$where_args['meta_value like'] = $search_param;
-		} else {
-			$where_args[] = array(
-				'meta_value like' => $search_param,
-				'or'              => 1,
-				$dynamic_field_query,
-			);
+			return FrmEntryMeta::getEntryIds( $where_args, '', '', true, array( 'is_draft' => 'both' ) );
 		}
+
+		$where_args[] = array(
+			'meta_value like' => $search_param,
+			'or'              => 1,
+			$dynamic_field_query,
+		);
 
 		return FrmEntryMeta::getEntryIds( $where_args, '', '', true, array( 'is_draft' => 'both' ) );
 	}
@@ -801,8 +843,9 @@ class FrmProEntriesHelper {
 	 */
 	private static function get_linked_field_query( $form_id, $search_param ) {
 		$dynamic_fields = FrmProFormsHelper::has_field( 'data', $form_id, false );
-		if ( empty( $dynamic_fields ) ) {
-			// this form has no Dynamic fields
+
+		if ( ! $dynamic_fields ) {
+			// This form has no Dynamic fields
 			return array();
 		}
 
@@ -816,34 +859,39 @@ class FrmProEntriesHelper {
 		}
 		unset( $dynamic_field );
 
-		if ( empty( $linked_field_ids ) ) {
+		if ( ! $linked_field_ids ) {
 			return array();
 		}
 
 		$dynamic_field_query = array();
+		$linked_form_ids     = FrmDb::get_col( 'frm_fields', array( 'id' => $linked_field_ids ), 'form_id' );
 
-		$linked_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $linked_field_ids ), 'form_id' );
-		if ( $linked_form_ids ) {
-			$linked_entry_ids = FrmEntryMeta::getEntryIds(
-				array(
-					'fi.form_id'      => $linked_form_ids,
-					'meta_value LIKE' => $search_param,
-				),
-				'',
-				'',
-				true,
-				array( 'is_draft' => 'both' ) 
-			);
-
-			if ( ! empty( $linked_entry_ids ) ) {
-				if ( count( $linked_entry_ids ) == 1 ) {
-					$dynamic_field_query['meta_value like'] = reset( $linked_entry_ids );
-				} else {
-					$dynamic_field_query['meta_value'] = $linked_entry_ids;
-				}
-				$dynamic_field_query['field_id'] = $dynamic_field_ids;
-			}
+		if ( ! $linked_form_ids ) {
+			return $dynamic_field_query;
 		}
+
+		$linked_entry_ids = FrmEntryMeta::getEntryIds(
+			array(
+				'fi.form_id'      => $linked_form_ids,
+				'meta_value LIKE' => $search_param,
+			),
+			'',
+			'',
+			true,
+			array( 'is_draft' => 'both' )
+		);
+
+		if ( ! $linked_entry_ids ) {
+			return $dynamic_field_query;
+		}
+
+		if ( count( $linked_entry_ids ) === 1 ) {
+			$dynamic_field_query['meta_value like'] = reset( $linked_entry_ids );
+		} else {
+			$dynamic_field_query['meta_value'] = $linked_entry_ids;
+		}
+
+		$dynamic_field_query['field_id'] = $dynamic_field_ids;
 
 		return $dynamic_field_query;
 	}
@@ -854,11 +902,13 @@ class FrmProEntriesHelper {
 	 * @param int|string $form_id
 	 * @param array      $search_param
 	 * @param array      $where
+	 *
 	 * @return void
 	 */
 	private static function append_entry_ids_for_matching_posts( $form_id, $search_param, &$where ) {
 		// Check if form has a post action
 		$post_action = FrmFormAction::get_action_for_form( $form_id, 'wppost' );
+
 		if ( ! $post_action ) {
 			return;
 		}
@@ -870,33 +920,38 @@ class FrmProEntriesHelper {
 			'or'                => 1,
 		);
 		$matching_posts = FrmDb::get_col( 'posts', $post_query, 'ID' );
+		$action         = reset( $post_action );
 
-		$action = reset( $post_action );
 		if ( ! empty( $action->post_content['post_custom_fields'] ) ) {
 			$post_meta_post_ids = self::search_post_meta_for_custom_fields( $action->post_content['post_custom_fields'], $search_param );
+
 			if ( $post_meta_post_ids ) {
 				$matching_posts = array_unique( array_merge( $matching_posts, $post_meta_post_ids ) );
 			}
 		}
 
 		// If there are any posts matching the query, retrieve entry IDs for those posts
-		if ( $matching_posts ) {
-			$entry_ids = FrmDb::get_col(
-				'frm_items',
-				array(
-					'post_id' => $matching_posts,
-					'form_id' => $form_id,
-				) 
-			);
-			if ( $entry_ids ) {
-				$where['it.id'] = array_merge( $where['it.id'], $entry_ids );
-			}
+		if ( ! $matching_posts ) {
+			return;
+		}
+
+		$entry_ids = FrmDb::get_col(
+			'frm_items',
+			array(
+				'post_id' => $matching_posts,
+				'form_id' => $form_id,
+			)
+		);
+
+		if ( $entry_ids ) {
+			$where['it.id'] = array_merge( $where['it.id'], $entry_ids );
 		}
 	}
 
 	/**
 	 * @param array  $custom_fields
 	 * @param string $search_param
+	 *
 	 * @return array post ids that match search.
 	 */
 	private static function search_post_meta_for_custom_fields( $custom_fields, $search_param ) {
@@ -912,8 +967,10 @@ class FrmProEntriesHelper {
 	 * Set up the it.id argument for the WHERE clause when searching for a specific field value
 	 *
 	 * @since 2.02.01
+	 *
 	 * @param int $fid
 	 * @param array $search_param
+	 *
 	 * @return array
 	 */
 	private static function get_where_arguments_for_specific_field_query( $fid, $search_param ) {
@@ -926,6 +983,7 @@ class FrmProEntriesHelper {
 			$field = 0;
 		} else {
 			$field = FrmField::getOne( $fid );
+
 			if ( $field->type === 'data' && is_numeric( $field->field_options['form_select'] ) ) {
 				$linked_field     = FrmField::getOne( $field->field_options['form_select'] );
 				$linked_entry_ids = FrmProEntryMeta::get_entry_ids_for_field_and_value( $linked_field, $search_param, $args );
@@ -935,7 +993,7 @@ class FrmProEntriesHelper {
 
 		$entry_ids = FrmProEntryMeta::get_entry_ids_for_field_and_value( $field, $search_param, $args );
 
-		if ( empty( $entry_ids ) ) {
+		if ( ! $entry_ids ) {
 			$entry_ids = 0;
 		}
 
@@ -949,6 +1007,7 @@ class FrmProEntriesHelper {
 	 *
 	 * @param string $fid
 	 * @param array  $search_param
+	 *
 	 * @return array
 	 */
 	private static function get_where_arguments_for_frm_items_column( $fid, $search_param ) {
@@ -1035,20 +1094,22 @@ class FrmProEntriesHelper {
 	 * Create an array of user IDs from an array of search parameters
 	 *
 	 * @since 2.02.01
+	 *
 	 * @param array $search_param
-	 * @return array $user_ids
+	 *
+	 * @return array User ids.
 	 */
 	private static function replace_search_param_with_user_ids( $search_param ) {
-		$user_ids = array_filter( $search_param, 'is_numeric' );
-
+		$user_ids     = array_filter( $search_param, 'is_numeric' );
 		$add_user_ids = self::search_users( $search_param );
-		if ( ! empty( $add_user_ids ) ) {
+
+		if ( $add_user_ids ) {
 			$user_ids = array_merge( $user_ids, $add_user_ids );
 		}
 
-		if ( empty( $user_ids ) ) {
-			// prevent all results from being returned when there are no matches
-			$user_ids = array( 'none' );
+		if ( ! $user_ids ) {
+			// Prevent all results from being returned when there are no matches
+			return array( 'none' );
 		}
 
 		return $user_ids;
@@ -1058,14 +1119,16 @@ class FrmProEntriesHelper {
 	 * @since 3.03.03
 	 *
 	 * @param array $search
+	 *
 	 * @return array
 	 */
 	private static function search_users( $search ) {
 		global $wpdb;
 
 		$single_value = implode( ' ', $search );
+
 		if ( is_numeric( $single_value ) ) {
-			// don't search the user record for the id
+			// Don't search the user record for the id
 			return array();
 		}
 
@@ -1084,6 +1147,7 @@ class FrmProEntriesHelper {
 	 *
 	 * @param array        $add_where
 	 * @param array|string $where_clause
+	 *
 	 * @return void
 	 */
 	private static function add_where_to_query( $add_where, &$where_clause ) {
@@ -1110,6 +1174,7 @@ class FrmProEntriesHelper {
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_embedded_form_ids( $form_id ) {
@@ -1123,6 +1188,7 @@ class FrmProEntriesHelper {
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_searchable_form_ids( $form_id ) {
@@ -1145,6 +1211,7 @@ class FrmProEntriesHelper {
 	 * @param string $s Search term.
 	 * @param int    $form_id
 	 * @param array  $args
+	 *
 	 * @return array|false
 	 */
 	public static function get_search_ids( $s, $form_id, $args = array() ) {
@@ -1154,7 +1221,6 @@ class FrmProEntriesHelper {
 			return false;
 		}
 
-		$search_terms = self::explode_search_terms( $s );
 		$spaces       = '';
 		$e_ids        = array();
 		$p_search     = array();
@@ -1162,59 +1228,62 @@ class FrmProEntriesHelper {
 		$search       = array();
 
 		$and_or = apply_filters( 'frm_search_any_terms', true, $s );
+
 		if ( $and_or ) {
 			$search['or'] = 1;
 		}
 
 		$data_field = FrmProFormsHelper::has_field( 'data', $form_id, false );
 
-		foreach ( $search_terms as $term ) {
+		foreach ( self::explode_search_terms( $s ) as $term ) {
 			$p_search[] = array(
 				$spaces . $wpdb->posts . '.post_title like' => $term,
 				$spaces . $wpdb->posts . '.post_content like' => $term,
-				'or' => 1, // search with an OR
+				'or' => 1, // Search with an OR
 			);
 
-			$pmeta_search[] = array( $wpdb->postmeta . '.meta_value like' => $term );
-
+			$pmeta_search[]                        = array( $wpdb->postmeta . '.meta_value like' => $term );
 			$search[ $spaces . 'meta_value like' ] = $term;
-			$spaces                               .= ' '; // add a space to keep the array keys unique
+			$spaces                               .= ' '; // Add a space to keep the array keys unique
 
 			if ( is_numeric( $term ) ) {
 				$e_ids[] = (int) $term;
 			}
 
-			if ( $data_field ) {
-				$linked_field_ids = array();
+			if ( ! $data_field ) {
+				continue;
+			}
 
-				//search the joined entry too
-				foreach ( (array) $data_field as $df ) {
-					FrmProFieldsHelper::get_subform_ids( $linked_field_ids, $df );
-				}
-				unset( $df );
+			$linked_field_ids = array();
 
-				if ( $linked_field_ids ) {
-					$data_form_ids = FrmDb::get_col( $wpdb->prefix . 'frm_fields', array( 'id' => $linked_field_ids ), 'form_id' );
-					unset( $linked_field_ids );
+			// Search the joined entry too
+			foreach ( (array) $data_field as $df ) {
+				FrmProFieldsHelper::get_subform_ids( $linked_field_ids, $df );
+			}
+			unset( $df );
 
-					if ( $data_form_ids ) {
-						$where          = array(
-							'fi.form_id'      => $data_form_ids,
-							'meta_value like' => $term,
-						);
-						$data_entry_ids = FrmEntryMeta::getEntryIds( $where );
+			if ( $linked_field_ids ) {
+				$data_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $linked_field_ids ), 'form_id' );
+				unset( $linked_field_ids );
 
-						if ( $data_entry_ids ) {
-							if ( ! isset( $search['meta_value'] ) ) {
-								$search['meta_value'] = array();
-							}
-							$search['meta_value'] = array_merge( $search['meta_value'], $data_entry_ids );
+				if ( $data_form_ids ) {
+					$where          = array(
+						'fi.form_id'      => $data_form_ids,
+						'meta_value like' => $term,
+					);
+					$data_entry_ids = FrmEntryMeta::getEntryIds( $where );
+
+					if ( $data_entry_ids ) {
+						if ( ! isset( $search['meta_value'] ) ) {
+							$search['meta_value'] = array();
 						}
+
+						$search['meta_value'] = array_merge( $search['meta_value'], $data_entry_ids );
 					}
 				}
-
-				unset( $data_form_ids );
 			}
+
+			unset( $data_form_ids );
 		}
 
 		$p_ids = array(
@@ -1223,15 +1292,11 @@ class FrmProEntriesHelper {
 		);
 		self::search_form_posts( $form_id, $p_search, $pmeta_search, $p_ids );
 
-		// track the entry ids from posts search to include in search results.
+		// Track the entry ids from posts search to include in search results.
 		$item_ids_from_posts = ! empty( $p_ids['item_id'] ) ? $p_ids['item_id'] : array();
 
-		if ( ! empty( $e_ids ) ) {
-			if ( isset( $p_ids['item_id'] ) ) {
-				$p_ids['item_id'] = array_merge( (array) $e_ids, (array) $p_ids['item_id'] );
-			} else {
-				$p_ids['item_id'] = $e_ids;
-			}
+		if ( $e_ids ) {
+			$p_ids['item_id'] = isset( $p_ids['item_id'] ) ? array_merge( $e_ids, (array) $p_ids['item_id'] ) : $e_ids;
 		}
 
 		$searchable_form_ids = self::get_searchable_form_ids( $form_id );
@@ -1240,11 +1305,13 @@ class FrmProEntriesHelper {
 
 		if ( count( $searchable_form_ids ) === 1 || ! self::free_plugin_updated_to_support_child_form_search() ) {
 			$entry_ids = FrmEntryMeta::getEntryIds( $query, '', '', true, $args );
-			// post data does not rely on entry meta, so we have to add it to the results.
+
+			// Post data does not rely on entry meta, so we have to add it to the results.
 			// self::search_form_posts function checks search terms as well, so this is fine.
 			if ( $item_ids_from_posts ) {
-				$entry_ids = array_unique( array_merge( $entry_ids, $item_ids_from_posts ) );
+				return array_unique( array_merge( $entry_ids, $item_ids_from_posts ) );
 			}
+
 			return $entry_ids;
 		}
 
@@ -1254,33 +1321,40 @@ class FrmProEntriesHelper {
 	/**
 	 * @param int        $form_id
 	 * @param array<int> $dynamic_field_form_ids
+	 *
 	 * @return array<string>
 	 */
 	private static function get_post_meta_keys_for_all_forms_in_search( $form_id, $dynamic_field_form_ids ) {
 		$all_form_ids = array_unique( array_merge( array( $form_id ), $dynamic_field_form_ids ) );
 		$meta_keys    = array();
+
 		foreach ( $all_form_ids as $current_form_id ) {
 			$meta_keys = array_unique( array_merge( $meta_keys, self::get_post_meta_keys( $current_form_id ) ) );
 		}
+
 		return $meta_keys;
 	}
 
 	/**
 	 * @param int        $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_post_meta_keys( $form_id ) {
 		$post_action = FrmFormAction::get_action_for_form( $form_id, 'wppost' );
+
 		if ( ! $post_action ) {
 			return array();
 		}
 
 		$action = reset( $post_action );
+
 		if ( empty( $action->post_content['post_custom_fields'] ) ) {
 			return array();
 		}
 
 		$meta_keys = array();
+
 		foreach ( $action->post_content['post_custom_fields'] as $meta ) {
 			$meta_keys[] = $meta['meta_name'];
 		}
@@ -1311,6 +1385,7 @@ class FrmProEntriesHelper {
 		list( $dynamic_field_ids, $target_form_ids, $dynamic_post_ids ) = self::get_dynamic_field_search_info( $form_id );
 
 		$meta_keys = self::get_post_meta_keys_for_all_forms_in_search( $form_id, $target_form_ids );
+
 		if ( $meta_keys ) {
 			$pmeta_search   = array(
 				array(
@@ -1326,6 +1401,7 @@ class FrmProEntriesHelper {
 		}
 
 		$matching_posts = array_intersect( $matching_posts, $post_ids );
+
 		if ( ! $matching_posts ) {
 			return;
 		}
@@ -1338,6 +1414,7 @@ class FrmProEntriesHelper {
 			if ( in_array( $row->form_id, $target_form_ids, true ) ) {
 				$dynamic_item_ids[] = $row->id;
 			}
+
 			$item_ids[] = $row->id;
 		}
 
@@ -1352,6 +1429,7 @@ class FrmProEntriesHelper {
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array<array<int>>
 	 */
 	private static function get_dynamic_field_search_info( $form_id ) {
@@ -1370,6 +1448,7 @@ class FrmProEntriesHelper {
 
 		if ( $target_field_ids ) {
 			$target_form_ids = FrmDb::get_col( 'frm_fields', array( 'id' => $target_field_ids ), 'form_id' );
+
 			if ( $target_form_ids ) {
 				$post_ids = FrmDb::get_col( 'frm_items', array( 'form_id' => $target_form_ids ), 'post_id' );
 			}
@@ -1383,6 +1462,7 @@ class FrmProEntriesHelper {
 	 *
 	 * @param array<int> $dynamic_field_ids
 	 * @param array<int> $dynamic_item_ids
+	 *
 	 * @return array<int>
 	 */
 	private static function get_entry_ids_for_dynamic_field_matches( $dynamic_field_ids, $dynamic_item_ids ) {
@@ -1407,6 +1487,7 @@ class FrmProEntriesHelper {
 	 * @param int    $current_entry_id The ID of the current entry.
 	 * @param int    $form_id          The ID of the form that the entries belong to.
 	 * @param string $action           The action to determine the base URL for navigation.
+	 *
 	 * @return void
 	 */
 	public static function get_entry_navigation( $current_entry_id, $form_id, $action ) {
@@ -1425,7 +1506,7 @@ class FrmProEntriesHelper {
 		}
 
 		// Determine the IDs for the previous and next entries.
-		$previous_entry_id = $current_entry_position !== 0 ? $entry_ids[ $current_entry_position - 1 ] : null;
+		$previous_entry_id = $current_entry_position === 0 ? null : $entry_ids[ $current_entry_position - 1 ];
 		$next_entry_id     = $current_entry_position < $total_entries_count - 1 ? $entry_ids[ $current_entry_position + 1 ] : null;
 
 		// Determine the base URL for the specified action.
@@ -1433,5 +1514,33 @@ class FrmProEntriesHelper {
 
 		// Include the navigation view.
 		require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-entries/navigation.php';
+	}
+
+	/**
+	 * Get a posted meta value for a field, supporting nested repeater fields.
+	 *
+	 * Delegates to FrmEntriesHelper::get_posted_meta() when available.
+	 *
+	 * @since 6.29
+	 *
+	 * @param int|string $field_id The field ID.
+	 * @param array      $args     Validation args with parent_field_id and key_pointer.
+	 *
+	 * @return mixed
+	 */
+	public static function get_posted_meta( $field_id, $args ) {
+		if ( is_callable( array( 'FrmEntriesHelper', 'get_posted_meta' ) ) ) {
+			return FrmEntriesHelper::get_posted_meta( $field_id, $args );
+		}
+
+		// Backward compatibility "since 6.29": FrmEntriesHelper::get_posted_meta() may not be accessible.
+		if ( empty( $args['parent_field_id'] ) ) {
+			// Sanitizing is done next.
+			$value = isset( $_POST['item_meta'][ $field_id ] ) ? wp_unslash( $_POST['item_meta'][ $field_id ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing, SlevomatCodingStandard.Files.LineLength.LineTooLong
+		} else {
+			$value = isset( $_POST['item_meta'][ $args['parent_field_id'] ][ $args['key_pointer'] ][ $field_id ] ) ? wp_unslash( $_POST['item_meta'][ $args['parent_field_id'] ][ $args['key_pointer'] ][ $field_id ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing, SlevomatCodingStandard.Files.LineLength.LineTooLong
+		}
+
+		return $value;
 	}
 }

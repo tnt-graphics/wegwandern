@@ -53,6 +53,7 @@ class FrmProSettingsController {
 	 * @since 6.0
 	 *
 	 * @param array $errors
+	 *
 	 * @return void
 	 */
 	private static function display_errors( $errors ) {
@@ -63,6 +64,7 @@ class FrmProSettingsController {
 
 	public static function standalone_license_box() {
 		$edd_update = FrmProAppHelper::get_updater();
+
 		if ( self::show_license_form( $edd_update ) ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/settings/standalone_license_box.php';
 		}
@@ -70,14 +72,19 @@ class FrmProSettingsController {
 
 	/**
 	 * @param FrmProEddController $edd_update
+	 *
 	 * @return bool
 	 */
 	private static function show_license_form( $edd_update ) {
-		return ( ! is_multisite() || current_user_can( 'setup_network' ) || ! get_site_option( $edd_update->pro_wpmu_store ) );
+		return ! is_multisite() || current_user_can( 'setup_network' ) || ! get_site_option( $edd_update->pro_wpmu_store );
 	}
 
 	/**
 	 * @since 4.0
+	 *
+	 * @param array $sections
+	 *
+	 * @return array
 	 */
 	public static function add_settings_section( $sections ) {
 		// TODO: Backward compatibility, remove in a future safe version.
@@ -97,14 +104,14 @@ class FrmProSettingsController {
 			'class'    => self::class,
 			'function' => 'white_label_settings',
 			'name'     => isset( $sections['white_label'] ) ? $sections['white_label']['name'] : __( 'White Labeling', 'formidable' ),
-			'icon'     => isset( $sections['white_label'] ) ? $sections['white_label']['icon'] : 'frm_icon_font frm_ghost_icon',
+			'icon'     => isset( $sections['white_label'] ) ? $sections['white_label']['icon'] : 'frmfont frm_ghost_icon',
 		);
 
 		$sections['inbox'] = array(
 			'class'    => self::class,
 			'function' => 'inbox_settings',
 			'name'     => isset( $sections['inbox'] ) ? $sections['inbox']['name'] : __( 'Inbox', 'formidable' ),
-			'icon'     => isset( $sections['inbox'] ) ? $sections['inbox']['icon'] : 'frm_icon_font frm_email_icon',
+			'icon'     => isset( $sections['inbox'] ) ? $sections['inbox']['icon'] : 'frmfont frm_email_icon',
 		);
 
 		return $sections;
@@ -116,6 +123,8 @@ class FrmProSettingsController {
 
 	/**
 	 * @since 4.0
+	 *
+	 * @param object $frm_settings
 	 */
 	public static function message_settings( $frm_settings ) {
 		$frmpro_settings = FrmProAppHelper::get_settings();
@@ -127,12 +136,13 @@ class FrmProSettingsController {
 	 * This includes Date Format and Currency settings.
 	 *
 	 * @param FrmSettings $frm_settings
+	 *
 	 * @return void
 	 */
 	public static function more_settings( $frm_settings ) {
 		$frmpro_settings      = FrmProAppHelper::get_settings();
 		$datepicker_libraries = array(
-			'default'   => __( 'Default', 'formidable-pro' ),
+			'default'   => __( 'Default', 'formidable' ),
 			'jquery'    => 'jQuery',
 			'flatpickr' => 'Flatpickr (Beta)',
 		);
@@ -172,12 +182,13 @@ class FrmProSettingsController {
 	 * @param array $messages
 	 */
 	public static function filter_inbox( $messages ) {
-		if ( empty( $messages ) ) {
+		if ( ! $messages ) {
 			return $messages;
 		}
 
 		$excluded = self::excluded_messages();
-		if ( empty( $excluded ) ) {
+
+		if ( ! $excluded ) {
 			return $messages;
 		}
 
@@ -186,6 +197,7 @@ class FrmProSettingsController {
 				unset( $messages[ $k ] );
 			}
 		}
+
 		return $messages;
 	}
 
@@ -194,13 +206,14 @@ class FrmProSettingsController {
 	 */
 	private static function excluded_messages() {
 		$excluded = array();
+
 		if ( ! self::has_current_access() ) {
 			return $excluded;
 		}
 
 		$settings = FrmProAppHelper::get_settings();
-		$types    = $settings->inbox_types();
-		foreach ( $types as $type => $label ) {
+
+		foreach ( $settings->inbox_types() as $type => $label ) {
 			if ( ! empty( $settings->inbox ) && ! isset( $settings->inbox[ $type ] ) ) {
 				$excluded[] = $type;
 			}
@@ -213,14 +226,17 @@ class FrmProSettingsController {
 	 * @since 4.06.01
 	 *
 	 * @param string $count
+	 *
 	 * @return string
 	 */
 	public static function inbox_badge( $count ) {
 		$settings = FrmProAppHelper::get_settings();
 		$off      = ! empty( $settings->inbox ) && ! isset( $settings->inbox['badge'] );
+
 		if ( $off && self::has_current_access() ) {
-			$count = '';
+			return '';
 		}
+
 		return $count;
 	}
 
@@ -231,7 +247,7 @@ class FrmProSettingsController {
 	}
 
 	public static function store() {
-		global $frmpro_settings;
+		$frmpro_settings = FrmProAppHelper::get_settings();
 		$frmpro_settings->store();
 	}
 
@@ -242,6 +258,7 @@ class FrmProSettingsController {
 	 *
 	 * @param array $helpers
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	public static function advanced_helpers( $helpers, $atts ) {
@@ -251,19 +268,19 @@ class FrmProSettingsController {
 		$file_field    = 0;
 
 		foreach ( $atts['fields'] as $field ) {
-			if ( empty( $repeat_field ) && FrmField::is_repeating_field( $field ) ) {
+			if ( ! $repeat_field && FrmField::is_repeating_field( $field ) ) {
 				$repeat_field = $field->id;
-			} elseif ( empty( $dynamic_field ) && $field->type === 'data' && isset( $field->field_options['form_select'] ) && is_numeric( $field->field_options['form_select'] ) ) {
+			} elseif ( ! $dynamic_field && $field->type === 'data' && isset( $field->field_options['form_select'] ) && is_numeric( $field->field_options['form_select'] ) ) {
 				add_action( 'frm_field_code_tab', 'FrmProSettingsController::field_sidebar' );
 				$dynamic_field = $field->id;
 				$linked_field  = $field->field_options['form_select'];
-			} elseif ( empty( $file_field ) && $field->type === 'file' ) {
+			} elseif ( ! $file_field && $field->type === 'file' ) {
 				$file_field = $field;
 			}
 			unset( $field );
 		}
 
-		if ( ! empty( $repeat_field ) ) {
+		if ( $repeat_field ) {
 			$helpers['repeat'] = array(
 				'heading' => '',
 				'codes'   => array(
@@ -272,7 +289,7 @@ class FrmProSettingsController {
 			);
 		}
 
-		if ( ! empty( $dynamic_field ) ) {
+		if ( $dynamic_field ) {
 			$helpers['dynamic'] = array(
 				'heading' => '',
 				'codes'   => array(
@@ -282,11 +299,13 @@ class FrmProSettingsController {
 			);
 		}
 
-		if ( ! empty( $file_field ) ) {
-			$helpers['default']['codes'][ $file_field->id . ' show_image=1' ]    = __( 'Show image', 'formidable-pro' );
-			$helpers['default']['codes'][ $file_field->id . ' show=id' ]         = __( 'Image ID', 'formidable-pro' );
-			$helpers['default']['codes'][ $file_field->id . ' show_filename=1' ] = __( 'Image Name', 'formidable-pro' );
+		if ( ! $file_field ) {
+			return $helpers;
 		}
+
+		$helpers['default']['codes'][ $file_field->id . ' show_image=1' ]    = __( 'Show image', 'formidable-pro' );
+		$helpers['default']['codes'][ $file_field->id . ' show=id' ]         = __( 'Image ID', 'formidable-pro' );
+		$helpers['default']['codes'][ $file_field->id . ' show_filename=1' ] = __( 'Image Name', 'formidable-pro' );
 
 		return $helpers;
 	}
@@ -295,15 +314,19 @@ class FrmProSettingsController {
 	 * Add extra field shortcodes in the shortcode lists
 	 *
 	 * @since 3.04.01
+	 *
+	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	public static function field_sidebar( $atts ) {
 		$field = $atts['field'];
+
 		if ( $field->type !== 'data' || ! isset( $field->field_options['form_select'] ) || ! is_numeric( $field->field_options['form_select'] ) ) {
 			return;
 		}
 
-		//get all fields from linked form
+		// Get all fields from linked form
 		$linked_form = FrmDb::get_var( 'frm_fields', array( 'id' => $field->field_options['form_select'] ), 'form_id' );
 
 		$linked_fields = FrmField::getAll(
@@ -313,18 +336,20 @@ class FrmProSettingsController {
 			)
 		);
 
-		if ( $linked_fields ) {
-			foreach ( $linked_fields as $linked_field ) {
-				FrmFormsHelper::insert_opt_html(
-					array(
-						'id'    => $field->id . ' show=' . $linked_field->id,
-						'key'   => $field->field_key . ' show=' . $linked_field->field_key,
-						'name'  => $linked_field->name,
-						'type'  => $linked_field->type,
-						'class' => 'frm-customize-list',
-					)
-				);
-			}
+		if ( ! $linked_fields ) {
+			return;
+		}
+
+		foreach ( $linked_fields as $linked_field ) {
+			FrmFormsHelper::insert_opt_html(
+				array(
+					'id'    => $field->id . ' show=' . $linked_field->id,
+					'key'   => $field->field_key . ' show=' . $linked_field->field_key,
+					'name'  => $linked_field->name,
+					'type'  => $linked_field->type,
+					'class' => 'frm-customize-list',
+				)
+			);
 		}
 	}
 
@@ -341,6 +366,16 @@ class FrmProSettingsController {
 
 		wp_enqueue_script( 'wp-color-picker-alpha', FrmProAppHelper::plugin_url() . '/js/admin/settings/wp-color-picker-alpha.js', array( 'wp-color-picker' ), '3.0.2', true );
 		wp_enqueue_script( 'formidable_pro_settings', FrmProAppHelper::plugin_url() . '/js/admin/settings.js', array( 'wp-color-picker' ), FrmProDb::$plug_version, true );
+		wp_localize_script(
+			'formidable_pro_settings',
+			'frmProSettings',
+			array(
+				'i18n' => array(
+					'selectColor' => __( 'Select Color', 'formidable' ),
+					'select'      => __( 'Select', 'formidable-pro' ),
+				),
+			)
+		);
 	}
 
 	/**

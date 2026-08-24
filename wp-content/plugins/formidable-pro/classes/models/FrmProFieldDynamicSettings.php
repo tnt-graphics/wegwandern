@@ -11,13 +11,13 @@ class FrmProFieldDynamicSettings extends FrmProFieldSettings {
 
 	/**
 	 * @var int
+	 *
 	 * @since 2.03.05
 	 */
 	private $linked_field_id = 0;
 
 	public function __construct( array $field_options ) {
 		parent::__construct( $field_options );
-
 		$this->set_linked_field_id();
 	}
 

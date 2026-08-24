@@ -1,8 +1,10 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
+
 global $wpdb;
-$featured_image_folder = wpmfGetOption('featured_image_folder');
+$featured_image_folder = WpmfHelper::wpmfGetOption('featured_image_folder');
 ?>
 <div id="additional_features" class="tab-content">
     <div class="content-box content-wpmf-general">
@@ -370,6 +372,28 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
                 </div>
             </div>
         </div>
+        
+        <div class="ju-settings-option wpmf_right m-r-0">
+            <div class="wpmf_row_full">
+                <input type="hidden" name="image_info" value="0">
+                <label data-wpmftippy="<?php esc_html_e('Show image details on hover in Media Library', 'wpmf'); ?>"
+                       class="ju-setting-label text"><?php esc_html_e('Show image details on hover', 'wpmf') ?></label>
+                <div class="ju-switch-button">
+                    <label class="switch">
+                        <input type="checkbox" name="image_info"
+                               value="1"
+                            <?php
+                            if (isset($image_info) && (int) $image_info === 1) {
+                                echo 'checked';
+                            }
+                            ?>
+                        >
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <div class="default_featured_image_wrap">
             <div class="featured_image_wrap">
                 <input type="hidden" class="default_featured_image" name="default_featured_image" value="0">
@@ -654,7 +678,7 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
                     <label class="switch">
                         <input type="checkbox" name="wpmf_minimize_folder_tree_post_type" id="wpmf_minimize_folder_tree_post_type" value="1"
                             <?php
-                            $minimize_folder_tree_option = wpmfGetOption('wpmf_minimize_folder_tree_post_type');
+                            $minimize_folder_tree_option = WpmfHelper::wpmfGetOption('wpmf_minimize_folder_tree_post_type');
                             if (isset($minimize_folder_tree_option) && (int) $minimize_folder_tree_option === 1) {
                                 echo 'checked';
                             }
@@ -685,7 +709,7 @@ $featured_image_folder = wpmfGetOption('featured_image_folder');
                         <input type="checkbox" name="wpmf_option_folder_<?php echo esc_attr($value->name); ?>" id="wpmf_option_folder_<?php echo esc_attr($value->name); ?>" value="1"
                             <?php
                             $option_name = 'wpmf_option_folder_'.$value->name;
-                            $option_folder = wpmfGetOption($option_name);
+                            $option_folder = WpmfHelper::wpmfGetOption($option_name);
                             if (isset($option_folder) && (int) $option_folder === 1) {
                                 echo 'checked';
                             }

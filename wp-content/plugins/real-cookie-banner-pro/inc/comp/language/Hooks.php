@@ -214,17 +214,25 @@ class Hooks
     public function copy_blocker_connected_services_meta($meta_value, $from, $to, $locale, $meta_key)
     {
         $postType = $meta_key === Blocker::META_NAME_SERVICES ? Cookie::CPT_NAME : ($this->isPro() ? TcfVendorConfiguration::CPT_NAME : null);
-        if ($postType !== null && $this->compInstance()->isActive() && !empty($meta_value)) {
-            $ids = [];
-            foreach (\explode(',', $meta_value) as $currentId) {
-                $translationId = $this->compInstance()->getCurrentPostId(\intval($currentId), $postType, $locale);
-                if ($translationId > 0 && \intval($translationId) !== \intval($currentId)) {
-                    $ids[] = $translationId;
-                }
-            }
-            return \join(',', $ids);
+        if ($postType === null) {
+            return $meta_value;
         }
-        return $meta_value;
+        $comp = $this->compInstance();
+        if (!$comp->isActive() || empty($meta_value)) {
+            return $meta_value;
+        }
+        $ids = [];
+        foreach (\explode(',', (string) $meta_value) as $rawId) {
+            $rawId = \trim($rawId);
+            if ($rawId === '') {
+                continue;
+            }
+            $mapped = $comp->remapPostId((int) $rawId, $postType, $locale);
+            if ($mapped > 0) {
+                $ids[] = $mapped;
+            }
+        }
+        return \implode(',', $ids);
     }
     /**
      * Get all languages within a `AbstractSyncPlugin` (like WPML or PolyLang) which

@@ -53,6 +53,7 @@ class FrmProFilePayloadBuilder {
 
 		if ( $this->size ) {
 			$src = wp_get_attachment_image_src( $this->id, $this->size );
+
 			if ( $src ) {
 				$this->url = reset( $src );
 			}
@@ -84,28 +85,28 @@ class FrmProFilePayloadBuilder {
 	/**
 	 * @param string $protocol either 'http' or 'https'
 	 * @param bool   $leave_size_out_of_payload if true payload will omit size, used to confirm a full size image url match.
+	 *
 	 * @return string the protected file url in either ?frm_file=payload or /file_file/payload format.
 	 */
 	public function get_protected_url( $protocol, $leave_size_out_of_payload ) {
-		$attached_file = get_attached_file( $this->id );
-		$filename      = basename( $attached_file );
-		$raw           = "id:{$this->id}|filename:{$filename}";
+		$filename = basename( get_attached_file( $this->id ) );
+		$raw      = "id:{$this->id}|filename:{$filename}";
 
 		if ( $this->size && ! $leave_size_out_of_payload ) {
 			if ( is_string( $this->size ) ) {
 				$raw .= "|size:{$this->size}";
 			} elseif ( is_array( $this->size ) && 2 === count( $this->size ) ) {
 				list( $width, $height ) = $this->size;
+
 				if ( is_numeric( $width ) && is_numeric( $height ) ) {
 					$raw .= "|size:{$width}x{$height}";
 				}
 			}
 		}
 
-		$scheme   = self::maybe_is_ssl() ? 'https' : 'http';
-		$home_url = home_url( '', $scheme );
+		$scheme = self::maybe_is_ssl() ? 'https' : 'http';
 
-		return $home_url . $protocol . base64_encode( $raw );
+		return home_url( '', $scheme ) . $protocol . base64_encode( $raw );
 	}
 
 	/**

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</label>
 </p>
 
-<p class="frm8 frm_form_field hide_save_draft <?php echo empty( $values['save_draft'] ) ? esc_attr( ' frm_hidden' ) : ''; ?>">
+<p class="frm8 frm_form_field hide_save_draft <?php echo ! empty( $values['save_draft'] ) ? '' : esc_attr( ' frm_hidden' ); ?>">
 	<select name="options[edit_draft_role][]" id="edit_draft_role" multiple="multiple" class="frm_multiselect">
 		<option value="" <?php FrmProAppHelper::selected( $values['edit_draft_role'], '' ); ?>><?php esc_html_e( 'Logged-in Users', 'formidable-pro' ); ?></option>
 		<?php
@@ -55,6 +55,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @since 6.8
  *
- * @param mixed $values Form settings value.
+ * @param array $values Form settings value.
  */
 do_action( 'frm_settings_after_save_draft', $values );

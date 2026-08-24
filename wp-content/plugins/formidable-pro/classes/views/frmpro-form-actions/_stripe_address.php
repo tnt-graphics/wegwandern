@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <p class="frm6">
 	<label for="<?php echo esc_attr( $action_control->get_field_id( 'billing_address' ) ); ?>">
-		<?php esc_html_e( 'Address', 'formidable-pro' ); ?>
+		<?php esc_html_e( 'Address', 'formidable' ); ?>
 	</label>
 	<?php
 	$action_control->show_fields_dropdown(

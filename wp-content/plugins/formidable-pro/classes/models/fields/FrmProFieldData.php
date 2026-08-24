@@ -11,6 +11,7 @@ class FrmProFieldData extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'data';
@@ -60,14 +61,15 @@ class FrmProFieldData extends FrmFieldType {
 	 * @since 4.0
 	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'.
+	 *
 	 * @return void
 	 */
 	public function show_primary_options( $args ) {
 		$field       = $args['field'];
 		$field_types = array(
-			'select'   => __( 'Dropdown', 'formidable-pro' ),
-			'radio'    => __( 'Radio Buttons', 'formidable-pro' ),
-			'checkbox' => __( 'Checkboxes', 'formidable-pro' ),
+			'select'   => __( 'Dropdown', 'formidable' ),
+			'radio'    => __( 'Radio Buttons', 'formidable' ),
+			'checkbox' => __( 'Checkboxes', 'formidable' ),
 			'data'     => __( 'List', 'formidable-pro' ),
 		);
 
@@ -80,6 +82,7 @@ class FrmProFieldData extends FrmFieldType {
 	 * @since 4.0
 	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'.
+	 *
 	 * @return void
 	 */
 	public function show_extra_field_choices( $args ) {
@@ -101,6 +104,7 @@ class FrmProFieldData extends FrmFieldType {
 		$selected_field   = '';
 		$selected_form_id = '';
 		$current_field_id = $field['id'];
+
 		if ( isset( $field['form_select'] ) && is_numeric( $field['form_select'] ) ) {
 			$selected_field = FrmDb::get_row( 'frm_fields', array( 'id' => $field['form_select'] ), 'id, form_id' );
 
@@ -116,30 +120,41 @@ class FrmProFieldData extends FrmFieldType {
 
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/options-form-before.php';
 
-		if ( $data_type === 'select' ) {
-			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php';
-			$this->auto_width_setting( $args );
+		if ( $data_type !== 'select' ) {
+			return;
 		}
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php';
+		$this->auto_width_setting( $args );
 	}
 
 	public function prepare_front_field( $values, $atts ) {
 		$data_type   = FrmField::get_option( $this->field, 'data_type' );
 		$form_select = FrmField::get_option( $this->field, 'form_select' );
-		if ( in_array( $data_type, array( 'select', 'radio', 'checkbox' ) ) && is_numeric( $form_select ) ) {
+
+		if ( in_array( $data_type, array( 'select', 'radio', 'checkbox' ), true ) && is_numeric( $form_select ) ) {
 			$entry_id = $atts['entry_id'] ?? 0;
 			FrmProDynamicFieldsController::add_options_for_dynamic_field( $this->field, $values, array( 'entry_id' => $entry_id ) );
 		}
+
 		return $values;
 	}
 
 	/**
 	 * Remove the frm_opt_container class for dropdowns
+	 *
+	 * @param array  $args
+	 * @param string $html
+	 *
+	 * @return string
 	 */
 	protected function after_replace_html_shortcodes( $args, $html ) {
 		$data_type = FrmField::get_option( $this->field, 'data_type' );
+
 		if ( 'select' === $data_type ) {
-			$html = str_replace( '"frm_opt_container', '"frm_data_container', $html );
+			return str_replace( '"frm_opt_container', '"frm_data_container', $html );
 		}
+
 		return $html;
 	}
 
@@ -148,6 +163,7 @@ class FrmProFieldData extends FrmFieldType {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	protected function prepare_display_value( $value, $atts ) {
@@ -157,23 +173,22 @@ class FrmProFieldData extends FrmFieldType {
 
 		$atts['show'] = $atts['show'] ?? false;
 
-		if ( ! empty( $value ) && ! is_array( $value ) && strpos( $value, $atts['sep'] ) !== false ) {
+		if ( $value && ! is_array( $value ) && str_contains( $value, $atts['sep'] ) ) {
 			$value = explode( $atts['sep'], $value );
 		}
 
 		if ( $atts['show'] === 'id' ) {
-			// keep the values the same since we already have the ids
+			// Keep the values the same since we already have the ids
 			return (array) $value;
 		}
 
 		$show_opts = array( 'key', 'created-at', 'created_at', 'updated-at', 'updated_at, updated-by, updated_by', 'post_id', 'label' );
+
 		if ( in_array( $atts['show'], $show_opts, true ) ) {
-			$value = $this->get_show_value( $value, $atts );
-		} else {
-			$value = $this->get_data_value( $value, $atts );
+			return $this->get_show_value( $value, $atts );
 		}
 
-		return $value;
+		return $this->get_data_value( $value, $atts );
 	}
 
 	/**
@@ -181,16 +196,18 @@ class FrmProFieldData extends FrmFieldType {
 	 *
 	 * @param array|string $linked_ids
 	 * @param array        $atts
+	 *
 	 * @return array
 	 */
 	private function get_show_value( $linked_ids, $atts ) {
 		$nice_show = str_replace( '-', '_', $atts['show'] );
+		$value     = array();
 
-		$value = array();
 		foreach ( (array) $linked_ids as $linked_id ) {
 			if ( is_numeric( $linked_id ) ) {
 				$include_metas = 'label' === $nice_show;
 				$linked_entry  = FrmEntry::getOne( $linked_id, $include_metas );
+
 				if ( $linked_entry ) {
 					if ( isset( $linked_entry->{$atts['show']} ) ) {
 						$value[] = $linked_entry->{$atts['show']};
@@ -206,12 +223,14 @@ class FrmProFieldData extends FrmFieldType {
 				// This is a value for a dynamic list field.
 				// Dynamic list fields don't use entry ids, but string values.
 				$data_field = $this->get_target_data_field();
+
 				if ( $data_field ) {
 					$option  = $this->get_matching_data_field_option( $data_field, $linked_id );
 					$value[] = is_array( $option ) ? $option['label'] : $linked_id;
 				}
 			}
 		}
+
 		return $value;
 	}
 
@@ -220,6 +239,7 @@ class FrmProFieldData extends FrmFieldType {
 	 *
 	 * @param stdClass $data_field
 	 * @param string   $value
+	 *
 	 * @return array|false
 	 */
 	private function get_matching_data_field_option( $data_field, $value ) {
@@ -235,10 +255,12 @@ class FrmProFieldData extends FrmFieldType {
 	 * @since 6.7
 	 *
 	 * @param stdClass $entry
+	 *
 	 * @return string
 	 */
 	private function get_show_label_value_from_entry( $entry ) {
 		$data_field = $this->get_target_data_field();
+
 		if ( ! $data_field || empty( $entry->metas[ $data_field->id ] ) ) {
 			return '';
 		}
@@ -256,16 +278,13 @@ class FrmProFieldData extends FrmFieldType {
 	 */
 	private function get_target_data_field() {
 		$data_field_id = FrmField::get_option( $this->field, 'form_select' );
+
 		if ( ! is_numeric( $data_field_id ) ) {
 			return false;
 		}
 
 		$data_field = FrmField::getOne( $data_field_id );
-		if ( ! $data_field ) {
-			return false;
-		}
-
-		return $data_field;
+		return $data_field ? $data_field : false;
 	}
 
 	/**
@@ -275,42 +294,43 @@ class FrmProFieldData extends FrmFieldType {
 	 * @param array        $atts
 	 */
 	private function get_data_value( $linked_ids, $atts ) {
+		if ( ! $linked_ids ) {
+			return array();
+		}
+
+		if ( ! is_array( $linked_ids ) ) {
+			return $this->get_single_data_value( $linked_ids, $atts );
+		}
+
 		$value = array();
 
-		if ( ! empty( $linked_ids ) ) {
-			if ( is_array( $linked_ids ) ) {
-				foreach ( $linked_ids as $linked_id ) {
-					$new_val = $this->get_single_data_value( $linked_id, $atts );
-					if ( $new_val !== false ) {
-						$value[] = $new_val;
-					}
+		foreach ( $linked_ids as $linked_id ) {
+			$new_val = $this->get_single_data_value( $linked_id, $atts );
 
-					unset( $new_val, $linked_id );
-				}
-				$value = array_filter(
-					$value,
-					/**
-					 * @param string|null $item
-					 * @return bool
-					 */
-					function ( $item ) {
-						if ( null === $item ) {
-							return false;
-						}
-
-						return strlen( $item ) > 0;
-					}
-				);
-			} else {
-				$value = $this->get_single_data_value( $linked_ids, $atts );
+			if ( $new_val !== false ) {
+				$value[] = $new_val;
 			}
+
+			unset( $new_val, $linked_id );
 		}
-		return $value;
+
+		return array_filter(
+			$value,
+			/**
+			 * @param string|null $item
+			 *
+			 * @return bool
+			 */
+			function ( $item ) {
+				return null === $item ? false : $item !== '';
+			}
+		);
 	}
 
 	/**
 	 * @param string $linked_id
 	 * @param array  $atts
+	 *
 	 * @return false|string
 	 */
 	private function get_single_data_value( $linked_id, $atts ) {
@@ -322,11 +342,7 @@ class FrmProFieldData extends FrmFieldType {
 			return false;
 		}
 
-		if ( is_array( $value ) ) {
-			$value = implode( $atts['sep'], $value );
-		}
-
-		return $value;
+		return is_array( $value ) ? implode( $atts['sep'], $value ) : $value;
 	}
 
 	/**
@@ -338,6 +354,7 @@ class FrmProFieldData extends FrmFieldType {
 	 * @param string $linked_id
 	 * @param string $value
 	 * @param bool   $retrieved_linked_value If this is true, then we will not unset the value. This way entry IDs can be used when intended.
+	 *
 	 * @return bool
 	 */
 	private function should_unset_dynamic_field_value( $linked_id, $value, $retrieved_linked_value ) {
@@ -366,20 +383,22 @@ class FrmProFieldData extends FrmFieldType {
 	/**
 	 * Override parent to check if options are empty.
 	 * TODO: Why is this needed?
+	 *
+	 * @param array $args
 	 */
 	protected function maybe_include_hidden_values( $args ) {
-		$hidden       = '';
 		$field        = $args['field'] ?? $this->field;
 		$is_read_only = empty( $field['options'] ) || ( FrmField::is_read_only( $this->field ) && ! FrmAppHelper::is_admin() );
+
 		if ( $is_read_only && $this->show_readonly_hidden() ) {
-			$hidden = $this->show_hidden_values( $args );
+			return $this->show_hidden_values( $args );
 		}
-		return $hidden;
+
+		return '';
 	}
 
-
 	protected function show_readonly_hidden() {
-		return in_array( FrmField::get_option( $this->field, 'data_type' ), array( 'select', 'radio', 'checkbox' ) );
+		return in_array( FrmField::get_option( $this->field, 'data_type' ), array( 'select', 'radio', 'checkbox' ), true );
 	}
 
 	protected function is_readonly_array() {
@@ -404,34 +423,35 @@ class FrmProFieldData extends FrmFieldType {
 		$value = FrmProXMLHelper::convert_imported_value_to_array( $value );
 		$this->switch_imported_entry_ids( $atts['ids'], $value );
 
-		if ( count( $value ) <= 1 ) {
-			$value = reset( $value );
+		if ( count( $value ) > 1 ) {
+			return array_map( 'trim', $value );
+		}
 
-			$target_field_id = $this->field->field_options['form_select'];
-			$target_field    = FrmField::getOne( $target_field_id );
-			if ( FrmField::get_option( $target_field, 'post_field' ) ) {
-				$value = $this->get_post_field_import_value( $value, $target_field );
-			} else {
-				$object  = FrmFieldFactory::get_field_object( $target_field );
-				$options = $object->get_options( array() );
+		$value           = reset( $value );
+		$target_field_id = $this->field->field_options['form_select'];
+		$target_field    = FrmField::getOne( $target_field_id );
 
-				if ( is_array( $options ) ) {
-					$key = array_search( $value, $options );
+		if ( FrmField::get_option( $target_field, 'post_field' ) ) {
+			$value = $this->get_post_field_import_value( $value, $target_field );
+		} else {
+			$object  = FrmFieldFactory::get_field_object( $target_field );
+			$options = $object->get_options( array() );
 
-					if ( false !== $key ) {
-						$where   = array(
-							'meta_value' => $key,
-							'field_id'   => $target_field_id,
-						);
-						$item_id = FrmDb::get_var( 'frm_item_metas', $where, 'item_id' );
-						if ( $item_id ) {
-							$value = $item_id;
-						}
+			if ( is_array( $options ) ) {
+				$key = array_search( $value, $options );
+
+				if ( false !== $key ) {
+					$where   = array(
+						'meta_value' => $key,
+						'field_id'   => $target_field_id,
+					);
+					$item_id = FrmDb::get_var( 'frm_item_metas', $where, 'item_id' );
+
+					if ( $item_id ) {
+						$value = $item_id;
 					}
 				}
 			}
-		} else {
-			$value = array_map( 'trim', $value );
 		}
 
 		return $value;
@@ -444,32 +464,30 @@ class FrmProFieldData extends FrmFieldType {
 	 *
 	 * @param int|string $value The value before processing.
 	 * @param object     $target_field The target field object.
+	 *
 	 * @return int|string
 	 */
 	protected function get_post_field_import_value( $value, $target_field ) {
 		$post_field = FrmField::get_option( $target_field, 'post_field' );
 
-		if ( 'post_custom' === $post_field ) {
-			$meta_key = FrmField::get_option( $target_field, 'custom_field' );
-
-			if ( ! $meta_key ) {
-				return $value;
-			}
-
-			if ( '_thumbnail_id' === $meta_key && ! is_numeric( $value ) ) {
-				$value = $this->get_attachment_id_from_url( $value, $target_field );
-			}
-
-			$item_id = $this->get_item_id_from_post_custom_field( $meta_key, $value );
-		} else {
+		if ( 'post_custom' !== $post_field ) {
 			$item_id = $this->get_item_id_from_post_field( $post_field, $value );
+			return $item_id ? $item_id : $value;
 		}
 
-		if ( $item_id ) {
-			return $item_id;
+		$meta_key = FrmField::get_option( $target_field, 'custom_field' );
+
+		if ( ! $meta_key ) {
+			return $value;
 		}
 
-		return $value;
+		if ( '_thumbnail_id' === $meta_key && ! is_numeric( $value ) ) {
+			$value = $this->get_attachment_id_from_url( $value, $target_field );
+		}
+
+		$item_id = $this->get_item_id_from_post_custom_field( $meta_key, $value );
+
+		return $item_id ? $item_id : $value;
 	}
 
 	/**
@@ -479,6 +497,7 @@ class FrmProFieldData extends FrmFieldType {
 	 *
 	 * @param string   $value Attachment URL.
 	 * @param stdClass $field The file upload field.
+	 *
 	 * @return string
 	 */
 	protected function get_attachment_id_from_url( $value, $field ) {
@@ -495,6 +514,7 @@ class FrmProFieldData extends FrmFieldType {
 	 *
 	 * @param string $meta_key The meta key.
 	 * @param string $value    The meta value.
+	 *
 	 * @return int Return `0` if post not found.
 	 */
 	protected function get_item_id_from_post_custom_field( $meta_key, $value ) {
@@ -517,6 +537,7 @@ WHERE postmeta.meta_key = %s and postmeta.meta_value = %s";
 	 *
 	 * @param string $post_field The post field name.
 	 * @param string $value      The post field value.
+	 *
 	 * @return int Return `0` if post not found.
 	 */
 	protected function get_item_id_from_post_field( $post_field, $value ) {
@@ -536,7 +557,10 @@ INNER JOIN {$wpdb->prefix}frm_items AS items ON posts.ID = items.post_id WHERE p
 	 *
 	 * @since 3.0
 	 *
+	 * @param array $ids
 	 * @param array $imported_values
+	 *
+	 * @return void
 	 */
 	private function switch_imported_entry_ids( $ids, &$imported_values ) {
 		if ( ! is_array( $imported_values ) ) {
@@ -544,7 +568,6 @@ INNER JOIN {$wpdb->prefix}frm_items AS items ON posts.ID = items.post_id WHERE p
 		}
 
 		foreach ( $imported_values as $key => $imported_value ) {
-
 			// This entry was just imported, so we have the id
 			if ( is_numeric( $imported_value ) && isset( $ids[ $imported_value ] ) ) {
 				$imported_values[ $key ] = $ids[ $imported_value ];
@@ -574,6 +597,7 @@ INNER JOIN {$wpdb->prefix}frm_items AS items ON posts.ID = items.post_id WHERE p
 	 */
 	public function validate( $args ) {
 		$errors = array();
+
 		if ( $this->field->required && $args['value'] === '0' ) {
 			$errors[ 'field' . $args['id'] ] = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
 		}

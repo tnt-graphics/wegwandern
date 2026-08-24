@@ -11,11 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php } ?>
 
 	<select class="frm_get_values_form" id="get_values_form_<?php echo absint( $field['id'] ); ?>" name="field_options[get_values_form_<?php echo esc_attr( $field['id'] ); ?>]" data-fieldtype="<?php echo esc_attr( $field['type'] ); ?>">
-		<option value=""><?php esc_html_e( 'Select Form', 'formidable-pro' ); ?></option>
+		<option value=""><?php esc_html_e( 'Select Form', 'formidable' ); ?></option>
 		<?php
 		foreach ( $lookup_args['form_list'] as $form_opts ) {
 			FrmProHtmlHelper::echo_dropdown_option(
-				FrmAppHelper::truncate( $form_opts->name, 30 ),
+				FrmProFormsHelper::get_form_name( $form_opts, 30 ),
 				(string) $form_opts->id === (string) ( $field['get_values_form'] ?? '' ),
 				array(
 					'value' => $form_opts->id,
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <p class="frm6 frm_form_field">
 	<label for="get_values_field_<?php echo absint( $field['id'] ); ?>" class="frm_invisible">
-		<?php esc_html_e( 'Select a Field', 'formidable-pro' ); ?>
+		<?php esc_html_e( 'Select a Field', 'formidable' ); ?>
 	</label>
 	<select id="get_values_field_<?php echo absint( $field['id'] ); ?>" name="field_options[get_values_field_<?php echo esc_attr( $field['id'] ); ?>]" data-changeme="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
 		<?php

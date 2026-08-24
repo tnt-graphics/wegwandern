@@ -1,6 +1,8 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
+
 wp_enqueue_script('wpmf-gallery');
 
 $class_default = array();
@@ -56,7 +58,17 @@ foreach ($gallery_items as $item_id => $attachment) {
             $image_output = $this->getAttachmentLink($item_id, $size, true, $targetsize, false, $link_target, $pos);
             break;
         case 'none':
-            $image_output = wp_get_attachment_image($item_id, $size, false, array('data-type' => 'wpmfgalleryimg'));
+            $preview_url = function_exists('wpmfResolveAttachmentUrl')
+                ? wpmfResolveAttachmentUrl($item_id, 'preview', $size)
+                : wp_get_attachment_image_url($item_id, $size);
+            if ($preview_url === '') {
+                $preview_url = wp_get_attachment_url($item_id);
+            }
+            $alt = trim(strip_tags(get_post_meta($item_id, '_wp_attachment_image_alt', true)));
+            if ($alt === '') {
+                $alt = $attachment->post_title;
+            }
+            $image_output = '<img src="' . esc_url($preview_url) . '" data-type="wpmfgalleryimg" data-attachment-id="' . (int) $item_id . '" data-wpmf-size="' . esc_attr($size) . '" alt="' . esc_attr($alt) . '">';
             break;
         case 'custom':
             $image_output = $this->getAttachmentLink($item_id, $size, false, $targetsize, true, $link_target, $pos);
@@ -71,7 +83,7 @@ foreach ($gallery_items as $item_id => $attachment) {
 
     $output .= '<figure class="wpmf-gallery-item" data-index="'. esc_attr($pos) .'">';
     $output .= '<div class="wpmf-gallery-icon">';
-    $output .= wpmfRenderVideoIcon($attachment->ID);
+    $output .= WpmfHelper::wpmfRenderVideoIcon($attachment->ID);
     $output .= '<div class="square_thumbnail">';
     $output .= '<div class="img_centered">';
     $output .= $image_output;

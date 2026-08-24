@@ -14,12 +14,13 @@ class WpmfSingleFile
      */
     public function __construct()
     {
+        add_action('init', array($this, 'registerBlocks'));
         add_action('admin_enqueue_scripts', array($this, 'singleFileStyleAdmin'));
         add_filter('media_send_to_editor', array($this, 'addImageFiles'), 10, 3);
         add_action('wp_enqueue_scripts', array($this, 'loadCustomWpAdminScript'));
         add_action('admin_enqueue_scripts', array($this, 'loadCustomWpAdminScript'));
         add_filter('mce_external_plugins', array($this, 'register'));
-        add_action('enqueue_block_editor_assets', array($this, 'addEditorAssets'));
+        add_action('enqueue_block_assets', array($this, 'addEditorAssets'));
         add_shortcode('wpmffiledesign', array($this, 'wpmfFileDesign'));
         if (defined('ELEMENTOR_VERSION') && version_compare(ELEMENTOR_VERSION, '3.5', '<')) {
             add_action('elementor/widgets/widgets_registered', array($this, 'loadElementorWidget'));
@@ -147,6 +148,25 @@ class WpmfSingleFile
     }
 
     /**
+     * Register blocks
+     *
+     * @return void
+     */
+    public function registerBlocks()
+    {
+        global $pagenow;
+        $deps = (isset($pagenow) && $pagenow === 'widgets.php') ? array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor') : array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-editor');
+
+        wp_register_script(
+            'wpmf-file-design-editor-script',
+            WPMF_PLUGIN_URL . 'assets/js/blocks/file_design/block.js',
+            $deps,
+            WPMF_VERSION
+        );
+        register_block_type(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/js/blocks/file_design/block.json');
+    }
+
+    /**
      * Enqueue styles and scripts for gutenberg
      *
      * @return void
@@ -155,21 +175,40 @@ class WpmfSingleFile
     {
         global $pagenow;
         $deps = (isset($pagenow) && $pagenow === 'widgets.php') ? array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor') : array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-editor');
-        wp_enqueue_script(
-            'wpmf_filedesign_blocks',
-            WPMF_PLUGIN_URL . 'assets/js/blocks/file_design/block.js',
-            $deps,
-            WPMF_VERSION
-        );
 
         $params = array(
-            'l18n' => array(),
+            'l18n' => array(
+                'media_download_desc' => __('Select a file to download', 'wpmf'),
+                'upload' => __('Upload', 'wpmf'),
+                'media_folder' => __('Media Folder', 'wpmf')
+            ),
             'vars' => array(
                 'block_cover' => WPMF_PLUGIN_URL .'assets/js/blocks/file_design/preview.png'
             )
         );
 
-        wp_localize_script('wpmf_filedesign_blocks', 'wpmf_filedesign_blocks', $params);
+        $upload_dir = wp_upload_dir();
+        $css_file = $upload_dir['basedir'] . '/wpmf/css/wpmf_single_file.css';
+
+        if (file_exists($css_file)) {
+            wp_enqueue_style(
+                'wpmf-single-file',
+                $upload_dir['baseurl'] . '/wpmf/css/wpmf_single_file.css',
+                array(),
+                WPMF_VERSION
+            );
+
+            wp_add_inline_style(
+                'wpmf-single-file',
+                '.content-align-center.elementor-widget-wpmf_file_design .wpmf_mce-wrap {text-align: center;}
+                .content-align-left.elementor-widget-wpmf_file_design .wpmf_mce-wrap {text-align: left;}
+                .content-align-right.elementor-widget-wpmf_file_design .wpmf_mce-wrap {text-align: right;}
+                .wpmf-defile{display:inline-block;float:none!important}
+                .wpmf-defile span.wpmf_mce-single-child{float:left}'
+            );
+        }
+
+        wp_localize_script('wpmf-file-design-editor-script', 'wpmf_filedesign_blocks', $params);
     }
 
 
@@ -222,15 +261,6 @@ class WpmfSingleFile
         );
 
         wp_localize_script('wpmf-single-file', 'wpmf_single', array('vars' => $vars));
-        if (file_exists($upload_dir['basedir'] . '/wpmf/css/wpmf_single_file.css')) {
-            wp_enqueue_style(
-                'wpmf-single-file',
-                $upload_dir['baseurl'] . '/wpmf/css/wpmf_single_file.css',
-                array(),
-                WPMF_VERSION
-            );
-            wp_add_inline_style('wpmf-single-file', '.content-align-center.elementor-widget-wpmf_file_design .wpmf_mce-wrap {text-align: center;}.content-align-left.elementor-widget-wpmf_file_design .wpmf_mce-wrap {text-align: left;}.content-align-right.elementor-widget-wpmf_file_design .wpmf_mce-wrap {text-align: right;}.wpmf-defile{display: inline-block; float:none !important}.wpmf-defile span.wpmf_mce-single-child{float:left}');
-        }
     }
 
     /**

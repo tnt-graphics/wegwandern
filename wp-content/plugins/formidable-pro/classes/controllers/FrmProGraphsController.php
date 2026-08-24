@@ -10,6 +10,7 @@ class FrmProGraphsController {
 	 * Do the frm-graph shortcode
 	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	public static function graph_shortcode( $atts ) {
@@ -35,15 +36,14 @@ class FrmProGraphsController {
 		 * @param array        $args        Contains `atts` (shortcode atts) and `graph_data`.
 		 */
 		$custom_html = apply_filters( 'frm_graph_shortcode_custom_html', false, compact( 'atts', 'graph_data', 'original_atts' ) );
+
 		if ( false !== $custom_html ) {
 			return $custom_html;
 		}
 
 		$html = self::get_graph_html( $graph_data, $atts );
 
-		$html = self::maybe_add_title_to_table( $html, $atts );
-
-		return $html;
+		return self::maybe_add_title_to_table( $html, $atts );
 	}
 
 	/**
@@ -53,6 +53,7 @@ class FrmProGraphsController {
 	 *
 	 * @param string $html
 	 * @param array  $atts
+	 *
 	 * @return string
 	 */
 	private static function maybe_add_title_to_table( $html, $atts ) {
@@ -62,6 +63,7 @@ class FrmProGraphsController {
 
 		$params = array();
 		$style  = self::get_styles_for_table_title( $atts );
+
 		if ( $style ) {
 			$params['style'] = $style;
 		}
@@ -75,25 +77,32 @@ class FrmProGraphsController {
 	 * @since 6.8
 	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function get_styles_for_table_title( $atts ) {
 		$style = '';
+
 		if ( ! empty( $atts['title_size'] ) && is_numeric( $atts['title_size'] ) ) {
 			$style .= 'font-size: ' . absint( $atts['title_size'] ) . 'px;';
 		}
+
 		if ( ! empty( $atts['title_bold'] ) ) {
 			$style .= 'font-weight: bold;';
 		}
+
 		if ( ! empty( $atts['title_italic'] ) ) {
 			$style .= 'font-style: italic;';
 		}
+
 		if ( ! empty( $atts['title_color'] ) ) {
 			$style .= 'color: ' . $atts['title_color'] . ';';
 		}
+
 		if ( ! empty( $atts['title_font'] ) ) {
 			$style .= 'font-family: "' . $atts['title_font'] . '";';
 		}
+
 		return $style;
 	}
 
@@ -101,6 +110,7 @@ class FrmProGraphsController {
 	 * Convert old, deprecated attributes to the new attributes to maintain reverse compatibility
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function convert_old_atts_to_new_atts( &$atts ) {
@@ -144,6 +154,7 @@ class FrmProGraphsController {
 	 * Convert the old id and ids parameters to the new fields parameter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function convert_id_parameter_to_fields_parameter( &$atts ) {
@@ -152,6 +163,7 @@ class FrmProGraphsController {
 		}
 
 		$id = '';
+
 		if ( ! empty( $atts['id'] ) ) {
 			$id_array = explode( ',', $atts['id'] );
 
@@ -164,6 +176,7 @@ class FrmProGraphsController {
 		}
 
 		$ids = '';
+
 		if ( isset( $atts['ids'] ) ) {
 			if ( $atts['ids'] ) {
 				$ids = $atts['ids'];
@@ -171,11 +184,14 @@ class FrmProGraphsController {
 			unset( $atts['ids'] );
 		}
 
-		if ( ! isset( $atts['fields'] ) ) {
-			$atts['fields'] = $id;
-			if ( ! empty( $ids ) ) {
-				$atts['fields'] .= $ids;
-			}
+		if ( isset( $atts['fields'] ) ) {
+			return;
+		}
+
+		$atts['fields'] = $id;
+
+		if ( $ids ) {
+			$atts['fields'] .= $ids;
 		}
 	}
 
@@ -184,6 +200,7 @@ class FrmProGraphsController {
 	 * x_greater_than, x_less_than, created_at_greater_than, and created_at_less_than parameters
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function adjust_deprecated_date_parameters( &$atts ) {
@@ -201,11 +218,7 @@ class FrmProGraphsController {
 			return;
 		}
 
-		if ( isset( $atts['x_axis'] ) ) {
-			$x_axis_field = self::get_x_axis_field( $atts['x_axis'] );
-		} else {
-			$x_axis_field = '';
-		}
+		$x_axis_field = isset( $atts['x_axis'] ) ? self::get_x_axis_field( $atts['x_axis'] ) : '';
 
 		self::convert_old_date_parameters_to_new_parameters( 'start_date', $x_axis_field, $atts );
 		self::convert_old_date_parameters_to_new_parameters( 'end_date', $x_axis_field, $atts );
@@ -215,28 +228,31 @@ class FrmProGraphsController {
 	 * Convert start_date and end_date to new parameters
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $old_key
 	 * @param object|string $x_axis_field
 	 * @param array $atts
 	 */
 	private static function convert_old_date_parameters_to_new_parameters( $old_key, $x_axis_field, &$atts ) {
-		if ( isset( $atts[ $old_key ] ) ) {
-			if ( $old_key === 'start_date' ) {
-				$operator_text = '_greater_than';
-			} elseif ( $old_key === 'end_date' ) {
-				$operator_text = '_less_than';
-			} else {
-				return;
-			}
-
-			if ( self::is_date_field( $x_axis_field ) ) {
-				$atts[ $x_axis_field->id . $operator_text ] = $atts[ $old_key ];
-			} else {
-				$atts[ 'created_at' . $operator_text ] = $atts[ $old_key ];
-			}
-
-			unset( $atts[ $old_key ] );
+		if ( ! isset( $atts[ $old_key ] ) ) {
+			return;
 		}
+
+		if ( $old_key === 'start_date' ) {
+			$operator_text = '_greater_than';
+		} elseif ( $old_key === 'end_date' ) {
+			$operator_text = '_less_than';
+		} else {
+			return;
+		}
+
+		if ( self::is_date_field( $x_axis_field ) ) {
+			$atts[ $x_axis_field->id . $operator_text ] = $atts[ $old_key ];
+		} else {
+			$atts[ 'created_at' . $operator_text ] = $atts[ $old_key ];
+		}
+
+		unset( $atts[ $old_key ] );
 	}
 
 	/**
@@ -244,27 +260,29 @@ class FrmProGraphsController {
 	 * Removes defaults with a blank value
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function combine_defaults_and_user_defined_attributes( &$atts ) {
 		$defaults = self::get_graph_defaults();
+
 		if ( isset( $atts['type'] ) && $atts['type'] === 'table' && ! isset( $atts['height'] ) ) {
 			$defaults['height'] = 'auto';
 		}
 
 		$combined_atts = array();
+
 		foreach ( $defaults as $k => $value ) {
 			if ( isset( $atts[ $k ] ) ) {
 				$combined_atts[ $k ] = $atts[ $k ];
 				unset( $atts[ $k ] );
-			} elseif ( $value !== '' || in_array( $k, array( 'fields', 'form' ) ) ) {
+			} elseif ( $value !== '' || in_array( $k, array( 'fields', 'form' ), true ) ) {
 				$combined_atts[ $k ] = $value;
 			}
 		}
 
 		$combined_atts['filters'] = $atts;
-
-		$atts = $combined_atts;
+		$atts                     = $combined_atts;
 	}
 
 	/**
@@ -272,10 +290,10 @@ class FrmProGraphsController {
 	 *
 	 * @since 2.02.05
 	 * @since 6.7.1 This method is public.
+	 *
 	 * @return array
 	 */
 	public static function get_graph_defaults() {
-
 		$defaults = array(
 			'fields'                  => '',
 			'form'                    => '',
@@ -362,9 +380,7 @@ class FrmProGraphsController {
 	 */
 	private static function get_default_colors() {
 		$colors = '#00bbde,#fe6672,#eeb058,#8a8ad6,#ff855c,#00cfbb,#5a9eed,#73d483,#c879bb,#0099b6';
-		$colors = (string) apply_filters( 'frm_graph_default_colors', $colors );
-
-		return $colors;
+		return (string) apply_filters( 'frm_graph_default_colors', $colors );
 	}
 
 	/**
@@ -397,6 +413,7 @@ class FrmProGraphsController {
 	 * Format the user-defined attributes
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function format_atts( &$atts ) {
@@ -407,7 +424,8 @@ class FrmProGraphsController {
 		} elseif ( ! empty( $atts['form'] ) && $atts['form'] === 'all' ) {
 			$atts['form_id'] = 'all';
 		} elseif ( ! empty( $atts['form'] ) ) {
-			$atts['form'] = FrmForm::getOne( $atts['form'] );
+			$atts['form'] = FrmForm::getOne( $atts['form'] ); // @mago-ignore analysis:no-value
+
 			if ( ! $atts['form'] ) {
 				return;
 			}
@@ -449,10 +467,12 @@ class FrmProGraphsController {
 	 * @since 6.8
 	 *
 	 * @param array $field_ids
+	 *
 	 * @return array
 	 */
 	private static function get_fields_in_defined_order( $field_ids ) {
 		$fields = FrmField::getAll( array( 'fi.id' => $field_ids ) );
+
 		if ( 1 === count( $fields ) ) {
 			// If there is only a single field, there is no need to re-order.
 			return $fields;
@@ -477,6 +497,7 @@ class FrmProGraphsController {
 	 * Convert field keys to IDs
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function convert_field_keys_to_ids( &$atts ) {
@@ -487,6 +508,7 @@ class FrmProGraphsController {
 	 * Convert entry keys to IDs
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function convert_entry_keys_to_ids( &$atts ) {
@@ -500,26 +522,27 @@ class FrmProGraphsController {
 	 * Convert field or entry keys to ids
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $keys
 	 * @param string $type
+	 *
 	 * @return array
 	 */
 	private static function convert_keys_to_ids( $keys, $type ) {
-		if ( $keys ) {
-			$keys = explode( ',', $keys );
+		if ( ! $keys ) {
+			return $keys;
+		}
 
-			foreach ( $keys as $i => $k ) {
-				if ( ! is_numeric( $k ) ) {
-					if ( 'entry' === $type ) {
-						$id = FrmEntry::get_id_by_key( $k );
-					} else {
-						$id = FrmField::get_id_by_key( $k );
-					}
-					if ( $id ) {
-						$keys[ $i ] = $id;
-					} else {
-						unset( $keys[ $i ] );
-					}
+		$keys = explode( ',', $keys );
+
+		foreach ( $keys as $i => $k ) {
+			if ( ! is_numeric( $k ) ) {
+				$id = 'entry' === $type ? FrmEntry::get_id_by_key( $k ) : FrmField::get_id_by_key( $k );
+
+				if ( $id ) {
+					$keys[ $i ] = $id;
+				} else {
+					unset( $keys[ $i ] );
 				}
 			}
 		}
@@ -531,8 +554,10 @@ class FrmProGraphsController {
 	 * Get the HTML for a graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $graph_data
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function get_graph_html( $graph_data, $atts ) {
@@ -550,7 +575,9 @@ class FrmProGraphsController {
 	 * Generate the data, options, package, etc. for a google graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function generate_google_graph_data( $atts ) {
@@ -561,8 +588,6 @@ class FrmProGraphsController {
 		$type          = self::get_graph_type( $atts );
 		$data          = self::get_graph_data( $atts );
 		$options       = self::get_graph_options( $type, $atts );
-		$graph_package = self::get_graph_package( $type );
-
 		$graph_auto_id = count( $frm_vars['google_graphs']['graphs'] ) + 1;
 		$graph_id      = '_frm_' . strtolower( $type ) . $graph_auto_id;
 
@@ -573,6 +598,7 @@ class FrmProGraphsController {
 		 *
 		 * @param string $graph_id
 		 * @param array  $args {
+		 *
 		 *     @type int    $graph_auto_id Graph Auto ID.
 		 *     @type string $type          Graph type.
 		 * }
@@ -582,7 +608,7 @@ class FrmProGraphsController {
 			'type'     => $type,
 			'data'     => $data,
 			'options'  => $options,
-			'package'  => $graph_package,
+			'package'  => self::get_graph_package( $type ),
 			'graph_id' => $graph_id,
 		);
 
@@ -595,6 +621,7 @@ class FrmProGraphsController {
 	 * Prepare frm_vars for the graphs to be loaded
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $frm_vars
 	 */
 	private static function prepare_frm_vars( &$frm_vars ) {
@@ -613,7 +640,9 @@ class FrmProGraphsController {
 	 * Get the graph type
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function get_graph_type( $atts ) {
@@ -640,22 +669,19 @@ class FrmProGraphsController {
 			'table',
 		);
 
-		if ( ! in_array( $type, $allowed_types ) ) {
-			$type = 'column';
-		}
-
-		return $type;
+		return in_array( $type, $allowed_types ) ? $type : 'column';
 	}
 
 	/**
 	 * Get the row and column data for a google graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_graph_data( $atts ) {
-
 		if ( $atts['form'] ) {
 			$data = self::get_data_for_form_graph( $atts );
 		} elseif ( isset( $atts['x_axis'] ) ) {
@@ -667,12 +693,9 @@ class FrmProGraphsController {
 		}
 
 		self::filter_graph_data_to_match_graph( $data, $atts );
-		self::apply_deprecated_filters();
 		self::maybe_change_numbers_to_strings( $data );
 
-		$data = apply_filters( 'frm_graph_data', $data, $atts );
-
-		return $data;
+		return apply_filters( 'frm_graph_data', $data, $atts );
 	}
 
 	/**
@@ -683,6 +706,7 @@ class FrmProGraphsController {
 	 * @since 6.19
 	 *
 	 * @param array $data
+	 *
 	 * @return void
 	 */
 	private static function maybe_change_numbers_to_strings( &$data ) {
@@ -697,11 +721,13 @@ class FrmProGraphsController {
 			}
 
 			$set = $data[ $i ];
+
 			if ( ! $set || ! isset( $set[0] ) ) {
 				continue;
 			}
 
 			$set_value = $set[0];
+
 			if ( is_int( $set_value ) ) {
 				$found_int_value = true;
 			} elseif ( is_string( $set_value ) ) {
@@ -733,9 +759,10 @@ class FrmProGraphsController {
 	 * @param array $atts The shortcode attributes.
 	 */
 	private static function filter_graph_data_to_match_graph( &$data, $atts ) {
-		if ( $atts['type'] === 'histogram' || $atts['type'] === 'pie' || $atts['type'] === 'geo' ) {
+		if ( in_array( $atts['type'], array( 'histogram', 'pie', 'geo' ), true ) ) {
 			return;
 		}
+
 		$limits = array();
 		$axes   = array( 'x', 'y' );
 
@@ -743,12 +770,15 @@ class FrmProGraphsController {
 			if ( isset( $atts[ $axis . '_min' ] ) ) {
 				$limits[] = 'min';
 			}
+
 			if ( isset( $atts[ $axis . '_max' ] ) ) {
 				$limits[] = 'max';
 			}
+
 			if ( $limits ) {
 				self::filter_graph_data_to_match_axis( $data, $atts, $axis, $limits );
 			}
+
 			$limits = array();
 		}
 	}
@@ -790,6 +820,7 @@ class FrmProGraphsController {
 	 *
 	 * @param string $type
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_graph_options( $type, $atts ) {
@@ -811,8 +842,7 @@ class FrmProGraphsController {
 		self::add_table_options( $type, $atts, $options );
 
 		if ( $type !== 'pie' && $type !== 'geo' ) {
-
-			if ( isset( $atts['is_stacked'] ) && $atts['is_stacked'] ) {
+			if ( ! empty( $atts['is_stacked'] ) ) {
 				$options['isStacked'] = true;
 			}
 
@@ -821,7 +851,7 @@ class FrmProGraphsController {
 
 		self::add_animation_options( $atts, $options );
 
-		$options = apply_filters(
+		return apply_filters(
 			'frm_google_chart',
 			$options,
 			array(
@@ -829,21 +859,21 @@ class FrmProGraphsController {
 				'type' => $type,
 			)
 		);
-
-		return $options;
 	}
 
 	/**
 	 * Get the package type for a given graph type
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $type
+	 *
 	 * @return string
 	 */
 	private static function get_graph_package( $type ) {
-		if ( 'geo' == $type ) {
+		if ( 'geo' === $type ) {
 			$graph_package = 'geochart';
-		} elseif ( 'table' == $type ) {
+		} elseif ( 'table' === $type ) {
 			$graph_package = 'table';
 		} else {
 			$graph_package = 'corechart';
@@ -856,6 +886,7 @@ class FrmProGraphsController {
 	 * Set up the title for a google graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $options
 	 */
@@ -865,19 +896,19 @@ class FrmProGraphsController {
 
 		$options['titleTextStyle'] = array();
 
-		// bold title
+		// Bold title
 		self::convert_shortcode_att_to_bool_google_att( 'title_bold', 'bold', $atts, $options['titleTextStyle'] );
 
 		// Italic title.
 		self::convert_shortcode_att_to_bool_google_att( 'title_italic', 'italic', $atts, $options['titleTextStyle'] );
 
-		// title size
+		// Title size
 		self::convert_shortcode_att_to_google_att( 'title_size', 'fontSize', $atts, $options['titleTextStyle'] );
 
-		// title font
+		// Title font
 		self::convert_shortcode_att_to_google_att( 'title_font', 'fontName', $atts, $options['titleTextStyle'] );
 
-		// title color
+		// Title color
 		self::convert_shortcode_att_to_google_att( 'title_color', 'color', $atts, $options['titleTextStyle'] );
 	}
 
@@ -885,22 +916,22 @@ class FrmProGraphsController {
 	 * Get the graph title
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function get_graph_title( $atts ) {
 		if ( isset( $atts['title'] ) ) {
 			// Title defined by user
 			$title = $atts['title'];
-
 		} elseif ( isset( $atts['form'] ) && is_object( $atts['form'] ) ) {
 			// Title is form name for form graphs
 			$title = preg_replace( '/&#?[a-z0-9]{2,8};/i', '', FrmAppHelper::truncate( $atts['form']->name, $atts['truncate'], 0 ) );
-
 		} elseif ( ! empty( $atts['fields'] ) ) {
 			// Title is field name if single field, otherwise set to "Submissions"
 			if ( count( $atts['fields'] ) > 1 ) {
-				$title = __( 'Submissions', 'formidable-pro' );
+				$title = __( 'Submissions', 'formidable' );
 			} else {
 				$first_field = reset( $atts['fields'] );
 				$title       = preg_replace( '/&#?[a-z0-9]{2,8};/i', '', FrmAppHelper::truncate( $first_field->name, $atts['truncate'], 0 ) );
@@ -917,6 +948,7 @@ class FrmProGraphsController {
 	 * Convert graph shortcode attributes to google options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $shortcode_att
 	 * @param string $google_att
 	 * @param array $atts
@@ -932,6 +964,7 @@ class FrmProGraphsController {
 	 * Convert graph shortcode attributes to boolean google options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $shortcode_att
 	 * @param string $google_att
 	 * @param array $atts
@@ -939,11 +972,7 @@ class FrmProGraphsController {
 	 */
 	private static function convert_shortcode_att_to_bool_google_att( $shortcode_att, $google_att, $atts, &$options ) {
 		if ( isset( $atts[ $shortcode_att ] ) ) {
-			if ( $atts[ $shortcode_att ] ) {
-				$options[ $google_att ] = true;
-			} else {
-				$options[ $google_att ] = false;
-			}
+			$options[ $google_att ] = $atts[ $shortcode_att ] ? true : false;
 		}
 	}
 
@@ -951,6 +980,7 @@ class FrmProGraphsController {
 	 * Add width, height, and chart area options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $options
 	 */
@@ -958,17 +988,22 @@ class FrmProGraphsController {
 		$options['width']  = $atts['width'];
 		$options['height'] = $atts['height'];
 
-		if ( isset( $atts['chart_area'] ) ) {
-			$chart_area_parts = explode( ',', $atts['chart_area'] );
-			foreach ( $chart_area_parts as $chart_area ) {
-				$single_item = explode( ':', $chart_area );
-				if ( count( $single_item ) !== 2 ) {
-					continue;
-				}
-				$key                          = trim( $single_item[0] );
-				$value                        = trim( $single_item[1] );
-				$options['chartArea'][ $key ] = $value;
+		if ( ! isset( $atts['chart_area'] ) ) {
+			return;
+		}
+
+		$chart_area_parts = explode( ',', $atts['chart_area'] );
+
+		foreach ( $chart_area_parts as $chart_area ) {
+			$single_item = explode( ':', $chart_area );
+
+			if ( count( $single_item ) !== 2 ) {
+				continue;
 			}
+
+			$key                          = trim( $single_item[0] );
+			$value                        = trim( $single_item[1] );
+			$options['chartArea'][ $key ] = $value;
 		}
 	}
 
@@ -976,6 +1011,7 @@ class FrmProGraphsController {
 	 * Add legend options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $options
 	 */
@@ -983,7 +1019,7 @@ class FrmProGraphsController {
 		if ( $atts['show_key'] ) {
 			$options['legend'] = array();
 
-			// legend size
+			// Legend size
 			if ( isset( $atts['legend_size'] ) ) {
 				$options['legend']['textStyle'] = array( 'fontSize' => $atts['legend_size'] );
 			} elseif ( is_numeric( $atts['show_key'] ) && $atts['show_key'] >= 10 ) {
@@ -991,12 +1027,8 @@ class FrmProGraphsController {
 				$options['legend']['textStyle'] = array( 'fontSize' => $atts['show_key'] );
 			}
 
-			// legend position
-			if ( isset( $atts['legend_position'] ) ) {
-				$options['legend']['position'] = $atts['legend_position'];
-			} else {
-				$options['legend']['position'] = 'right';
-			}
+			// Legend position
+			$options['legend']['position'] = $atts['legend_position'] ?? 'right';
 		} elseif ( '0' === $atts['show_key'] ) {
 			$options['legend'] = 'none';
 		} else {
@@ -1008,6 +1040,7 @@ class FrmProGraphsController {
 	 * Add tooltip options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $options
 	 */
 	private static function add_tooltip_options( &$options ) {
@@ -1018,6 +1051,7 @@ class FrmProGraphsController {
 	 * Add color options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $options
 	 */
@@ -1037,6 +1071,7 @@ class FrmProGraphsController {
 	 * Add pie-specific options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $type
 	 * @param array $atts
 	 * @param array $options
@@ -1051,6 +1086,7 @@ class FrmProGraphsController {
 	 * Add line graph-specific options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $type
 	 * @param array $atts
 	 * @param array $options
@@ -1063,6 +1099,7 @@ class FrmProGraphsController {
 
 	/**
 	 * @since 3.06.06
+	 *
 	 * @param string $type
 	 * @param array $atts
 	 * @param array $options
@@ -1077,11 +1114,14 @@ class FrmProGraphsController {
 			$options['pageSize'] = (int) $atts['pagesize'];
 		}
 
-		if ( $atts['sort_column'] >= 0 ) {
-			$options['sortColumn'] = (int) $atts['sort_column'];
-			if ( isset( $atts['sort_ascending'] ) ) {
-				$options['sortAscending'] = (bool) $atts['sort_ascending'];
-			}
+		if ( $atts['sort_column'] < 0 ) {
+			return;
+		}
+
+		$options['sortColumn'] = (int) $atts['sort_column'];
+
+		if ( isset( $atts['sort_ascending'] ) ) {
+			$options['sortAscending'] = (bool) $atts['sort_ascending'];
 		}
 	}
 
@@ -1089,6 +1129,7 @@ class FrmProGraphsController {
 	 * Add axis options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $options
 	 */
@@ -1124,7 +1165,9 @@ class FrmProGraphsController {
 	 * Set up the x-axis options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function set_up_x_axis_options( $atts ) {
@@ -1134,12 +1177,12 @@ class FrmProGraphsController {
 			'gridlines'      => array( 'color' => $atts['x_grid_color'] ),
 		);
 
-		// x min and max
+		// X min and max
 		if ( isset( $atts['x_min'] ) || isset( $atts['x_max'] ) ) {
 			$x_axis['viewWindow'] = self::add_axis_max_or_min( 'x_min', 'x_max', $atts );
 		}
 
-		// x title
+		// X title
 		self::convert_shortcode_att_to_google_att( 'x_title', 'title', $atts, $x_axis );
 
 		// showTextEvery
@@ -1151,13 +1194,13 @@ class FrmProGraphsController {
 		// slantedText
 		$x_axis['slantedText'] = (bool) $atts['x_slanted_text'];
 
-		// x-axis title size
+		// X-axis title size
 		self::convert_shortcode_att_to_google_att( 'x_title_size', 'fontSize', $atts, $x_axis['titleTextStyle'] );
 
-		// x-axis color
+		// X-axis color
 		self::convert_shortcode_att_to_google_att( 'x_title_color', 'color', $atts, $x_axis['titleTextStyle'] );
 
-		// x axis labels size
+		// X axis labels size
 		self::convert_shortcode_att_to_google_att( 'x_labels_size', 'fontSize', $atts, $x_axis['textStyle'] );
 
 		return $x_axis;
@@ -1167,7 +1210,9 @@ class FrmProGraphsController {
 	 * Set up the y-axis options
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function set_up_y_axis_options( $atts ) {
@@ -1177,21 +1222,21 @@ class FrmProGraphsController {
 			'textStyle'      => array(),
 		);
 
-		// y min and max
+		// Y min and max
 		if ( isset( $atts['y_min'] ) || isset( $atts['y_max'] ) ) {
 			$y_axis['viewWindow'] = self::add_axis_max_or_min( 'y_min', 'y_max', $atts );
 		}
 
-		// y-axis title
+		// Y-axis title
 		self::convert_shortcode_att_to_google_att( 'y_title', 'title', $atts, $y_axis );
 
-		// y-axis title size
+		// Y-axis title size
 		self::convert_shortcode_att_to_google_att( 'y_title_size', 'fontSize', $atts, $y_axis['titleTextStyle'] );
 
-		// y-axis color
+		// Y-axis color
 		self::convert_shortcode_att_to_google_att( 'y_title_color', 'color', $atts, $y_axis['titleTextStyle'] );
 
-		// y axis labels size
+		// Y axis labels size
 		self::convert_shortcode_att_to_google_att( 'y_labels_size', 'fontSize', $atts, $y_axis['textStyle'] );
 
 		return $y_axis;
@@ -1201,18 +1246,20 @@ class FrmProGraphsController {
 	 * Add min and/or max axis limit
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $min_key
 	 * @param string $max_key
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function add_axis_max_or_min( $min_key, $max_key, $atts ) {
 		$viewWindow = array();
 
-		// add axis minimum
+		// Add axis minimum
 		self::convert_shortcode_att_to_google_att( $min_key, 'min', $atts, $viewWindow );
 
-		// add axis maximum
+		// Add axis maximum
 		self::convert_shortcode_att_to_google_att( $max_key, 'max', $atts, $viewWindow );
 
 		return $viewWindow;
@@ -1222,28 +1269,30 @@ class FrmProGraphsController {
 	 * Get the data for a single field graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_data_for_single_field_graph( $atts ) {
-		$field = reset( $atts['fields'] );
-
+		$field        = reset( $atts['fields'] );
 		$field_values = self::get_meta_values_for_single_field( $field, $atts );
+		$graph_data   = self::format_meta_values_for_single_field( $field, $field_values, $atts );
 
-		$graph_data = self::format_meta_values_for_single_field( $field, $field_values, $atts );
-
-		if ( ! empty( $graph_data ) ) {
-			$graph_label = $field->name;
-			$first_row   = array( $graph_label );
-			if ( count( reset( $graph_data ) ) > 1 ) {
-				$tooltip_text = self::get_tooltip_text( $atts );
-				$first_row[]  = $tooltip_text;
-			}
-
-			array_unshift( $graph_data, $first_row );
-
-			self::add_user_defined_column_colors( $atts, $graph_data );
+		if ( ! $graph_data ) {
+			return $graph_data;
 		}
+
+		$graph_label = $field->name;
+		$first_row   = array( $graph_label );
+
+		if ( count( reset( $graph_data ) ) > 1 ) {
+			$first_row[] = self::get_tooltip_text( $atts );
+		}
+
+		array_unshift( $graph_data, $first_row );
+
+		self::add_user_defined_column_colors( $atts, $graph_data );
 
 		return $graph_data;
 	}
@@ -1256,6 +1305,7 @@ class FrmProGraphsController {
 	 *
 	 * @param object $field
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	public static function get_meta_values_for_single_field( $field, $atts ) {
@@ -1267,8 +1317,7 @@ class FrmProGraphsController {
 			return array();
 		}
 
-		$meta_args = self::package_filtering_arguments_for_query( $atts );
-
+		$meta_args    = self::package_filtering_arguments_for_query( $atts );
 		$field_values = FrmProEntryMeta::get_all_metas_for_field( $field, $meta_args );
 
 		self::clean_field_values( $field, $atts, $field_values );
@@ -1280,7 +1329,9 @@ class FrmProGraphsController {
 	 * Package specific filtering arguments in an array
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function package_filtering_arguments_for_query( $atts ) {
@@ -1294,6 +1345,7 @@ class FrmProGraphsController {
 		);
 
 		$meta_args = array();
+
 		foreach ( $pass_args as $atts_key => $arg_key ) {
 			if ( isset( $atts[ $atts_key ] ) ) {
 				$meta_args[ $arg_key ] = $atts[ $atts_key ];
@@ -1307,25 +1359,27 @@ class FrmProGraphsController {
 	 * Check all field, created_at, and updated_at filters
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function check_field_filters( &$atts ) {
-		if ( ! empty( $atts['filters'] ) ) {
+		if ( empty( $atts['filters'] ) ) {
+			return;
+		}
 
-			if ( ! isset( $atts['entry_ids'] ) ) {
-				$atts['entry_ids']   = array();
-				$atts['after_where'] = false;
-			} else {
-				$atts['after_where'] = true;
-			}
+		if ( isset( $atts['entry_ids'] ) ) {
+			$atts['after_where'] = true;
+		} else {
+			$atts['entry_ids']   = array();
+			$atts['after_where'] = false;
+		}
 
-			foreach ( $atts['filters'] as $key => $value ) {
-				$atts['entry_ids']   = self::get_entry_ids_for_field_filter( $key, $value, $atts );
-				$atts['after_where'] = true;
+		foreach ( $atts['filters'] as $key => $value ) {
+			$atts['entry_ids']   = self::get_entry_ids_for_field_filter( $key, $value, $atts );
+			$atts['after_where'] = true;
 
-				if ( ! $atts['entry_ids'] ) {
-					return;
-				}
+			if ( ! $atts['entry_ids'] ) {
+				return;
 			}
 		}
 	}
@@ -1334,9 +1388,11 @@ class FrmProGraphsController {
 	 * Get the entry IDs for a field filter.
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $key
 	 * @param string $value
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	private static function get_entry_ids_for_field_filter( $key, $value, $args ) {
@@ -1357,7 +1413,9 @@ class FrmProGraphsController {
 	 * Get the entry and attached post ID for all entries that have posts attached
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	private static function get_form_posts( $args ) {
@@ -1381,9 +1439,11 @@ class FrmProGraphsController {
 	 * Format a single field's meta values
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param object $field
 	 * @param array $meta_values
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function format_meta_values_for_single_field( $field, $meta_values, $atts ) {
@@ -1392,6 +1452,7 @@ class FrmProGraphsController {
 		}
 
 		$count_values = array();
+
 		foreach ( $meta_values as $meta ) {
 			$meta = self::get_displayed_value( $field, $meta );
 
@@ -1411,6 +1472,7 @@ class FrmProGraphsController {
 
 		$graph_data      = array();
 		$is_numeric_hist = false;
+
 		foreach ( $count_values as $meta_value => $count ) {
 			if ( $meta_value === '' ) {
 				continue;
@@ -1418,9 +1480,10 @@ class FrmProGraphsController {
 
 			if ( $atts['type'] === 'pie' ) {
 				$meta_value = (string) $meta_value;
-			} elseif ( $atts['type'] === 'histogram' && is_numeric( $meta_value ) && ( empty( $graph_data ) || $is_numeric_hist ) ) {
+			} elseif ( $atts['type'] === 'histogram' && is_numeric( $meta_value ) && ( ! $graph_data || $is_numeric_hist ) ) {
 				$is_numeric_hist = true;
 				$meta_value      = (float) $meta_value;
+
 				for ( $i = 1; $i <= $count; $i++ ) {
 					$graph_data[] = array( $meta_value );
 				}
@@ -1437,12 +1500,14 @@ class FrmProGraphsController {
 	 * Order the values for a single field graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param object $field
 	 * @param array $atts
 	 * @param array $count_values
 	 */
 	private static function order_values_for_single_field_graph( $field, $atts, &$count_values ) {
 		$order_opts = $atts['x_order'] === 'field_opts' || ( $atts['x_order'] === 'default' && $atts['include_zero'] );
+
 		if ( $order_opts && in_array( $field->type, array( 'radio', 'checkbox', 'select', 'data' ), true ) ) {
 			// Sort values by order of field options
 			self::sort_data_by_field_options( $field, $atts, $count_values );
@@ -1461,6 +1526,7 @@ class FrmProGraphsController {
 	 * @since 2.02.05
 	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function get_tooltip_text( $atts ) {
@@ -1470,7 +1536,7 @@ class FrmProGraphsController {
 
 		switch ( $atts['data_type'] ) {
 			case 'total':
-				return __( 'Total', 'formidable-pro' );
+				return __( 'Total', 'formidable' );
 			case 'average':
 				return __( 'Average', 'formidable-pro' );
 			case 'maximum':
@@ -1479,19 +1545,20 @@ class FrmProGraphsController {
 				return __( 'Minimum', 'formidable-pro' );
 		}
 
-		return __( 'Submissions', 'formidable-pro' );
+		return __( 'Submissions', 'formidable' );
 	}
 
 	/**
 	 * Get the data for a multi-field graph without an x-axis
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_data_for_multi_field_graph( $atts ) {
-		$tooltip_text = self::get_tooltip_text( $atts );
-		$graph_data   = array( array( __( 'Fields', 'formidable-pro' ), $tooltip_text ) );
+		$graph_data = array( array( __( 'Fields', 'formidable' ), self::get_tooltip_text( $atts ) ) );
 
 		foreach ( $atts['fields'] as $field ) {
 			$meta_values = self::get_meta_values_for_single_field( $field, $atts );
@@ -1502,13 +1569,7 @@ class FrmProGraphsController {
 					$y_value = array_sum( $meta_values );
 					break;
 				case 'average':
-					if ( ! $meta_values ) {
-						// Avoid division by zero.
-						$y_value = 0;
-					} else {
-						// Get average.
-						$y_value = array_sum( $meta_values ) / count( $meta_values );
-					}
+					$y_value = $meta_values ? array_sum( $meta_values ) / count( $meta_values ) : 0;
 					break;
 				case 'maximum':
 					$y_value = max( $meta_values );
@@ -1537,7 +1598,9 @@ class FrmProGraphsController {
 	 * Get the data for a form graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_data_for_form_graph( $atts ) {
@@ -1564,6 +1627,7 @@ class FrmProGraphsController {
 	 * Prepare a few items in the $atts array for a form graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function prepare_atts_for_form_graph( &$atts ) {
@@ -1585,7 +1649,9 @@ class FrmProGraphsController {
 	 * Check if the necessary atts are present to continue with a form graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return bool
 	 */
 	private static function can_continue_with_form_graph( $atts ) {
@@ -1606,10 +1672,11 @@ class FrmProGraphsController {
 	 * Get the default start date for a form graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function get_default_start_date_for_form_graph( &$atts ) {
-		if ( ! isset( $atts['created_at_greater_than'] ) || ! $atts['created_at_greater_than'] ) {
+		if ( empty( $atts['created_at_greater_than'] ) ) {
 			$group_by = $atts['group_by'] ?? '';
 
 			if ( $group_by === 'month' ) {
@@ -1630,10 +1697,11 @@ class FrmProGraphsController {
 	 * Get the default end date for a form graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function get_default_end_date_for_form_graph( &$atts ) {
-		if ( ! isset( $atts['created_at_less_than'] ) || ! $atts['created_at_less_than'] ) {
+		if ( empty( $atts['created_at_less_than'] ) ) {
 			$atts['created_at_less_than'] = 'NOW';
 		}
 
@@ -1644,6 +1712,7 @@ class FrmProGraphsController {
 	 * Add the zero values for all dates between specified start and end date
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $graph_data
 	 */
@@ -1669,14 +1738,17 @@ class FrmProGraphsController {
 				++$count;
 			} else {
 				$add_row = array( $date_str );
-				if ( is_array( $atts['fields'] ) && ! empty( $atts['fields'] ) ) {
+
+				if ( is_array( $atts['fields'] ) && $atts['fields'] ) {
 					$field_count = count( $atts['fields'] );
+
 					for ( $i = 1; $i <= $field_count; $i++ ) {
 						$add_row[] = 0;
 					}
 				} else {
 					$add_row[] = 0;
 				}
+
 				$new_graph_data[] = $add_row;
 			}
 		}
@@ -1688,20 +1760,21 @@ class FrmProGraphsController {
 	 * Get the start date for a date x-axis when include_zero is set
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $graph_data
+	 *
 	 * @return string
 	 */
 	private static function get_start_date_for_x_axis_date_include_zero_graph( $atts, $graph_data ) {
-		if ( isset( $atts['x_start'] ) && $atts['x_start'] ) {
-			$start_date = $atts['x_start'];
-		} else {
-			$first_row  = reset( $graph_data );
-			$start_date = $first_row[0];
-			$start_date = self::convert_formatted_date_to_y_m_d( $start_date );
+		if ( ! empty( $atts['x_start'] ) ) {
+			return $atts['x_start'];
 		}
 
-		return $start_date;
+		$first_row  = reset( $graph_data );
+		$start_date = $first_row[0];
+
+		return self::convert_formatted_date_to_y_m_d( $start_date );
 	}
 
 	/**
@@ -1709,24 +1782,25 @@ class FrmProGraphsController {
 	 *
 	 * @param array $atts
 	 * @param array $graph_data
+	 *
 	 * @return mixed
 	 */
 	private static function get_end_date_for_x_axis_date_include_zero_graph( $atts, $graph_data ) {
-		if ( isset( $atts['x_end'] ) && $atts['x_end'] ) {
-			$end_date = $atts['x_end'];
-		} else {
-			$final_row = end( $graph_data );
-			$end_date  = $final_row[0];
-			$end_date  = self::convert_formatted_date_to_y_m_d( $end_date );
+		if ( ! empty( $atts['x_end'] ) ) {
+			return $atts['x_end'];
 		}
 
-		return $end_date;
+		$final_row = end( $graph_data );
+		$end_date  = $final_row[0];
+
+		return self::convert_formatted_date_to_y_m_d( $end_date );
 	}
 
 	/**
 	 * Get all dates for a given start and end date
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $start_date
 	 * @param string $end_date
 	 * @param string $group_by
@@ -1737,10 +1811,12 @@ class FrmProGraphsController {
 	private static function get_all_dates_for_period( $start_date, $end_date, $group_by, $atts ) {
 		$start_timestamp = strtotime( $start_date );
 		$end_timestamp   = strtotime( $end_date );
+
 		if ( $end_date === 'NOW' ) {
-			// add a day to make sure the data for current date are considered for graph not grouped
+			// Add a day to make sure the data for current date are considered for graph not grouped
 			$end_timestamp += 86399;
 		}
+
 		$all_dates = array();
 
 		if ( $group_by === 'month' ) {
@@ -1756,8 +1832,9 @@ class FrmProGraphsController {
 				self::add_formatted_date_to_array( 'Y', $d, $all_dates );
 			}
 		} else {
-			$date_format     = empty( $atts['date_format'] ) ? get_option( 'date_format' ) : $atts['date_format'];
+			$date_format     = ! empty( $atts['date_format'] ) ? $atts['date_format'] : get_option( 'date_format' );
 			$start_timestamp = current_time( $start_timestamp );
+
 			for ( $d = $start_timestamp; $d <= $end_timestamp; $d += 60 * 60 * 24 ) {
 				$all_dates[] = date_i18n( $date_format, $d, true );
 			}
@@ -1770,16 +1847,13 @@ class FrmProGraphsController {
 	 * Add a formatted date to an array
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $format
 	 * @param string $date
 	 * @param array $all_dates
 	 */
 	private static function add_formatted_date_to_array( $format, $date, &$all_dates ) {
-		if ( 'quarter' === $format ) {
-			$date = self::convert_date_to_quarter( $date );
-		} else {
-			$date = date_i18n( $format, $date, true );
-		}
+		$date = 'quarter' === $format ? self::convert_date_to_quarter( $date ) : date_i18n( $format, $date, true );
 
 		if ( ! in_array( $date, $all_dates, true ) ) {
 			$all_dates[] = $date;
@@ -1790,7 +1864,9 @@ class FrmProGraphsController {
 	 * Get the data for an x-axis graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_data_for_x_axis_graph( $atts ) {
@@ -1809,7 +1885,6 @@ class FrmProGraphsController {
 		self::order_x_axis_values( $atts, $x_axis_data );
 
 		$field_data = self::get_associative_values_for_fields( $atts );
-
 		$graph_data = self::combine_data_by_id( $x_axis_data, $field_data, $atts );
 
 		self::maybe_add_zero_value_dates( $atts, $graph_data );
@@ -1825,16 +1900,17 @@ class FrmProGraphsController {
 	 * Prepare the $atts array for an x-axis graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function prepare_atts_for_x_axis_graph( &$atts ) {
 		$atts['x_axis_field'] = self::get_x_axis_field( $atts['x_axis'] );
+
 		if ( ! $atts['x_axis_field'] ) {
 			return;
 		}
 
-		$form_ids        = wp_list_pluck( $atts['fields'], 'form_id' );
-		$atts['form_id'] = $form_ids;
+		$atts['form_id'] = wp_list_pluck( $atts['fields'], 'form_id' );
 		self::maybe_add_x_start_and_x_end( $atts );
 
 		self::check_field_filters( $atts );
@@ -1844,24 +1920,25 @@ class FrmProGraphsController {
 	 * Add x_start and x_end if start_date and end_date are set
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 */
 	private static function maybe_add_x_start_and_x_end( &$atts ) {
 		if ( self::is_date_field( $atts['x_axis_field'] ) && ! empty( $atts['filters'] ) ) {
-			// copy date field filters to x_start and x_end
+			// Copy date field filters to x_start and x_end
 			foreach ( $atts['filters'] as $filter_key => $filter_value ) {
-				if ( strpos( $filter_key, $atts['x_axis_field']->id . '_greater_than' ) !== false ||
-					strpos( $filter_key, $atts['x_axis_field']->field_key . '_greater_than' ) !== false
+				if ( str_contains( $filter_key, $atts['x_axis_field']->id . '_greater_than' ) ||
+					str_contains( $filter_key, $atts['x_axis_field']->field_key . '_greater_than' )
 				) {
 					$atts['x_start'] = $filter_value;
-				} elseif ( strpos( $filter_key, $atts['x_axis_field']->id . '_less_than' ) !== false ||
-					strpos( $filter_key, $atts['x_axis_field']->field_key . '_less_than' ) !== false
+				} elseif ( str_contains( $filter_key, $atts['x_axis_field']->id . '_less_than' ) ||
+					str_contains( $filter_key, $atts['x_axis_field']->field_key . '_less_than' )
 				) {
 					$atts['x_end'] = $filter_value;
 				}
 			}
 		} elseif ( self::is_created_at_or_updated_at( $atts['x_axis_field'] ) ) {
-			// copy created_at filters to x_start and x_end
+			// Copy created_at filters to x_start and x_end
 			if ( isset( $atts['created_at_greater_than'] ) ) {
 				$atts['x_start'] = $atts['created_at_greater_than'];
 			}
@@ -1872,12 +1949,13 @@ class FrmProGraphsController {
 		}
 	}
 
-
 	/**
 	 * Check if the necessary atts are present to continue with an x-axis graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return bool
 	 */
 	private static function can_continue_with_x_axis_graph( $atts ) {
@@ -1898,6 +1976,7 @@ class FrmProGraphsController {
 	 * Order x-axis values
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $x_axis_data
 	 */
@@ -1916,6 +1995,7 @@ class FrmProGraphsController {
 	/**
 	 * @param stdClass $field
 	 * @param array    $x_axis_data
+	 *
 	 * @return array
 	 */
 	private static function sort_x_axis_data_by_field_options( $field, $x_axis_data ) {
@@ -1940,8 +2020,10 @@ class FrmProGraphsController {
 	 * Compare two dates
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param stdClass $a
 	 * @param stdClass $b
+	 *
 	 * @return int
 	 */
 	private static function date_compare( $a, $b ) {
@@ -1954,8 +2036,10 @@ class FrmProGraphsController {
 	 * Compare two numbers as floats
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param stdClass $a
 	 * @param stdClass $b
+	 *
 	 * @return float
 	 */
 	private static function number_compare( $a, $b ) {
@@ -1968,8 +2052,10 @@ class FrmProGraphsController {
 	 * Compare two strings
 	 *
 	 * @since 5.0.07
+	 *
 	 * @param stdClass $a
 	 * @param stdClass $b
+	 *
 	 * @return int
 	 */
 	private static function string_compare( $a, $b ) {
@@ -1980,50 +2066,53 @@ class FrmProGraphsController {
 	 * Check if string value is created_at or updated_at
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param object|string $value
+	 *
 	 * @return bool
 	 */
 	private static function is_created_at_or_updated_at( $value ) {
-		return ( is_string( $value ) && in_array( $value, array( 'created_at', 'updated_at' ) ) );
+		return is_string( $value ) && in_array( $value, array( 'created_at', 'updated_at' ), true );
 	}
 
 	/**
 	 * Check if a variable is an object and has a type of date
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param mixed $value
+	 *
 	 * @return bool
 	 */
 	private static function is_date_field( $value ) {
-		return ( is_object( $value ) && $value->type === 'date' );
+		return is_object( $value ) && $value->type === 'date';
 	}
 
 	/**
 	 * Get the x axis field object
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $x_axis
+	 *
 	 * @return mixed
 	 */
 	private static function get_x_axis_field( $x_axis ) {
-		if ( self::is_created_at_or_updated_at( $x_axis ) ) {
-			$x_axis_field = $x_axis;
-		} else {
-			$x_axis_field = FrmField::getOne( $x_axis );
-		}
-
-		return $x_axis_field;
+		return self::is_created_at_or_updated_at( $x_axis ) ? $x_axis : FrmField::getOne( $x_axis );
 	}
 
 	/**
 	 * Get associative array values for a specific field
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_associative_values_for_fields( $atts ) {
 		$field_data = array();
+
 		foreach ( $atts['fields'] as $field ) {
 			$field_data[] = FrmProEntryMeta::get_associative_array_values_for_field( $field, $atts );
 		}
@@ -2035,9 +2124,11 @@ class FrmProGraphsController {
 	 * Combine x and y axis data by ID
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $x_axis_data
 	 * @param array $field_data
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function combine_data_by_id( $x_axis_data, $field_data, $atts ) {
@@ -2061,15 +2152,14 @@ class FrmProGraphsController {
 			}
 		}
 
-		$graph_data = array_values( $graph_data );
-
-		return $graph_data;
+		return array_values( $graph_data );
 	}
 
 	/**
 	 * Add the first row of data to a graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $graph_data
 	 */
@@ -2087,7 +2177,9 @@ class FrmProGraphsController {
 	 * Get the first row of labels for x-axis graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_first_row_labels_for_x_axis_graph( $atts ) {
@@ -2104,12 +2196,9 @@ class FrmProGraphsController {
 		$first_row     = array( $x_label );
 		$count         = 0;
 		$tooltip_label = isset( $atts['tooltip_label'] ) ? explode( ',', $atts['tooltip_label'] ) : array();
+
 		foreach ( $atts['fields'] as $field ) {
-			if ( ! empty( $tooltip_label[ $count ] ) ) {
-				$first_row[] = $tooltip_label[ $count ];
-			} else {
-				$first_row[] = $field->name;
-			}
+			$first_row[] = ! empty( $tooltip_label[ $count ] ) ? $tooltip_label[ $count ] : $field->name;
 
 			++$count;
 		}
@@ -2121,21 +2210,24 @@ class FrmProGraphsController {
 	 * Get the first row of labels for a form graph
 	 *
 	 * @since 2.02.05
+	 *
 	 * @return array
 	 */
 	private static function get_first_row_labels_for_form_graph() {
 		$x_label = __( 'Creation Date', 'formidable-pro' );
-		return array( $x_label, __( 'Submissions', 'formidable-pro' ) );
+		return array( $x_label, __( 'Submissions', 'formidable' ) );
 	}
 
 	/**
 	 * Create a new row of graph data
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param int $entry_id
 	 * @param string $x_value
 	 * @param array $all_field_data
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function generate_new_row_of_graph_data( $entry_id, $x_value, $all_field_data, $atts ) {
@@ -2144,17 +2236,18 @@ class FrmProGraphsController {
 		$new_row = array( $x_value );
 
 		foreach ( $all_field_data as $single_field_data ) {
+			if ( ! isset( $single_field_data[ $entry_id ] ) ) {
+				$new_row[] = 0;
+				continue;
+			}
 
-			if ( isset( $single_field_data[ $entry_id ] ) ) {
-				if ( in_array( $atts['data_type'], array( 'total', 'average', 'maximum', 'minimum' ), true ) ) {
-					if ( is_numeric( $single_field_data[ $entry_id ]->meta_value ) ) {
-						$new_row[] = (float) $single_field_data[ $entry_id ]->meta_value;
-					} else {
-						$new_row[] = 0;
-					}
-				} else {
-					$new_row[] = 1;
-				}
+			if ( ! in_array( $atts['data_type'], array( 'total', 'average', 'maximum', 'minimum' ), true ) ) {
+				$new_row[] = 1;
+				continue;
+			}
+
+			if ( is_numeric( $single_field_data[ $entry_id ]->meta_value ) ) {
+				$new_row[] = (float) $single_field_data[ $entry_id ]->meta_value;
 			} else {
 				$new_row[] = 0;
 			}
@@ -2167,6 +2260,7 @@ class FrmProGraphsController {
 	 * Convert number field values to float for x-axis
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param string $x_value
 	 */
@@ -2176,11 +2270,11 @@ class FrmProGraphsController {
 		}
 	}
 
-
 	/**
 	 * Update an existing row of graph data
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param int $entry_id
 	 * @param array $all_field_data
 	 * @param array $current_data
@@ -2189,38 +2283,41 @@ class FrmProGraphsController {
 	 */
 	private static function update_existing_row_of_graph_data( $entry_id, $all_field_data, &$current_data, $data_count, $atts ) {
 		$count = 0;
+
 		foreach ( $all_field_data as $single_field_data ) {
 			++$count;
 
-			if ( isset( $single_field_data[ $entry_id ] ) ) {
-				$value      = $single_field_data[ $entry_id ]->meta_value;
-				$is_numeric = is_numeric( $value );
+			if ( ! isset( $single_field_data[ $entry_id ] ) ) {
+				continue;
+			}
 
-				switch ( $atts['data_type'] ) {
-					case 'total':
-						if ( $is_numeric ) {
-							$current_data[ $count ] += $value;
-						}
-						break;
-					case 'average':
-						if ( $is_numeric ) {
-							$current_data[ $count ] = ( ( $current_data[ $count ] * ( $data_count - 1 ) ) + $value ) / $data_count;
-						}
-						break;
-					case 'maximum':
-						if ( $is_numeric && $value > $current_data[ $count ] ) {
-							$current_data[ $count ] = floatval( $value );
-						}
-						break;
-					case 'minimum':
-						if ( $is_numeric && $value < $current_data[ $count ] ) {
-							$current_data[ $count ] = floatval( $value );
-						}
-						break;
-					default:
-						++$current_data[ $count ];
-						break;
-				}
+			$value      = $single_field_data[ $entry_id ]->meta_value;
+			$is_numeric = is_numeric( $value );
+
+			switch ( $atts['data_type'] ) {
+				case 'total':
+					if ( $is_numeric ) {
+						$current_data[ $count ] += $value;
+					}
+					break;
+				case 'average':
+					if ( $is_numeric ) {
+						$current_data[ $count ] = ( ( $current_data[ $count ] * ( $data_count - 1 ) ) + $value ) / $data_count;
+					}
+					break;
+				case 'maximum':
+					if ( $is_numeric && $value > $current_data[ $count ] ) {
+						$current_data[ $count ] = floatval( $value );
+					}
+					break;
+				case 'minimum':
+					if ( $is_numeric && $value < $current_data[ $count ] ) {
+						$current_data[ $count ] = floatval( $value );
+					}
+					break;
+				default:
+					++$current_data[ $count ];
+					break;
 			}
 		}
 	}
@@ -2229,8 +2326,10 @@ class FrmProGraphsController {
 	 * Get the associative values for the x-axis field
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param object|string $x_axis_field
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function get_associative_values_for_x_axis( $x_axis_field, $atts ) {
@@ -2251,8 +2350,10 @@ class FrmProGraphsController {
 	 * Get the displayed x-axis value
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $x_value
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function get_x_axis_displayed_value( $x_value, $atts ) {
@@ -2285,6 +2386,7 @@ class FrmProGraphsController {
 	 * Convert a creation date or update date to the localized date
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param string $x_value
 	 */
@@ -2298,18 +2400,22 @@ class FrmProGraphsController {
 	 * Check if a value is a valid date
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $value
+	 *
 	 * @return bool
 	 */
 	private static function is_valid_date( $value ) {
-		return ( gmdate( 'Y', strtotime( $value ) ) > 0 );
+		return gmdate( 'Y', strtotime( $value ) ) > 0;
 	}
 
 	/**
 	 * Convert a date to the correct quarter string
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $date
+	 *
 	 * @return string
 	 */
 	private static function convert_date_to_quarter( $date ) {
@@ -2333,15 +2439,15 @@ class FrmProGraphsController {
 	 * Get the displayed value for a given field and meta value
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param object|string $field
 	 * @param string $value
+	 *
 	 * @return int|string
 	 */
 	private static function get_displayed_value( $field, $value ) {
 		if ( self::is_created_at_or_updated_at( $field ) ) {
-
 			$displayed_value = self::convert_date_for_graph_display( $value );
-
 		} elseif ( is_object( $field ) ) {
 			$displayed_value = self::get_displayed_value_for_specific_fields( $value, $field );
 		} else {
@@ -2351,7 +2457,7 @@ class FrmProGraphsController {
 		$displayed_value = apply_filters( 'frm_graph_value', $displayed_value, $field );
 
 		if ( is_array( $displayed_value ) ) {
-			$displayed_value = reset( $displayed_value );
+			return reset( $displayed_value );
 		}
 
 		return $displayed_value;
@@ -2362,8 +2468,8 @@ class FrmProGraphsController {
 	 *
 	 * @since 5.4.2
 	 *
-	 * @param mixed  $value Field value.
-	 * @param object $field Field object.
+	 * @param array|string $value Field value.
+	 * @param object       $field Field object.
 	 */
 	private static function get_displayed_value_for_specific_fields( $value, $field ) {
 		if ( ! is_array( $value ) ) {
@@ -2398,36 +2504,34 @@ class FrmProGraphsController {
 	 * Convert a date to the WordPress format
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $value
+	 *
 	 * @return string
 	 */
 	private static function convert_date_for_graph_display( $value ) {
 		if ( self::is_valid_date( $value ) ) {
 			$date_format = get_option( 'date_format' );
-			$value       = date_i18n( $date_format, strtotime( $value ), true );
-		} else {
-			$value = '';
+			return date_i18n( $date_format, strtotime( $value ), true );
 		}
 
-		return $value;
+		return '';
 	}
 
 	/**
 	 * Convert a date formatted in the WordPress settings date format to Y-m-d
 	 *
 	 * @since 2.02.11
+	 *
 	 * @param string $date
+	 *
 	 * @return string
 	 */
 	private static function convert_formatted_date_to_y_m_d( $date ) {
 		$date_format = get_option( 'date_format' );
 		$date_obj    = DateTime::createFromFormat( $date_format, $date );
 
-		if ( $date_obj ) {
-			return $date_obj->format( 'Y-m-d' );
-		}
-
-		return $date;
+		return $date_obj ? $date_obj->format( 'Y-m-d' ) : $date;
 	}
 
 	/**
@@ -2437,6 +2541,7 @@ class FrmProGraphsController {
 	 *
 	 * @param object $field
 	 * @param string $value
+	 *
 	 * @return string
 	 */
 	private static function get_option_label_for_value( $field, $value ) {
@@ -2451,19 +2556,24 @@ class FrmProGraphsController {
 				$option_label = $opt;
 				break;
 			}
+
 			if ( is_array( $opt ) && $value == $opt['value'] ) {
 				$option_label = $opt['label'];
 				break;
 			}
-			if ( FrmFieldsHelper::is_other_opt( $opt_key ) ) {
-				if ( FrmField::is_field_with_multiple_values( $field ) ) {
-					if ( $opt_key == $value ) {
-						$option_label = $opt;
-						break;
-					}
-				} else {
-					$option_label = $opt;
-				}
+
+			if ( ! FrmFieldsHelper::is_other_opt( $opt_key ) ) {
+				continue;
+			}
+
+			if ( ! FrmField::is_field_with_multiple_values( $field ) ) {
+				$option_label = $opt;
+				continue;
+			}
+
+			if ( $opt_key == $value ) {
+				$option_label = $opt;
+				break;
 			}
 		}
 
@@ -2507,6 +2617,7 @@ class FrmProGraphsController {
 		}
 
 		$lower_case_keys = array();
+
 		foreach ( $count_values as $key => $count ) {
 			$lower_case_key                     = strtolower( $key );
 			$lower_case_keys[ $lower_case_key ] = $key;
@@ -2529,10 +2640,12 @@ class FrmProGraphsController {
 
 	/**
 	 * @param stdClass $field
+	 *
 	 * @return array
 	 */
 	private static function get_field_option_labels( $field ) {
 		$labels = array();
+
 		foreach ( $field->options as $opt ) {
 			if ( ! $opt ) {
 				continue;
@@ -2542,11 +2655,13 @@ class FrmProGraphsController {
 				if ( empty( $opt['label'] ) ) {
 					continue;
 				}
+
 				$opt = $opt['label'];
 			}
 
 			$labels[] = $opt;
 		}
+
 		return $labels;
 	}
 
@@ -2554,6 +2669,7 @@ class FrmProGraphsController {
 	 * Only add column colors if colors is defined by the user
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $graph_data
 	 */
@@ -2567,28 +2683,26 @@ class FrmProGraphsController {
 	 * If colors is not empty, apply a different color to each bar
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $atts
 	 * @param array $graph_data
 	 */
 	private static function apply_column_colors( $atts, &$graph_data ) {
-		if ( ! empty( $atts['colors'] ) && in_array( $atts['type'], array( 'column', 'bar', 'hbar', 'scatter' ) ) ) {
+		if ( empty( $atts['colors'] ) || ! in_array( $atts['type'], array( 'column', 'bar', 'hbar', 'scatter' ), true ) ) {
+			return;
+		}
 
-			$colors            = explode( ',', $atts['colors'] );
-			$color_upper_limit = count( $colors ) - 1;
-			$count             = -1;
+		$colors            = explode( ',', $atts['colors'] );
+		$color_upper_limit = count( $colors ) - 1;
+		$count             = -1;
 
-			foreach ( $graph_data as $key => $item ) {
-				if ( $count < 0 ) {
-					$graph_data[ $key ][] = array( 'role' => 'style' );
-				} else {
-					$graph_data[ $key ][] = $colors[ $count ];
-				}
+		foreach ( $graph_data as $key => $item ) {
+			$graph_data[ $key ][] = $count < 0 ? array( 'role' => 'style' ) : $colors[ $count ];
 
-				if ( $count < $color_upper_limit ) {
-					++$count;
-				} else {
-					$count = 0;
-				}
+			if ( $count < $color_upper_limit ) {
+				++$count;
+			} else {
+				$count = 0;
 			}
 		}
 	}
@@ -2605,17 +2719,6 @@ class FrmProGraphsController {
 	}
 
 	/**
-	 * Get a list of boxes to list with the graph on the reports page.
-	 *
-	 * @since 5.0.02
-	 * @deprecated 6.5.5
-	 */
-	public static function get_field_boxes( $args ) {
-		_deprecated_function( __METHOD__, '6.5.5', 'FrmProReportsHelper::get_field_boxes' );
-		return FrmProReportsHelper::get_field_boxes( $args );
-	}
-
-	/**
 	 * Which field types show a graph by default?
 	 *
 	 * @since 4.0
@@ -2629,30 +2732,5 @@ class FrmProGraphsController {
 		 * @param array $types Table graph types.
 		 */
 		return apply_filters( 'frm_table_graph_types', array( 'url', 'text', 'textarea', 'rte', 'email' ) );
-	}
-
-	/**
-	 * Apply deprecated filters
-	 *
-	 * @since 2.02.05
-	 * @codeCoverageIgnore
-	 */
-	private static function apply_deprecated_filters() {
-		$placeholder = array();
-
-		apply_filters( 'frm_graph_values', $placeholder );
-		if ( has_filter( 'frm_graph_values' ) ) {
-			_deprecated_function( 'The frm_graph_values filter', '2.02.05', 'the frm_graph_data filter' );
-		}
-
-		apply_filters( 'frm_graph_labels', $placeholder );
-		if ( has_filter( 'frm_graph_labels' ) ) {
-			_deprecated_function( 'The frm_graph_labels filter', '2.02.05', 'the frm_graph_data filter' );
-		}
-
-		apply_filters( 'frm_final_graph_values', $placeholder );
-		if ( has_filter( 'frm_final_graph_values' ) ) {
-			_deprecated_function( 'The frm_final_graph_values filter', '2.02.05', 'the frm_graph_data filter' );
-		}
 	}
 }

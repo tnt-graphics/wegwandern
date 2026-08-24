@@ -508,7 +508,7 @@ class JUQueueHelper
         if (!empty($options['auto_detect_tables'])) {
             $tables = self::getDefaultDbColumns();
         } else {
-            $tables = wpmfGetOption('wp-media-folder-tables');
+            $tables = WpmfHelper::wpmfGetOption('wp-media-folder-tables');
         }
 
         if (!$update_database) {

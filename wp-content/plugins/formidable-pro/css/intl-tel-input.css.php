@@ -23,20 +23,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	background-color: unset !important;
 }
 .with_frm_style .iti__flag {
-	background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/flags.png?1');
+	background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/flags.webp');
 	transform: scale(0.9);
 }
 @media (min-resolution: 2x) {
 	.with_frm_style .iti__flag {
-		background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/flags@2x.png?1');
+		background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/flags@2x.webp');
 	}
 }
 .with_frm_style .iti__globe {
-	background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/globe.png');
+	background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/globe.webp');
 }
 @media (min-resolution: 2x) {
 	.with_frm_style .iti__globe {
-		background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/globe@2x.png');
+		background-image: url('<?php echo esc_url( FrmProAppHelper::relative_plugin_url() ); ?>/images/intl-tel-input/globe@2x.webp');
 	}
 }
 .with_frm_style .iti__arrow {
@@ -47,10 +47,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10.1667 7.16669L8.00004 9.50002L5.83337 7.16669' stroke='%2398A2B3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E%0A");
 }
 
-.with_frm_style .iti--container {
-	position: absolute;
-}
-
 .with_frm_style .iti--fullscreen-popup .iti__dropdown-content {
 	padding: 20px 15px;
+}
+
+.with_frm_style .iti__search-input-wrapper {
+	margin: 3px 8px;
+}
+
+.with_frm_style .iti__search-input {
+	border-width: 0 !important;
+	padding-left: 30px !important;
+}
+
+.with_frm_style .iti__selected-country-primary {
+	border-radius: var(--border-radius, 8px);
 }

@@ -65,7 +65,6 @@
 
     /* when click Create a gallery from folder button */
     var selectallGallery = function () {
-        $('.media-menu-item:nth-child(2)').click();
         var $li_attm = $('li.attachment:not(.wpmf-attachment)');
         $li_attm.find('.thumbnail').click();
         if ($('.button.media-button.button-primary.button-large.media-button-gallery').attr('disabled') === undefined) {

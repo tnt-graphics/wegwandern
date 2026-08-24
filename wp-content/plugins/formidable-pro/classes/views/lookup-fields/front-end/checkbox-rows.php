@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $option_index = 0;
+
 foreach ( $field['options'] as $opt_key => $opt_value ) {
 	// Get label first so we do not pass the filtered $opt_value to the label filter.
 	$opt_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt_value, $field );

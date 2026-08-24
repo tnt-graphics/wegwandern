@@ -13,6 +13,7 @@ class FrmProSiteHealthController {
 	 * Adds an Formidable section to Site Health info tab.
 	 *
 	 * @param array $info
+	 *
 	 * @return array
 	 */
 	public static function debug_information( $info ) {
@@ -27,7 +28,7 @@ class FrmProSiteHealthController {
 						sprintf(
 							/* translators: %1$s: License status (ie. Expired, Active), %2$s: License Type (ie. Elite, Business, Plus) */
 							__( '%1$s (%2$s)', 'formidable-pro' ),
-							$expired ? __( 'Expired', 'formidable-pro' ) : __( 'Active', 'formidable-pro' ),
+							$expired ? __( 'Expired', 'formidable-pro' ) : __( 'Active', 'formidable' ),
 							FrmProAddonsController::get_readable_license_type()
 						)
 					),
@@ -41,6 +42,7 @@ class FrmProSiteHealthController {
 	 * Adds tests for Site Health status tab.
 	 *
 	 * @param array $tests
+	 *
 	 * @return array
 	 */
 	public static function site_status_tests( $tests ) {
@@ -66,8 +68,7 @@ class FrmProSiteHealthController {
 			'test'    => 'frm_is_license_expired',
 		);
 
-		$status = FrmProAddonsController::get_license_status();
-
+		$status            = FrmProAddonsController::get_license_status();
 		$using_old_version = FrmProAddonsController::pro_is_behind_latest_version();
 
 		if ( 'active' === $status ) {
@@ -114,7 +115,16 @@ class FrmProSiteHealthController {
 		}
 
 		$result['description'] = sprintf( '<p>%s</p>', FrmProAddonsController::message_text_for_license_status() );
-		$result['actions']     = '<a href="' . esc_url( FrmAppHelper::admin_upgrade_link( $utc_medium, 'account/downloads/' ) ) . '">' . esc_html__( 'Renew Now', 'formidable' ) . '</a>';
+
+		$upgrade_link      = FrmAppHelper::admin_upgrade_link(
+			array(
+				'campaign' => $utc_medium,
+				'content'  => 'site-health',
+			),
+			'account/downloads/'
+		);
+		$result['actions'] = '<a href="' . esc_url( $upgrade_link ) . '">' . esc_html__( 'Renew Now', 'formidable' ) . '</a>';
+
 		return $result;
 	}
 
@@ -125,9 +135,11 @@ class FrmProSiteHealthController {
 	 */
 	private static function get_name() {
 		$name = FrmAppHelper::get_menu_name();
+
 		if ( 'Formidable' === $name ) {
 			$name .= ' ' . __( 'Forms', 'formidable' );
 		}
+
 		return $name;
 	}
 }

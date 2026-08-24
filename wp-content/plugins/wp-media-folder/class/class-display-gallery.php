@@ -17,7 +17,8 @@ class WpmfDisplayGallery
     {
         add_action('wp_enqueue_media', array($this, 'galleryEnqueueAdminScripts'));
         add_action('wp_enqueue_scripts', array($this, 'galleryScripts'));
-        add_action('enqueue_block_editor_assets', array($this, 'addEditorAssets'));
+        add_action('init', array($this, 'registerGalleryBlock'));
+        add_action('enqueue_block_assets', array($this, 'addEditorAssets'));
         add_shortcode('wpmf_gallery', array($this, 'galleryShortcode'));
         add_filter('post_gallery', array($this, 'galleryDefaultShortcode'), 11, 3);
         add_action('print_media_templates', array($this, 'galleryPrintMediaTemplates'));
@@ -49,7 +50,7 @@ class WpmfDisplayGallery
         }
         $request_body = file_get_contents('php://input');
         $data = json_decode($request_body, true);
-        if (empty($data['items']) && empty($data['gallery_folder_id'])) {
+        if (empty($data['items']) && empty($data['wpmf_folder_id'])) {
             $html = '<div class="wpmf-divi-container">
             <div id="divi-gallery-placeholder" class="divi-gallery-placeholder">
                         <span class="wpmf-divi-message">
@@ -301,8 +302,8 @@ class WpmfDisplayGallery
         $post = get_post();
         static $instance = 0;
         $instance++;
-        $gallery_configs = wpmfGetOption('gallery_settings');
-        $caption_lightbox = wpmfGetOption('caption_lightbox_gallery');
+        $gallery_configs = WpmfHelper::wpmfGetOption('gallery_settings');
+        $caption_lightbox = WpmfHelper::wpmfGetOption('caption_lightbox_gallery');
         if (isset($gallery_configs['theme']['slider_theme']['auto_animation'])) {
             $autoplay = $gallery_configs['theme']['slider_theme']['auto_animation'];
         } else {
@@ -368,6 +369,9 @@ class WpmfDisplayGallery
             }
         }
 
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+
         $custom_class = trim($class);
         if (isset($wpmf_autoinsert) && ((int)$wpmf_autoinsert === 1 || $wpmf_autoinsert === 'on') && !empty($wpmf_folder_id)) {
             if ($wpmf_orderby === 'post__in') {
@@ -408,6 +412,11 @@ class WpmfDisplayGallery
              * @return array
              */
             $args     = apply_filters('wpmf_gallery_query_args', $args);
+            // SWITCH TO MAIN SITE
+            if ($use_multisite_share) {
+                switch_to_blog($main_site_id);
+            }
+
             $query = new WP_Query($args);
             $_attachments = $query->get_posts();
             $gallery_items = array();
@@ -493,7 +502,9 @@ class WpmfDisplayGallery
 
         wp_enqueue_script('jquery');
         wp_enqueue_style('wpmf-gallery-style');
-        wp_enqueue_style('wpmf-gallery-popup-style');
+        wp_enqueue_script('jquery');
+        wp_enqueue_style('wpmf-gallery-style');
+        // wp_enqueue_style('wpmf-gallery-popup-style');
 
         switch ($display) {
             case 'slider':
@@ -511,6 +522,10 @@ class WpmfDisplayGallery
             default:
                 require(WP_MEDIA_FOLDER_PLUGIN_DIR . 'themes-gallery/gallery-default.php');
                 break;
+        }
+
+        if ($use_multisite_share) {
+            restore_current_blog();
         }
 
         return $output;
@@ -651,7 +666,7 @@ class WpmfDisplayGallery
             }
         }
 
-        $caption_lightbox = wpmfGetOption('caption_lightbox_gallery');
+        $caption_lightbox = WpmfHelper::wpmfGetOption('caption_lightbox_gallery');
         if (!empty($caption_lightbox) && $_post->post_excerpt !== '') {
             $title = $_post->post_excerpt;
         } else {
@@ -665,10 +680,16 @@ class WpmfDisplayGallery
 
         if ($size && 'none' !== $size) {
             $drive_id = get_post_meta($id, 'wpmf_drive_id', true);
+            $preview_url = function_exists('wpmfResolveAttachmentUrl')
+                ? wpmfResolveAttachmentUrl($id, 'preview', $size)
+                : wp_get_attachment_image_url($id, $size);
+            if ($preview_url === '') {
+                $preview_url = wp_get_attachment_url($id);
+            }
             if (!empty($drive_id)) {
-                $text = '<img class="wpmf_img wpmf_img_cloud" alt="'. esc_attr($alt_post) .'" src="'. wp_get_attachment_image_url($id, $size) .'" data-type="wpmfgalleryimg" data-lazy-src="0">';
+                $text = '<img class="wpmf_img wpmf_img_cloud" alt="'. esc_attr($alt_post) .'" src="'. esc_url($preview_url) .'" data-type="wpmfgalleryimg" data-attachment-id="'. (int) $id .'" data-wpmf-size="'. esc_attr($size) .'" data-lazy-src="0">';
             } else {
-                $text = '<img class="wpmf_img" alt="'. esc_attr($alt_post) .'" src="'. wp_get_attachment_image_url($id, $size) .'" data-type="wpmfgalleryimg" data-lazy-src="'. wp_get_attachment_image_url($id, $size) .'">';
+                $text = '<img class="wpmf_img" alt="'. esc_attr($alt_post) .'" src="'. esc_url($preview_url) .'" data-type="wpmfgalleryimg" data-attachment-id="'. (int) $id .'" data-wpmf-size="'. esc_attr($size) .'" data-lazy-src="'. esc_url($preview_url) .'">';
             }
         } else {
             $text = '';
@@ -713,7 +734,7 @@ class WpmfDisplayGallery
             return;
         }
 
-        $cf = wpmfGetOption('gallery_settings');
+        $cf = WpmfHelper::wpmfGetOption('gallery_settings');
         $display_types = array(
             'default' => __('Default', 'wpmf'),
             'masonry' => __('Masonry', 'wpmf'),
@@ -954,45 +975,71 @@ class WpmfDisplayGallery
     }
 
     /**
-     * Enqueue styles and scripts for gutenberg
+     * Register blocks
      *
      * @return void
      */
-    public function addEditorAssets()
+    public function registerGalleryBlock()
     {
-        wp_register_script(
-            'wordpresscanvas-imagesloaded',
-            WPMF_PLUGIN_URL . 'assets/js/display-gallery/imagesloaded.pkgd.min.js',
-            array('jquery'),
-            '3.1.5',
-            true
-        );
+        if (!is_admin()) {
+            return;
+        }
 
-        wp_enqueue_script('jquery-masonry');
         global $pagenow;
         $deps = (isset($pagenow) && $pagenow === 'widgets.php') ? array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor', 'lodash', 'wordpresscanvas-imagesloaded') : array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-editor', 'lodash', 'wordpresscanvas-imagesloaded');
-        wp_enqueue_script(
-            'wpmf_gallery_blocks',
+
+        wp_register_script(
+            'wpmf-gallery-editor-script',
             WPMF_PLUGIN_URL . 'assets/js/blocks/gallery/block.js',
             $deps,
             WPMF_VERSION
         );
 
-        wp_enqueue_style(
+        wp_register_style(
+            'wpmf-gallery-popup-style',
+            plugins_url('/assets/css/display-gallery/magnific-popup.css', dirname(__FILE__)),
+            array(),
+            '0.9.9'
+        );
+
+        wp_register_style(
+            'wpmf-gallery-style',
+            plugins_url('/assets/css/display-gallery/style-display-gallery.css', dirname(__FILE__)),
+            array(),
+            WPMF_VERSION
+        );
+
+        wp_register_script(
+            'wordpresscanvas-imagesloaded',
+            plugins_url('/assets/js/display-gallery/imagesloaded.pkgd.min.js', dirname(__FILE__)),
+            array('jquery'),
+            '3.1.5',
+            true
+        );
+
+        wp_register_script(
+            'wpmf-gallery-popup',
+            plugins_url('/assets/js/display-gallery/jquery.magnific-popup.min.js', dirname(__FILE__)),
+            array('jquery'),
+            '0.9.9',
+            true
+        );
+
+        wp_register_style(
             'wpmf-slick-style',
             WPMF_PLUGIN_URL . 'assets/js/slick/slick.css',
             array(),
             WPMF_VERSION
         );
 
-        wp_enqueue_style(
+        wp_register_style(
             'wpmf-slick-theme-style',
             WPMF_PLUGIN_URL . 'assets/js/slick/slick-theme.css',
             array(),
             WPMF_VERSION
         );
 
-        wp_enqueue_script(
+        wp_register_script(
             'wpmf-slick-script',
             WPMF_PLUGIN_URL . 'assets/js/slick/slick.min.js',
             array('jquery'),
@@ -1000,6 +1047,43 @@ class WpmfDisplayGallery
             true
         );
 
+        wp_register_script(
+            'wpmf-gallery',
+            plugins_url('assets/js/display-gallery/site_gallery.js', dirname(__FILE__)),
+            array('jquery', 'wordpresscanvas-imagesloaded'),
+            WPMF_VERSION,
+            true
+        );
+
+        wp_localize_script(
+            'wpmf-gallery',
+            'wpmfggr',
+            $this->localizeScript()
+        );
+
+        register_block_type(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/js/blocks/gallery/block.json');
+    }
+
+
+    /**
+     * Enqueue styles and scripts for gutenberg
+     *
+     * @return void
+     */
+    public function addEditorAssets()
+    {
+        wp_enqueue_script('jquery-masonry');
+        
+        wp_enqueue_style(
+            'wpmf-gallery-popup-style',
+            plugins_url('/assets/css/display-gallery/magnific-popup.css', dirname(__FILE__)),
+            array(),
+            WPMF_VERSION
+        );
+
+        global $pagenow;
+        $deps = (isset($pagenow) && $pagenow === 'widgets.php') ? array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor', 'lodash', 'wordpresscanvas-imagesloaded') : array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-editor', 'lodash', 'wordpresscanvas-imagesloaded');
+        
         $sizes = apply_filters('image_size_names_choose', array(
             'thumbnail' => __('Thumbnail', 'wpmf'),
             'medium' => __('Medium', 'wpmf'),
@@ -1016,12 +1100,13 @@ class WpmfDisplayGallery
             }
         }
 
-        $gallery_configs = wpmfGetOption('gallery_settings');
+        $gallery_configs = WpmfHelper::wpmfGetOption('gallery_settings');
         $params = array(
             'l18n' => array(
                 'block_gallery_title' => __('WP Media Folder Gallery', 'wpmf'),
                 'no_post_found' => __('No post found', 'wpmf'),
-                'select_label' => __('Select a News Block', 'wpmf')
+                'select_label' => __('Select a News Block', 'wpmf'),
+                'folder_no_image' => __('Folder has no image', 'wpmf')
             ),
             'vars' => array(
                 'sizes' => $sizes,
@@ -1032,7 +1117,7 @@ class WpmfDisplayGallery
             )
         );
 
-        wp_localize_script('wpmf_gallery_blocks', 'wpmf_blocks', $params);
+        wp_localize_script('wpmf-gallery-editor-script', 'wpmf_blocks', $params);
     }
 
     /**
@@ -1132,6 +1217,13 @@ class WpmfDisplayGallery
             die();
         }
 
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+
+        if ($use_multisite_share) {
+            switch_to_blog($main_site_id);
+        }
+
         $folders = explode(',', $_REQUEST['ids']);
         $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'title';
         $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'ASC';
@@ -1185,6 +1277,10 @@ class WpmfDisplayGallery
             }
         }
 
+        if ($use_multisite_share) {
+            restore_current_blog();
+        }
+
         wp_send_json(array('status' => true, 'images' => $list_images));
     }
 
@@ -1226,10 +1322,14 @@ class WpmfDisplayGallery
                 if ($attachment->post_mime_type === 'application/pdf') {
                     $item_url = wp_get_attachment_url($attachmentID);
                 } else {
-                    $item_url = wp_get_attachment_image_url($attachmentID, $targetsize);
+                    $item_url = function_exists('wpmfResolveAttachmentUrl')
+                        ? wpmfResolveAttachmentUrl($attachmentID, 'full', $targetsize)
+                        : wp_get_attachment_image_url($attachmentID, $targetsize);
                 }
             } else {
-                $item_url = wp_get_attachment_image_url($attachmentID, $targetsize);
+                $item_url = function_exists('wpmfResolveAttachmentUrl')
+                    ? wpmfResolveAttachmentUrl($attachmentID, 'full', $targetsize)
+                    : wp_get_attachment_image_url($attachmentID, $targetsize);
             }
         }
 

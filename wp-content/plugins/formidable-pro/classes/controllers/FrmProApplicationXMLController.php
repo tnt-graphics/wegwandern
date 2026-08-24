@@ -16,17 +16,20 @@ class FrmProApplicationXMLController {
 	 */
 	public static function export_xml() {
 		$application_id = FrmAppHelper::get_post_param( 'application_id', 0, 'absint' );
+
 		if ( ! $application_id ) {
 			return;
 		}
 
 		$application = get_term( $application_id, 'frm_application' );
+
 		if ( ! ( $application instanceof WP_Term ) ) {
 			wp_die( 0 );
 		}
 
 		global $frm_inc_tax;
-		if ( empty( $frm_inc_tax ) ) {
+
+		if ( ! $frm_inc_tax ) {
 			$frm_inc_tax = array();
 		}
 
@@ -44,6 +47,7 @@ class FrmProApplicationXMLController {
 		);
 
 		$post_ids = FrmProApplication::get_posts_for_application( $application->term_id, array( 'page', 'frm_display' ), array( 'fields' => 'ids' ) );
+
 		if ( $post_ids ) {
 			// Include application pages at end of exported application XML
 			add_action(
@@ -59,6 +63,7 @@ class FrmProApplicationXMLController {
 		}
 
 		$form_ids = FrmProApplication::get_forms_for_application( $application_id, true );
+
 		if ( ! $form_ids ) {
 			// Make sure there is at least a form id set to avoid all form ids getting included instead.
 			$form_ids[] = -1;
@@ -80,6 +85,7 @@ class FrmProApplicationXMLController {
 	 * This is necessary in order to exclude redundant <category> tags for frm_application taxonomies on export.
 	 *
 	 * @param array<WP_Term> $terms
+	 *
 	 * @return array<WP_Term>
 	 */
 	public static function remove_applications_from_object_terms_results( $terms ) {
@@ -97,6 +103,7 @@ class FrmProApplicationXMLController {
 	 *
 	 * @param array            $imported
 	 * @param SimpleXMLElement $xml
+	 *
 	 * @return array
 	 */
 	public static function importing_xml( $imported, $xml ) {
@@ -142,6 +149,7 @@ class FrmProApplicationXMLController {
 
 	/**
 	 * @param string $name
+	 *
 	 * @return string
 	 */
 	private static function guarantee_unique_name( $name ) {
@@ -159,6 +167,7 @@ class FrmProApplicationXMLController {
 	/**
 	 * @param string $message
 	 * @param array  $result
+	 *
 	 * @return string
 	 */
 	public static function xml_parsed_message( $message, $result ) {
@@ -167,9 +176,8 @@ class FrmProApplicationXMLController {
 		}
 
 		$application_id = reset( $result['applications'] );
-		$message       .= '<li><a href="' . esc_url( FrmProApplicationsHelper::get_edit_url( $application_id ) ) . '">' . esc_html__( 'Go to imported application', 'formidable-pro' ) . '</a></li>';
 
-		return $message;
+		return $message . ( '<li><a href="' . esc_url( FrmProApplicationsHelper::get_edit_url( $application_id ) ) . '">' . esc_html__( 'Go to imported application', 'formidable-pro' ) . '</a></li>' );
 	}
 
 	/**
@@ -177,6 +185,7 @@ class FrmProApplicationXMLController {
 	 *
 	 * @param string $string
 	 * @param int    $m
+	 *
 	 * @return string
 	 */
 	public static function applications_count_message( $string, $m ) {

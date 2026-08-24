@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		$sel         = false;
 		$prefiltered = FrmProConditionalLogicOptionData::data_is_available( $field['form_id'] );
+
 		foreach ( $form_fields as $ff ) {
 			if ( ! FrmProConditionalLogicController::is_field_present_in_logic_options( $field, $ff, $prefiltered ) ) {
 				continue;
@@ -32,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</select>
 
 	<?php
-	//remove conditional logic if the field doesn't exist
+	// Remove conditional logic if the field doesn't exist
 	if ( $hide_field && ! $sel ) {
 	?>
 	<script type="text/javascript">jQuery(document).ready(function(){frmAdminBuild.triggerRemoveLogic(<?php echo (int) $field['id']; ?>, '<?php echo esc_attr( $meta_name ); ?>');});</script>
@@ -79,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</span>
 
 	<a href="javascript:void(0)" class="frm_remove_tag frm-h-stack frm-leading-none frm-mt-2xs" data-removeid="frm_logic_<?php echo esc_attr( $field['id'] . '_' . $meta_name ); ?>" data-showlast="#logic_<?php echo esc_attr( $field['id'] ); ?>" data-hidelast="#frm_logic_rows_<?php echo absint( $field['id'] ); ?>">
-		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon frm_svg14' ); ?>
-		<span class="frm-ml-2xs"><?php esc_html_e( 'Remove', 'formidable-pro' ); ?></span>
+		<?php FrmAppHelper::icon_by_class( 'frmfont frm_minus1_icon frm_svg14' ); ?>
+		<span class="frm-ml-2xs"><?php esc_html_e( 'Remove', 'formidable' ); ?></span>
 	</a>
 </div>

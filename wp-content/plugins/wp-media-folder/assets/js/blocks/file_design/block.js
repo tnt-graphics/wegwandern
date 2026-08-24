@@ -15,12 +15,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
     var registerBlockType = wpBlocks.registerBlockType;
     var InspectorControls = wpBlockEditor.InspectorControls,
         MediaUpload = wpBlockEditor.MediaUpload,
-        BlockControls = wpBlockEditor.BlockControls;
+        BlockControls = wpBlockEditor.BlockControls,
+        useBlockProps = wpBlockEditor.useBlockProps;
     var mediaUpload = wpEditor.mediaUpload;
     var PanelBody = wpComponents.PanelBody,
         SelectControl = wpComponents.SelectControl,
         ToolbarGroup = wpComponents.ToolbarGroup,
         Button = wpComponents.Button,
+        ToolbarButton = wpComponents.ToolbarButton,
         IconButton = wpComponents.IconButton,
         FormFileUpload = wpComponents.FormFileUpload,
         Placeholder = wpComponents.Placeholder;
@@ -89,6 +91,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     target = attributes.target,
                     cover = attributes.cover;
 
+                var blockProps = this.props.blockProps;
+
                 var controls = React.createElement(
                     BlockControls,
                     null,
@@ -101,7 +105,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             },
                             render: function render(_ref) {
                                 var open = _ref.open;
-                                return React.createElement(IconButton, {
+                                return React.createElement(ToolbarButton, {
                                     className: "components-toolbar__control",
                                     label: __('Edit File', 'wpmf'),
                                     icon: "edit",
@@ -141,7 +145,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                         {
                             icon: "media-archive",
                             label: __('WPMF Media Download', 'wpmf'),
-                            instructions: wpmf.l18n.media_download_desc,
+                            instructions: wpmf_filedesign_blocks.l18n.media_download_desc,
                             className: className
                         },
                         React.createElement(
@@ -152,7 +156,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 onChange: this.uploadFromFiles,
                                 accept: "*"
                             },
-                            wpmf.l18n.upload
+                            wpmf_filedesign_blocks.l18n.upload
                         ),
                         React.createElement(MediaUpload, {
                             onSelect: function onSelect(file) {
@@ -169,7 +173,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                         className: "is-tertiary editor-media-placeholder__button wpmfLibrary",
                                         onClick: open
                                     },
-                                    wpmf.l18n.media_folder
+                                    wpmf_filedesign_blocks.l18n.media_folder
                                 );
                             }
                         })
@@ -181,13 +185,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     null,
                     typeof cover !== "undefined" && React.createElement(
                         "div",
-                        { className: "wpmf-cover" },
+                        _extends({ className: "wpmf-cover" }, blockProps),
                         React.createElement("img", { src: cover })
                     ),
                     controls,
                     typeof cover === "undefined" && id !== 0 && React.createElement(
                         "div",
-                        { className: "wp-block-shortcode" },
+                        _extends({ className: "wp-block-shortcode" }, blockProps),
                         React.createElement(
                             "div",
                             { className: "wpmf-file-design-block" },
@@ -198,6 +202,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     PanelBody,
                                     { title: __('File Design Settings', 'wpmf') },
                                     React.createElement(SelectControl, {
+                                        __next40pxDefaultSize: true,
+                                        __nextHasNoMarginBottom: true,
                                         label: __('Target', 'wpmf'),
                                         value: target,
                                         options: [{ label: __('Same Window', 'wpmf'), value: '' }, { label: __('New Window', 'wpmf'), value: '_blank' }],
@@ -217,7 +223,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                         href: file.url,
                                         download: true,
                                         rel: "noopener noreferrer",
-                                        target: target, "data-id": id },
+                                        target: target, "data-id": id
+                                    },
                                     React.createElement(
                                         "div",
                                         { className: "wpmf-defile-title" },
@@ -256,43 +263,21 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         return wpmfFileDesign;
     }(Component);
 
-    var fileDesignAttrs = {
-        id: {
-            type: 'number',
-            default: 0
-        },
-        file: {
-            type: 'object',
-            default: {}
-        },
-        target: {
-            type: 'string',
-            default: ''
-        },
-        cover: {
-            type: 'string',
-            source: 'attribute',
-            selector: 'img',
-            attribute: 'src'
-        }
+
+
+    var wpmfFileDesignEdit = function wpmfFileDesignEdit(props) {
+        var blockProps = useBlockProps();
+        return React.createElement(wpmfFileDesign, Object.assign({}, props, { blockProps: blockProps }));
     };
 
     registerBlockType('wpmf/filedesign', {
-        title: __('WPMF Media Download', 'wpmf'),
-        icon: 'media-archive',
-        category: 'wp-media-folder',
-        example: {
-            attributes: {
-                cover: wpmf_filedesign_blocks.vars.block_cover
-            }
-        },
-        attributes: fileDesignAttrs,
-        edit: wpmfFileDesign,
+        edit: wpmfFileDesignEdit,
         save: function save(_ref3) {
             var attributes = _ref3.attributes;
             var id = attributes.id,
                 file = attributes.file,
                 target = attributes.target;
+            var blockProps = useBlockProps.save();
 
 
             var mime = '';
@@ -320,7 +305,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
             return React.createElement(
                 "div",
-                { "data-id": id },
+                _extends({ "data-id": id }, blockProps),
                 React.createElement(
                     "a",
                     {
@@ -328,7 +313,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                         href: file.url,
                         download: true,
                         rel: "noopener noreferrer",
-                        target: target, "data-id": id },
+                        target: target, "data-id": id
+                    },
                     React.createElement(
                         "div",
                         { className: "wpmf-defile-title" },
@@ -360,7 +346,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
             );
         },
         deprecated: [{
-            attributes: fileDesignAttrs,
+
             save: function save(_ref4) {
                 var attributes = _ref4.attributes;
                 var id = attributes.id,
@@ -395,7 +381,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             className: "wpmf-defile",
                             href: file.url,
                             download: true,
-                            target: target, "data-id": id },
+                            target: target, "data-id": id
+                        },
                         React.createElement(
                             "div",
                             { className: "wpmf-defile-title" },

@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <li id="frm_delete_field_<?php echo esc_attr( $field['id'] . '-' . $opt_key ); ?>_container" data-optkey="<?php echo esc_attr( $opt_key ); ?>" class="frm_single_option frm_other_option">
-	<?php FrmProAppHelper::icon_by_class( 'frm_icon_font frm_drag_icon frm-drag' ); ?>
+	<?php FrmAppHelper::icon_by_class( 'frmfont frm_drag_icon frm-drag' ); ?>
 
 	<?php
 	$default_type = $default_type ?? $field['type'];
@@ -21,8 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<span class="frm-with-right-icon">
 		<input type="text" name="field_options[options_<?php echo esc_attr( $field['id'] ); ?>][<?php echo esc_attr( $opt_key ); ?>]" value="<?php echo esc_attr( $opt ); ?>" class="field_<?php echo esc_attr( $field['id'] ); ?>_option <?php echo esc_attr( $field['separate_value'] ? 'frm_with_key' : '' ); ?>" id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>" data-frmchange="updateDefault" />
 		<?php
-		FrmProAppHelper::icon_by_class(
-			'frm_icon_font frm_pencil_icon',
+		FrmAppHelper::icon_by_class(
+			'frmfont frm_pencil_icon',
 			array(
 				'title' => __( '"Other" option', 'formidable-pro' ),
 			)
@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
 	</span>
 
-	<a href="javascript:void(0)" class="frm_remove_tag" data-fid="<?php echo esc_attr( $field['id'] ); ?>" data-removeid="frm_delete_field_<?php echo esc_attr( $field['id'] . '-' . $opt_key ); ?>_container" data-removemore="#frm_<?php echo esc_attr( $default_type . '_' . $field['id'] . '-' . $opt_key ); ?>" data-showlast="#frm_add_opt_<?php echo esc_attr( $field['id'] ); ?>"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon frm_svg15' ); ?></a>
+	<a href="javascript:void(0)" class="frm_remove_tag" data-fid="<?php echo esc_attr( $field['id'] ); ?>" data-removeid="frm_delete_field_<?php echo esc_attr( $field['id'] . '-' . $opt_key ); ?>_container" data-removemore="#frm_<?php echo esc_attr( $default_type . '_' . $field['id'] . '-' . $opt_key ); ?>" data-showlast="#frm_add_opt_<?php echo esc_attr( $field['id'] ); ?>"><?php FrmAppHelper::icon_by_class( 'frmfont frm_minus1_icon frm_svg15' ); ?></a>
 
 </li>
 

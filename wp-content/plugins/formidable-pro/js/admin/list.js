@@ -17,19 +17,13 @@
 		addedApplicationDropdown: false,
 	};
 
-	addAction(
-		'frm_new_form_modal_form',
-		addApplicationDropdownToNewFormModal
-	);
+	addAction( 'frm_new_form_modal_form', addApplicationDropdownToNewFormModal );
 	addFilter( 'frm_before_install_new_form', beforeInstallNewForm );
 
 	function addApplicationDropdownToNewFormModal( $modal ) {
 		if ( ! state.addedApplicationDropdown ) {
 			$modal.addClass( 'frm_wrap' );
-			$modal
-				.find( '#frm_template_desc' )
-				.parent()
-				.append( getApplicationDropdown( $modal ) );
+			$modal.find( '#frm_template_desc' ).parent().append( getApplicationDropdown( $modal ) );
 			state.addedApplicationDropdown = true;
 		}
 	}
@@ -38,11 +32,7 @@
 		const dropdown = getApplicationAutocomplete();
 
 		const label = tag( 'label', {
-			children: [
-				document.createTextNode(
-					__( 'Insert form into application', 'formidable-pro' )
-				),
-			],
+			children: [ document.createTextNode( __( 'Insert form into application', 'formidable-pro' ) ) ],
 		} );
 
 		label.setAttribute( 'for', 'frm_application_autocomplete_input' );
@@ -55,21 +45,15 @@
 
 		window.frmDom.autocomplete.initAutocomplete( 'application', dropdown );
 
-		jQuery(
-			dropdown.querySelector( '.frm-application-search' )
-		).autocomplete( 'option', 'appendTo', $modal );
+		jQuery( dropdown.querySelector( '.frm-application-search' ) ).autocomplete( 'option', 'appendTo', $modal );
 
 		const urlParams = new URLSearchParams( window.location.search );
 		const applicationId = urlParams.get( 'applicationId' );
-		if (
-			applicationId &&
-			'undefined' !== typeof frmAutocompleteApplicationVars
-		) {
-			dropdown.querySelector(
-				'#frm_application_autocomplete_input'
-			).value = window.frmAutocompleteApplicationVars.name;
-			dropdown.querySelector( '.frm_autocomplete_value_input' ).value =
-				applicationId;
+		if ( applicationId && 'undefined' !== typeof frmAutocompleteApplicationVars ) {
+			dropdown.querySelector( '#frm_application_autocomplete_input' ).value =
+				window.frmAutocompleteApplicationVars.name;
+
+			dropdown.querySelector( '.frm_autocomplete_value_input' ).value = applicationId;
 		}
 
 		return wrapper;

@@ -56,6 +56,15 @@ class Database {
 	public $prefix = '';
 
 	/**
+	 * Cached result of php_sapi_name() for performance.
+	 *
+	 * @since 4.9.1.1
+	 *
+	 * @var string|null
+	 */
+	private static $sapiName = null;
+
+	/**
 	 * The database table in use by this query.
 	 *
 	 * @since 4.0.0
@@ -356,11 +365,13 @@ class Database {
 			$globalTables     = $this->db->tables( 'global', true );
 			foreach ( $databaseTableInformation as $table ) {
 				// Only include tables matching the prefix of the current site, this is to prevent displaying all tables on a MS install not relating to the current.
-				if ( is_multisite() && 0 !== strpos( $table->name, $siteTablesPrefix ) && ! in_array( $table->name, $globalTables, true ) ) {
+				// Use stripos for case-insensitive prefix check and strtolower for global table lookup to handle MySQL's lower_case_table_names setting.
+				if ( is_multisite() && 0 !== stripos( $table->name, $siteTablesPrefix ) && ! in_array( strtolower( $table->name ), array_map( 'strtolower', $globalTables ), true ) ) {
 					continue;
 				}
 
-				$tableType = ( 0 === strpos( $table->name, aioseo()->core->db->prefix . 'aioseo' ) ) ? 'aioseo' : 'other';
+				// Use stripos for case-insensitive comparison due to MySQL's lower_case_table_names setting which can lowercase table names.
+				$tableType = ( 0 === stripos( $table->name, aioseo()->core->db->prefix . 'aioseo' ) ) ? 'aioseo' : 'other';
 
 				$tables[ $tableType ][ $table->name ] = [
 					'data'      => $table->data,
@@ -391,18 +402,23 @@ class Database {
 	 */
 	public function getColumns( $table ) {
 		// Ensure the table name has the DB prefix.
-		if ( 0 !== strpos( $table, $this->prefix ) ) {
+		// Use stripos for case-insensitive comparison due to MySQL's lower_case_table_names setting which can lowercase table names.
+		if ( 0 !== stripos( $table, $this->prefix ) ) {
 			$table = $this->prefix . $table;
 		}
 
 		// If the table is not an AIOSEO one, get it from the DB.
-		if ( 0 !== strpos( $table, $this->prefix . 'aioseo_' ) ) {
+		// Use stripos for case-insensitive comparison due to MySQL's lower_case_table_names setting which can lowercase table names.
+		if ( 0 !== stripos( $table, $this->prefix . 'aioseo_' ) ) {
 			return $this->db->get_col( 'SHOW COLUMNS FROM `' . $table . '`' );
 		}
 
-		$schema = $this->getAioseoTablesWithColumns();
+		$schema = $this->getTablesWithColumns();
 
-		return $schema[ $table ];
+		// Use case-insensitive lookup due to MySQL's lower_case_table_names setting which can lowercase table names.
+		$tableKey = $this->findTableKeyInSchema( $table, $schema );
+
+		return null !== $tableKey ? $schema[ $tableKey ] : [];
 	}
 
 	/**
@@ -416,13 +432,38 @@ class Database {
 	 */
 	public function tableExists( $table ) {
 		// Ensure the table name has the DB prefix.
+		// Use stripos for case-insensitive comparison due to MySQL's lower_case_table_names setting which can lowercase table names.
+		if ( 0 !== stripos( $table, $this->prefix ) ) {
+			$table = $this->prefix . $table;
+		}
+
+		$tables = $this->getTablesWithColumns();
+
+		// Use case-insensitive lookup due to MySQL's lower_case_table_names setting which can lowercase table names.
+		return null !== $this->findTableKeyInSchema( $table, $tables );
+	}
+
+	/**
+	 * Checks if a third-party (non-AIOSEO) table exists by querying the DB directly.
+	 *
+	 * Unlike tableExists(), which reads from a cache that only contains AIOSEO and
+	 * Action Scheduler tables, this method performs a direct SHOW TABLES query and
+	 * should be used whenever checking for tables owned by external plugins.
+	 *
+	 * @since 4.9.7
+	 *
+	 * @param  string $table The name of the table, with or without the DB prefix.
+	 * @return bool          Whether or not the table exists.
+	 */
+	public function externalTableExists( $table ) {
+		// Ensure the table name has the DB prefix.
 		if ( 0 !== strpos( $table, $this->prefix ) ) {
 			$table = $this->prefix . $table;
 		}
 
-		$tables = $this->getAioseoTablesWithColumns();
-
-		return isset( $tables[ $table ] );
+		return (bool) $this->db->get_var(
+			$this->db->prepare( 'SHOW TABLES LIKE %s', $table )
+		);
 	}
 
 	/**
@@ -437,48 +478,110 @@ class Database {
 	 */
 	public function columnExists( $table, $column ) {
 		// Ensure the table name has the DB prefix.
-		if ( 0 !== strpos( $table, $this->prefix ) ) {
+		// Use stripos for case-insensitive comparison due to MySQL's lower_case_table_names setting which can lowercase table names.
+		if ( 0 !== stripos( $table, $this->prefix ) ) {
 			$table = $this->prefix . $table;
 		}
 
-		$tables = $this->getAioseoTablesWithColumns();
+		$tables = $this->getTablesWithColumns();
 
-		return isset( $tables[ $table ] ) && in_array( $column, $tables[ $table ], true );
+		// Use case-insensitive lookup due to MySQL's lower_case_table_names setting which can lowercase table names.
+		$tableKey = $this->findTableKeyInSchema( $table, $tables );
+
+		return null !== $tableKey && in_array( $column, $tables[ $tableKey ], true );
 	}
 
 	/**
 	 * Get all AIOSEO tables with their columns.
 	 *
-	 * @since 4.8.9
+	 * @since   4.8.9
+	 * @version 4.9.7.1 Reject non-array cache values so a corrupted `db_schema` row can't trigger a fatal in {@see findTableKeyInSchema()}.
 	 *
 	 * @return array List of AIOSEO tables with their columns.
 	 */
-	public function getAioseoTablesWithColumns() {
+	public function getTablesWithColumns() {
 		$tables = aioseo()->core->cache->get( 'db_schema' );
-		if ( ! empty( $tables ) ) {
+		// Guard against a corrupted cache row: anything other than a non-empty array
+		// gets discarded and rebuilt below. Without this, a scalar value (e.g. '31942')
+		// would propagate into findTableKeyInSchema() and fatal on array_keys().
+		if ( is_array( $tables ) && ! empty( $tables ) ) {
 			return $tables;
 		}
 
-		$dbPrefix = $this->db->prefix;
-		$schema   = $this->db->get_results(
-			"SELECT TABLE_NAME, COLUMN_NAME
+		$schema = $this->db->get_results(
+			'SELECT TABLE_NAME, COLUMN_NAME
 			FROM INFORMATION_SCHEMA.COLUMNS
-			WHERE TABLE_SCHEMA = DATABASE()
-			AND TABLE_NAME LIKE '{$dbPrefix}aioseo_%';"
+			WHERE TABLE_SCHEMA = DATABASE();'
 		);
+
+		// For multisites, only include tables for the current site and the main site.
+		// This prevents cache entries from containing data from other subsites' tables.
+		// Subsite tables follow the pattern {base_prefix}{blog_id}_ (e.g. wp_2_, wp_3_).
+		$siteTablesPrefix   = is_multisite() ? $this->db->get_blog_prefix( get_current_blog_id() ) : $this->prefix;
+		$subsitePrefixRegex = is_multisite() ? '/^' . preg_quote( $this->db->base_prefix, '/' ) . '\d/' : '';
 
 		$tables = [];
 		foreach ( $schema as $row ) {
-			if ( ! isset( $tables[ $row->TABLE_NAME ] ) ) {
-				$tables[ $row->TABLE_NAME ] = [];
+			$tableName = $row->TABLE_NAME;
+
+			// For multisites, exclude tables from other subsites (e.g. wp_2_*, wp_3_*).
+			// For the main site (blog_id = 1), also exclude all subsite tables since the main site prefix equals the base prefix.
+			if ( $subsitePrefixRegex && preg_match( $subsitePrefixRegex, $tableName ) ) {
+				// This is a subsite table. Only include it if it belongs to the current site.
+				// For the main site (where prefix = base_prefix), exclude all subsite tables.
+				if ( $siteTablesPrefix === $this->db->base_prefix || 0 !== strpos( $tableName, $siteTablesPrefix ) ) {
+					continue;
+				}
 			}
 
-			$tables[ $row->TABLE_NAME ][] = $row->COLUMN_NAME;
+			// Just cache tables that contain "aioseo" or "actionscheduler" to reduce cache size.
+			if ( false === strpos( $tableName, 'aioseo' ) && false === strpos( $tableName, 'actionscheduler' ) ) {
+				continue;
+			}
+
+			if ( ! isset( $tables[ $tableName ] ) ) {
+				$tables[ $tableName ] = [];
+			}
+
+			$tables[ $tableName ][] = $row->COLUMN_NAME;
 		}
 
 		aioseo()->core->cache->update( 'db_schema', $tables, DAY_IN_SECONDS );
 
 		return $tables;
+	}
+
+	/**
+	 * Finds a table key in the schema array using case-insensitive comparison.
+	 *
+	 * This is needed because MySQL's lower_case_table_names setting can cause table names
+	 * to be stored in lowercase in the database, while the WordPress prefix may be uppercase.
+	 *
+	 * @since 4.9.2
+	 *
+	 * @param  string     $table  The table name to find.
+	 * @param  array      $schema The schema array to search in.
+	 * @return string|null        The actual key in the schema array, or null if not found.
+	 */
+	private function findTableKeyInSchema( $table, $schema ) {
+		// First try exact match for performance.
+		if ( isset( $schema[ $table ] ) ) {
+			return $table;
+		}
+
+		if ( ! is_array( $schema ) ) {
+			return null;
+		}
+
+		// Fall back to case-insensitive search.
+		$tableLower = strtolower( $table );
+		foreach ( array_keys( $schema ) as $key ) {
+			if ( strtolower( $key ) === $tableLower ) {
+				return $key;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -490,16 +593,31 @@ class Database {
 	 * @return int           The size of the table in bytes.
 	 */
 	public function getTableSize( $table ) {
-		$this->db->query( 'ANALYZE TABLE ' . $this->prefix . $table );
-		$results = $this->db->get_results( '
+		// Escape table and database names to prevent SQL injection.
+		$tableName = esc_sql( $this->prefix . $table );
+		$dbName    = esc_sql( $this->db->dbname );
+
+		// Check if table has any rows
+		$rowCount = $this->db->get_var( 'SELECT COUNT(*) FROM `' . $tableName . '`' );
+
+		if ( 0 === (int) $rowCount ) {
+			return 0;
+		}
+
+		$this->db->query( 'ANALYZE TABLE `' . $tableName . '`' );
+		$results = $this->db->get_results( $this->db->prepare(
+			'
 			SELECT
 				TABLE_NAME AS `table`,
 				ROUND(SUM(DATA_LENGTH + INDEX_LENGTH)) AS `size`
 			FROM information_schema.TABLES
-			WHERE TABLE_SCHEMA = "' . $this->db->dbname . '"
-			AND TABLE_NAME = "' . $this->prefix . $table . '"
+			WHERE TABLE_SCHEMA = %s
+			AND TABLE_NAME = %s
 			ORDER BY (DATA_LENGTH + INDEX_LENGTH) DESC;
-		' );
+			',
+			$dbName,
+			$tableName
+		) );
 
 		return ! empty( $results ) ? $results[0]->size : 0;
 	}
@@ -737,6 +855,88 @@ class Database {
 	}
 
 	/**
+	 * Inserts multiple rows into a table in a single query.
+	 *
+	 * Handles all escaping and sanitization internally:
+	 * - esc_sql() for SQL safety (strings only; ints/floats pass through unquoted).
+	 * - Strips newlines, null bytes and invalid UTF-8 from string values.
+	 * - NULL values become literal NULL.
+	 *
+	 * @since 4.9.5
+	 *
+	 * @param  string $table   Table name (without prefix).
+	 * @param  array  $columns Column names.
+	 * @param  array  $rows    Array of row arrays (values in same order as $columns).
+	 * @param  array  $options Optional: 'onDuplicate' => ['col1', 'col2'], 'ignore' => true.
+	 * @return void
+	 */
+	public function bulkInsert( $table, $columns, $rows, $options = [] ) {
+		if ( empty( $rows ) ) {
+			return;
+		}
+
+		$tableName = $this->prefix . $table;
+
+		$valueSets = [];
+		foreach ( $rows as $row ) {
+			$values = [];
+			foreach ( $row as $value ) {
+				if ( null === $value ) {
+					$values[] = 'NULL';
+
+					continue;
+				}
+
+				if ( is_bool( $value ) ) {
+					$values[] = $value ? 1 : 0;
+
+					continue;
+				}
+
+				if ( is_int( $value ) || is_float( $value ) ) {
+					$values[] = $value;
+
+					continue;
+				}
+
+				if ( is_array( $value ) || is_object( $value ) ) {
+					$value = wp_json_encode( $value );
+				}
+
+				// Sanitize string values.
+				$value = str_replace( [ "\r\n", "\r", "\n" ], ' ', (string) $value );
+				$value = str_replace( "\0", '', $value );
+				$value = wp_check_invalid_utf8( $value, true );
+
+				$values[] = "'" . esc_sql( $value ) . "'";
+			}
+
+			$valueSets[] = '(' . implode( ', ', $values ) . ')';
+		}
+
+		$ignore         = ! empty( $options['ignore'] ) ? 'IGNORE ' : '';
+		$columnList     = '`' . implode( '`, `', $columns ) . '`';
+		$implodedValues = implode( ', ', $valueSets );
+
+		$sql = "INSERT {$ignore}INTO {$tableName} ({$columnList}) VALUES {$implodedValues}";
+
+		if ( ! empty( $options['onDuplicate'] ) ) {
+			$updates = [];
+			foreach ( $options['onDuplicate'] as $key => $col ) {
+				if ( is_int( $key ) ) {
+					$updates[] = "`{$col}` = VALUES(`{$col}`)";
+				} else {
+					$updates[] = "`{$key}` = {$col}";
+				}
+			}
+
+			$sql .= ' ON DUPLICATE KEY UPDATE ' . implode( ', ', $updates );
+		}
+
+		$this->execute( $sql );
+	}
+
+	/**
 	 * Shortcut method for start with UPDATE as the statement.
 	 *
 	 * @since 4.0.0
@@ -896,6 +1096,7 @@ class Database {
 			if ( is_null( $value ) ) {
 				// WHERE `field` IS NULL.
 				$or[] = "$field NULL";
+				continue;
 			}
 
 			$or[] = sprintf( "$field %s", $this->escape( $value, $this->getEscapeOptions() | self::ESCAPE_QUOTE ) );
@@ -969,7 +1170,8 @@ class Database {
 			}
 
 			foreach ( $values as &$value ) {
-				if ( is_numeric( $value ) ) {
+				// Note: We can no longer check for `is_numeric` because a value like `61021e6242255` returns true and breaks the query.
+				if ( is_int( $value ) || is_float( $value ) ) {
 					// No change.
 					continue;
 				}
@@ -1028,6 +1230,38 @@ class Database {
 			$values = implode( ' AND ', $values );
 			$this->whereRaw( "$field BETWEEN $values" );
 		}
+
+		return $this;
+	}
+
+	/**
+	 * Adds a WHERE LIKE clause.
+	 *
+	 * @since 4.9.1.1
+	 *
+	 * @param  string   $field        The column name.
+	 * @param  string   $value        The value to search for.
+	 * @param  bool     $hasWildcard  Whether the value contains LIKE wildcards (% and _) for pattern matching. Default false for security.
+	 * @return Database Returns the Database class which can be method chained for more query building.
+	 */
+	public function whereLike( $field, $value, $hasWildcard = false ) {
+		if ( is_null( $value ) ) {
+			return $this;
+		}
+
+		// Escape the column name.
+		$escapedField = $this->escapeColNames( $field );
+		$field        = array_pop( $escapedField );
+
+		// Escape LIKE wildcards (% and _) unless the value is intended to contain wildcards for pattern matching.
+		if ( ! $hasWildcard ) {
+			$value = $this->db->esc_like( $value );
+		}
+
+		// Escape and quote the value for safe use in LIKE clause.
+		$escapedValue = $this->escape( $value, $this->getEscapeOptions() | self::ESCAPE_QUOTE );
+
+		$this->where[] = sprintf( "$field LIKE %s", $escapedValue );
 
 		return $this;
 	}
@@ -1308,8 +1542,10 @@ class Database {
 			$return = 'results';
 		}
 
-		$prepare        = $this->db->prepare( $this->query(), 1, 1 );
-		$queryHash      = sha1( $this->query() );
+		// Cache query string to avoid generating it twice.
+		$queryString     = $this->query();
+		$prepare         = $this->db->prepare( $queryString, 1, 1 );
+		$queryHash       = md5( $queryString );
 		$cacheTableName = $this->getCacheTableName();
 
 		// Pull the result from the in-memory cache if everything checks out.
@@ -1342,7 +1578,10 @@ class Database {
 			$this->reset();
 		}
 
-		$this->cache[ $cacheTableName ][ $queryHash ][ $return ] = $this->result;
+		// Only cache SELECT queries for performance.
+		if ( in_array( $this->statement, [ 'SELECT', 'SELECT DISTINCT' ], true ) ) {
+			$this->cache[ $cacheTableName ][ $queryHash ][ $return ] = $this->result;
+		}
 
 		// Reset the cache trigger for the next run.
 		$this->shouldResetCache = false;
@@ -1594,14 +1833,18 @@ class Database {
 			$value = wp_strip_all_tags( $value );
 		}
 
-		if (
-			( ( $options & self::ESCAPE_FORCE ) !== 0 || php_sapi_name() === 'cli' ) ||
-			( ( $options & self::ESCAPE_QUOTE ) !== 0 && ! is_int( $value ) )
-		) {
+		// Cache php_sapi_name() result for performance.
+		if ( null === self::$sapiName ) {
+			self::$sapiName = php_sapi_name();
+		}
+
+		// Check if we need to escape and quote the value.
+		$needsEscaping = ( ( $options & self::ESCAPE_FORCE ) !== 0 || 'cli' === self::$sapiName ) ||
+			( ( $options & self::ESCAPE_QUOTE ) !== 0 && ! is_int( $value ) && ! is_float( $value ) );
+
+		if ( $needsEscaping ) {
 			$value = esc_sql( $value );
-			if ( ! is_int( $value ) ) {
-				$value = "'$value'";
-			}
+			$value = "'$value'";
 		}
 
 		return $value;
@@ -1851,7 +2094,7 @@ class Database {
 	 */
 	public function indexExists( $tableName, $indexName, $includesPrefix = false ) {
 		$prefix    = $includesPrefix ? '' : $this->prefix;
-		$tableName = strtolower( $prefix . $tableName );
+		$tableName = esc_sql( strtolower( $prefix . $tableName ) );
 		$indexName = strtolower( $indexName );
 
 		$indexes = $this->db->get_results( "SHOW INDEX FROM `$tableName`" );
@@ -1883,8 +2126,15 @@ class Database {
 
 		if ( $acquired ) {
 			// Register a shutdown function to always release the lock even if a fatal error occurs.
+			// Wrap in suppress_errors() — by shutdown time the wpdb connection state may already
+			// be unstable (other plugins' unbuffered queries left mid-result, mid-destructor
+			// teardown, etc.), surfacing as "Commands out of sync" warnings on the RELEASE_LOCK
+			// query. The release is best-effort: MySQL frees the lock when the connection closes
+			// regardless, so logging that benign warning every request only adds debug.log noise.
 			register_shutdown_function( function () use ( $lockName ) {
+				$previous = $this->db->suppress_errors( true );
 				$this->releaseLock( $lockName );
+				$this->db->suppress_errors( $previous );
 			} );
 		}
 

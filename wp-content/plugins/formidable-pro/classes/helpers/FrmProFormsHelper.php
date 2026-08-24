@@ -6,16 +6,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class FrmProFormsHelper {
 
+	/**
+	 * @param array $values
+	 */
 	public static function setup_new_vars( $values ) {
-
 		foreach ( self::get_default_opts() as $var => $default ) {
 			$values[ $var ] = FrmAppHelper::get_param( $var, $default, 'post', 'sanitize_text_field' );
 		}
+
 		return $values;
 	}
 
+	/**
+	 * @param array $values
+	 */
 	public static function setup_edit_vars( $values ) {
 		$record = FrmForm::getOne( $values['id'] );
+
 		foreach ( array(
 			'logged_in' => $record->logged_in,
 			'editable'  => $record->editable,
@@ -36,6 +43,7 @@ class FrmProFormsHelper {
 
 	/**
 	 * @param array $frm_vars
+	 *
 	 * @return void
 	 */
 	public static function load_chosen_js( $frm_vars ) {
@@ -55,10 +63,10 @@ class FrmProFormsHelper {
 	 * Load the conditional field IDs for JavaScript
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $frm_vars
 	 */
 	public static function load_hide_conditional_fields_js( $frm_vars ) {
-
 		if ( self::is_initial_load_for_at_least_one_form( $frm_vars ) ) {
 			// Check the logic on all dependent fields
 			if ( ! empty( $frm_vars['dep_logic_fields'] ) ) {
@@ -83,7 +91,9 @@ class FrmProFormsHelper {
 	 * Check if at least one form is loading for the first time
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $frm_vars
+	 *
 	 * @return bool
 	 */
 	private static function is_initial_load_for_at_least_one_form( $frm_vars ) {
@@ -97,6 +107,7 @@ class FrmProFormsHelper {
 			}
 
 			$form_details_present = isset( $frm_vars['prev_page'][ $form->id ] ) || self::going_to_prev( $form->id ) || self::saving_draft();
+
 			if ( ! $form_details_present ) {
 				return true;
 			}
@@ -110,6 +121,7 @@ class FrmProFormsHelper {
 	 * If any exist, we want to include the __frmHideOrShowFields variable.
 	 *
 	 * @param array $rules
+	 *
 	 * @return bool
 	 */
 	private static function rules_array_includes_embedded_or_repeating_fields( $rules ) {
@@ -121,21 +133,27 @@ class FrmProFormsHelper {
 		return false;
 	}
 
+	/**
+	 * @param array $frm_vars
+	 */
 	public static function load_dropzone_js( $frm_vars ) {
 		if ( empty( $frm_vars['dropzone_loaded'] ) || ! is_array( $frm_vars['dropzone_loaded'] ) ) {
 			return;
 		}
 
 		$load_dropzone = apply_filters( 'frm_load_dropzone', true );
+
 		if ( ! $load_dropzone ) {
 			return;
 		}
+
 		$js = array_values( $frm_vars['dropzone_loaded'] );
 		echo '__frmDropzone=' . json_encode( $js ) . ';';
 	}
 
 	/**
 	 * @param array $frm_vars
+	 *
 	 * @return void
 	 */
 	public static function load_datepicker_js( $frm_vars ) {
@@ -144,19 +162,17 @@ class FrmProFormsHelper {
 		}
 
 		$frmpro_settings = FrmProAppHelper::get_settings();
+		$datepicker      = array_key_first( $frm_vars['datepicker_loaded'] );
+		$loaded_langs    = array();
+		$datepicker_js   = array();
 
-		reset( $frm_vars['datepicker_loaded'] );
-		$datepicker   = key( $frm_vars['datepicker_loaded'] );
-		$loaded_langs = array();
-
-		$datepicker_js = array();
 		foreach ( $frm_vars['datepicker_loaded'] as $date_field_id => $options ) {
-			if ( empty( $date_field_id ) ) {
+			if ( ! $date_field_id ) {
 				continue;
 			}
 
-			if ( strpos( $date_field_id, '^' ) === 0 ) {
-				// this is a repeating field
+			if ( str_starts_with( $date_field_id, '^' ) ) {
+				// This is a repeating field
 				$trigger_id = 'input[id^="' . str_replace( '^', '', esc_attr( $date_field_id ) ) . '"]';
 			} else {
 				$trigger_id = '#' . esc_attr( $date_field_id );
@@ -173,7 +189,7 @@ class FrmProFormsHelper {
 					'changeMonth'   => 'true',
 					'changeYear'    => 'true',
 					'yearRange'     => $options['start_year'] . ':' . $options['end_year'],
-					'defaultDate'   => empty( $options['default_date'] ) ? '' : $options['default_date'],
+					'defaultDate'   => ! empty( $options['default_date'] ) ? $options['default_date'] : '',
 					'beforeShowDay' => null,
 					'datesDisabled' => ! empty( $options['field_id'] ) ? wp_cache_get( $options['field_id'], 'frm_used_dates' ) : null, // the cache is always set in self::get_custom_date_js() -> frm_date_field_js_config action hook -> FrmFieldsController::date_field_js()
 				),
@@ -199,19 +215,21 @@ class FrmProFormsHelper {
 				$datepicker_js[] = $date_options;
 			}
 
-			if ( ! empty( $options['locale'] ) && ! in_array( $options['locale'], $loaded_langs, true ) ) {
-				if ( ! $loaded_langs ) {
-					// this was enqueued late, so make sure it gets printed
-					add_action( 'wp_footer', 'print_footer_scripts', 21 );
-					add_action( 'admin_print_footer_scripts', 'print_footer_scripts', 99 );
-				}
-
-				$loaded_langs[] = $options['locale'];
-				self::init_datepicker_locale( $options['locale'] );
+			if ( empty( $options['locale'] ) || in_array( $options['locale'], $loaded_langs, true ) ) {
+				continue;
 			}
+
+			if ( ! $loaded_langs ) {
+				// This was enqueued late, so make sure it gets printed
+				add_action( 'wp_footer', 'print_footer_scripts', 21 );
+				add_action( 'admin_print_footer_scripts', 'print_footer_scripts', 99 );
+			}
+
+			$loaded_langs[] = $options['locale'];
+			self::init_datepicker_locale( $options['locale'] );
 		}
 
-		if ( ! empty( $datepicker_js ) ) {
+		if ( $datepicker_js ) {
 			echo 'var frmDates=' . json_encode( $datepicker_js ) . ';';
 			echo 'if(typeof __frmDatepicker == "undefined"){__frmDatepicker=frmDates;}';
 			echo 'else{__frmDatepicker=jQuery.extend(__frmDatepicker,frmDates);}';
@@ -224,6 +242,7 @@ class FrmProFormsHelper {
 	 * @since 6.19
 	 *
 	 * @param string $locale
+	 *
 	 * @return void
 	 */
 	private static function init_datepicker_locale( $locale ) {
@@ -232,12 +251,8 @@ class FrmProFormsHelper {
 			return;
 		}
 
-		$dependencies = array();
-		if ( FrmAppHelper::js_suffix() && FrmProAppController::has_combo_js_file() ) {
-			$dependencies[] = 'formidable';
-		} else {
-			$dependencies[] = 'flatpickr';
-		}
+		$dependencies   = array();
+		$dependencies[] = FrmAppHelper::js_suffix() && FrmProAppController::has_combo_js_file() ? 'formidable' : 'flatpickr';
 
 		wp_enqueue_script( 'flatpickr-locale-' . $locale, FrmProAppHelper::plugin_url() . '/js/utils/flatpickr/l10n/' . $locale . '.js', $dependencies, FrmProDb::$plug_version );
 	}
@@ -252,10 +267,11 @@ class FrmProFormsHelper {
 	 * @param string $trigger_id
 	 * @param array $options
 	 * @param object $frmpro_settings
+	 *
 	 * @return bool
 	 */
 	private static function legacy_datepicker_compatibility_handler( $custom_options, $date_options, $trigger_id, $options, $frmpro_settings ) {
-		if ( ! FrmProAppHelper::use_jquery_datepicker() || empty( $custom_options ) ) {
+		if ( ! FrmProAppHelper::use_jquery_datepicker() || ! $custom_options ) {
 			return false;
 		}
 
@@ -285,6 +301,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 6.8.3
 	 *
 	 * @param array $date_options
+	 *
 	 * @return void
 	 */
 	private static function maybe_set_first_day_option( &$date_options ) {
@@ -297,21 +314,27 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @param array  $options
 	 * @param string $key
 	 * @param string $default
+	 *
 	 * @return string
 	 */
 	private static function adjust_value_for_js_boolean( $options, $key, $default = 'true' ) {
 		if ( ! isset( $options[ $key ] ) ) {
 			return $default;
 		}
+
 		$value = $options[ $key ];
+
 		if ( ! $value || 'false' === $value ) {
 			return 'false';
 		}
+
 		return 'true';
 	}
 
 	/**
 	 * @param int|string $date_field_id
+	 * @param array      $options
+	 *
 	 * @return string
 	 */
 	private static function get_custom_date_js( $date_field_id, $options ) {
@@ -320,14 +343,12 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		// TO DO: deprecate this when Flatpickr is the only datepicker option
 		do_action( 'frm_date_field_js', $date_field_id, $options );
 
-		$custom_options = ob_get_contents();
-		ob_end_clean();
-
-		return $custom_options;
+		return ob_get_clean();
 	}
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	public static function get_repeater_form_ids( $form_id ) {
@@ -348,6 +369,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 6.6 Moved to this file from FrmProEntriesHelper
 	 *
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	public static function get_embedded_form_ids( $form_id ) {
@@ -361,6 +383,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * @param array $frm_vars
+	 *
 	 * @return void
 	 */
 	public static function load_calc_js( $frm_vars ) {
@@ -390,24 +413,26 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 			foreach ( $matches[0] as $match_key => $val ) {
 				$val  = trim( trim( $val, '[' ), ']' );
-				$show = false !== strpos( $val, ' show=' );
+				$show = str_contains( $val, ' show=' );
+
 				if ( $show ) {
 					$show = self::get_calc_show_value( $val );
+
 					if ( ! is_string( $show ) ) {
-						$show = false; // fallback to value if the show value did not match a previous check.
+						$show = false; // Fallback to value if the show value did not match a previous check.
 						$val  = preg_replace( '/ show=("|\'){0,1}value("|\'){0,1}/', '', $val, 1 ); // treat show="value" as if no attribute was set.
 					}
 				}
 
 				$calc_fields[ $val ] = FrmField::getOne( $val );
+
 				if ( ! $calc_fields[ $val ] ) {
 					unset( $calc_fields[ $val ] );
 					continue;
 				}
 
 				$field_keys[ $calc_fields[ $val ]->id ] = self::get_field_call_for_calc( $calc_fields[ $val ], $field['parent_form_id'] );
-
-				$calc_rules['fieldKeys'] = $calc_rules['fieldKeys'] + $field_keys;
+				$calc_rules['fieldKeys']                = $calc_rules['fieldKeys'] + $field_keys;
 
 				if ( 'label' === $show && is_array( $calc_fields[ $val ]->options ) && is_array( reset( $calc_fields[ $val ]->options ) ) ) {
 					$calc                                = str_replace( $matches[0][ $match_key ], '[' . $calc_fields[ $val ]->id . ' show=' . $show . ']', $calc );
@@ -425,8 +450,8 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 				}
 			}
 
-			if ( strpos( $calc, '[' ) !== false ) {
-				// check for WP shortcodes if there are any left
+			if ( str_contains( $calc, '[' ) ) {
+				// Check for WP shortcodes if there are any left
 				$calc = do_shortcode( $calc );
 			}
 
@@ -445,6 +470,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 			foreach ( $calc_fields as $calc_field ) {
 				$calc_rules['calc'][ $result ]['fields'][] = $calc_field->id;
+
 				if ( isset( $calc_rules['fields'][ $calc_field->id ] ) ) {
 					$calc_rules['fields'][ $calc_field->id ]['total'][] = $result;
 				} else {
@@ -459,14 +485,15 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 					if ( ! isset( $frmpro_settings ) ) {
 						$frmpro_settings = FrmProAppHelper::get_settings();
 					}
+
 					$calc_rules['date'] = $frmpro_settings->cal_date_format;
 				}
 				unset( $calc_field );
 			}
 		}
 
-		// trigger calculations on page load
-		if ( ! empty( $triggers ) ) {
+		// Trigger calculations on page load
+		if ( $triggers ) {
 			$triggers               = array_filter( array_unique( $triggers ) );
 			$calc_rules['triggers'] = array_values( $triggers );
 		}
@@ -482,6 +509,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * @param string $val
+	 *
 	 * @return false|string
 	 */
 	private static function get_calc_show_value( &$val ) {
@@ -495,6 +523,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 		foreach ( $show_values_to_check as $show ) {
 			$val = self::replace_show_shortcode( $val, $show );
+
 			if ( $val !== $before ) {
 				return $show;
 			}
@@ -513,6 +542,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	public static function get_calc_rule_for_field( $atts ) {
@@ -561,6 +591,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		}
 
 		$rule['is_currency'] = true;
+
 		if ( ! empty( $field['custom_currency'] ) || FrmProCurrencyHelper::is_currency_format( $format ) ) {
 			$rule['custom_currency'] = self::prepare_custom_currency( $field );
 		}
@@ -570,6 +601,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 5.0.16
 	 *
 	 * @param array $field
+	 *
 	 * @return array
 	 */
 	public static function prepare_custom_currency( $field ) {
@@ -586,17 +618,20 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 *
 	 * @param object $calc_field
 	 * @param int $parent_form_id
-	 * @return string $field_call
+	 *
+	 * @return string Field call.
 	 */
 	private static function get_field_call_for_calc( $calc_field, $parent_form_id ) {
 		$html_field_id = '="field_' . $calc_field->field_key;
 
 		// If field is inside of repeating section/embedded form or it is a radio, scale, or checkbox field
 		$in_child_form = $parent_form_id != $calc_field->form_id;
+
 		if ( self::has_variable_html_id( $calc_field ) || $in_child_form ) {
 			$html_field_id = '^' . $html_field_id . '-';
 		} elseif ( $calc_field->type === 'select' ) {
 			$is_multiselect = FrmField::get_option( $calc_field, 'multiple' );
+
 			if ( $is_multiselect ) {
 				$html_field_id = '^' . $html_field_id;
 			}
@@ -606,9 +641,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 			$html_field_id = self::build_field_call_for_name_field( $calc_field->field_key );
 		}
 
-		$field_call = '[id' . $html_field_id . '"]';
-
-		return $field_call;
+		return '[id' . $html_field_id . '"]';
 	}
 
 	/**
@@ -618,27 +651,30 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 6.7
 	 *
 	 * @param string $field_key
+	 *
 	 * @return string
 	 */
 	private static function build_field_call_for_name_field( $field_key ) {
 		$field_calls = array();
+
 		foreach ( array( '-', '_' ) as $separator ) {
 			foreach ( array( 'first', 'middle', 'last' ) as $subfield ) {
 				$selector = '[id^="field_' . $field_key . $separator . '"][name$="[' . $subfield . ']"]';
 				array_push( $field_calls, $selector );
 			}
 		}
+
 		$field_call = implode( ',', $field_calls );
 		$field_call = substr( $field_call, 3 );
-		$field_call = substr( $field_call, 0, -2 );
 
-		return $field_call;
+		return substr( $field_call, 0, -2 );
 	}
 
 	/**
 	 * @since 5.0.10
 	 *
 	 * @param array $frm_vars
+	 *
 	 * @return void
 	 */
 	public static function load_rte_js( $frm_vars ) {
@@ -663,9 +699,8 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		if ( in_array( $field->type, array( 'product', 'lookup' ), true ) && self::field_has_fixed_html_id( $field ) ) {
 			$has_variable_html_id = false;
 		} else {
-			$is_radio_check = in_array( $field->type, self::radio_similar_field_types(), true );
-			$is_other_radio = in_array( $field->type, array( 'lookup', 'product' ), true ) && in_array( $field->field_options['data_type'], array( 'radio', 'checkbox' ), true );
-
+			$is_radio_check       = in_array( $field->type, self::radio_similar_field_types(), true );
+			$is_other_radio       = in_array( $field->type, array( 'lookup', 'product' ), true ) && in_array( $field->field_options['data_type'], array( 'radio', 'checkbox' ), true );
 			$has_variable_html_id = $is_radio_check || $is_other_radio;
 		}
 
@@ -687,15 +722,18 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 6.8
 	 *
 	 * @param object $field
+	 *
 	 * @return bool
 	 */
 	private static function field_has_fixed_html_id( $field ) {
 		global $frm_vars;
 
 		$on_current_page = FrmProFieldsHelper::field_on_current_page( $field );
+
 		if ( $on_current_page ) {
 			return false;
 		}
+
 		FrmEntriesHelper::get_posted_value( $field, $value, array() );
 
 		return ! is_array( $value ) || ( $field->field_options['data_type'] !== 'checkbox' && ! empty( $frm_vars['prev_page'][ $field->form_id ] ) );
@@ -723,6 +761,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 4.04
 	 *
 	 * @param array $frm_vars
+	 *
 	 * @return void
 	 */
 	public static function load_currency_js( $frm_vars ) {
@@ -737,17 +776,20 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	public static function load_input_mask_js() {
 		global $frm_input_masks;
-		if ( empty( $frm_input_masks ) ) {
+
+		if ( ! $frm_input_masks ) {
 			return;
 		}
 
 		$masks = array();
+
 		foreach ( (array) $frm_input_masks as $f_key => $mask ) {
 			if ( ! $mask ) {
 				continue;
 			}
+
 			if ( $mask !== true ) {
-				// this isn't used in the plugin, but is here for those using the mask filter
+				// This isn't used in the plugin, but is here for those using the mask filter
 				$masks[] = array(
 					'trigger' => is_numeric( $f_key ) ? 'input[name="item_meta[' . $f_key . ']"]' : '#field_' . $f_key,
 					'mask'    => $mask,
@@ -756,7 +798,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 			unset( $f_key, $mask );
 		}
 
-		if ( ! empty( $masks ) ) {
+		if ( $masks ) {
 			echo '__frmMasks=' . json_encode( $masks ) . ';';
 		}
 	}
@@ -800,7 +842,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 				'hide_field_cond' => array(),
 			),
 			'open_status'          => '',
-			'closed_msg'           => '<p>' . __( 'This form is currently closed for submissions.', 'formidable-pro' ) . '</p>',
+			'closed_msg'           => '<p>' . esc_html__( 'This form is currently closed for submissions.', 'formidable-pro' ) . '</p>',
 			'open_date'            => current_time( 'Y-m-d H:i' ),
 			'close_date'           => '',
 			'max_entries'          => '',
@@ -820,6 +862,9 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		return apply_filters( 'frm_pro_default_form_settings', $settings );
 	}
 
+	/**
+	 * @param array $post_categories
+	 */
 	public static function get_taxonomy_count( $taxonomy, $post_categories, $tax_count = 0 ) {
 		if ( isset( $post_categories[ $taxonomy . $tax_count ] ) ) {
 			++$tax_count;
@@ -830,6 +875,9 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * @since 2.0.8
+	 *
+	 * @param array $errors
+	 * @param array $values
 	 */
 	public static function can_submit_form_now( $errors, $values ) {
 		global $frm_vars;
@@ -847,6 +895,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 			if ( self::has_another_page( $values['form_id'] ) ) {
 				self::stop_submit_if_more_pages( $values, $errors );
 			}
+
 			return $errors;
 		}
 
@@ -869,13 +918,16 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 */
 	public static function visitor_already_submitted( $form, &$errors ) {
 		$has_error = false;
-		if ( ! empty( $form->options['single_entry'] ) && ! self::user_can_submit_form( $form ) ) {
-			$frmpro_settings = FrmProAppHelper::get_settings();
-			$k               = 'single_entry';
-			$errors[ $k ]    = $frmpro_settings->already_submitted;
-			$has_error       = true;
+
+		if ( empty( $form->options['single_entry'] ) || self::user_can_submit_form( $form ) ) {
+			return $has_error;
 		}
-		return $has_error;
+
+		$frmpro_settings = FrmProAppHelper::get_settings();
+		$k               = 'single_entry';
+		$errors[ $k ]    = $frmpro_settings->already_submitted;
+
+		return true;
 	}
 
 	/**
@@ -887,28 +939,31 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @return bool and $errors by reference
 	 */
 	private static function user_allowed_one_editable_entry( $form, &$errors ) {
-		$has_error = false;
-		$user_ID   = get_current_user_id();
-
+		$has_error          = false;
+		$user_ID            = get_current_user_id();
 		$user_limited_entry = $user_ID && $form->editable && self::check_single_entry_type( $form->options, 'user' ) && ! FrmAppHelper::is_admin();
-		if ( $user_limited_entry ) {
-			$entry_id = FrmDb::get_var(
-				'frm_items',
-				array(
-					'user_id'  => $user_ID,
-					'form_id'  => $form->id,
-					'is_draft' => FrmEntriesHelper::SUBMITTED_ENTRY_STATUS,
-				)
-			);
 
-			if ( $entry_id ) {
-				$frmpro_settings        = FrmProAppHelper::get_settings();
-				$errors['single_entry'] = $frmpro_settings->already_submitted;
-
-				$has_error = true;
-			}
+		if ( ! $user_limited_entry ) {
+			return $has_error;
 		}
-		return $has_error;
+
+		$entry_id = FrmDb::get_var(
+			'frm_items',
+			array(
+				'user_id'  => $user_ID,
+				'form_id'  => $form->id,
+				'is_draft' => FrmEntriesHelper::SUBMITTED_ENTRY_STATUS,
+			)
+		);
+
+		if ( ! $entry_id ) {
+			return $has_error;
+		}
+
+		$frmpro_settings        = FrmProAppHelper::get_settings();
+		$errors['single_entry'] = $frmpro_settings->already_submitted;
+
+		return true;
 	}
 
 	/**
@@ -923,12 +978,12 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @return bool true if the form is closed and cannot be submitted.
 	 */
 	private static function check_if_form_is_closed_and_cannot_be_submitted( $form, &$errors ) {
-		$has_error = false;
 		if ( ! self::logged_in_user_can_submit_closed_form() && ! FrmProForm::is_open( $form ) ) {
 			$errors['open_status'] = do_shortcode( $form->options['closed_msg'] );
-			$has_error             = true;
+			return true;
 		}
-		return $has_error;
+
+		return false;
 	}
 
 	/**
@@ -940,23 +995,30 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		$can_submit = false;
 		$id         = FrmAppHelper::get_param( 'id', '', 'post', 'absint' );
 		$action     = FrmAppHelper::get_param( 'frm_action', '', 'post', 'sanitize_key' );
-		if ( $id && 'update' === $action ) {
-			if ( current_user_can( 'frm_edit_entries' ) ) {
+
+		if ( ! $id || 'update' !== $action ) {
+			return $can_submit;
+		}
+
+		if ( current_user_can( 'frm_edit_entries' ) ) {
+			$can_submit = true;
+		} else {
+			$entry = FrmEntry::getOne( $id );
+
+			if ( $entry && ! empty( $entry->is_draft ) ) {
 				$can_submit = true;
-			} else {
-				$entry = FrmEntry::getOne( $id );
-				if ( $entry && ! empty( $entry->is_draft ) ) {
-					$can_submit = true;
-				}
 			}
 		}
+
 		return $can_submit;
 	}
 
 	/**
 	 * @since 2.0.8
 	 *
+	 * @param array $values
 	 * @param array $errors
+	 *
 	 * @return void
 	 */
 	public static function stop_submit_if_more_pages( $values, &$errors ) {
@@ -979,6 +1041,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 2.0.8
 	 *
 	 * @param stdClass $form
+	 *
 	 * @return bool
 	 */
 	public static function user_can_submit_form( $form ) {
@@ -987,14 +1050,13 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		}
 
 		$admin_entry = FrmAppHelper::is_admin();
+
 		if ( $admin_entry && current_user_can( 'frm_create_entries' ) ) {
 			return true;
 		}
 
-		if ( self::check_single_entry_type( $form->options, 'user' ) || ! empty( $form->options['save_draft'] ) ) {
-			if ( self::logged_in_user_has_already_submitted_form( $form ) ) {
-				return false;
-			}
+		if ( ( self::check_single_entry_type( $form->options, 'user' ) || ! empty( $form->options['save_draft'] ) ) && self::logged_in_user_has_already_submitted_form( $form ) ) {
+			return false;
 		}
 
 		if ( ! $admin_entry ) {
@@ -1014,10 +1076,12 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 6.8.3
 	 *
 	 * @param stdClass $form
+	 *
 	 * @return bool
 	 */
 	private static function logged_in_user_has_already_submitted_form( $form ) {
 		$user_ID = get_current_user_id();
+
 		if ( ! $user_ID ) {
 			return false;
 		}
@@ -1028,10 +1092,8 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		$is_draft = ! self::check_single_entry_type( $form->options, 'user' );
 		$meta     = FrmProEntriesHelper::check_for_user_entry( $user_ID, $form, $is_draft );
 
-		if ( 'create' !== $action && ! $is_draft && $meta ) {
-			if ( $form->editable || FrmDb::get_var( 'frm_items', array( 'id' => reset( $meta ) ), 'is_draft' ) ) {
-				$meta = false;
-			}
+		if ( 'create' !== $action && ! $is_draft && $meta && ( $form->editable || FrmDb::get_var( 'frm_items', array( 'id' => reset( $meta ) ), 'is_draft' ) ) ) {
+			$meta = false;
 		}
 
 		return (bool) $meta;
@@ -1041,6 +1103,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 6.8.3
 	 *
 	 * @param int|string $form_id
+	 *
 	 * @return bool
 	 */
 	private static function entry_for_ip_already_exists( $form_id ) {
@@ -1057,32 +1120,43 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * @since 2.3
+	 *
+	 * @param int|string $form_id
 	 */
 	public static function get_the_page_number( $form_id ) {
 		$page_num = 1;
+
 		if ( self::going_to_prev( $form_id ) ) {
 			self::prev_page_num( $form_id, $page_num );
 		} elseif ( self::going_to_next( $form_id ) ) {
 			self::next_page_num( $form_id, $page_num );
 		}
+
 		return $page_num;
 	}
 
 	/**
 	 * @since 2.3
 	 *
-	 * @param int $page_num
+	 * @param int|string $form_id
+	 * @param int        $page_num
+	 *
 	 * @return void
 	 */
 	private static function next_page_num( $form_id, &$page_num ) {
 		$next_page = FrmAppHelper::get_post_param( 'frm_page_order_' . $form_id, 0, 'absint' );
-		if ( $next_page ) {
-			$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
-			foreach ( $page_breaks as $page_break ) {
-				++$page_num;
-				if ( $page_break->field_order >= $next_page ) {
-					break;
-				}
+
+		if ( ! $next_page ) {
+			return;
+		}
+
+		$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
+
+		foreach ( $page_breaks as $page_break ) {
+			++$page_num;
+
+			if ( $page_break->field_order >= $next_page ) {
+				break;
 			}
 		}
 	}
@@ -1090,81 +1164,94 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	/**
 	 * @since 2.3
 	 *
-	 * @param int $page_num
+	 * @param int|string $form_id
+	 * @param int        $page_num
+	 *
 	 * @return void
 	 */
 	private static function prev_page_num( $form_id, &$page_num ) {
 		$next_page = FrmAppHelper::get_post_param( 'frm_next_page', 0, 'absint' );
-		if ( $next_page ) {
-			$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
-			$page_num    = count( $page_breaks );
-			$page_breaks = array_reverse( $page_breaks );
-			foreach ( $page_breaks as $page_break ) {
-				if ( $page_break->field_order <= $next_page ) {
-					break;
-				}
-				--$page_num;
+
+		if ( ! $next_page ) {
+			return;
+		}
+
+		$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
+		$page_num    = count( $page_breaks );
+		$page_breaks = array_reverse( $page_breaks );
+
+		foreach ( $page_breaks as $page_break ) {
+			if ( $page_break->field_order <= $next_page ) {
+				break;
 			}
+			--$page_num;
 		}
 	}
 
 	/**
 	 * @since 2.0.8
+	 *
+	 * @param int|string $form_id
 	 */
 	public static function has_another_page( $form_id ) {
-		$more_pages = false;
 		if ( ! self::saving_draft() ) {
-			if ( self::going_to_prev( $form_id ) ) {
-				$more_pages = true;
-			} else {
-				$more_pages = self::going_to_next( $form_id );
-			}
+			return self::going_to_prev( $form_id ) ? true : self::going_to_next( $form_id );
 		}
 
-		return $more_pages;
+		return false;
 	}
 
 	/**
+	 * @param int|string $form_id
+	 *
 	 * @return bool
 	 */
 	public static function going_to_prev( $form_id ) {
-		$back      = false;
 		$next_page = FrmAppHelper::get_post_param( 'frm_next_page', 0, 'absint' );
+
 		if ( $next_page ) {
 			$prev_page = FrmAppHelper::get_post_param( 'frm_page_order_' . $form_id, 0, 'absint' );
+
 			if ( ! $prev_page || ( $next_page < $prev_page ) ) {
-				$back = true;
+				return true;
 			}
 		}
-		return $back;
+
+		return false;
 	}
 
 	/**
 	 * @since 2.0.8
+	 *
+	 * @param int|string $form_id
+	 *
 	 * @return bool
 	 */
 	public static function going_to_next( $form_id ) {
 		$next_page  = FrmAppHelper::get_post_param( 'frm_page_order_' . $form_id, 0, 'absint' );
 		$more_pages = false;
 
-		if ( $next_page ) {
-			$more_pages  = true;
-			$page_breaks = FrmField::get_all_types_in_form( $form_id, 'break' );
+		if ( ! $next_page ) {
+			return $more_pages;
+		}
 
-			$previous_page              = new stdClass();
-			$previous_page->field_order = 0;
+		$more_pages                 = true;
+		$page_breaks                = FrmField::get_all_types_in_form( $form_id, 'break' );
+		$previous_page              = new stdClass();
+		$previous_page->field_order = 0;
 
-			foreach ( $page_breaks as $page_break ) {
-				if ( $page_break->field_order >= $next_page ) {
-					$current_page = apply_filters( 'frm_get_current_page', $previous_page, $page_breaks, false );
-					if ( ! is_object( $current_page ) && $current_page == -1 ) {
-						unset( $_POST[ 'frm_page_order_' . $form_id ] );
-						$more_pages = false;
-					}
-					break;
+		foreach ( $page_breaks as $page_break ) {
+			if ( $page_break->field_order >= $next_page ) {
+				$current_page = apply_filters( 'frm_get_current_page', $previous_page, $page_breaks, false );
+
+				if ( ! is_object( $current_page ) && $current_page == -1 ) {
+					unset( $_POST[ 'frm_page_order_' . $form_id ] );
+					$more_pages = false;
 				}
-				$previous_page = $page_break;
+				break;
 			}
+
+			$previous_page = $page_break;
 		}
 
 		return $more_pages;
@@ -1177,6 +1264,8 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * Check if this entry is currently being saved as a draft
+	 *
+	 * @return bool
 	 */
 	public static function saving_draft() {
 		$saving_draft = FrmAppHelper::get_post_param( 'frm_saving_draft', '', 'sanitize_title' );
@@ -1187,17 +1276,19 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 		 * @since 6.8
 		 *
 		 * @param bool $allowed_condition Bool true when condition met.
+		 *
 		 * @return bool
 		 */
 		$allowed_condition = (bool) apply_filters( 'frm_saving_draft', is_user_logged_in() );
 
-		$saving = ( FrmProEntry::is_draft_status( $saving_draft ) && $allowed_condition );
-
-		return $saving;
+		return FrmProEntry::is_draft_status( $saving_draft ) && $allowed_condition;
 	}
 
 	/**
-	 * @param string $message
+	 * @param string       $message
+	 * @param stdClass     $form
+	 * @param false|object $record
+	 *
 	 * @return void
 	 */
 	public static function save_draft_msg( &$message, $form, $record = false ) {
@@ -1209,21 +1300,24 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	}
 
 	/**
+	 * @param object $form
 	 * @param string $class
 	 * @param string $html
 	 * @param string $button_type
-	 * @param object $form
+	 *
 	 * @return string
 	 */
 	public static function get_draft_button( $form, $class = '', $html = '', $button_type = 'save_draft' ) {
-		if ( empty( $html ) ) {
+		if ( ! $html ) {
 			$html = '[if save_draft]<input type="submit" value="[draft_label]" name="frm_save_draft" formnovalidate="formnovalidate" class="frm_save_draft ' . esc_attr( $class ) . '" [draft_hook] />[/if save_draft]';
 		}
 
 		$html = FrmProFormsController::replace_shortcodes( $html, $form );
-		if ( strpos( $html, '[if ' . $button_type . ']' ) !== false ) {
-			$html = preg_replace( '/(\[if\s+' . $button_type . '\])(.*?)(\[\/if\s+' . $button_type . '\])/mis', '', $html );
+
+		if ( str_contains( $html, '[if ' . $button_type . ']' ) ) {
+			return preg_replace( '/(\[if\s+' . $button_type . '\])(.*?)(\[\/if\s+' . $button_type . '\])/mis', '', $html );
 		}
+
 		return $html;
 	}
 
@@ -1269,16 +1363,18 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @since 5.3.1
 	 *
 	 * @param object $form Form object.
+	 *
 	 * @return string
 	 */
 	public static function get_start_over_html( $form ) {
-		if ( ! method_exists( 'FrmFormsHelper', 'get_start_over_shortcode' ) ) {
-			return '';
-		}
-
 		return self::get_draft_button( $form, '', FrmFormsHelper::get_start_over_shortcode(), 'start_over' );
 	}
 
+	/**
+	 * @param array $field
+	 *
+	 * @return bool
+	 */
 	public static function is_show_data_field( $field ) {
 		return $field['type'] === 'data' && ( $field['data_type'] == '' || $field['data_type'] === 'data' );
 	}
@@ -1289,38 +1385,38 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @param bool       $single
 	 */
 	public static function has_field( $type, $form_id, $single = true ) {
-		if ( $single ) {
-			$included = FrmDb::get_var(
-				'frm_fields',
-				array(
-					'form_id' => $form_id,
-					'type'    => $type,
-				)
-			);
-			if ( $included ) {
-				$included = FrmField::getOne( $included );
-			}
-		} else {
-			$included = FrmField::get_all_types_in_form( $form_id, $type );
+		if ( ! $single ) {
+			return FrmField::get_all_types_in_form( $form_id, $type );
 		}
 
-		return $included;
+		$included = FrmDb::get_var(
+			'frm_fields',
+			array(
+				'form_id' => $form_id,
+				'type'    => $type,
+			)
+		);
+
+		return $included ? FrmField::getOne( $included ) : $included;
 	}
 
 	/**
 	 * @since 2.0
 	 *
-	 * @param bool       $single
 	 * @param int|string $form_id
+	 * @param bool       $single
+	 *
 	 * @return array Repeatable section fields.
 	 */
 	public static function has_repeat_field( $form_id, $single = true ) {
 		$fields = self::has_field( 'divider', $form_id, $single );
+
 		if ( ! $fields ) {
 			return $fields;
 		}
 
 		$repeat_fields = array();
+
 		foreach ( $fields as $field ) {
 			if ( FrmField::is_repeating_field( $field ) ) {
 				$repeat_fields[] = $field;
@@ -1332,34 +1428,28 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 
 	/**
 	 * @since 2.0.8
+	 *
 	 * @param array $atts - includes form_id, setting_name, and expected_setting
+	 *
+	 * @return bool
 	 */
 	public static function has_form_setting( $atts ) {
 		$form = FrmForm::getOne( $atts['form_id'] );
-		return ( isset( $form->options[ $atts['setting_name'] ] ) && $form->options[ $atts['setting_name'] ] == $atts['expected_setting'] );
+		return isset( $form->options[ $atts['setting_name'] ] ) && $form->options[ $atts['setting_name'] ] == $atts['expected_setting'];
 	}
 
 	/**
 	 * @param string $form
+	 *
 	 * @return string
 	 */
-	public static function &post_type( $form ) {
-		if ( is_numeric( $form ) ) {
-			$form_id = $form;
-		} else {
-			$form_id = (array) $form['id'];
-		}
+	public static function post_type( $form ) {
+		$form_id = is_numeric( $form ) ? $form : (array) $form['id'];
 
 		$action = FrmFormAction::get_action_for_form( $form_id, 'wppost' );
 		$action = reset( $action );
 
-		if ( ! $action || ! isset( $action->post_content['post_type'] ) ) {
-			$type = 'post';
-		} else {
-			$type = $action->post_content['post_type'];
-		}
-
-		return $type;
+		return ! $action || ! isset( $action->post_content['post_type'] ) ? 'post' : $action->post_content['post_type'];
 	}
 
 	/**
@@ -1373,6 +1463,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 */
 	public static function prepare_inline_edit_form( $form ) {
 		global $frm_vars;
+
 		if ( ! empty( $frm_vars['inplace_edit'] ) ) {
 			$form->options['ajax_submit'] = '1';
 		}
@@ -1384,18 +1475,14 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @param int $form_id
 	 */
 	public static function maybe_init_antispam( $form_id ) {
-		if ( is_callable( 'FrmAntiSpam::maybe_init' ) ) {
-			FrmAntiSpam::maybe_init( $form_id );
-		}
+		FrmAntiSpam::maybe_init( $form_id );
 	}
 
 	/**
 	 * @param int $form_id
 	 */
 	public static function maybe_echo_antispam_token( $form_id ) {
-		if ( is_callable( 'FrmAntiSpam::maybe_echo_token' ) ) {
-			FrmAntiSpam::maybe_echo_token( $form_id );
-		}
+		FrmAntiSpam::maybe_echo_token( $form_id );
 	}
 
 	/**
@@ -1406,11 +1493,11 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 * @param int|object|string $form    Form ID, key or object.
 	 * @param string            $option  Option name.
 	 * @param mixed             $default Default value.
+	 *
 	 * @return mixed
 	 */
 	public static function get_form_option( $form, $option, $default = '' ) {
 		FrmForm::maybe_get_form( $form );
-
 		return FrmForm::get_option( compact( 'form', 'option', 'default' ) );
 	}
 
@@ -1421,6 +1508,7 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	 *
 	 * @param array  $options The form options column value deserialized as an associative array.
 	 * @param string $type
+	 *
 	 * @return bool
 	 */
 	public static function check_single_entry_type( $options, $type ) {
@@ -1467,12 +1555,58 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	public static function array_to_hidden_inputs( $data, $base_name ) {
 		foreach ( $data as $key => $value ) {
 			$name = $base_name . '[' . $key . ']';
+
 			if ( is_array( $value ) ) {
 				self::array_to_hidden_inputs( $value, $name );
 			} else {
 				self::print_hidden_input( $name, $value );
 			}
 		}
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param array $fields
+	 *
+	 * @return bool
+	 */
+	public static function should_show_disable_on_choice_limit_setting( $fields ) {
+		foreach ( $fields as $field ) {
+			if ( in_array( $field['type'], array( 'checkbox', 'radio', 'select' ), true ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns the form name or the no title text if the form name is empty.
+	 *
+	 * @since 6.32
+	 *
+	 * @param array|stdClass $form   The form data.
+	 * @param int            $length The form name length to truncate to.
+	 *
+	 * @return string
+	 */
+	public static function get_form_name( $form, $length = 0 ) {
+		if ( is_callable( 'FrmFormsHelper::get_form_name' ) ) {
+			return FrmFormsHelper::get_form_name( $form, $length );
+		}
+
+		// Note: The logic here could be deleted once the lite version has been around long enough after release.
+		$form_name = is_object( $form ) ? $form->name : $form['name'];
+
+		if ( '' === $form_name || null === $form_name ) {
+			return FrmFormsHelper::get_no_title_text();
+		}
+
+		if ( ! $length ) {
+			return $form_name;
+		}
+
+		return FrmAppHelper::truncate( $form_name, $length );
 	}
 
 	/**
@@ -1486,5 +1620,16 @@ echo $custom_options; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotE
 	public static function lite_supports_ajax_submit() {
 		_deprecated_function( __METHOD__, '6.20' );
 		return true;
+	}
+
+	/**
+	 * Checks if the form is rendered inside a block editor or page builder preview.
+	 *
+	 * @since 6.29
+	 *
+	 * @return bool
+	 */
+	public static function is_block_or_page_builder_preview() {
+		return is_callable( 'FrmFormsHelper::is_block_or_page_builder_preview' ) ? FrmFormsHelper::is_block_or_page_builder_preview() : false;
 	}
 }

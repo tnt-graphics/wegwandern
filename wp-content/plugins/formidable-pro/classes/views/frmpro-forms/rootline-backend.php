@@ -3,6 +3,7 @@
  * View for rootline in form builder
  *
  * @since 6.9
+ *
  * @package FormidablePro
  *
  * @var FrmProRootline $this          Rootline object.
@@ -19,6 +20,7 @@ $titles = array_values( $this->titles );
 	<ul>
 		<?php
 		$i = 0;
+
 		foreach ( $this->page_breaks as $page_break ) {
 			if ( count( $this->page_breaks ) === $i + 1 ) {
 				?>
@@ -33,6 +35,7 @@ $titles = array_values( $this->titles );
 				if ( 'rootline' === $this->type && $this->show_numbers ) {
 					echo '<span class="frm-rootline-number">' . intval( $i + 1 ) . '</span>';
 				}
+
 				if ( $this->show_titles && ! empty( $titles[ $i ] ) ) {
 					echo '<span class="frm-rootline-title">' . esc_html( $titles[ $i ] ) . '</span>';
 				}

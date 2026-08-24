@@ -15,6 +15,7 @@ class FrmProTransLiteController {
 	 * @since 6.8
 	 *
 	 * @param int|int[] $form_id
+	 *
 	 * @return array
 	 */
 	public static function trans_action_get_field_options_form_id( $form_id ) {
@@ -33,6 +34,7 @@ class FrmProTransLiteController {
 	 * @since 6.22.1
 	 *
 	 * @param array $options
+	 *
 	 * @return array
 	 */
 	public static function display_field_options( $options ) {

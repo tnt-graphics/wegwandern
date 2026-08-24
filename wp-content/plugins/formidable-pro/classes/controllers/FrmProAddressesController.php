@@ -14,14 +14,15 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 	private static $country_codes;
 
 	/**
-	 * @param array $field
-	 * @param array $atts
+	 * @param array  $field
+	 * @param string $field_name
+	 * @param array  $atts
+	 *
 	 * @return void
 	 */
 	public static function show_in_form( $field, $field_name, $atts ) {
-		$errors  = $atts['errors'] ?? array();
-		$html_id = $atts['html_id'];
-
+		$errors   = $atts['errors'] ?? array();
+		$html_id  = $atts['html_id'];
 		$defaults = self::empty_value_array();
 		self::fill_values( $field['value'], $defaults );
 		self::fill_values( $field['default_value'], $defaults );
@@ -31,11 +32,21 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		include FrmProAppHelper::plugin_path() . '/classes/views/combo-fields/input.php';
 	}
 
+	/**
+	 * @param string $class
+	 * @param array  $field
+	 *
+	 * @return string
+	 */
 	public static function add_optional_class( $class, $field ) {
-		$class .= ' frm_optional';
-		return $class;
+		return $class . ' frm_optional';
 	}
 
+	/**
+	 * @param array $field
+	 *
+	 * @return array
+	 */
 	public static function get_sub_fields( $field ) {
 		$fields = array(
 			'line1' => array(
@@ -119,25 +130,25 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		 * @param array $fields
 		 * @param array $field
 		 */
-		$fields = apply_filters( 'frm_address_sub_fields', $fields, $field );
-
-		return $fields;
+		return apply_filters( 'frm_address_sub_fields', $fields, $field );
 	}
 
 	/**
 	 * @param array $headings
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	public static function add_csv_columns( $headings, $atts ) {
-		if ( $atts['field']->type === 'address' ) {
-			$values = self::empty_value_array();
-
-			foreach ( $values as $heading => $value ) {
-				$label = self::get_field_label( $atts['field'], $heading );
-				$headings[ $atts['field']->id . '_' . $heading ] = strip_tags( $label );
-			}
+		if ( $atts['field']->type !== 'address' ) {
+			return $headings;
 		}
+
+		foreach ( self::empty_value_array() as $heading => $value ) {
+			$label = self::get_field_label( $atts['field'], $heading );
+			$headings[ $atts['field']->id . '_' . $heading ] = strip_tags( $label );
+		}
+
 		return $headings;
 	}
 
@@ -168,7 +179,9 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 	 *
 	 * @since 2.0.23
 	 *
-	 * @param string $field_name
+	 * @param array|object $field
+	 * @param string       $field_name
+	 *
 	 * @return string
 	 */
 	private static function get_field_label( $field, $field_name ) {
@@ -179,8 +192,10 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 		$default_labels['country'] = __( 'Country', 'formidable-pro' );
 
 		$label = $default_labels[ $field_name ] ?? '';
+
 		if ( in_array( $field_name, $descriptions, true ) ) {
 			$saved_label = FrmField::get_option( $field, $field_name . '_desc' );
+
 			if ( $saved_label ) {
 				$label = $saved_label;
 			}
@@ -190,9 +205,7 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 			$label = $field_name;
 		}
 
-		$label = $field->name . ' - ' . $label;
-
-		return $label;
+		return $field->name . ' - ' . $label;
 	}
 
 	/**
@@ -215,6 +228,7 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 	 * @since 6.11
 	 *
 	 * @param string $country Country name.
+	 *
 	 * @return string $country_code Country code.
 	 */
 	public static function get_country_code( $country ) {
@@ -497,7 +511,10 @@ class FrmProAddressesController extends FrmProComboFieldsController {
 
 	/**
 	 * @deprecated 3.0
+	 *
 	 * @codeCoverageIgnore
+	 *
+	 * @param mixed $value
 	 */
 	public static function display_value( $value ) {
 		_deprecated_function( __FUNCTION__, '3.0', 'FrmProFieldAddress->get_display_value' );

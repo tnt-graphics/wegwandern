@@ -1,6 +1,7 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Element Description: VC Gallery
@@ -23,8 +24,8 @@ if (class_exists('WPBakeryShortCode')) {
                 return;
             }
 
-            $main_class = wpmfGetMainClass();
-            $settings = wpmfGetOption('gallery_settings');
+            $main_class = WpmfHelper::wpmfGetMainClass();
+            $settings = WpmfHelper::wpmfGetOption('gallery_settings');
             $getFolders = $main_class->getAttachmentTerms('builder');
             $folders = $getFolders['attachment_terms'];
             $folders_order = $getFolders['attachment_terms_order'];

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<label class="frm-h-stack-xs" for="start_year_<?php echo absint( $field['id'] ); ?>">
 		<span><?php esc_html_e( 'Year Range', 'formidable-pro' ); ?></span>
 		<?php
-		FrmProAppHelper::tooltip_icon(
+		FrmAppHelper::tooltip_icon(
 			__( 'Use four digit years or +/- years to make it dynamic. For example, use -5 for the start year and +5 for the end year.', 'formidable-pro' ),
 			array(
 				'data-placement' => 'right',

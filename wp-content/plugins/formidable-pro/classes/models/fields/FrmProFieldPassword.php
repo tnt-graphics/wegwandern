@@ -12,6 +12,7 @@ class FrmProFieldPassword extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'password';
@@ -65,6 +66,8 @@ class FrmProFieldPassword extends FrmFieldType {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -80,6 +83,7 @@ class FrmProFieldPassword extends FrmFieldType {
 	 * Modifies the field wrapper CSS classes on the form builder.
 	 *
 	 * @param string $classes Field wrapper CSS classes.
+	 *
 	 * @return string
 	 */
 	protected function alter_builder_classes( $classes ) {
@@ -106,6 +110,7 @@ class FrmProFieldPassword extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'.
 	 */
 	public function show_primary_options( $args ) {
@@ -119,6 +124,7 @@ class FrmProFieldPassword extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display'.
 	 *
 	 * TODO: Remove this method once the majority of active LITE version installations are above 6.19.
@@ -138,10 +144,12 @@ class FrmProFieldPassword extends FrmFieldType {
 	 */
 	protected function get_input_class() {
 		$class = '';
-		// add class for javascript validation
+
+		// Add class for javascript validation
 		if ( FrmField::get_option( $this->field, 'strong_pass' ) ) {
 			$class .= ' frm_strong_pass';
 		}
+
 		if ( FrmField::get_option( $this->field, 'strength_meter' ) ) {
 			$class .= ' frm_strength_meter';
 		}
@@ -153,21 +161,24 @@ class FrmProFieldPassword extends FrmFieldType {
 	 * @since 3.01.04
 	 *
 	 * @param array $args
+	 *
 	 * @return array Errors.
 	 */
 	public function validate( $args ) {
 		$errors   = array();
 		$password = $args['value'];
+
 		if ( '' === trim( $password ) ) {
 			return $errors;
 		}
 
 		$check_strength = FrmField::get_option( $this->field, 'strong_pass' );
 
-		//validate the password format
+		// Validate the password format
 		if ( $check_strength ) {
 			$message = $this->check_format( $password );
-			if ( ! empty( $message ) ) {
+
+			if ( $message ) {
 				$errors[ 'field' . $args['id'] ] = $message;
 			}
 		}
@@ -185,11 +196,10 @@ class FrmProFieldPassword extends FrmFieldType {
 			return $input_html;
 		}
 
-		$is_confirmation_field = strpos( $args['field_id'], 'conf' ) === 0;
+		$is_confirmation_field = str_starts_with( $args['field_id'], 'conf' );
 
 		if ( ! $is_confirmation_field ) {
-			$field_id = $args['field_id'];
-
+			$field_id    = $args['field_id'];
 			$input_html .= $this->get_password_strength_html( $field_id );
 		}
 
@@ -203,6 +213,7 @@ class FrmProFieldPassword extends FrmFieldType {
 	 *
 	 * @param string $field_id
 	 * @param bool   $echo
+	 *
 	 * @return string
 	 */
 	public function get_password_strength_html( $field_id, $echo = false ) {
@@ -240,10 +251,12 @@ class FrmProFieldPassword extends FrmFieldType {
 	 * @since 3.02
 	 *
 	 * @param string $password
+	 *
 	 * @return string - The error message if present
 	 */
 	private function check_format( $password ) {
 		$message = '';
+
 		foreach ( $this->password_checks() as $check ) {
 			if ( ! $this->check_regex( $check['regex'], $password ) ) {
 				$message = $check['message'];
@@ -305,7 +318,9 @@ class FrmProFieldPassword extends FrmFieldType {
 	 * @since 3.03
 	 * @since 5.2.04 This method is public.
 	 *
+	 * @param string $regex
 	 * @param string $password
+	 *
 	 * @return false|int
 	 */
 	public function check_regex( $regex, $password ) {

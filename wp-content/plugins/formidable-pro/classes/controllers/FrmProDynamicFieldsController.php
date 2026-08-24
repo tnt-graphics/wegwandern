@@ -63,8 +63,9 @@ class FrmProDynamicFieldsController {
 			$values['options'] = self::get_independent_options( $values, $field, $entry_id );
 		} elseif ( is_numeric( $values['value'] ) ) {
 			$values['options'] = array();
+
 			if ( $field->field_options['data_type'] === 'select' ) {
-				// add blank option for dropdown
+				// Add blank option for dropdown
 				$values['options'][''] = self::get_placeholder_option( $field );
 			}
 			$values['options'][ $values['value'] ] = FrmEntryMeta::get_entry_meta_by_field( $values['value'], $values['form_select'] );
@@ -75,23 +76,30 @@ class FrmProDynamicFieldsController {
 	 * Check if Dynamic field is independent of other Dynamic fields
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $values
+	 *
 	 * @return bool
 	 */
 	private static function is_field_independent( $values ) {
+		if ( empty( $values['hide_field'] ) || ( empty( $values['hide_opt'] ) && empty( $values['form_select'] ) ) ) {
+			return true;
+		}
+
 		$independent = true;
-		if ( ! empty( $values['hide_field'] ) && ( ! empty( $values['hide_opt'] ) || ! empty( $values['form_select'] ) ) ) {
-			foreach ( $values['hide_field'] as $hkey => $f ) {
-				if ( ! empty( $values['hide_opt'][ $hkey ] ) ) {
-					continue;
-				}
-				$f = FrmField::getOne( $f );
-				if ( $f && $f->type === 'data' ) {
-					$independent = false;
-					break;
-				}
-				unset( $f, $hkey );
+
+		foreach ( $values['hide_field'] as $hkey => $f ) {
+			if ( ! empty( $values['hide_opt'][ $hkey ] ) ) {
+				continue;
 			}
+
+			$f = FrmField::getOne( $f );
+
+			if ( $f && $f->type === 'data' ) {
+				$independent = false;
+				break;
+			}
+			unset( $f, $hkey );
 		}
 
 		return $independent;
@@ -103,10 +111,11 @@ class FrmProDynamicFieldsController {
 	 * @param array    $values
 	 * @param object   $field
 	 * @param bool|int $entry_id
+	 *
 	 * @return array
 	 */
 	public static function get_independent_options( $values, $field, $entry_id = false ) {
-		global $user_ID, $wpdb;
+		global $user_ID;
 
 		$metas          = array();
 		$selected_field = FrmField::getOne( $values['form_select'] );
@@ -127,7 +136,7 @@ class FrmProDynamicFieldsController {
 				$observed_field_val = '';
 			}
 
-			FrmProAppHelper::unserialize_or_decode( $observed_field_val );
+			FrmAppHelper::unserialize_or_decode( $observed_field_val );
 
 			$metas = array();
 			FrmProEntryMetaHelper::meta_through_join( $values['hide_field'], $selected_field, $observed_field_val, false, $metas );
@@ -139,10 +148,11 @@ class FrmProDynamicFieldsController {
 					'form_id' => $selected_field->form_id,
 					'user_id' => $entry_user,
 				);
+
 				if ( $linked_posts ) {
 					$post_ids = FrmDb::get_results( 'frm_items', $linked_where, 'id, post_id' );
 				} else {
-					$entry_ids = FrmDb::get_col( $wpdb->prefix . 'frm_items', $linked_where, 'id' );
+					$entry_ids = FrmDb::get_col( 'frm_items', $linked_where, 'id' );
 				}
 				unset( $linked_where );
 			}
@@ -154,12 +164,13 @@ class FrmProDynamicFieldsController {
 						'field_id'   => (int) $values['form_select'],
 					),
 					' ORDER BY meta_value',
-					'' 
+					''
 				);
 			}
 		} else {
 			$limit     = '';
 			$meta_args = array();
+
 			if ( FrmAppHelper::is_admin_page( 'formidable' ) ) {
 				$limit                 = 200;
 				$meta_args['limit']    = $limit;
@@ -173,7 +184,7 @@ class FrmProDynamicFieldsController {
 			}
 		}
 
-		if ( $linked_posts && ! empty( $post_ids ) ) {
+		if ( $linked_posts && $post_ids ) {
 			foreach ( $post_ids as $entry ) {
 				$meta_value = FrmProEntryMetaHelper::get_post_value(
 					$entry->post_id,
@@ -183,7 +194,7 @@ class FrmProDynamicFieldsController {
 						'type'    => $selected_field->type,
 						'form_id' => $selected_field->form_id,
 						'field'   => $selected_field,
-					) 
+					)
 				);
 				$metas[]    = array(
 					'meta_value' => $meta_value,
@@ -199,6 +210,7 @@ class FrmProDynamicFieldsController {
 
 		foreach ( $metas as $meta ) {
 			$meta = (array) $meta;
+
 			if ( $meta['meta_value'] == '' ) {
 				continue;
 			}
@@ -210,8 +222,9 @@ class FrmProDynamicFieldsController {
 					'type'          => $selected_field->type,
 					'show_icon'     => true,
 					'show_filename' => false,
-				) 
+				)
 			);
+
 			if ( $should_strip_tags ) {
 				$new_value = strip_tags( $new_value );
 			}
@@ -228,7 +241,7 @@ class FrmProDynamicFieldsController {
 				'metas'         => $metas,
 				'field'         => $selected_field,
 				'dynamic_field' => $values,
-			) 
+			)
 		);
 
 		unset( $metas );
@@ -244,6 +257,7 @@ class FrmProDynamicFieldsController {
 	 * @since 6.8.3
 	 *
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	private static function should_restrict_options_for_logged_out_users( $field ) {
@@ -310,6 +324,7 @@ class FrmProDynamicFieldsController {
 	 * @since 6.9
 	 *
 	 * @param string $include
+	 *
 	 * @return array|int
 	 */
 	private static function get_status_to_include( $include ) {
@@ -334,14 +349,15 @@ class FrmProDynamicFieldsController {
 	 * @since 4.0
 	 *
 	 * @param stdClass $field
+	 *
 	 * @return string
 	 */
 	private static function get_placeholder_option( $field ) {
-		$placeholder = FrmField::get_option( $field, 'placeholder' );
 		if ( FrmField::get_option( $field, 'autocom' ) && FrmProAppHelper::use_chosen_js() ) {
-			$placeholder = '';
+			return '';
 		}
-		return $placeholder;
+
+		return FrmField::get_option( $field, 'placeholder' );
 	}
 
 	/**
@@ -350,7 +366,9 @@ class FrmProDynamicFieldsController {
 	 *
 	 * @since 2.0
 	 *
+	 * @param array    $options
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	public static function include_blank_option( $options, $field ) {
@@ -362,13 +380,14 @@ class FrmProDynamicFieldsController {
 			return false;
 		}
 
-		return ( ! FrmField::is_multiple_select( $field ) || FrmField::is_option_true( $field, 'autocom' ) );
+		return ! FrmField::is_multiple_select( $field ) || FrmField::is_option_true( $field, 'autocom' );
 	}
 
 	/**
 	 * @since 6.7.1
 	 *
 	 * @param array $values
+	 *
 	 * @return array
 	 */
 	public static function clean_field_options_before_update( $values ) {

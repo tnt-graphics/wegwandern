@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 
-if ( empty( FrmField::get_option( $field, 'placeholder' ) ) ) {
+if ( ! FrmField::get_option( $field, 'placeholder' ) ) {
 	$placeholder          = FrmFieldsController::get_default_value_from_name( $field );
 	$field['placeholder'] = $placeholder ? $placeholder : FrmProCurrencyHelper::format_amount_for_currency( $this->get_field_column( 'form_id' ), 0 );
 }

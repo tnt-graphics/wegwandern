@@ -30,6 +30,11 @@ class Title {
 	 * @return void
 	 */
 	public function startOutputBuffering() {
+		// Guard against multiple invocations (e.g. if hooked to an action that fires more than once).
+		if ( 0 !== $this->bufferLevel ) {
+			return;
+		}
+
 		ob_start();
 
 		$this->bufferLevel = ob_get_level();

@@ -16,12 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	    <option value="<?php echo esc_attr( $field_option->id ); ?>"<?php
 			echo esc_attr( $selected );
 			?>><?php
-			echo '' == $field_option->name ? esc_html( $field_option->id ) . ' ' . esc_html__( '(no label)', 'formidable-pro' ) : esc_html( $field_option->name );
+			echo '' == $field_option->name ? esc_html( $field_option->id ) . ' ' . esc_html__( '(no label)', 'formidable' ) : esc_html( $field_option->name );
 	    ?></option>
 	    <?php } ?>
 	</select>
 
 	<a href="javascript:void(0)" class="frm_remove_tag frm-inline-select" data-removeid="frm_watch_lookup_<?php echo esc_attr( $field_id . '_' . $row_key ); ?>" data-fieldid="<?php echo esc_attr( $field_id ); ?>">
-		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_minus1_icon frm_svg14 frm-p-2xs' ); ?>
+		<?php FrmAppHelper::icon_by_class( 'frmfont frm_minus1_icon frm_svg14 frm-p-2xs' ); ?>
 	</a>
 </p>

@@ -3,6 +3,7 @@
  * Submit field Pro settings.
  *
  * @package FormidablePro
+ *
  * @since 6.9
  *
  * @var array $field Field array.
@@ -32,9 +33,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 		id="align_<?php echo esc_attr( $field['id'] ); ?>"
 		name="field_options[align_<?php echo esc_attr( $field['id'] ); ?>]"
 	>
-		<option value=""><?php esc_html_e( 'Default', 'formidable-pro' ); ?></option>
+		<option value=""><?php esc_html_e( 'Default', 'formidable' ); ?></option>
 		<option value="center" <?php selected( $field['align'], 'center' ); ?>>
-			<?php esc_html_e( 'Center', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Center', 'formidable' ); ?>
 		</option>
 		<option value="full" <?php selected( $field['align'], 'full' ); ?>>
 			<?php esc_html_e( 'Full Width', 'formidable-pro' ); ?>
@@ -43,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<?php esc_html_e( 'Inline', 'formidable-pro' ); ?>
 		</option>
 		<option value="none" <?php selected( $field['align'], 'none' ); ?>>
-			<?php esc_html_e( 'None', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'None', 'formidable' ); ?>
 		</option>
 	</select>
 </p>
@@ -65,6 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <?php
 $class = 'frm_form_field start_over_label_wrapper_' . esc_attr( $field['id'] );
+
 if ( ! $field['start_over'] ) {
 	$class .= ' frm_hidden';
 }

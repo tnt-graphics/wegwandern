@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $e_args = array( 'textarea_name' => $field_name );
+
 if ( $field['default_value'] !== '' ) {
 	$e_args['editor_class'] = 'frm_has_default';
 }
@@ -26,6 +27,7 @@ if ( FrmAppHelper::is_admin() ) { ?>
 // Rich text for front-end, including Preview page
 } elseif ( $field['type'] === 'rte' ) {
 	$e_args['media_buttons'] = false;
+
 	if ( $field['max'] ) {
 		$e_args['textarea_rows'] = $field['max'];
 	}
@@ -47,8 +49,10 @@ if ( FrmAppHelper::is_admin() ) { ?>
 
 	if ( FrmField::is_required( $field ) ) {
 		$req_msg = FrmFieldsHelper::get_error_msg( $field, 'blank' );
+
 		if ( $req_msg ) {
 			global $frm_vars;
+
 			if ( ! isset( $frm_vars['rte_reqmessages'] ) ) {
 				$frm_vars['rte_reqmessages'] = array();
 			}

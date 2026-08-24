@@ -7,13 +7,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProDisplaysHelper {
 
 	/**
-	 * @param string $content
-	 * @param mixed  $form_id
+	 * @param string     $content
+	 * @param int|string $form_id
+	 *
 	 * @return array
 	 */
 	public static function get_shortcodes( $content, $form_id ) {
-		if ( ! $form_id || strpos( $content, '[' ) === false ) {
-			// don't continue if there are no shortcodes to check
+		if ( ! $form_id || ! str_contains( $content, '[' ) ) {
+			// Don't continue if there are no shortcodes to check
 			return array( array() );
 		}
 
@@ -44,17 +45,18 @@ class FrmProDisplaysHelper {
 	 * @since 5.5.4 This was moved from get_shortcodes and field IDs were added because checking for \d would catch false positives.
 	 *
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_field_ids_and_keys_for_form( $form_id ) {
-		$form_ids      = self::linked_form_ids( $form_id );
-		$field_query   = array(
+		$form_ids           = self::linked_form_ids( $form_id );
+		$field_query        = array(
 			'form_id' => $form_ids,
 			'or'      => 1,
 		);
-		$field_results = FrmDb::get_results( 'frm_fields', $field_query, 'id, field_key' );
-
+		$field_results      = FrmDb::get_results( 'frm_fields', $field_query, 'id, field_key' );
 		$field_ids_and_keys = array();
+
 		foreach ( $field_results as $result ) {
 			$field_ids_and_keys[] = $result->id;
 			$field_ids_and_keys[] = $result->field_key;
@@ -69,6 +71,7 @@ class FrmProDisplaysHelper {
 	 * @since 3.0
 	 *
 	 * @param int|string $form_id
+	 *
 	 * @return array
 	 */
 	private static function linked_form_ids( $form_id ) {
@@ -77,10 +80,11 @@ class FrmProDisplaysHelper {
 			'type'    => array( 'divider', 'form' ),
 		);
 		$fields             = FrmDb::get_col( 'frm_fields', $linked_field_query, 'field_options' );
+		$form_ids           = array( $form_id );
 
-		$form_ids = array( $form_id );
 		foreach ( $fields as $field_options ) {
-			FrmProAppHelper::unserialize_or_decode( $field_options );
+			FrmAppHelper::unserialize_or_decode( $field_options );
+
 			if ( ! empty( $field_options['form_select'] ) ) {
 				$form_ids[] = $field_options['form_select'];
 			}
@@ -99,6 +103,7 @@ class FrmProDisplaysHelper {
 	 */
 	private static function maybe_increase_regex_limit() {
 		$backtrack_limit = ini_get( 'pcre.backtrack_limit' );
+
 		if ( $backtrack_limit < 1000000 ) {
 			ini_set( 'pcre.backtrack_limit', 1000000 );
 		}
@@ -111,7 +116,8 @@ class FrmProDisplaysHelper {
 	 * @since 2.01.03
 	 *
 	 * @param array $shortcodes
-	 * @return array $shortcodes
+	 *
+	 * @return array Shortcodes.
 	 */
 	private static function organize_and_filter_shortcodes( $shortcodes ) {
 		$move_up = array();
@@ -120,23 +126,22 @@ class FrmProDisplaysHelper {
 			$conditional = preg_match( '/^\[if/s', $shortcodes[ $short_key ] ) ? true : false;
 			$foreach     = preg_match( '/^\[foreach/s', $shortcodes[ $short_key ] ) ? true : false;
 
-			if ( $conditional || $foreach ) {
-				if ( ! in_array( $tag, $move_up, true ) ) {
-					$move_up[ $short_key ] = $tag;
-				}
-				unset( $shortcodes[ $short_key ] );
+			if ( ! $conditional && ! $foreach ) {
+				continue;
 			}
+
+			if ( ! in_array( $tag, $move_up, true ) ) {
+				$move_up[ $short_key ] = $tag;
+			}
+			unset( $shortcodes[ $short_key ] );
 		}
 
-		if ( $move_up ) {
-			$shortcodes = $move_up + $shortcodes;
-		}
-
-		return $shortcodes;
+		return $move_up ? $move_up + $shortcodes : $shortcodes;
 	}
 
 	/**
 	 * @param false|string $include_key if false all keys are included.
+	 *
 	 * @return array
 	 */
 	public static function get_frm_options_for_views( $include_key = false ) {

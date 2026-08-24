@@ -11,12 +11,14 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'credit_card';
 
 	/**
 	 * @var bool
+	 *
 	 * @since 3.0
 	 */
 	protected $has_for_label = false;
@@ -35,8 +37,8 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	protected function extra_field_opts() {
 		$options['save_cc'] = 4;
+		$default_labels     = $this->empty_value_array();
 
-		$default_labels = $this->empty_value_array();
 		foreach ( $default_labels as $key => $label ) {
 			$options[ $key . '_desc' ] = $label;
 		}
@@ -53,6 +55,7 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'.
 	 */
 	public function show_primary_options( $args ) {
@@ -69,6 +72,7 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display'.
 	 */
 	public function show_after_default( $args ) {
@@ -76,6 +80,7 @@ class FrmProFieldCreditCard extends FrmFieldType {
 		$field['placeholder'] = $this->placeholder_to_array();
 
 		$sub_fields = $this->all_default_labels();
+
 		foreach ( $sub_fields as $name => $field_label ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/default-placeholder.php';
 		}
@@ -83,11 +88,13 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @return array
 	 */
 	private function placeholder_to_array() {
 		$value = FrmField::get_option( $this->field, 'placeholder' );
-		if ( empty( $value ) ) {
+
+		if ( ! $value ) {
 			$value = array(
 				'month' => __( 'Month', 'formidable-pro' ),
 				'year'  => __( 'Year', 'formidable-pro' ),
@@ -139,6 +146,13 @@ class FrmProFieldCreditCard extends FrmFieldType {
 			'field_id' => $args['field_id'],
 		);
 
+		// Payment gateway scripts are unavailable in preview contexts, render sub-fields directly.
+		if ( FrmAppHelper::is_style_editor_page() || FrmProFormsHelper::is_block_or_page_builder_preview() ) {
+			ob_start();
+			FrmProCreditCardsController::show_in_form( $this->field, $args['field_name'], $pass_args );
+			return ob_get_clean();
+		}
+
 		/**
 		 * Filters the callback function used to display the credit card fields in the front-end.
 		 *
@@ -151,10 +165,8 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 		ob_start();
 		call_user_func( $callback, $this->field, $args['field_name'], $pass_args );
-		$input_html = ob_get_contents();
-		ob_end_clean();
 
-		return $input_html;
+		return ob_get_clean();
 	}
 
 	protected function prepare_display_value( $value, $atts ) {
@@ -163,15 +175,18 @@ class FrmProFieldCreditCard extends FrmFieldType {
 		}
 
 		$new_value = '';
-		if ( ! empty( $value['month'] ) ) {
-			if ( ! empty( $value['cc'] ) ) {
-				$new_value = $value['cc'] . ' <br/>';
-			}
 
-			$new_value .= __( 'Expiration:', 'formidable-pro' );
-			$new_value .= ' ' . $value['month'] . '/' . $value['year'];
+		if ( empty( $value['month'] ) ) {
+			return $new_value;
 		}
-		return $new_value;
+
+		if ( ! empty( $value['cc'] ) ) {
+			$new_value = $value['cc'] . ' <br/>';
+		}
+
+		$new_value .= __( 'Expiration:', 'formidable-pro' );
+
+		return $new_value . ( ' ' . $value['month'] . '/' . $value['year'] );
 	}
 
 	/**
@@ -210,21 +225,26 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * @param array $errors
+	 * @param array $args
+	 *
 	 * @return void
 	 */
 	private function validate_required_fields( &$errors, $args ) {
 		$values = $args['value'];
-		if ( $this->should_require( $values ) ) {
-			if ( empty( $values ) ) {
-				$errors[ 'field' . $args['id'] ] = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
-				return;
-			}
 
-			foreach ( $values as $key => $value ) {
-				if ( empty( $value ) ) {
-					$errors[ 'field' . $args['id'] . '-' . $key ] = '';
-					$errors[ 'field' . $args['id'] ]              = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
-				}
+		if ( ! $this->should_require( $values ) ) {
+			return;
+		}
+
+		if ( ! $values ) {
+			$errors[ 'field' . $args['id'] ] = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
+			return;
+		}
+
+		foreach ( $values as $key => $value ) {
+			if ( ! $value ) {
+				$errors[ 'field' . $args['id'] . '-' . $key ] = '';
+				$errors[ 'field' . $args['id'] ]              = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
 			}
 		}
 	}
@@ -236,7 +256,8 @@ class FrmProFieldCreditCard extends FrmFieldType {
 		if ( $saving_draft ) {
 			$is_editing = false;
 		} else {
-			$is_editing = ( $_POST && isset( $_POST['id'] ) && is_numeric( $_POST['id'] ) );
+			$is_editing = $_POST && isset( $_POST['id'] ) && is_numeric( $_POST['id'] );
+
 			if ( $is_editing ) {
 				$is_editing = ! FrmProEntry::is_draft( absint( $_POST['id'] ) );
 			}
@@ -254,17 +275,30 @@ class FrmProFieldCreditCard extends FrmFieldType {
 		return ! $skip_required;
 	}
 
+	/**
+	 * @param array $errors
+	 * @param array $args
+	 *
+	 * @return void
+	 */
 	private function validate_cc_number( &$errors, $args ) {
 		$values = $args['value'];
-		if ( ! empty( $values['cc'] ) ) {
-			// if a CVC is present, then the user must have added it
-			$should_validate = ! empty( $values['cvc'] ) || isset( $errors[ 'field' . $args['id'] . '-cvc' ] );
-			if ( $should_validate ) {
-				$is_valid_cc = $this->is_valid_cc_number( $values['cc'] );
-				if ( ! $is_valid_cc ) {
-					$errors[ 'field' . $args['id'] . '-cc' ] = __( 'That credit card number is invalid', 'formidable-pro' );
-				}
-			}
+
+		if ( empty( $values['cc'] ) ) {
+			return;
+		}
+
+		// If a CVC is present, then the user must have added it
+		$should_validate = ! empty( $values['cvc'] ) || isset( $errors[ 'field' . $args['id'] . '-cvc' ] );
+
+		if ( ! $should_validate ) {
+			return;
+		}
+
+		$is_valid_cc = $this->is_valid_cc_number( $values['cc'] );
+
+		if ( ! $is_valid_cc ) {
+			$errors[ 'field' . $args['id'] . '-cc' ] = __( 'That credit card number is invalid', 'formidable-pro' );
 		}
 	}
 
@@ -296,6 +330,7 @@ class FrmProFieldCreditCard extends FrmFieldType {
 	}
 
 	/**
+	 * @param mixed $card_number
 	 * @param false|int $is_valid
 	 *
 	 * @psalm-param 0|1|false $is_valid
@@ -311,43 +346,67 @@ class FrmProFieldCreditCard extends FrmFieldType {
 		$map         = array( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 );
 		$sum         = 0;
 		$last        = strlen( $card_number ) - 1;
+
 		for ( $i = 0; $i <= $last; $i++ ) {
 			$sum += $map[ $card_number[ $last - $i ] + ( $i & 1 ) * 10 ];
 		}
 
-		if ( $sum % 10 != 0 ) {
+		if ( $sum % 10 !== 0 ) {
 			$is_valid = false;
 		}
 
-		if ( ! $is_valid ) {
-			$allow    = array( '4242424242424242' );
-			$is_valid = in_array( $card_number, $allow );
+		if ( $is_valid ) {
+			return;
 		}
+
+		$allow    = array( '4242424242424242' );
+		$is_valid = in_array( $card_number, $allow );
 	}
 
 	/**
 	 * Make sure the date is in the future
+	 *
+	 * @param array $errors
+	 * @param array $args
+	 *
+	 * @return void
 	 */
 	private function validate_cc_expiration( &$errors, $args ) {
 		$values = $args['value'];
-		if ( ! empty( $values['month'] ) && ! empty( $values['year'] ) ) {
-			$is_past_date = ( $values['year'] <= gmdate( 'Y' ) && $values['month'] < gmdate( 'm' ) );
-			if ( $is_past_date ) {
-				$errors[ 'field' . $args['id'] . '-month' ] = __( 'That credit card is expired', 'formidable-pro' );
-				$errors[ 'field' . $args['id'] . '-year' ]  = '';
-			}
+
+		if ( empty( $values['month'] ) || empty( $values['year'] ) ) {
+			return;
 		}
+
+		$is_past_date = $values['year'] <= gmdate( 'Y' ) && $values['month'] < gmdate( 'm' );
+
+		if ( ! $is_past_date ) {
+			return;
+		}
+
+		$errors[ 'field' . $args['id'] . '-month' ] = __( 'That credit card is expired', 'formidable-pro' );
+		$errors[ 'field' . $args['id'] . '-year' ]  = '';
 	}
 
+	/**
+	 * @param array $errors
+	 * @param array $args
+	 *
+	 * @return void
+	 */
 	private function validate_cvc( &$errors, $args ) {
 		$values = $args['value'];
-		if ( ! empty( $values['cvc'] ) ) {
-			$character_count   = strlen( $values['cvc'] );
-			$is_correct_length = ( $character_count == 3 || $character_count == 4 );
-			$is_valid          = ( is_numeric( $values['cvc'] ) && $is_correct_length );
-			if ( ! $is_valid ) {
-				$errors[ 'field' . $args['id'] . '-cvc' ] = __( 'Please enter a valid CVC', 'formidable-pro' );
-			}
+
+		if ( empty( $values['cvc'] ) ) {
+			return;
+		}
+
+		$character_count   = strlen( $values['cvc'] );
+		$is_correct_length = $character_count === 3 || $character_count === 4;
+		$is_valid          = is_numeric( $values['cvc'] ) && $is_correct_length;
+
+		if ( ! $is_valid ) {
+			$errors[ 'field' . $args['id'] . '-cvc' ] = __( 'Please enter a valid CVC', 'formidable-pro' );
 		}
 	}
 
@@ -355,31 +414,32 @@ class FrmProFieldCreditCard extends FrmFieldType {
 	 * @param array|string $value This may be a serialized value set before inserting into database.
 	 */
 	public function set_value_before_save( $value ) {
-		if ( empty( $value ) ) {
+		if ( ! $value ) {
 			return $value;
 		}
 
 		$serialized = false;
+
 		if ( ! is_array( $value ) ) {
-			FrmProAppHelper::unserialize_or_decode( $value );
+			FrmAppHelper::unserialize_or_decode( $value );
 			$serialized = true;
 		}
 
-		if ( is_array( $value ) ) {
-			self::delete_cvc( $value );
-			self::remove_extra_cc_digits( $value );
-			if ( $serialized ) {
-				$value = serialize( $value );
-			}
+		if ( ! is_array( $value ) ) {
+			return $value;
 		}
 
-		return $value;
+		self::delete_cvc( $value );
+		self::remove_extra_cc_digits( $value );
+
+		return $serialized ? serialize( $value ) : $value;
 	}
 
 	/**
 	 * The CVC shouldn't be stored
 	 *
 	 * @param array $value
+	 *
 	 * @return void
 	 */
 	private function delete_cvc( &$value ) {
@@ -388,6 +448,8 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * If the whole cc number isn't required, get rid of it
+	 *
+	 * @param mixed $value
 	 */
 	private function remove_extra_cc_digits( &$value ) {
 		$save_digits = FrmField::get_option( $this->field, 'save_cc' );
@@ -402,6 +464,8 @@ class FrmProFieldCreditCard extends FrmFieldType {
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );

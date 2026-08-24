@@ -14,14 +14,14 @@ class FrmAcfSyncController {
 	/**
 	 * Keep track of child entry IDs.
 	 *
-	 * @var array
+	 * @var array An array with keys are parent entry IDs, values are arrays of child entry IDs.
 	 */
 	private static $child_entry_ids = array();
 
 	/**
 	 * Keep track of new child entry IDs.
 	 *
-	 * @var array
+	 * @var array An array with keys are parent entry IDs, values are arrays of child entry IDs.
 	 */
 	private static $new_child_entry_ids = array();
 
@@ -207,10 +207,13 @@ class FrmAcfSyncController {
 		}
 
 		// Use the child repeater entries processed above to update the meta.
-		$meta_value = isset( self::$new_child_entry_ids[ $entry->id ] ) ? self::$new_child_entry_ids[ $entry->id ] : array();
+		$meta_value = self::$new_child_entry_ids[ $entry->id ] ?? array();
+		if ( $meta_value ) {
+			$meta_value = array_unique( array_filter( $meta_value ) );
+		}
 		update_post_meta( $post_id, $name, $meta_value );
 
-		// Maybe delete child entries which are deleted in ACF.
+		// Maybe delete child entries that are deleted in ACF.
 		self::maybe_delete_child_entries( $entry->id );
 
 		return true;
@@ -222,8 +225,10 @@ class FrmAcfSyncController {
 	 * @param int $parent_entry_id Parent entry ID.
 	 */
 	private static function maybe_delete_child_entries( $parent_entry_id ) {
-		if ( ! empty( self::$child_entry_ids[ $parent_entry_id ] ) ) {
-			foreach ( self::$child_entry_ids[ $parent_entry_id ] as $child_entry_id ) {
+		$new_child_entry_ids = self::$new_child_entry_ids[ $parent_entry_id ] ?? array();
+		foreach ( self::$child_entry_ids[ $parent_entry_id ] as $child_entry_id ) {
+			// Compare with the processed child entry IDs, unprocessed entries will be deleted.
+			if ( ! in_array( $child_entry_id, $new_child_entry_ids, true ) ) {
 				FrmEntry::destroy( $child_entry_id );
 			}
 		}
@@ -231,6 +236,8 @@ class FrmAcfSyncController {
 
 	/**
 	 * By-pass the duplicate check when creating an entry.
+	 *
+	 * @since 1.0.3
 	 *
 	 * @return int Return an empty value to by-pass.
 	 */
@@ -280,35 +287,37 @@ class FrmAcfSyncController {
 		/*
 		 * Update frm entry.
 		 */
-		$frm_repeater_id = $args['mapping']['field_id'];
-		$entry           = $args['entry'];
-		$item_index      = $args['repeater_data']['index'];
+		$entry      = $args['entry'];
+		$item_index = $args['repeater_data']['index'];
 
-		// Get the list of the old child entry IDs, and store in a static variable.
+		// Get the list of the old child entry IDs, and store them in a static variable.
 		if ( ! isset( self::$child_entry_ids[ $entry->id ] ) ) {
 			// The old child entry IDs are stored in the meta.
 			self::$child_entry_ids[ $entry->id ] = get_post_meta( $entry->post_id, $args['mapping']['meta_name'], true );
 		}
 
-		// Check if the corresponding entry exists, update its meta, otherwise, create a new entry.
-		if ( isset( self::$child_entry_ids[ $entry->id ][ $item_index ] ) ) {
-			FrmAcfSyncHelper::add_or_update_frm_meta(
-				self::$child_entry_ids[ $entry->id ][ $item_index ],
-				$frm_child_field->id,
-				$frm_value
-			);
-
-			// Track the new child entry ID.
-			self::$new_child_entry_ids[ $entry->id ][] = self::$child_entry_ids[ $entry->id ][ $item_index ];
-		} else {
-			$child_entry_id = self::create_repeater_child_entry( $entry, $frm_child_field, $frm_value );
-			if ( $child_entry_id ) {
-				// Track the new child entry ID.
-				self::$new_child_entry_ids[ $entry->id ][] = $child_entry_id;
-			}
+		if ( ! isset( self::$new_child_entry_ids[ $entry->id ] ) ) {
+			self::$new_child_entry_ids[ $entry->id ] = array();
 		}
 
-		unset( self::$child_entry_ids[ $entry->id ][ $item_index ] );
+		// Check if the corresponding entry exists, update its meta, otherwise, create a new entry.
+		$child_entry_id = 0;
+		if ( isset( self::$new_child_entry_ids[ $entry->id ][ $item_index ] ) ) {
+			// If this child entry was processed before, use it.
+			$child_entry_id = self::$new_child_entry_ids[ $entry->id ][ $item_index ];
+		} elseif ( isset( self::$child_entry_ids[ $entry->id ][ $item_index ] ) ) {
+			// If this child entry hasn't been processed before, use the old child entry ID.
+			$child_entry_id = self::$child_entry_ids[ $entry->id ][ $item_index ];
+		}
+
+		if ( $child_entry_id ) {
+			FrmAcfSyncHelper::add_or_update_frm_meta( $child_entry_id, $frm_child_field->id, $frm_value );
+		} else {
+			$child_entry_id = self::create_repeater_child_entry( $entry, $frm_child_field, $frm_value );
+		}
+
+		// Track the new child entry ID, even with the empty ones, to keep $item_index consistent. We need to clean this before using it.
+		self::$new_child_entry_ids[ $entry->id ][ $item_index ] = $child_entry_id;
 
 		return true;
 	}

@@ -21,7 +21,7 @@ class FrmAcfHooksController {
 	 * @return array
 	 */
 	public static function add_hooks_controller( $controllers ) {
-		if ( FrmAcfAppHelper::get_incompatible_messages() ) {
+		if ( ! FrmAcfAppHelper::is_compatible() ) {
 			self::load_incompatible_hooks();
 			return $controllers;
 		}

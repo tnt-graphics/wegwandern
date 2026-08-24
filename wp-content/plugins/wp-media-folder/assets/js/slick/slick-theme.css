@@ -202,3 +202,9 @@
     opacity: .75;
     color: black;
 }
+
+@media screen and (max-width: 768px) { 
+    .slick-dots {
+        display: none !important;
+    }
+}

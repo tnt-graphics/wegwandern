@@ -3,14 +3,14 @@
 
 	let __;
 
-	if ( 'undefined' === typeof wp || 'undefined' === typeof wp.i18n || 'function' !== typeof wp.i18n.__ ) {
+	if ( 'undefined' === typeof wp || wp.i18n === undefined || 'function' !== typeof wp.i18n.__ ) {
 		__ = text => text;
 	} else {
 		__ = wp.i18n.__;
 	}
 
 	const modal = {
-		maybeCreateModal: ( id, { title, content, footer, width } = {} ) => {
+		maybeCreateModal: ( id, { title, content, footer, width, dialogClass } = {} ) => {
 			let modal = document.getElementById( id );
 
 			if ( ! modal ) {
@@ -33,7 +33,7 @@
 				);
 				const postbox = modal.querySelector( '.postbox' );
 
-				postbox.appendChild(
+				postbox.append(
 					div( {
 						className: 'frm_modal_top',
 						children: [
@@ -42,12 +42,12 @@
 						]
 					} )
 				);
-				postbox.appendChild(
+				postbox.append(
 					div( { className: 'frm_modal_content' } )
 				);
 
 				if ( footer ) {
-					postbox.appendChild(
+					postbox.append(
 						div( { className: 'frm_modal_footer' } )
 					);
 				}
@@ -57,7 +57,7 @@
 			}
 
 			if ( ! content && ! footer ) {
-				makeModalIntoADialogAndOpen( modal, { width } );
+				makeModalIntoADialogAndOpen( modal, { width, dialogClass } );
 				return modal;
 			}
 
@@ -72,7 +72,7 @@
 				modalHelper( footer, 'frm_modal_footer' );
 			}
 
-			makeModalIntoADialogAndOpen( modal );
+			makeModalIntoADialogAndOpen( modal, { width, dialogClass } );
 			return modal;
 		},
 		footerButton: args => {
@@ -82,7 +82,7 @@
 			if ( args.buttonType ) {
 				output.classList.add( 'button' );
 
-				if ( ! args.noDismiss && -1 !== [ 'red', 'primary' ].indexOf( args.buttonType ) ) {
+				if ( ! args.noDismiss && [ 'red', 'primary' ].includes( args.buttonType ) ) {
 					// Primary and red buttons close modals by default on click.
 					// To disable this default behaviour you can use the noDismiss: 1 arg.
 					output.classList.add( 'dismiss' );
@@ -109,10 +109,10 @@
 	};
 
 	const ajax = {
-		doJsonFetch: async function( action ) {
-			let targetUrl = ajaxurl + '?action=frm_' + action;
-			if ( -1 === targetUrl.indexOf( 'nonce=' ) ) {
-				targetUrl += '&nonce=' + frmGlobal.nonce;
+		async doJsonFetch( action ) {
+			let targetUrl = `${ ajaxurl }?action=frm_${ action }`;
+			if ( ! targetUrl.includes( 'nonce=' ) ) {
+				targetUrl += `&nonce=${ frmGlobal.nonce }`;
 			}
 			const response = await fetch( targetUrl );
 			const json = await response.json();
@@ -121,7 +121,7 @@
 			}
 			return Promise.resolve( json.data );
 		},
-		doJsonPost: async function( action, formData, { signal } = {} ) {
+		async doJsonPost( action, formData, { signal } = {} ) {
 			formData.append( 'nonce', frmGlobal.nonce );
 			const init = {
 				method: 'POST',
@@ -130,30 +130,28 @@
 			if ( signal ) {
 				init.signal = signal;
 			}
-			const response = await fetch( ajaxurl + '?action=frm_' + action, init );
+			const response = await fetch( `${ ajaxurl }?action=frm_${ action }`, init );
 			const json = await response.json();
 			if ( ! json.success ) {
 				return Promise.reject( json.data || 'JSON result is not successful' );
 			}
-			return Promise.resolve( 'undefined' !== typeof json.data ? json.data : json );
+			return Promise.resolve( json.data !== undefined ? json.data : json );
 		}
 	};
 
 	const multiselect = {
-		init: function() {
+		init() {
 			const $select = jQuery( this );
 			const id = $select.is( '[id]' ) ? $select.attr( 'id' ).replace( '[]', '' ) : false;
 
-			let labelledBy = id ? jQuery( '#for_' + id ) : false;
-			labelledBy = id && labelledBy.length ? 'aria-labelledby="' + labelledBy.attr( 'id' ) + '"' : '';
+			let labelledBy = id ? jQuery( `#for_${ id }` ) : false;
+			labelledBy = id && labelledBy.length ? `aria-labelledby="${ labelledBy.attr( 'id' ) }"` : '';
 
-			// Set empty title attributes so that none of the dropdown options include title attributes.
-			$select.find( 'option' ).attr( 'title', ' ' );
 			$select.multiselect( {
 				templates: {
-					popupContainer: '<div class="multiselect-container frm-dropdown-menu"></div>',
+					popupContainer: '<div class="multiselect-container frm-dropdown-menu dropdown-menu"></div>',
 					option: '<button type="button" class="multiselect-option dropdown-item frm_no_style_button"></button>',
-					button: '<button type="button" class="multiselect dropdown-toggle btn" data-toggle="dropdown" ' + labelledBy + '><span class="multiselect-selected-text"></span> <b class="caret"></b></button>'
+					button: `<button type="button" class="multiselect dropdown-toggle btn" data-bs-toggle="dropdown" ${ labelledBy }><span class="multiselect-selected-text"></span> <b class="caret"></b></button>`
 				},
 				buttonContainer: '<div class="btn-group frm-btn-group dropdown" />',
 				nonSelectedText: __( '— Select —', 'formidable' ),
@@ -161,10 +159,10 @@
 				allSelectedText: '',
 				// This is 3 by default. We want to show more options before it starts showing a count.
 				numberDisplayed: 8,
-				onInitialized: function( _, $container ) {
-					$container.find( '.multiselect.dropdown-toggle' ).removeAttr( 'title' );
+				onInitialized( _, $container ) {
+					$container.find( '.multiselect.dropdown-toggle,.multiselect-option.dropdown-item' ).removeAttr( 'title' );
 				},
-				onDropdownShown: function( event ) {
+				onDropdownShown( event ) {
 					const action = jQuery( event.currentTarget.closest( '.frm_form_action_settings, #frm-show-fields' ) );
 					if ( action.length ) {
 						jQuery( '#wpcontent' ).on( 'click', function() {
@@ -186,12 +184,12 @@
 						}
 					);
 				},
-				onChange: function( $option, checked ) {
+				onChange( $option, checked ) {
 					$select.trigger( 'frm-multiselect-changed', $option, checked );
 
 					const $dropdown = $select.next( '.frm-btn-group.dropdown' );
 					const optionValue = $option.val();
-					const $dropdownItem = $dropdown.find( 'input[value="' + optionValue + '"]' ).closest( 'button.dropdown-item' );
+					const $dropdownItem = $dropdown.find( `input[value="${ optionValue }"]` ).closest( 'button.dropdown-item' );
 					if ( $dropdownItem.length ) {
 						$dropdownItem.attr( 'aria-checked', checked ? 'true' : 'false' );
 
@@ -205,51 +203,15 @@
 	};
 
 	const bootstrap = {
-		setupBootstrapDropdowns( callback ) {
-			if ( ! window.bootstrap || ! window.bootstrap.Dropdown ) {
-				return;
-			}
-
-			window.bootstrap.Dropdown._getParentFromElement = getParentFromElement;
-			window.bootstrap.Dropdown.prototype._getParentFromElement = getParentFromElement;
-
-			function getParentFromElement( element ) {
-				let parent;
-				const selector = window.bootstrap.Util.getSelectorFromElement( element );
-
-				if ( selector ) {
-					parent = document.querySelector( selector );
-				}
-
-				const result = parent || element.parentNode;
-				const frmDropdownMenu = result.querySelector( '.frm-dropdown-menu' );
-
-				if ( ! frmDropdownMenu ) {
-					// Not a formidable dropdown, treat like Bootstrap does normally.
-					return result;
-				}
-
-				// Temporarily add dropdown-menu class so bootstrap can initialize.
-				frmDropdownMenu.classList.add( 'dropdown-menu' );
-				setTimeout(
-					function() {
-						frmDropdownMenu.classList.remove( 'dropdown-menu' );
-					},
-					0
-				);
-
-				if ( 'function' === typeof callback ) {
-					callback( frmDropdownMenu );
-				}
-
-				return result;
-			}
+		setupBootstrapDropdowns() {
+			// This function is no longer necessary.
+			// It's call in Pro though, so keep it to avoid any errors for now.
 		},
 		multiselect
 	};
 
 	const autocomplete = {
-		initSelectionAutocomplete: function( container ) {
+		initSelectionAutocomplete( container ) {
 			if ( jQuery.fn.autocomplete ) {
 				autocomplete.initAutocomplete( 'page', container );
 				autocomplete.initAutocomplete( 'user', container );
@@ -264,9 +226,9 @@
 		 * @param {string}        type      Type of data. Accepts `page` or `user`.
 		 * @param {string|Object} container Container class or element. Default is null.
 		 */
-		initAutocomplete: function( type, container ) {
-			const basedUrlParams = '?action=frm_' + type + '_search&nonce=' + frmGlobal.nonce;
-			const elements = ! container ? jQuery( '.frm-' + type + '-search' ) : jQuery( container ).find( '.frm-' + type + '-search' );
+		initAutocomplete( type, container ) {
+			const basedUrlParams = `?action=frm_${ type }_search&nonce=${ frmGlobal.nonce }`;
+			const elements = ! container ? jQuery( `.frm-${ type }-search` ) : jQuery( container ).find( `.frm-${ type }-search` );
 
 			elements.each( initAutocompleteForElement );
 
@@ -276,7 +238,7 @@
 
 				// Check if a custom post type is specific.
 				if ( element.attr( 'data-post-type' ) ) {
-					urlParams += '&post_type=' + element.attr( 'data-post-type' );
+					urlParams += `&post_type=${ element.attr( 'data-post-type' ) }`;
 				}
 
 				let source = ajaxurl + urlParams;
@@ -291,7 +253,7 @@
 				element.autocomplete( {
 					delay: 100,
 					minLength: 0,
-					source: source,
+					source,
 					change: autocomplete.selectBlank,
 					select: autocomplete.completeSelectFromResults,
 					focus: () => false,
@@ -300,7 +262,7 @@
 						at: 'left bottom',
 						collision: 'flip'
 					},
-					response: function( event, ui ) {
+					response( event, ui ) {
 						if ( ! ui.content.length ) {
 							const noResult = {
 								value: '',
@@ -309,7 +271,7 @@
 							ui.content.push( noResult );
 						}
 					},
-					create: function() {
+					create() {
 						let $container = jQuery( this ).parent();
 
 						if ( $container.length === 0 ) {
@@ -334,7 +296,7 @@
 			}
 		},
 
-		selectBlank: function( e, ui ) {
+		selectBlank( e, ui ) {
 			if ( ui.item === null ) {
 				this.nextElementSibling.value = '';
 
@@ -347,7 +309,7 @@
 			}
 		},
 
-		completeSelectFromResults: function( e, ui ) {
+		completeSelectFromResults( e, ui ) {
 			e.preventDefault();
 			this.value = ui.item.value === '' ? '' : ui.item.label;
 			this.nextElementSibling.value = ui.item.value;
@@ -427,7 +389,7 @@
 						item.setAttribute( 'frm-search-text', itemText );
 					}
 
-					const hide = notEmptySearchText && -1 === itemText.indexOf( searchText );
+					const hide = notEmptySearchText && ! itemText.includes( searchText );
 					item.classList.toggle( 'frm_hidden', hide );
 
 					const isSearchResult = ! hide && notEmptySearchText;
@@ -470,7 +432,7 @@
 		 * @param {boolean|Object} options  Options to be added to `addEventListener()` method. Default is `false`.
 		 */
 		documentOn: ( event, selector, handler, options ) => {
-			if ( 'undefined' === typeof options ) {
+			if ( options === undefined ) {
 				options = false;
 			}
 
@@ -479,7 +441,7 @@
 
 				// loop parent nodes from the target to the delegation node.
 				for ( target = e.target; target && target != this; target = target.parentNode ) {
-					if ( target && target.matches && target.matches( selector ) ) {
+					if ( target.matches && target.matches( selector ) ) {
 						handler.call( target, e );
 						break;
 					}
@@ -528,17 +490,17 @@
 			setUpTinyMceHtmlButtonListener();
 
 			function initQuickTagsButtons() {
-				if ( 'function' !== typeof window.quicktags || typeof window.QTags.instances[ editor.id ] !== 'undefined' ) {
+				if ( 'function' !== typeof window.quicktags || window.QTags.instances[ editor.id ] !== undefined ) {
 					return;
 				}
 
-				const id = editor.id;
+				const { id } = editor;
 				window.quicktags( {
-					name: 'qt_' + id,
-					id: id,
+					name: `qt_${ id }`,
+					id,
 					canvas: editor,
 					settings: { id },
-					toolbar: document.getElementById( 'qt_' + id + '_toolbar' ),
+					toolbar: document.getElementById( `qt_${ id }_toolbar` ),
 					theButtons: {}
 				} );
 			}
@@ -551,7 +513,7 @@
 					{},
 					orgSettings,
 					{
-						selector: '#' + editor.id,
+						selector: `#${ editor.id }`,
 						body_class: orgSettings.body_class.replace( key, editor.id )
 					}
 				);
@@ -591,14 +553,14 @@
 			}
 
 			function isTinyMceActive() {
-				const id = editor.id;
-				const wrapper = document.getElementById( 'wp-' + id + '-wrap' );
-				return null !== wrapper && wrapper.classList.contains( 'tmce-active' );
+				const { id } = editor;
+				const wrapper = document.getElementById( `wp-${ id }-wrap` );
+				return wrapper && wrapper.classList.contains( 'tmce-active' );
 			}
 
 			function setUpTinyMceVisualButtonListener() {
 				jQuery( document ).on(
-					'click', '#' + editor.id + '-html',
+					'click', `#${ editor.id }-html`,
 					function() {
 						editor.style.visibility = 'visible';
 						initQuickTagsButtons();
@@ -607,7 +569,7 @@
 			}
 
 			function setUpTinyMceHtmlButtonListener() {
-				jQuery( '#' + editor.id + '-tmce' ).on( 'click', handleTinyMceHtmlButtonClick );
+				jQuery( `#${ editor.id }-tmce` ).on( 'click', handleTinyMceHtmlButtonClick );
 			}
 
 			function handleTinyMceHtmlButtonClick() {
@@ -617,7 +579,7 @@
 					initRichText();
 				}
 
-				const wrap = document.getElementById( 'wp-' + editor.id + '-wrap' );
+				const wrap = document.getElementById( `wp-${ editor.id }-wrap` );
 				wrap.classList.add( 'tmce-active' );
 				wrap.classList.remove( 'html-active' );
 			}
@@ -626,13 +588,13 @@
 
 	function getModalHelper( modal, appendTo ) {
 		return function( child, uniqueClassName ) {
-			let element = modal.querySelector( '.' + uniqueClassName );
+			let element = modal.querySelector( `.${ uniqueClassName }` );
 			if ( null === element ) {
 				element = div( {
-					child: child,
+					child,
 					className: uniqueClassName
 				} );
-				appendTo.appendChild( element );
+				appendTo.append( element );
 			} else {
 				redraw( element, child );
 			}
@@ -643,25 +605,25 @@
 		const modal = div( { id, className: 'frm-modal' } );
 		const postbox = div( { className: 'postbox' } );
 		const metaboxHolder = div( { className: 'metabox-holder', child: postbox } );
-		modal.appendChild( metaboxHolder );
-		document.body.appendChild( modal );
+		modal.append( metaboxHolder );
+		document.body.append( modal );
 		return modal;
 	}
 
-	function makeModalIntoADialogAndOpen( modal, { width } = {} ) {
+	function makeModalIntoADialogAndOpen( modal, { width, dialogClass = '' } = {} ) {
 		const bodyWithModalClassName = 'frm-body-with-open-modal';
 
 		const $modal = jQuery( modal );
 		if ( ! $modal.hasClass( 'frm-dialog' ) ) {
 			$modal.dialog( {
-				dialogClass: 'frm-dialog',
+				dialogClass: `frm-dialog ${ dialogClass }`,
 				modal: true,
 				autoOpen: false,
 				closeOnEscape: true,
 				width: width || '550px',
 				resizable: false,
 				draggable: false,
-				open: function() {
+				open() {
 					jQuery( '.ui-dialog-titlebar' ).addClass( 'frm_hidden' ).removeClass( 'ui-helper-clearfix' );
 					jQuery( '#wpwrap' ).addClass( 'frm_overlay' );
 					jQuery( '.frm-dialog' ).removeClass( 'ui-widget ui-widget-content ui-corner-all' );
@@ -684,7 +646,7 @@
 						);
 					}
 				},
-				close: function() {
+				close() {
 					document.body.classList.remove( bodyWithModalClassName );
 					jQuery( '#wpwrap' ).removeClass( 'frm_overlay' );
 					jQuery( '.spinner' ).css( 'visibility', 'hidden' );
@@ -782,19 +744,19 @@
 		if ( children ) {
 			children.forEach( child => {
 				if ( 'string' === typeof child ) {
-					output.appendChild( document.createTextNode( child ) );
+					output.append( document.createTextNode( child ) );
 				} else {
-					output.appendChild( child );
+					output.append( child );
 				}
 			} );
 		} else if ( child ) {
-			output.appendChild( child );
+			output.append( child );
 		} else if ( text ) {
 			output.textContent = text;
 		}
 		if ( data ) {
 			Object.keys( data ).forEach( function( dataKey ) {
-				output.setAttribute( 'data-' + dataKey, data[ dataKey ] );
+				output.setAttribute( `data-${ dataKey }`, data[ dataKey ] );
 			} );
 		}
 		return output;
@@ -810,7 +772,7 @@
 		if ( href ) {
 			const use = document.createElementNS( namespace, 'use' );
 			use.setAttribute( 'href', href );
-			output.appendChild( use );
+			output.append( use );
 			output.classList.add( 'frmsvg' );
 		}
 		return output;
@@ -832,7 +794,7 @@
 				child: 'string' === typeof content ? document.createTextNode( content ) : content
 			} )
 		} );
-		container.appendChild( notice );
+		container.append( notice );
 
 		setTimeout(
 			() => jQuery( notice ).fadeOut( () => notice.remove() ),
@@ -848,7 +810,7 @@
 
 	function redraw( element, child ) {
 		element.innerHTML = '';
-		element.appendChild( child );
+		element.append( child );
 	}
 
 	const allowedHtml = {
@@ -864,7 +826,7 @@
 	};
 
 	function cleanNode( node ) {
-		if ( 'undefined' === typeof node.tagName ) {
+		if ( node.tagName === undefined ) {
 			if ( '#text' === node.nodeName ) {
 				return document.createTextNode( node.textContent );
 			}
@@ -879,15 +841,12 @@
 			};
 			const use = node.querySelector( 'use' );
 			if ( use ) {
-				svgArgs.href = use.getAttribute( 'xlink:href' );
-				if ( ! svgArgs.href ) {
-					svgArgs.href = use.getAttribute( 'href' );
-				}
+				svgArgs.href = use.getAttribute( 'href' ) || use.getAttribute( 'xlink:href' );
 			}
 			return svg( svgArgs );
 		}
 
-		if ( 'undefined' === typeof allowedHtml[ tagType ] ) {
+		if ( allowedHtml[ tagType ] === undefined ) {
 			// Tag type is not allowed.
 			return document.createTextNode( '' );
 		}
@@ -902,7 +861,7 @@
 			}
 		);
 
-		node.childNodes.forEach( child => newNode.appendChild( cleanNode( child ) ) );
+		node.childNodes.forEach( child => newNode.append( cleanNode( child ) ) );
 		return newNode;
 	}
 

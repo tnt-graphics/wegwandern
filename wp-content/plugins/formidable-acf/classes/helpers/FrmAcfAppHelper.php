@@ -19,7 +19,7 @@ class FrmAcfAppHelper {
 	 *
 	 * @var string
 	 */
-	public static $plug_version = '1.0.3';
+	public static $plug_version = '1.0.4';
 
 	/**
 	 * Gets plugin folder name.
@@ -167,6 +167,30 @@ class FrmAcfAppHelper {
 		}
 
 		return in_array( $field['type'], array( 'radio', 'select', 'file' ) ) && intval( FrmField::get_option( $field, 'multiple' ) );
+	}
+
+	/**
+	 * Checks if it is safe to run this plugin.
+	 *
+	 * @since 1.0.4
+	 *
+	 * @return bool
+	 */
+	public static function is_compatible() {
+		$version = '5.5.4';
+		if ( ! class_exists( 'FrmAppHelper', false ) || version_compare( FrmAppHelper::$plug_version, $version, '<' ) ) {
+			return false;
+		}
+
+		if ( ! class_exists( 'FrmProDb', false ) || version_compare( FrmProDb::$plug_version, $version, '<' ) ) {
+			return false;
+		}
+
+		if ( ! function_exists( 'acf_decode_post_id' ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

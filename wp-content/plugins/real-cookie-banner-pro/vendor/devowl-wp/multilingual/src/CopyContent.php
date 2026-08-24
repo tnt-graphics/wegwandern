@@ -99,15 +99,8 @@ class CopyContent
         foreach ($skip as $skipLocale) {
             \add_filter('DevOwl/Multilingual/IterateLanguageContexts/Skip/' . $skipLocale, '__return_true');
         }
-        $compLanguage->switchToLanguage($sourceLanguage, function () use($compLanguage, $callback) {
-            // Snapshot our content's language and tear down the text domain so the newly
-            // created terms and posts gets the translations correctly
-            $compLanguage->snapshotCurrentTranslations();
-            $compLanguage->lockCurrentTranslations(\true);
-            $compLanguage->teardownTemporaryTextDomain();
+        $compLanguage->withSourceTranslationCatalog($sourceLanguage, function () use($callback) {
             \call_user_func($callback);
-            $compLanguage->lockCurrentTranslations(\false);
-            $compLanguage->unsetCurrentTranslations();
         });
         foreach ($skip as $skipLocale) {
             \remove_filter('DevOwl/Multilingual/IterateLanguageContexts/Skip/' . $skipLocale, '__return_true');

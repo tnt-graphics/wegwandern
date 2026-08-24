@@ -1,6 +1,6 @@
 {
     "name": "@devowl-wp/cache-invalidate",
-    "version": "1.18.46",
+    "version": "1.18.55",
     "private": true,
     "description": "Provide a single entry point to trigger cache invalidation of known caching plugins",
     "homepage": "https://devowl.io",
@@ -150,7 +150,6 @@
     },
     "swc": {
         "jsc": {
-            "loose": true,
             "parser": {
                 "syntax": "typescript",
                 "tsx": true,

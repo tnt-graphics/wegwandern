@@ -41,7 +41,7 @@ class BannerCustomize extends AbstractCustomizePanel
      */
     public function __construct()
     {
-        parent::__construct(self::PANEL_MAIN, 'banner');
+        parent::__construct(self::PANEL_MAIN, 'banner', [RCB_OPT_PREFIX . '-']);
     }
     // Documented in AbstractCustomizePanel
     public function enableOptionsAutoload()
@@ -168,7 +168,7 @@ class BannerCustomize extends AbstractCustomizePanel
     // Documented in AbstractCustomizePanel
     protected function getPanelArgs()
     {
-        return ['title' => \__('Cookie Banner', 'real-cookie-banner'), 'description' => \__('Design your cookie banner.', 'real-cookie-banner')];
+        return ['title' => \__('Cookie Banner', 'real-cookie-banner'), 'description' => \__('Design your cookie banner.', 'real-cookie-banner'), 'capability' => self::NEEDED_CAPABILITY];
     }
     // Documented in AbstractCustomizePanel
     public function resolveSections()
@@ -181,9 +181,14 @@ class BannerCustomize extends AbstractCustomizePanel
         return ['capability' => self::NEEDED_CAPABILITY];
     }
     // Documented in AbstractCustomizePanel
+    protected function controlDefaults()
+    {
+        return ['capability' => self::NEEDED_CAPABILITY];
+    }
+    // Documented in AbstractCustomizePanel
     protected function settingDefaults()
     {
-        return ['type' => 'option', 'transport' => 'postMessage'];
+        return ['type' => 'option', 'transport' => 'postMessage', 'capability' => self::NEEDED_CAPABILITY];
     }
     /**
      * Check if powered-by link is disabled through our license server.

@@ -175,7 +175,7 @@ trait Wp {
 			'include' => [] // Post types to include.
 		], $args );
 
-		$postTypes   = [];
+		$postTypes       = [];
 		$postTypeObjects = get_post_types( [], 'objects' );
 		foreach ( $postTypeObjects as $postTypeObject ) {
 			if ( ! is_post_type_viewable( $postTypeObject ) ) {
@@ -612,7 +612,7 @@ trait Wp {
 			return aioseo()->standalone->pageBuilderIntegrations[ $pageBuilder ]->getEditUrl( $postId );
 		}
 
-		return get_edit_post_link( $postId );
+		return get_edit_post_link( $postId, 'raw' );
 	}
 
 	/**
@@ -650,27 +650,7 @@ trait Wp {
 			return $capabilities[ $postType ];
 		}
 
-		$capabilityType = $postTypeObject->capability_type;
-		if ( ! is_array( $capabilityType ) ) {
-			$capabilityType = [
-				$capabilityType,
-				$capabilityType . 's'
-			];
-		}
-
-		// Singular base for meta capabilities, plural base for primitive capabilities.
-		list( $singularBase, $pluralBase ) = $capabilityType;
-
-		$capabilities[ $postType ] = [
-			'edit_post'          => 'edit_' . $singularBase,
-			'read_post'          => 'read_' . $singularBase,
-			'delete_post'        => 'delete_' . $singularBase,
-			'edit_posts'         => 'edit_' . $pluralBase,
-			'edit_others_posts'  => 'edit_others_' . $pluralBase,
-			'delete_posts'       => 'delete_' . $pluralBase,
-			'publish_posts'      => 'publish_' . $pluralBase,
-			'read_private_posts' => 'read_private_' . $pluralBase,
-		];
+		$capabilities[ $postType ] = (array) $postTypeObject->cap;
 
 		return $capabilities[ $postType ];
 	}
@@ -751,15 +731,15 @@ trait Wp {
 		if ( version_compare( PHP_VERSION, '7.1', '>=' ) ) {
 			$originalPrecision          = ini_get( 'precision' );
 			$originalSerializePrecision = ini_get( 'serialize_precision' );
-			ini_set( 'precision', 17 );
-			ini_set( 'serialize_precision', -1 );
+			ini_set( 'precision', 17 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+			ini_set( 'serialize_precision', -1 ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 		}
 
 		$json = wp_json_encode( $data, $flags );
 
 		if ( version_compare( PHP_VERSION, '7.1', '>=' ) ) {
-			ini_set( 'precision', $originalPrecision );
-			ini_set( 'serialize_precision', $originalSerializePrecision );
+			ini_set( 'precision', $originalPrecision ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
+			ini_set( 'serialize_precision', $originalSerializePrecision ); // phpcs:ignore Squiz.PHP.DiscouragedFunctions.Discouraged
 		}
 
 		return $json;
@@ -783,12 +763,16 @@ trait Wp {
 	/**
 	 * Returns the post title or a placeholder if there isn't one.
 	 *
-	 * @since 4.3.0
+	 * @since   4.3.0
+	 * @version 4.9.8 Casts $postId to int so a null/empty ID (e.g. a link row with no linked post) doesn't
+	 *                 trigger the "null array offset" deprecation on the static cache.
 	 *
 	 * @param  int    $postId The post ID.
 	 * @return string         The post title.
 	 */
 	public function getPostTitle( $postId ) {
+		$postId = (int) $postId;
+
 		static $titles = [];
 		if ( isset( $titles[ $postId ] ) ) {
 			return $titles[ $postId ];
@@ -993,7 +977,7 @@ trait Wp {
 				return null;
 			}
 
-			$postTypeLabels[ $postType ] = get_post_type_labels( $postTypeObject );
+			$postTypeLabels[ $postType ] = $postTypeObject->labels;
 		}
 
 		return $postTypeLabels[ $postType ];

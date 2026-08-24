@@ -11,6 +11,7 @@ class FrmProFieldTag extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'tag';
@@ -28,6 +29,8 @@ class FrmProFieldTag extends FrmFieldType {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -52,10 +55,11 @@ class FrmProFieldTag extends FrmFieldType {
 	 * Create new tags
 	 *
 	 * @since 3.0
+	 *
 	 * @param array|string $value (the posted value)
 	 * @param array $atts
 	 *
-	 * @return array|string $value
+	 * @return array|string Value.
 	 */
 	public function get_value_to_save( $value, $atts ) {
 		$this->create_new_tags( $value, $atts );
@@ -65,11 +69,12 @@ class FrmProFieldTag extends FrmFieldType {
 	/**
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return void
 	 */
 	private function create_new_tags( $value, $atts ) {
 		$tax_type = FrmField::get_option( $this->field, 'taxonomy' );
-		$tax_type = empty( $tax_type ) ? 'frm_tag' : $tax_type;
+		$tax_type = $tax_type ? $tax_type : 'frm_tag';
 
 		$tags  = explode( ',', wp_unslash( $value ) );
 		$terms = array();
@@ -84,10 +89,9 @@ class FrmProFieldTag extends FrmFieldType {
 
 		foreach ( $tags as $tag ) {
 			$slug = sanitize_title( $tag );
-			if ( ! isset( $_POST['frm_wp_post'] ) ) {
-				if ( ! term_exists( $slug, $tax_type ) ) {
-					wp_insert_term( trim( $tag ), $tax_type, array( 'slug' => $slug ) );
-				}
+
+			if ( ! isset( $_POST['frm_wp_post'] ) && ! term_exists( $slug, $tax_type ) ) {
+				wp_insert_term( trim( $tag ), $tax_type, array( 'slug' => $slug ) );
 			}
 
 			$terms[] = $slug;
@@ -98,6 +102,8 @@ class FrmProFieldTag extends FrmFieldType {
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );

@@ -20,10 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<select name="field_options[address_type_<?php echo esc_attr( $field['id'] ); ?>]" id="address_type_<?php echo esc_attr( $field['id'] ); ?>">
 		<option value="international" <?php selected( $field['address_type'], 'international' ); ?>>
-			<?php esc_html_e( 'International', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'International', 'formidable' ); ?>
 		</option>
 		<option value="us" <?php selected( $field['address_type'], 'us' ); ?>>
-			<?php esc_html_e( 'United States', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'United States', 'formidable' ); ?>
 		</option>
 		<option value="europe" <?php selected( $field['address_type'], 'europe' ); ?>>
 			<?php esc_html_e( 'Europe', 'formidable-pro' ); ?>

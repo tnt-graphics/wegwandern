@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm6 frm_form_field">
 		<label>
 			<?php esc_html_e( 'Post Type', 'formidable-pro' ); ?>
-			<?php FrmProAppHelper::tooltip_icon( __( 'To setup a new custom post type, install and setup a plugin like \'Custom Post Type UI\', then return to this page to select your new custom post type.', 'formidable-pro' ) ); ?>
+			<?php FrmAppHelper::tooltip_icon( __( 'To setup a new custom post type, install and setup a plugin like \'Custom Post Type UI\', then return to this page to select your new custom post type.', 'formidable-pro' ) ); ?>
 		</label>
 		<select class="frm_post_type" name="<?php echo esc_attr( $this->get_field_name( 'post_type' ) ); ?>">
 			<?php
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					continue;
 				}
 				$expected_post_key = sanitize_title_with_dashes( $post_type->label );
-				$hide_key          = ( $post_type->_builtin || $expected_post_key == $post_key || $expected_post_key == $post_key . 's' );
+				$hide_key          = $post_type->_builtin || $expected_post_key == $post_key || $expected_post_key == $post_key . 's';
 				?>
 				<option value="<?php echo esc_attr( $post_key ); ?>" <?php selected( $form_action->post_content['post_type'], $post_key ); ?>>
 					<?php echo esc_html( $post_type->label . ( $hide_key ? '' : ' (' . $post_key . ')' ) ); ?>
@@ -55,7 +55,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</select>
 	</p>
 	<p class="frm6 frm_form_field frm_post_content_opt <?php echo esc_attr( $display || empty( $form_action->post_content['post_content'] ) ) ? 'frm_hidden' : ''; ?>">
-		<label><?php esc_html_e( 'Select a Field', 'formidable-pro' ); ?></label>
+		<label><?php esc_html_e( 'Select a Field', 'formidable' ); ?></label>
 		<select name="<?php echo esc_attr( $this->get_field_name( 'post_content' ) ); ?>" class="frm_post_content_opt frm_single_post_field">
 			<option value=""><?php esc_html_e( '&mdash; Select &mdash;' ); ?></option>
 			<?php
@@ -72,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm6 frm_form_field frm_first">
 		<label><?php esc_html_e( 'Excerpt', 'formidable-pro' ); ?></label>
 		<select name="<?php echo esc_attr( $this->get_field_name( 'post_excerpt' ) ); ?>" class="frm_single_post_field">
-			<option value=""><?php esc_html_e( 'None', 'formidable-pro' ); ?></option>
+			<option value=""><?php esc_html_e( 'None', 'formidable' ); ?></option>
 			<?php
 			$post_key = 'post_excerpt';
 			require __DIR__ . '/_post_field_options.php';
@@ -84,7 +84,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<label><?php esc_html_e( 'Post Password', 'formidable-pro' ); ?></label>
 		<select name="<?php echo esc_attr( $this->get_field_name( 'post_password' ) ); ?>" class="frm_single_post_field">
 			<option value="">
-				<?php esc_html_e( 'None', 'formidable-pro' ); ?>
+				<?php esc_html_e( 'None', 'formidable' ); ?>
 			</option>
 			<?php
 			$post_key = 'post_password';
@@ -127,7 +127,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php esc_html_e( 'Create Draft', 'formidable-pro' ); ?>
 			</option>
 			<option value="pending" <?php selected( $form_action->post_content['post_status'], 'pending' ); ?>>
-				<?php esc_html_e( 'Pending', 'formidable-pro' ); ?>
+				<?php esc_html_e( 'Pending', 'formidable' ); ?>
 			</option>
 			<option value="publish" <?php selected( $form_action->post_content['post_status'], 'publish' ); ?>>
 				<?php esc_html_e( 'Automatically Publish', 'formidable-pro' ); ?>
@@ -155,6 +155,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	unset( $post_field, $post_key );
 
 	$field_class = 'frm6 frm_form_field frm_post_parent_field';
+
 	if ( ! is_post_type_hierarchical( $form_action->post_content['post_type'] ) ) {
 		$field_class .= ' frm_hidden';
 	}
@@ -198,20 +199,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</p>
 	<?php unset( $post_field, $post_key, $field_class ); ?>
 
-	<h3><?php esc_html_e( 'Taxonomies/Categories', 'formidable-pro' ); ?></h3>
+	<h3 class="frm-mt-xs"><?php esc_html_e( 'Taxonomies/Categories', 'formidable-pro' ); ?></h3>
 
-	<div id="frm_posttax_rows" class="frm_add_remove frm_posttax_labels <?php echo empty( $form_action->post_content['post_category'] ) ? 'frm_hidden' : ''; ?>" style="padding-bottom:8px;">
-		<p class="frm_grid_container frm_no_margin">
-			<label class="frm4 frm_form_field">
+	<div id="frm_posttax_rows" class="frm_add_remove frm_posttax_labels <?php echo ! empty( $form_action->post_content['post_category'] ) ? '' : 'frm_hidden'; ?>">
+		<p class="frm_grid_container frm-m-0">
+			<label class="frm6 frm_form_field frm-mb-0">
 				<?php esc_html_e( 'Taxonomy Type', 'formidable-pro' ); ?>
 			</label>
-			<label class="frm6 frm_form_field">
+			<label class="frm6 frm_form_field frm-mb-0">
 				<?php esc_html_e( 'Populate Field', 'formidable-pro' ); ?>
 			</label>
 		</p>
 
 		<?php
 		$tax_key = 0;
+
 		foreach ( $form_action->post_content['post_category'] as $field_vars ) {
 			include __DIR__ . '/_post_taxonomy_row.php';
 			++$tax_key;
@@ -220,9 +222,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 		?>
 	</div>
 
-	<p>
-		<a href="javascript:void(0)" class="frm_add_posttax_row button frm-button-secondary <?php echo esc_attr( empty( $form_action->post_content['post_category'] ) ? '' : 'frm_hidden' ); ?>">
-			+ <?php esc_html_e( 'Add' ); ?>
+	<p class="frm-mb-xs">
+		<a href="javascript:void(0)" class="frm_add_posttax_row button frm-button-secondary <?php echo esc_attr( ! empty( $form_action->post_content['post_category'] ) ? 'frm_hidden' : '' ); ?>">
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_plus_icon' ); ?>
+			<span><?php echo esc_html_x( 'Add', 'create post action taxonomies/categories', 'formidable' ); ?></span>
 		</a>
 	</p>
 
@@ -230,13 +233,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php esc_html_e( 'Custom Fields', 'formidable-pro' ); ?>
 	</h3>
 
-	<div class="frm_add_remove frm_name_value<?php echo empty( $form_action->post_content['post_custom_fields'] ) ? ' frm_hidden' : ''; ?>">
-
-		<p class="frm_grid_container frm_no_margin">
-			<label class="frm4 frm_form_field">
-				<?php esc_html_e( 'Name', 'formidable-pro' ); ?>
+	<div class="frm_add_remove frm_name_value<?php echo ! empty( $form_action->post_content['post_custom_fields'] ) ? '' : ' frm_hidden'; ?>">
+		<p class="frm_grid_container frm-m-0">
+			<label class="frm6 frm_form_field frm-mb-0">
+				<?php esc_html_e( 'Name', 'formidable' ); ?>
 			</label>
-			<label class="frm6 frm_form_field">
+			<label class="frm6 frm_form_field frm-mb-0">
 				<?php esc_html_e( 'Value', 'formidable-pro' ); ?>
 			</label>
 		</p>
@@ -244,8 +246,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div id="frm_postmeta_rows">
 			<?php
 			$has_meta_row = false;
+
 			foreach ( $form_action->post_content['post_custom_fields'] as $custom_data ) {
 				$handle_in_acf = function_exists( 'frm_acf_autoloader' ) && ! empty( $custom_data['is_acf'] );
+
 				if ( ! empty( $custom_data['meta_name'] ) && ! $handle_in_acf ) {
 					include __DIR__ . '/_custom_field_row.php';
 					$has_meta_row = true;
@@ -256,9 +260,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 	</div>
 
-	<p>
-		<a href="javascript:void(0)" class="frm_add_postmeta_row button frm-button-secondary <?php echo esc_attr( ! $has_meta_row ? '' : 'frm_hidden' ); ?>">
-			+ <?php esc_html_e( 'Add' ); ?>
+	<p class="frm-mb-md">
+		<a href="javascript:void(0)" class="frm_add_postmeta_row button frm-button-secondary <?php echo esc_attr( $has_meta_row ? 'frm_hidden' : '' ); ?>">
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_plus_icon' ); ?>
+			<span><?php echo esc_html_x( 'Add', 'create post action custom fields', 'formidable' ); ?></span>
 		</a>
 	</p>
 
@@ -271,6 +276,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	 * @since 5.5.1
 	 *
 	 * @param array $args {
+	 *
 	 *     @type object        $form_action    Form action object.
 	 *     @type FrmFormAction $action_control Form action control object.
 	 * }

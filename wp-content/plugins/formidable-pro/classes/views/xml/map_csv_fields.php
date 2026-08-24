@@ -7,11 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div id="frm_top_bar">
         <a href="<?php echo esc_url( admin_url( 'admin.php?page=formidable' ) ); ?>" class="frm-header-logo">
             <?php FrmAppHelper::show_header_logo(); ?>
-            <span class="screen-reader-text"><?php esc_html_e( 'View Forms', 'formidable-pro' ); ?></span>
+            <span class="screen-reader-text"><?php esc_html_e( 'View Forms', 'formidable' ); ?></span>
         </a>
         <div class="frm_top_left">
             <h1>
-                <?php esc_html_e( 'Import/Export', 'formidable-pro' ); ?>
+                <?php esc_html_e( 'Import/Export', 'formidable' ); ?>
             </h1>
         </div>
     </div>
@@ -32,20 +32,21 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <table class="form-table">
                                 <thead>
                                 <tr class="form-field">
-                                    <th><b><?php esc_html_e( 'CSV header', 'formidable' ); ?></b></th>
-                                    <th><b><?php esc_html_e( 'Sample data', 'formidable' ); ?></b></th>
-                                    <th><b><?php esc_html_e( 'Corresponding Field', 'formidable' ); ?></b></th>
+                                    <th><b><?php esc_html_e( 'CSV header', 'formidable-pro' ); ?></b></th>
+                                    <th><b><?php esc_html_e( 'Sample data', 'formidable-pro' ); ?></b></th>
+                                    <th><b><?php esc_html_e( 'Corresponding Field', 'formidable-pro' ); ?></b></th>
                                 </tr>
                                 </thead>
                                 <?php
                                 $skip_field_ids = array();
+
                                 foreach ( $headers as $i => $header ) {
                                     $already_selected_a_value = false;
                                     $converted_header         = htmlspecialchars( $header );
                                     $lower_header             = strtolower( $converted_header );
 
                                     if ( 0 === $i && strlen( $lower_header ) >= 3 && '%EF%BB%BF' === urlencode( substr( $lower_header, 0, 3 ) ) ) {
-                                        // remove the Byte order mark if it exists as it conflict with mapping.
+                                        // Remove the Byte order mark if it exists as it conflict with mapping.
                                         $lower_header = substr( $lower_header, 3 );
                                     }
 
@@ -66,6 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 }
 
                                                 $field_type_obj = FrmFieldFactory::get_field_factory( $field );
+
                                                 if ( ! empty( $field_type_obj->is_combo_field ) ) { // Handle combo field.
                                                     $headings = $field_type_obj->get_export_headings();
 
@@ -86,6 +88,10 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 } else {
                                                     $field_check = trim( strtolower( wp_strip_all_tags( $field->name ) ) );
                                                     $selected    = $field_check === $lower_header;
+
+                                                    if ( ! $selected && FrmField::is_option_true( $field, 'separate_value' ) ) {
+                                                        $selected = $field_check . ' ' . __( '(value)', 'formidable' ) === $lower_header;
+                                                    }
                                                     unset( $field_check );
                                                 }
 
@@ -93,6 +99,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
                                                 if ( $selected ) {
                                                     $skip = true;
+
                                                     if ( $field->field_options['in_section'] ) {
                                                         $section = FrmField::getOne( $field->field_options['in_section'] );
 
@@ -113,8 +120,8 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 unset( $field );
                                             }
                                             ?>
-                                            <option value="post_id"><?php esc_html_e( 'Post ID', 'formidable-pro' ); ?></option>
-                                            <option value="created_at" <?php selected( strtolower( __( 'Timestamp', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( strtolower( __( 'Created at', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'created_at', $header ); ?>>
+                                            <option value="post_id"><?php esc_html_e( 'Post ID', 'formidable' ); ?></option>
+                                            <option value="created_at" <?php selected( strtolower( __( 'Timestamp', 'formidable' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( strtolower( __( 'Created at', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'created_at', $header ); ?>>
                                                 <?php esc_html_e( 'Created at', 'formidable-pro' ); ?>
                                             </option>
                                             <option value="user_id" <?php selected( strtolower( __( 'Created by', 'formidable-pro' ) ), strtolower( htmlspecialchars( $header ) ) ) . selected( 'user_id', $header ); ?>>
@@ -127,25 +134,25 @@ if ( ! defined( 'ABSPATH' ) ) {
                                                 <?php esc_html_e( 'Updated by', 'formidable-pro' ); ?>
                                             </option>
                                             <option value="ip" <?php selected( 'ip', strtolower( $header ) ); ?>>
-                                                <?php esc_html_e( 'IP Address', 'formidable-pro' ); ?>
+                                                <?php esc_html_e( 'IP Address', 'formidable' ); ?>
                                             </option>
                                             <option value="is_draft" <?php selected( in_array( strtolower( $header ), array( 'draft', 'entry status' ), true ) ); ?>>
                                                 <?php esc_html_e( 'Is Draft', 'formidable-pro' ); ?>
                                             </option>
-                                            <option value="id" <?php selected( __( 'Entry ID', 'formidable-pro' ), htmlspecialchars( $header ) ) . selected( 'id', strtolower( htmlspecialchars( $header ) ) ); ?>>
-                                                <?php esc_html_e( 'Entry ID', 'formidable-pro' ); ?>
+                                            <option value="id" <?php selected( __( 'Entry ID', 'formidable' ), htmlspecialchars( $header ) ) . selected( 'id', strtolower( htmlspecialchars( $header ) ) ); ?>>
+                                                <?php esc_html_e( 'Entry ID', 'formidable' ); ?>
                                             </option>
-                                            <option value="item_key" <?php selected( __( 'Entry Key', 'formidable-pro' ), htmlspecialchars( $header ) ) . selected( 'key', strtolower( htmlspecialchars( $header ) ) ); ?>>
-                                                <?php esc_html_e( 'Entry Key', 'formidable-pro' ); ?>
+                                            <option value="item_key" <?php selected( __( 'Entry Key', 'formidable' ), htmlspecialchars( $header ) ) . selected( 'key', strtolower( htmlspecialchars( $header ) ) ); ?>>
+                                                <?php esc_html_e( 'Entry Key', 'formidable' ); ?>
                                             </option>
-                                            <option value="comment_user" <?php selected( __( 'Comment User', 'formidable-pro' ), $header ); ?>>
-                                                <?php esc_html_e( 'Comment User', 'formidable-pro' ); ?>
+                                            <option value="comment_user" <?php selected( __( 'Comment User', 'formidable' ), $header ); ?>>
+                                                <?php esc_html_e( 'Comment User', 'formidable' ); ?>
                                             </option>
-                                            <option value="comment" <?php selected( __( 'Comment', 'formidable-pro' ), $header ); ?>>
-                                                <?php esc_html_e( 'Comment', 'formidable-pro' ); ?>
+                                            <option value="comment" <?php selected( __( 'Comment', 'formidable' ), $header ); ?>>
+                                                <?php esc_html_e( 'Comment', 'formidable' ); ?>
                                             </option>
-                                            <option value="comment_date" <?php selected( __( 'Comment Date', 'formidable-pro' ), $header ); ?>>
-                                                <?php esc_html_e( 'Comment Date', 'formidable-pro' ); ?>
+                                            <option value="comment_date" <?php selected( __( 'Comment Date', 'formidable' ), $header ); ?>>
+                                                <?php esc_html_e( 'Comment Date', 'formidable' ); ?>
                                             </option>
                                         </select>
                                     </td>
@@ -155,7 +162,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                 ?>
                             </table>
                             <p class="submit">
-                                <input type="submit" value="<?php esc_attr_e( 'Import', 'formidable-pro' ); ?>" class="button-primary" />
+                                <input type="submit" value="<?php esc_attr_e( 'Import', 'formidable' ); ?>" class="button-primary" />
                             </p>
                             <p class="howto"><?php esc_html_e( 'Note: If you select a field for the Entry ID or Entry Key, the matching entry with that ID or key will be updated.', 'formidable-pro' ); ?></p>
                         </form>

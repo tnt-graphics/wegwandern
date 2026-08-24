@@ -37,6 +37,7 @@ class FrmProApplicationsController {
 
 		if ( ! $can_add_views ) {
 			$views_install_url = self::get_views_install_url();
+
 			if ( is_string( $views_install_url ) ) {
 				$js_vars['viewsInstallUrl'] = $views_install_url;
 			}
@@ -73,20 +74,26 @@ class FrmProApplicationsController {
 	 * @since 6.17
 	 *
 	 * @param int $term_id
+	 *
 	 * @return void
 	 */
 	public static function delete_child_items( $term_id ) {
 		$posts = FrmProApplication::get_posts_for_application( $term_id );
+
 		foreach ( $posts as $post ) {
 			$count_of_applications = self::get_applications_count_for_view_or_page( $post->ID );
+
 			if ( $count_of_applications === 1 ) {
 				// This is the only application using this view or page. Delete the view.
 				wp_delete_post( $post->ID, true );
 			}
 		}
+
 		$forms = FrmProApplication::get_forms_for_application( $term_id );
+
 		foreach ( $forms as $form ) {
 			$count_of_applications = count( FrmProApplicationsHelper::get_application_ids_for_form( $form->id ) );
+
 			if ( $count_of_applications === 1 ) {
 				// This is the only application using this form. Delete the form.
 				FrmForm::destroy( $form->id );
@@ -142,10 +149,9 @@ class FrmProApplicationsController {
 	 * @return void
 	 */
 	public static function register_common_js() {
-		$plugin_url      = FrmProAppHelper::plugin_url();
 		$version         = FrmProDb::$plug_version;
 		$js_dependencies = array( 'formidable_dom' );
-		wp_register_script( 'frm_applications_common', $plugin_url . '/js/admin/applications/common.js', $js_dependencies, $version, true );
+		wp_register_script( 'frm_applications_common', FrmProAppHelper::plugin_url() . '/js/admin/applications/common.js', $js_dependencies, $version, true );
 
 		$js_vars = array(
 			'proImagesUrl' => FrmProAppHelper::plugin_url() . '/images/',
@@ -160,15 +166,15 @@ class FrmProApplicationsController {
 	 * @return void
 	 */
 	public static function register_common_css() {
-		$plugin_url = FrmProAppHelper::plugin_url();
-		$version    = FrmProDb::$plug_version;
-		wp_register_style( 'frm_applications_common', $plugin_url . '/css/admin/applications/common.css', array(), $version );
+		$version = FrmProDb::$plug_version;
+		wp_register_style( 'frm_applications_common', FrmProAppHelper::plugin_url() . '/css/admin/applications/common.css', array(), $version );
 	}
 
 	/**
 	 * Extend application data so icon (application thumbnail) and url (link to xml) are included in dashboard JavaScript data.
 	 *
 	 * @param array $keys
+	 *
 	 * @return array
 	 */
 	public static function application_data_keys( $keys ) {
@@ -182,9 +188,11 @@ class FrmProApplicationsController {
 	 *
 	 * @param array $response
 	 * @param array $args {
+	 *
 	 *     @type array $form
 	 *     @type array $imported
 	 * }
+	 *
 	 * @return array
 	 */
 	public static function xml_response( $response, $args ) {
@@ -199,6 +207,7 @@ class FrmProApplicationsController {
 		if ( $application_name ) {
 			// Create a new application with a posted application name.
 			$term = FrmProApplication::create( $application_name );
+
 			if ( ! is_array( $term ) ) {
 				return $response;
 			}
@@ -207,11 +216,13 @@ class FrmProApplicationsController {
 		} else {
 			// Use an existing posted application id.
 			$application_id = FrmAppHelper::get_post_param( 'application_id', 0, 'absint' );
+
 			if ( ! $application_id ) {
 				return $response;
 			}
 
 			$term = get_term( $application_id, 'frm_application' );
+
 			if ( ! ( $term instanceof WP_Term ) ) {
 				return $response;
 			}
@@ -251,6 +262,7 @@ class FrmProApplicationsController {
 	 *
 	 * @param int        $term_id
 	 * @param array<int> $form_ids
+	 *
 	 * @return array<array> Imported form details.
 	 */
 	private static function add_forms_to_application( $term_id, $form_ids ) {
@@ -259,8 +271,8 @@ class FrmProApplicationsController {
 		);
 		$form_results     = FrmDb::get_results( 'frm_forms', $where, 'id, name' );
 		$form_names_by_id = wp_list_pluck( $form_results, 'name', 'id' );
+		$form_details     = array();
 
-		$form_details = array();
 		foreach ( $form_ids as $form_id ) {
 			if ( ! array_key_exists( $form_id, $form_names_by_id ) ) {
 				continue;
@@ -281,6 +293,7 @@ class FrmProApplicationsController {
 	 *
 	 * @param int        $term_id
 	 * @param array<int> $post_ids
+	 *
 	 * @return array<array> Imported post names as two arrays (views and pages).
 	 */
 	private static function add_posts_to_application( $term_id, $post_ids ) {
@@ -306,6 +319,7 @@ class FrmProApplicationsController {
 
 		$view_details = array();
 		$page_details = array();
+
 		foreach ( $post_ids as $post_id ) {
 			if ( isset( $view_names_by_id[ $post_id ] ) ) {
 				$view_details[] = array(
@@ -336,6 +350,7 @@ class FrmProApplicationsController {
 	 * Flag application pages as white pages (defines white background, some standard style rules).
 	 *
 	 * @param bool $is_white_page
+	 *
 	 * @return bool
 	 */
 	public static function is_white_page( $is_white_page ) {
@@ -357,6 +372,7 @@ class FrmProApplicationsController {
 	 * Render the New Application and Import buttons after header title.
 	 *
 	 * @param string $context possible values include 'index' and 'edit'.
+	 *
 	 * @return void
 	 */
 	public static function header_after_title( $context ) {
@@ -382,6 +398,7 @@ class FrmProApplicationsController {
 	 * Maybe add an add button in page header title after span element.
 	 *
 	 * @param string $context possible values include 'index' and 'edit'.
+	 *
 	 * @return void
 	 */
 	public static function header_inside_title_after_span( $context ) {
@@ -399,6 +416,7 @@ class FrmProApplicationsController {
 	 * Render a button view file in the application buttons directory.
 	 *
 	 * @param string $filename
+	 *
 	 * @return void
 	 */
 	public static function render_button( $filename ) {
@@ -412,6 +430,7 @@ class FrmProApplicationsController {
 	 */
 	public static function before_install_form() {
 		$application_id = FrmAppHelper::get_post_param( 'application_id', 0, 'absint' );
+
 		if ( ! $application_id ) {
 			// No application id set. Do not add hooks.
 			return;
@@ -432,6 +451,7 @@ class FrmProApplicationsController {
 		FrmProApplicationsHelper::custom_application_permission_check();
 
 		$type = FrmAppHelper::simple_get( 'type' );
+
 		if ( ! $type ) {
 			wp_die();
 		}
@@ -443,6 +463,7 @@ class FrmProApplicationsController {
 
 	/**
 	 * @param string $type supports 'form', 'page', 'view'.
+	 *
 	 * @return array<string>
 	 */
 	private static function get_item_options_for_type( $type ) {
@@ -471,11 +492,11 @@ class FrmProApplicationsController {
 
 		list( $id_column, $title_column ) = $columns;
 		$results                          = FrmDb::get_results( $table, $where, implode( ',', $columns ) );
-
-		$titles = array_column( $results, $title_column );
+		$titles                           = array_column( $results, $title_column );
 		array_multisort( $titles, SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE, $results );
 
 		$output = array();
+
 		foreach ( $results as $result ) {
 			$output[] = array(
 				'value' => (int) $result->$id_column,
@@ -496,12 +517,13 @@ class FrmProApplicationsController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$url = FrmAppHelper::get_param( 'xml', '', 'post', 'esc_url_raw' );
+
 		if ( ! $url ) {
 			die( 0 );
 		}
 
 		if ( ! FrmAppHelper::validate_url_is_in_s3_bucket( $url, 'xml' ) ) {
-			die( esc_html__( 'The template you are trying to install could not be validated.', 'formidable-pro' ) );
+			die( esc_html__( 'The template you are trying to install could not be validated.', 'formidable' ) );
 		}
 
 		$response = wp_remote_get( $url ); // Note: If Query Monitor is active, I see 502 errors when trying to call wp_remote_get in Docker.
@@ -509,7 +531,7 @@ class FrmProApplicationsController {
 		$xml      = simplexml_load_string( $body );
 
 		if ( ! $xml ) {
-			wp_send_json_error( __( 'There was an error reading the form template', 'formidable' ) );
+			wp_send_json_error( __( 'There was an error reading the form template', 'formidable-pro' ) );
 			die();
 		}
 
@@ -540,6 +562,7 @@ class FrmProApplicationsController {
 					// If template view happens to be trash, don't mention it.
 					continue;
 				}
+
 				if ( ! isset( $view->post_type ) || ! in_array( (string) $view->post_type, array( 'frm_display', 'page' ), true ) ) {
 					// Only include views, skip any false positives.
 					continue;

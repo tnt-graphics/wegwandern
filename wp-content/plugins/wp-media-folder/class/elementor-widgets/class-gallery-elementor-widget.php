@@ -2,6 +2,7 @@
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Class WpmfGalleryElementorWidget
@@ -96,7 +97,7 @@ class WpmfGalleryElementorWidget extends \Elementor\Widget_Base
      */
     protected function register_controls() // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps, PSR2.Methods.MethodDeclaration.Underscore -- Method extends from \Elementor\Widget_Base class
     {
-        $settings = wpmfGetOption('gallery_settings');
+        $settings = WpmfHelper::wpmfGetOption('gallery_settings');
         $this->start_controls_section(
             'gallery_settings',
             array(
@@ -472,7 +473,7 @@ class WpmfGalleryElementorWidget extends \Elementor\Widget_Base
             )
         );
 
-        $main_class = wpmfGetMainClass();
+        $main_class = WpmfHelper::wpmfGetMainClass();
         $getFolders = $main_class->getAttachmentTerms('builder');
         $folders = $getFolders['attachment_terms'];
         $folders_order = $getFolders['attachment_terms_order'];

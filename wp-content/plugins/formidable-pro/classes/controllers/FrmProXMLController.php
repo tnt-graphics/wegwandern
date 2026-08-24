@@ -14,6 +14,9 @@ class FrmProXMLController {
 		return $continue;
 	}
 
+	/**
+	 * @param array $imported
+	 */
 	public static function importing_xml( $imported, $xml ) {
 		if ( ! isset( $xml->view ) && ! isset( $xml->item ) ) {
 			return $imported;
@@ -26,7 +29,7 @@ class FrmProXMLController {
 		$imported['imported'] = array_merge( $imported['imported'], $append );
 		unset( $append );
 
-		// get entries
+		// Get entries
 		if ( isset( $xml->item ) ) {
 			$imported = FrmProXMLHelper::import_xml_entries( $xml->item, $imported );
 			unset( $xml->item );
@@ -40,16 +43,14 @@ class FrmProXMLController {
 	 */
 	public static function csv_instructions_1() {
 		if ( FrmAppHelper::is_formidable_branding() ) {
-			$page_description = esc_html__( 'Upload your Formidable XML or CSV file to import forms, entries, and views into this site. Note: If your imported form/entry/view key and creation date match an item on your site, that item will be updated. You cannot undo this action.', 'formidable-pro' );
-		} else {
-			$page_description = sprintf(
-				// Translators: 1: Menu name
-				esc_html__( 'Upload your %1$s XML or CSV file to import forms, entries, and views into this site. Note: If your imported form/entry/view key and creation date match an item on your site, that item will be updated. You cannot undo this action.', 'formidable-pro' ),
-				FrmAppHelper::get_menu_name()
-			);
+			return esc_html__( 'Upload your Formidable XML or CSV file to import forms, entries, and views into this site. Note: If your imported form/entry/view key and creation date match an item on your site, that item will be updated. You cannot undo this action.', 'formidable-pro' );
 		}
 
-		return $page_description;
+		return sprintf(
+				// Translators: 1: Menu name
+			esc_html__( 'Upload your %1$s XML or CSV file to import forms, entries, and views into this site. Note: If your imported form/entry/view key and creation date match an item on your site, that item will be updated. You cannot undo this action.', 'formidable-pro' ),
+			FrmAppHelper::get_menu_name()
+		);
 	}
 
 	/**
@@ -57,16 +58,14 @@ class FrmProXMLController {
 	 */
 	public static function csv_instructions_2() {
 		if ( FrmAppHelper::is_formidable_branding() ) {
-			$file_section_title = esc_html__( 'Choose a Formidable XML or any CSV file', 'formidable-pro' );
-		} else {
-			$file_section_title = sprintf(
-				// Translators: 1: Menu name
-				__( 'Choose a %1$s XML or any CSV file', 'formidable-pro' ),
-				FrmAppHelper::get_menu_name()
-			);
+			return esc_html__( 'Choose a Formidable XML or any CSV file', 'formidable-pro' );
 		}
 
-		return $file_section_title;
+		return sprintf(
+				// Translators: 1: Menu name
+			__( 'Choose a %1$s XML or any CSV file', 'formidable-pro' ),
+			FrmAppHelper::get_menu_name()
+		);
 	}
 
 	/**
@@ -75,6 +74,7 @@ class FrmProXMLController {
 	 * @since 5.4.4
 	 *
 	 * @param array|object $forms
+	 *
 	 * @return void
 	 */
 	public static function print_import_options( $forms ) {
@@ -86,6 +86,7 @@ class FrmProXMLController {
 	 * Print options for CSV and XML import.
 	 *
 	 * @param array|object $forms
+	 *
 	 * @return void
 	 */
 	public static function csv_opts( $forms ) {
@@ -124,13 +125,21 @@ class FrmProXMLController {
 		return FrmAppHelper::get_param( 'csv_files', '', 'get', 'absint' ) ? 1 : 0;
 	}
 
+	/**
+	 * @param array $types
+	 */
 	public static function xml_export_types( $types ) {
-		$types['posts']  = __( 'Views', 'formidable-pro' );
-		$types['styles'] = __( 'Styles', 'formidable-pro' );
+		$types['posts']  = __( 'Views', 'formidable' );
+		$types['styles'] = __( 'Styles', 'formidable' );
 
 		return $types;
 	}
 
+	/**
+	 * @param array $formats
+	 *
+	 * @return array
+	 */
 	public static function export_formats( $formats ) {
 		$formats['csv']            = array(
 			'name'    => 'CSV',
@@ -142,13 +151,20 @@ class FrmProXMLController {
 		return $formats;
 	}
 
+	/**
+	 * @param array $atts
+	 */
 	public static function csv_filter( $query, $atts ) {
 		if ( ! empty( $atts['search'] ) && ! $atts['item_id'] ) {
-			$query = FrmProEntriesHelper::get_search_str( $query, $atts['search'], $atts['form_id'], $atts['fid'] );
+			return FrmProEntriesHelper::get_search_str( $query, $atts['search'], $atts['form_id'], $atts['fid'] );
 		}
 		return $query;
 	}
 
+	/**
+	 * @param array $row
+	 * @param array $atts
+	 */
 	public static function csv_row( $row, $atts ) {
 		$row['user_id']    = FrmFieldsHelper::get_user_display_name( $atts['entry']->user_id, 'user_login' );
 		$row['updated_by'] = FrmFieldsHelper::get_user_display_name( $atts['entry']->updated_by, 'user_login' );
@@ -156,9 +172,13 @@ class FrmProXMLController {
 		return $row;
 	}
 
+	/**
+	 * @param array $row
+	 * @param array $atts
+	 */
 	private static function add_comments_to_csv( &$row, $atts ) {
 		if ( ! $atts['comment_count'] ) {
-			// don't continue if we already know there are no comments
+			// Don't continue if we already know there are no comments
 			return;
 		}
 
@@ -167,14 +187,16 @@ class FrmProXMLController {
 				'item_id'  => (int) $atts['entry']->id,
 				'field_id' => 0,
 			),
-			' ORDER BY it.created_at ASC' 
+			' ORDER BY it.created_at ASC'
 		);
 
 		$i = 0;
+
 		if ( $comments ) {
 			foreach ( $comments as $comment ) {
 				$c = $comment->meta_value;
-				FrmProAppHelper::unserialize_or_decode( $c );
+				FrmAppHelper::unserialize_or_decode( $c );
+
 				if ( ! isset( $c['comment'] ) ) {
 					continue;
 				}
@@ -197,9 +219,12 @@ class FrmProXMLController {
 		}
 	}
 
+	/**
+	 * @param array $atts
+	 */
 	public static function csv_field_value( $field_value, $atts ) {
 		// Post values need to be retrieved differently
-		if ( $atts['entry']->post_id && ( $atts['field']->type === 'tag' || ( ! empty( $atts['field']->field_options['post_field'] ) ) ) ) {
+		if ( $atts['entry']->post_id && ( $atts['field']->type === 'tag' || ! empty( $atts['field']->field_options['post_field'] ) ) ) {
 			$field_value = FrmProEntryMetaHelper::get_post_value(
 				$atts['entry']->post_id,
 				$atts['field']->field_options['post_field'],
@@ -215,11 +240,12 @@ class FrmProXMLController {
 			);
 		}
 
-		$field_value = FrmProFieldsHelper::get_export_val( $field_value, $atts['field'], $atts['entry'] );
-
-		return $field_value;
+		return FrmProFieldsHelper::get_export_val( $field_value, $atts['field'], $atts['entry'] );
 	}
 
+	/**
+	 * @return bool
+	 */
 	private static function validate_csv_file_before_upload( $name ) {
 		return isset( $_FILES, $_FILES[ $name ] ) &&
 			! empty( $_FILES[ $name ]['tmp_name'] ) &&
@@ -229,7 +255,7 @@ class FrmProXMLController {
 			is_uploaded_file( $_FILES[ $name ]['tmp_name'] );// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 
-	// map fields from csv
+	// Map fields from csv
 	public static function map_csv_fields() {
 		$name = 'frm_import_file';
 
@@ -245,6 +271,7 @@ class FrmProXMLController {
 
 		// upload
 		$media_id = ! empty( $_POST[ $name ] ) && is_numeric( $_POST[ $name ] ) ? absint( $_POST[ $name ] ) : FrmProFileField::upload_file( $name );
+
 		if ( $media_id && ! is_wp_error( $media_id ) ) {
 			$filename = get_attached_file( $media_id );
 		}
@@ -267,26 +294,30 @@ class FrmProXMLController {
 
 		setlocale( LC_ALL, get_locale() );
 		$f = fopen( $filename, 'r' );
-		if ( $f !== false ) {
-			$row       = 0;
-			$enclosure = '"';
-			$escape    = '\\';
-			while ( ( $data = fgetcsv( $f, 100000, $csv_del, $enclosure, $escape ) ) !== false ) {
-				++$row;
-				if ( $row === 1 ) {
-					$headers = $data;
-				} elseif ( $row === 2 ) {
-					$example = $data;
-				} else {
-					continue;
-				}
-			}
-			fclose( $f );
-		} else {
+
+		if ( $f === false ) {
 			$errors = array( __( 'CSV cannot be opened.', 'formidable-pro' ) );
 			FrmXMLController::form( $errors );
 			return;
 		}
+
+		$row       = 0;
+		$enclosure = '"';
+		$escape    = '\\';
+
+		while ( ( $data = fgetcsv( $f, 100000, $csv_del, $enclosure, $escape ) ) !== false ) {
+			++$row;
+
+			if ( $row === 1 ) {
+				$headers = $data;
+			} elseif ( $row === 2 ) {
+				$example = $data;
+			} else {
+				continue;
+			}
+		}
+
+		fclose( $f );
 
 		$fields = FrmField::get_all_for_form( $form_id, '', 'include', 'include' );
 
@@ -304,7 +335,7 @@ class FrmProXMLController {
 	}
 
 	public static function import_csv() {
-		//Import csv to entries
+		// Import csv to entries
 		$import_count = 250;
 		$media_id     = FrmAppHelper::get_param( 'frm_import_file', '', 'get', 'absint' );
 		$current_path = get_attached_file( $media_id );
@@ -316,8 +347,9 @@ class FrmProXMLController {
 		$opts = get_option( 'frm_import_options' );
 
 		$left = $opts && isset( $opts[ $media_id ] ) ? ( (int) $row - (int) $opts[ $media_id ]['imported'] - 1 ) : $row - 1;
+
 		if ( $row < 300 && ( ! isset( $opts[ $media_id ] ) || $opts[ $media_id ]['imported'] < 300 ) ) {
-			// if the total number of rows is less than 250
+			// If the total number of rows is less than 250
 			$import_count = ceil( $left / 2 );
 		}
 
@@ -341,6 +373,7 @@ class FrmProXMLController {
 		FrmAppHelper::permission_check( 'frm_create_entries' );
 
 		$opts = get_option( 'frm_import_options' );
+
 		if ( ! $opts ) {
 			$opts = array();
 		}
@@ -349,8 +382,7 @@ class FrmProXMLController {
 		$file_id      = $vars['frm_import_file'];
 		$current_path = get_attached_file( $file_id );
 		$start_row    = isset( $opts[ $file_id ] ) ? $opts[ $file_id ]['imported'] : 1;
-
-		$imported = FrmProXMLHelper::import_csv( $current_path, $vars['form_id'], $vars['data_array'], 0, $start_row + 1, $vars['csv_del'], $vars['max'] );
+		$imported     = FrmProXMLHelper::import_csv( $current_path, $vars['form_id'], $vars['data_array'], 0, $start_row + 1, $vars['csv_del'], $vars['max'] );
 
 		$opts[ $file_id ] = array(
 			'row'      => $vars['row'],
@@ -359,15 +391,15 @@ class FrmProXMLController {
 		$remaining        = (int) $vars['row'] - (int) $imported;
 		echo esc_html( $remaining );
 
-		// check if the import is complete
+		// Check if the import is complete
 		if ( ! $remaining ) {
 			unset( $opts[ $file_id ] );
 
-			// since we are finished with this csv, delete it
+			// Since we are finished with this csv, delete it
 			wp_delete_attachment( $file_id, true );
 		}
 
-		update_option( 'frm_import_options', $opts, 'no' );
+		update_option( 'frm_import_options', $opts, false );
 
 		wp_die();
 	}
@@ -376,6 +408,7 @@ class FrmProXMLController {
 	 * @since 5.0.06
 	 *
 	 * @param array $headings
+	 *
 	 * @return array
 	 */
 	public static function export_csv_headings( $headings ) {
@@ -389,12 +422,13 @@ class FrmProXMLController {
 	 * @since 5.0.06
 	 *
 	 * @param array $headings
+	 *
 	 * @return array
 	 */
 	private static function sort_csv_headings( $headings ) {
-		$custom_columns  = self::get_custom_columns();
 		$sorted_headings = array();
-		foreach ( $custom_columns as $column ) {
+
+		foreach ( self::get_custom_columns() as $column ) {
 			if ( array_key_exists( $column, $headings ) ) {
 				$sorted_headings[ $column ] = $headings[ $column ];
 			} elseif ( in_array( $column, array( 'comment', 'comment_user_id', 'comment_created_at' ), true ) ) {
@@ -403,6 +437,7 @@ class FrmProXMLController {
 				$sorted_headings += self::pull_series_of_headings( $headings, $column, '[', ']' );
 			}
 		}
+
 		return $sorted_headings;
 	}
 
@@ -417,14 +452,18 @@ class FrmProXMLController {
 	private static function pull_series_of_headings( $headings, $column, $index_prefix = '', $index_suffix = '' ) {
 		$index           = 0;
 		$sorted_headings = array();
+
 		while ( 1 ) {
 			$key = $column . $index_prefix . $index . $index_suffix;
+
 			if ( ! array_key_exists( $key, $headings ) ) {
 				break;
 			}
+
 			$sorted_headings[ $key ] = $headings[ $key ];
 			++$index;
 		}
+
 		return $sorted_headings;
 	}
 
@@ -432,6 +471,7 @@ class FrmProXMLController {
 	 * @since 5.0.06
 	 *
 	 * @param array $csv_fields
+	 *
 	 * @return array
 	 */
 	public static function fields_for_csv_export( $csv_fields ) {
@@ -462,18 +502,20 @@ class FrmProXMLController {
 	 * @return array
 	 */
 	private static function get_custom_field_ids() {
-		$field_ids      = array();
-		$custom_columns = self::get_custom_columns();
-		foreach ( $custom_columns as $key ) {
+		$field_ids = array();
+
+		foreach ( self::get_custom_columns() as $key ) {
 			if ( is_numeric( $key ) ) {
 				$field_ids[] = $key;
-			} elseif ( '_label' === substr( $key, -6 ) ) {
+			} elseif ( str_ends_with( $key, '_label' ) ) {
 				$stripped_key = str_replace( '_label', '', $key );
+
 				if ( is_numeric( $stripped_key ) ) {
 					$field_ids[] = $stripped_key;
 				}
 			}
 		}
+
 		return $field_ids;
 	}
 

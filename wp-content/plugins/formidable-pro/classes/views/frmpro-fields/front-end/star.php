@@ -6,18 +6,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="frm-star-group">
 <?php
 $max = FrmField::get_option( $field, 'maxnum' );
-if ( ! empty( $max ) ) {
+
+if ( $max ) {
 	$field['options'] = range( 1, $max );
 }
 
 if ( is_array( $field['options'] ) ) {
 	if ( ! isset( $field['value'] ) ) {
 		$field['value'] = $field['default_value'];
-		FrmProAppHelper::unserialize_or_decode( $field['value'] );
+		FrmAppHelper::unserialize_or_decode( $field['value'] );
 	}
 
 	foreach ( $field['options'] as $opt_key => $opt ) {
 		$class = 'star-rating';
+
 		if ( $opt <= $field['value'] ) {
 			$class .= ' star-rating-on';
 		}
@@ -27,6 +29,7 @@ if ( is_array( $field['options'] ) ) {
 		if ( is_numeric( $opt ) ) {
 			$opt = (string) $opt;
 		}
+
 		if ( is_numeric( $field['value'] ) ) {
 			$field['value'] = (string) $field['value'];
 		}
@@ -42,6 +45,7 @@ if ( is_array( $field['options'] ) ) {
 		?>
 		<input type="radio" name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>" value="<?php echo esc_attr( $opt ); ?>" <?php
 		checked( $field['value'], $opt ) . ' ';
+
 		if ( $opt === $field['value'] ) {
 			echo 'data-frm-star-selected ';
 		}

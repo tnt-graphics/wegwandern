@@ -12,13 +12,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="frm_form_field">
 	<?php
 	$input_html = array();
+
 	if ( $has_access ) {
 		$checked = ! empty( $settings->inbox[ $type ] );
 	} else {
 		$checked                = true;
 		$input_html['disabled'] = 'disabled';
 	}
-	FrmProHtmlHelper::admin_toggle(
+	FrmHtmlHelper::toggle(
 		'frm_inbox_' . $type,
 		'frm_inbox[' . esc_attr( $type ) . ']',
 		array(

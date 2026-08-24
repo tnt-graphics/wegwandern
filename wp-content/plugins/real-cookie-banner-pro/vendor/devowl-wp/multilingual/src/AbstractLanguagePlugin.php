@@ -125,6 +125,22 @@ abstract class AbstractLanguagePlugin
      */
     public abstract function getWordPressCompatibleLanguageCode($locale);
     /**
+     * Resolve the plugin language code (e.g. en, de) from a WordPress-compatible locale
+     * (e.g. en_US from {@see getWordPressCompatibleLanguageCode()}). Also accepts an
+     * already-short plugin code when it is listed in {@see getActiveLanguages()}.
+     *
+     * @param string $wordpressCompatibleLocale
+     */
+    public function matchLanguageCodeFromWordPressCompatibleLocale($wordpressCompatibleLocale)
+    {
+        foreach ($this->getActiveLanguages() as $code) {
+            if ($this->getWordPressCompatibleLanguageCode($code) === $wordpressCompatibleLocale || $code === $wordpressCompatibleLocale) {
+                return $code;
+            }
+        }
+        return null;
+    }
+    /**
      * Get default language.
      *
      * @return string
@@ -143,6 +159,14 @@ abstract class AbstractLanguagePlugin
      * @return string Returns empty string if no language is set or cannot be determined, otherwise the locale
      */
     public abstract function getPostLanguage($id);
+    /**
+     * Get language of passed term.
+     *
+     * @param int $termTaxonomyId `term_taxonomy_id` (WPML element id); resolved to `term_id` where needed
+     * @param string $taxonomy
+     * @return string Returns empty string if no language is set or cannot be determined, otherwise the locale
+     */
+    public abstract function getTermLanguage($termTaxonomyId, $taxonomy);
     /**
      * Get original id of passed post id.
      *
@@ -181,19 +205,50 @@ abstract class AbstractLanguagePlugin
      *
      * @param int $id
      * @param string $post_type
-     * @param string $locale Get item of this language
+     * @param string|null $locale Get item of this language; `null` = active language
      * @return int
      */
     public abstract function getCurrentPostId($id, $post_type, $locale = null);
     /**
-     * Get current id of passed term id and fallback to `0` when not translation found.
+     * Get the term id for `$locale`; adapters fall back to `$id` when no translation exists.
      *
      * @param int $id
      * @param string $taxonomy
-     * @param string $locale Get item of this language
+     * @param string|null $locale Target language code
      * @return int
      */
     public abstract function getCurrentTermId($id, $taxonomy, $locale = null);
+    /**
+     * Resolve a post id to its translation in `$locale`, if one should be stored on a translation post.
+     *
+     * Adapters return the source id when no translation exists; this helper still accepts that id when
+     * the referenced post already belongs to `$locale` (same idea as taxonomy remapping on translation
+     * posts). Callers that store lists (e.g. comma-separated meta) loop and collect non-zero results.
+     *
+     * @param int $postId Referenced post id
+     * @param string $referent_post_type Post type of the referenced post
+     * @param string $locale Target language code
+     * @return int Translated post id, or 0 when nothing valid applies in `$locale`
+     */
+    public function remapPostId($postId, $referent_post_type, $locale)
+    {
+        $postId = (int) $postId;
+        if ($postId <= 0) {
+            return 0;
+        }
+        // Prefer copyToOtherLanguageMap (filled by copyPostToOtherLanguage in the same request).
+        // WPML icl links for new translations are often only available on shutdown — CopyContent
+        // copies cookies before blockers, so blocker `services` meta must use the map here.
+        $resolvedId = (int) $this->getCurrentPostId($postId, $referent_post_type, $locale);
+        if ($resolvedId <= 0) {
+            return 0;
+        }
+        if ($resolvedId !== $postId) {
+            return $resolvedId;
+        }
+        $postLanguage = $this->getPostLanguage($resolvedId);
+        return $postLanguage === $locale || $postLanguage === '' ? $resolvedId : 0;
+    }
     /**
      * Get the HTML attribute so the "dynamic" replacement gets disabled
      * on frontend side. This can be useful for texts which are directly
@@ -267,16 +322,39 @@ abstract class AbstractLanguagePlugin
             if ($flags === null) {
                 $flags = $this->getActiveCountriesFlags();
             }
+            // Load term ids once per taxonomy in the post's language (see `getObjectTermIdsForPostLanguage`).
+            // Replaces `wp_get_object_terms()` inside every language row, which under WPML returned
+            // wrong ids and made the RCB admin list call REST with EN group ids for DE cookies.
+            $postLocale = $this->getPostLanguage($post->ID);
+            $sourceTermIdsByTaxonomy = [];
+            foreach ($configTaxonomies as $configTaxonomy) {
+                $sourceTermIdsByTaxonomy[$configTaxonomy] = $this->getObjectTermIdsForPostLanguage($post->ID, $configTaxonomy, $postLocale);
+            }
             foreach ($this->getActiveLanguages() as $key => $locale) {
                 $row = ['code' => $locale, 'language' => $this->getTranslatedName($locale), 'id' => $postTranslations[$locale] ?? \false, 'flag' => $flags[$locale] ?? \false, 'taxonomies' => []];
                 foreach ($configTaxonomies as $configTaxonomy) {
-                    $row['taxonomies'][$configTaxonomy] = \array_map(function ($termId) use($configTaxonomy, $locale) {
-                        return $this->getCurrentTermId($termId, $configTaxonomy, $locale);
-                    }, \wp_get_object_terms($post->ID, $configTaxonomy, ['fields' => 'ids', 'limit' => 0]));
+                    $mappedTermIds = [];
+                    foreach ($sourceTermIdsByTaxonomy[$configTaxonomy] as $sourceTermId) {
+                        $sourceTermId = (int) $sourceTermId;
+                        $resolvedTermId = (int) $this->getCurrentTermId($sourceTermId, $configTaxonomy, $locale);
+                        // Omit cross-language source-id fallbacks from `multilingual` rows only
+                        // (write path uses the same rule in `assignTranslatedPostTerms`).
+                        if ($resolvedTermId > 0 && ($resolvedTermId !== $sourceTermId || $locale === $postLocale)) {
+                            $mappedTermIds[] = $resolvedTermId;
+                        }
+                    }
+                    $row['taxonomies'][$configTaxonomy] = $mappedTermIds;
                 }
                 $multilingual[] = $row;
             }
             $response->data['multilingual'] = $multilingual;
+            // Top-level REST taxonomy field (e.g. `rcb-cookie-group`) must match the post language,
+            // not WPML's current admin language — otherwise the list-table filter shows count but no row.
+            if ($postLocale !== '') {
+                foreach ($configTaxonomies as $configTaxonomy) {
+                    $response->data[$configTaxonomy] = $sourceTermIdsByTaxonomy[$configTaxonomy];
+                }
+            }
         }
         return $response;
     }

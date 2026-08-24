@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+
 // TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 
@@ -19,7 +20,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 				'id'          => 'frm_repeat_icon_color',
 				'action_slug' => 'repeat_icon_color',
 			)
-		); 
+		);
 		?>
 	</div>
 

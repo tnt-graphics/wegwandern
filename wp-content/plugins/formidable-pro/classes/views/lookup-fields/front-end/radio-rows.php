@@ -6,8 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 foreach ( $field['options'] as $opt_key => $opt_value ) {
 	$opt_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt_value, $field );
 	$opt_value = FrmProFieldLookup::filter_lookup_saved_value( $opt_value, $field );
-
-	$checked = in_array( $opt_value, $saved_value_array ) ? ' checked="checked"' : '';
+    $checked   = in_array( $opt_value, $saved_value_array ) ? ' checked="checked"' : '';
 	?>
 	<div class="<?php echo esc_attr( apply_filters( 'frm_radio_class', 'frm_radio', $field, $opt_value ) ); ?>">
 	<label for="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>">

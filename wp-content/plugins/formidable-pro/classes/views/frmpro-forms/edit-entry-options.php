@@ -41,7 +41,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 </p>
 
 <?php
-if ( isset( $values['open_editable'] ) && empty( $values['open_editable'] ) ) {
+if ( isset( $values['open_editable'] ) && ! $values['open_editable'] ) {
     $values['open_editable_role'] = '-1';
 }
 ?>
@@ -63,6 +63,6 @@ if ( isset( $values['open_editable'] ) && empty( $values['open_editable'] ) ) {
  *
  * @since 6.8
  *
- * @param mixed $values Form settings value.
+ * @param array $values Form settings value.
  */
 do_action( 'frm_settings_after_edit_entry', $values );

@@ -1,6 +1,7 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
     $col_class = 'wpmf_width_50 m-r-0';
@@ -534,7 +535,7 @@ if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addo
                                 'height' => 0
                             )
                         );
-                        $saved_sizes = wpmfGetOption('photograper_default_dimensions');
+                        $saved_sizes = WpmfHelper::wpmfGetOption('photograper_default_dimensions');
                         $sizes = array_merge($sizes, $saved_sizes);
                         $sizes['full'] = array(
                             'name' => esc_html__('Original size', 'wpmf'),

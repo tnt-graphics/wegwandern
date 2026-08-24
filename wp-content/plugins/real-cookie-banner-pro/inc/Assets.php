@@ -14,13 +14,11 @@ use DevOwl\RealCookieBanner\settings\CookieGroup;
 use DevOwl\RealCookieBanner\settings\CountryBypass;
 use DevOwl\RealCookieBanner\settings\Revision;
 use DevOwl\RealCookieBanner\settings\General;
-use DevOwl\RealCookieBanner\settings\Reset;
 use DevOwl\RealCookieBanner\view\Blocker;
 use DevOwl\RealCookieBanner\settings\TCF;
 use DevOwl\RealCookieBanner\view\Banner;
-use DevOwl\RealCookieBanner\view\customize\banner\BasicLayout;
+use DevOwl\RealCookieBanner\view\AnimateCss;
 use DevOwl\RealCookieBanner\view\customize\banner\CustomCss;
-use DevOwl\RealCookieBanner\view\customize\banner\StickyLinks;
 use DevOwl\RealCookieBanner\view\customize\banner\Texts;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\RealProductManagerWpClient\Core as RpmWpClientCore;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\RealProductManagerWpClient\license\License;
@@ -107,7 +105,7 @@ class Assets
         $realUtils = RCB_ROOT_SLUG . '-real-utils-helper';
         // Do not enqueue anything if not needed
         if (!$isConfigPage && !\in_array($type, [Constants::ASSETS_TYPE_CUSTOMIZE], \true) && !$shouldLoadAssets) {
-            // We need to enqueue real-utils helper always in backend to keep cross-selling intact
+            // We need to enqueue real-utils helper always in backend for shared helper integrations
             if ($type === Constants::ASSETS_TYPE_ADMIN) {
                 $this->enqueueUtils();
                 \wp_enqueue_script($realUtils);
@@ -157,14 +155,20 @@ class Assets
          * @since 5.2.10
          */
         $useOptimizedWpLocalizeScript = $this->isAdvancedEnqueueEnabled($handle, Constants::ASSETS_ADVANCED_ENQUEUE_FEATURE_DEFER) ? \apply_filters('RCB/Experimental/OptimizedWpLocalizeScript', \false) : \false;
-        // Localize script with server-side variables
-        $this->anonymous_localize_script($useOptimizedWpLocalizeScript ? $this->enqueueFooterDummyHandle() : $handle, 'realCookieBanner', $this->localizeScript($type), [
-            'makeBase64Encoded' => [Cookie::META_NAME_CODE_OPT_IN, Cookie::META_NAME_CODE_OPT_OUT, Cookie::META_NAME_CODE_ON_PAGE_LOAD, 'contactEmail'],
-            'useCore' => !\in_array($type, [Constants::ASSETS_TYPE_FRONTEND, Constants::ASSETS_TYPE_LOGIN], \true) && !\is_customize_preview(),
-            // Only allow lazy parse in frontend (also not in customizer) as this conflicts with Mobx observables
-            'lazyParse' => \in_array($type, [Constants::ASSETS_TYPE_FRONTEND], \true) && !\is_customize_preview() ? ['others.frontend.tcf', 'others.frontend.groups', 'others.customizeValuesBanner'] : [],
-            'bypassJsonParse' => $useOptimizedWpLocalizeScript,
-        ]);
+        // Localize once per asset type: `[rcb-consent]` inside the cookie policy would otherwise
+        // rebuild the TCF frontend JSON on every nested shortcode during `the_content`.
+        static $localizedTypes = [];
+        $localizeHandle = $useOptimizedWpLocalizeScript ? $this->enqueueFooterDummyHandle() : $handle;
+        if (!empty($localizeHandle) && !isset($localizedTypes[$type])) {
+            $localizedTypes[$type] = \true;
+            $this->anonymous_localize_script($localizeHandle, 'realCookieBanner', $this->localizeScript($type), [
+                'makeBase64Encoded' => [Cookie::META_NAME_CODE_OPT_IN, Cookie::META_NAME_CODE_OPT_OUT, Cookie::META_NAME_CODE_ON_PAGE_LOAD, 'contactEmail'],
+                'useCore' => !\in_array($type, [Constants::ASSETS_TYPE_FRONTEND, Constants::ASSETS_TYPE_LOGIN], \true) && !\is_customize_preview(),
+                // Only allow lazy parse in frontend (also not in customizer) as this conflicts with Mobx observables
+                'lazyParse' => \in_array($type, [Constants::ASSETS_TYPE_FRONTEND], \true) && !\is_customize_preview() ? ['others.frontend.tcf', 'others.frontend.groups', 'others.customizeValuesBanner'] : [],
+                'bypassJsonParse' => $useOptimizedWpLocalizeScript,
+            ]);
+        }
     }
     /**
      * Enqueue admin page (currently only the config).
@@ -226,14 +230,16 @@ class Assets
         }
         // animate.css (only when animations are enabled)
         $customize = \DevOwl\RealCookieBanner\Core::getInstance()->getBanner()->getCustomize();
-        $hasAnimations = $customize->getSetting(BasicLayout::SETTING_ANIMATION_IN) !== 'none' || $customize->getSetting(BasicLayout::SETTING_ANIMATION_OUT) !== 'none' || $customize->getSetting(StickyLinks::SETTING_ENABLED);
-        if (\is_customize_preview() || $hasAnimations) {
+        $animateCss = new AnimateCss($customize);
+        $hasAnimations = $animateCss->hasConfiguredAnimations();
+        $useClientAnimateCss = $hasAnimations && !\is_customize_preview() && $animateCss->canInlineSubset();
+        if ((\is_customize_preview() || $hasAnimations) && !$useClientAnimateCss) {
             $handleAnimateCss = $this->enqueueLibraryStyle('animate-css', [[$useNonMinifiedSources, 'animate.css/animate.css'], 'animate.css/animate.min.css']);
             $excludeAssets->byHandle('css', $handleAnimateCss);
         }
         if ($handle !== \false) {
             $preloadJs = ['iabtcf-stub', $handle];
-            $preloadCss = ['animate-css'];
+            $preloadCss = $useClientAnimateCss ? [] : ['animate-css'];
             $advancedFeatures = [Constants::ASSETS_ADVANCED_ENQUEUE_FEATURE_PRIORITY_QUEUE];
             if (!$excludeAssets->hasFailureSupportPluginActive()) {
                 $advancedFeatures[] = Constants::ASSETS_ADVANCED_ENQUEUE_FEATURE_DEFER;
@@ -242,7 +248,7 @@ class Assets
             // Only enable the advanced enqueue when we are not relying on `react-dom` as this could lead to issues with
             // e.g. WP Fastest Cache which moves `react-dom` to the body footer -> "Undefined variable ReactDOM" error.
             if (!\is_customize_preview()) {
-                $this->enableAdvancedEnqueue($preloadJs, $advancedFeatures, 'script', ['banner-ui', 'banner-lazy', 'banner-common-async', 'vendor-banner-common-async']);
+                $this->enableAdvancedEnqueue($preloadJs, $advancedFeatures, 'script', $this->getBannerJavaScriptChunkPreloadNames());
                 $this->enableAdvancedEnqueue($preloadCss, $advancedFeatures, 'style');
             }
             $excludeAssets->byHandle('js', $preloadJs);
@@ -252,6 +258,29 @@ class Assets
         \wp_add_inline_script($handle, '((a,b)=>{a[b]||(a[b]={unblockSync:()=>undefined},["consentSync"].forEach(c=>a[b][c]=()=>({cookie:null,consentGiven:!1,cookieOptIn:!0})),["consent","consentAll","unblock"].forEach(c=>a[b][c]=(...d)=>new Promise(e=>a.addEventListener(b,()=>{a[b][c](...d).then(e)},{once:!0}))))})(window,"consentApi");', 'before');
         $this->handleBanner = $handle;
         return $handle;
+    }
+    /**
+     * Webpack chunk names for `<link rel="preload">` hints. Omitted in banner-less mode when the cookie
+     * banner UI is not shown on the current page (avoids unused-preload console warnings).
+     *
+     * @return string[]
+     */
+    private function getBannerJavaScriptChunkPreloadNames()
+    {
+        $defaultChunks = ['banner-ui', 'banner-lazy', 'banner-common-async', 'vendor-banner-common-async'];
+        $consent = Consent::getInstance();
+        if (!$consent->isBannerLessConsent() || \is_customize_preview()) {
+            return $defaultChunks;
+        }
+        $showOnPageIds = $consent->getBannerLessConsentShowOnPageIds();
+        if (\count($showOnPageIds) === 0) {
+            return [];
+        }
+        $pageId = \get_queried_object_id();
+        if ($pageId > 0 && \in_array($pageId, $showOnPageIds, \true)) {
+            return $defaultChunks;
+        }
+        return [];
     }
     /**
      * Enqueue the blocker.
@@ -326,9 +355,7 @@ class Assets
                 // our graphs and charts we need at least 4
                 $colorScheme[] = $colorScheme[0];
             }
-            $dryResetTexts = [];
-            Reset::getInstance()->texts(null, $dryResetTexts);
-            $result = ['installationDateIso' => \mysql2date('c', \get_option(\DevOwl\RealCookieBanner\Activator::OPTION_NAME_INSTALLATION_DATE, \time())), 'showLicenseFormImmediate' => $showLicenseFormImmediate, 'showNoticeAnonymousScriptNotWritable' => $anonymousAssetBuilder->getContentDir() === \false, 'assetsUrl' => $core->getAdInitiator()->getAssetsUrl(), 'customizeValuesBanner' => $bannerCustomize->localizeValues()['customizeValuesBanner'], 'customizeBannerUrl' => $bannerCustomize->getUrl(), 'adminUrl' => \admin_url(), 'colorScheme' => $colorScheme, 'cachePlugins' => CacheInvalidator::getInstance()->getLabels(), 'modalHints' => $notices->getClickedModalHints(), 'isDemoEnv' => \DevOwl\RealCookieBanner\DemoEnvironment::getInstance()->isDemoEnv(), 'isConfigProNoticeVisible' => $notices->isConfigProNoticeVisible(), 'activePlugins' => UtilsUtils::getActivePluginsMap(), 'ageNoticeCountryAgeMap' => Consent::AGE_NOTICE_COUNTRY_AGE_MAP, 'predefinedCountryBypassLists' => CountryBypass::PREDEFINED_COUNTRY_LISTS, 'defaultCookieGroupTexts' => CookieGroup::getInstance()->getDefaultDescriptions(\true), 'useEncodedStringForScriptInputs' => \version_compare($wp_version, '5.4.0', '>='), 'resetUrl' => \add_query_arg(['_wpnonce' => \wp_create_nonce('rcb-reset-all'), 'rcb-reset-all' => 1], $core->getConfigPage()->getUrl()), 'resetTexts' => ['url' => \add_query_arg(['_wpnonce' => \wp_create_nonce('rcb-reset-texts'), 'rcb-reset-texts' => 1], $core->getConfigPage()->getUrl()), 'dry' => $dryResetTexts], 'capabilities' => ['activate_plugins' => \current_user_can('activate_plugins')]];
+            $result = ['installationDateIso' => \mysql2date('c', \get_option(\DevOwl\RealCookieBanner\Activator::OPTION_NAME_INSTALLATION_DATE, \time())), 'showLicenseFormImmediate' => $showLicenseFormImmediate, 'showNoticeAnonymousScriptNotWritable' => $anonymousAssetBuilder->getContentDir() === \false, 'assetsUrl' => $core->getAdInitiator()->getAssetsUrl(), 'customizeValuesBanner' => $bannerCustomize->localizeValues()['customizeValuesBanner'], 'customizeBannerUrl' => $bannerCustomize->getUrl(), 'adminUrl' => \admin_url(), 'colorScheme' => $colorScheme, 'cachePlugins' => CacheInvalidator::getInstance()->getLabels(), 'modalHints' => $notices->getClickedModalHints(), 'isDemoEnv' => \DevOwl\RealCookieBanner\DemoEnvironment::getInstance()->isDemoEnv(), 'isConfigProNoticeVisible' => $notices->isConfigProNoticeVisible(), 'activePlugins' => UtilsUtils::getActivePluginsMap(), 'ageNoticeCountryAgeMap' => Consent::AGE_NOTICE_COUNTRY_AGE_MAP, 'predefinedCountryBypassLists' => CountryBypass::PREDEFINED_COUNTRY_LISTS, 'defaultCookieGroupTexts' => CookieGroup::getInstance()->getDefaultDescriptions(\true), 'useEncodedStringForScriptInputs' => \version_compare($wp_version, '5.4.0', '>='), 'resetUrl' => \add_query_arg(['_wpnonce' => \wp_create_nonce('rcb-reset-all'), 'rcb-reset-all' => 1], $core->getConfigPage()->getUrl()), 'resetTexts' => ['url' => \add_query_arg(['_wpnonce' => \wp_create_nonce('rcb-reset-texts'), 'rcb-reset-texts' => 1], $core->getConfigPage()->getUrl())], 'capabilities' => ['activate_plugins' => \current_user_can('activate_plugins')]];
         } elseif (\is_customize_preview()) {
             $result = \array_merge($bannerCustomize->localizeIds(), $bannerCustomize->localizeValues(), $bannerCustomize->localizeDefaultValues(), ['poweredByTexts' => $core->getCompLanguage()->translateArray(Texts::getPoweredByLinkTexts()), 'isPoweredByLinkDisabledByException' => $bannerCustomize->isPoweredByLinkDisabledByException()]);
             $frontendJson['lazyLoadedDataForSecondView'] = $lazyLoadedData;
@@ -337,6 +364,10 @@ class Assets
             $bannerCustomize->expandLocalizeValues($result);
             // We do not need this in frontend as the cookie policy is server-side rendered
             unset($result['customizeValuesBanner']['cookiePolicy']);
+            $animateCss = new AnimateCss($bannerCustomize);
+            if ($animateCss->hasConfiguredAnimations() && $animateCss->canInlineSubset()) {
+                $result['animateCss'] = $animateCss->buildInlineCss();
+            }
         }
         if (\in_array($context, [Constants::ASSETS_TYPE_ADMIN, Constants::ASSETS_TYPE_CUSTOMIZE], \true)) {
             /**

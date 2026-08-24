@@ -35,6 +35,20 @@ class Settings {
 	public static function getOptions( $request ) {
 		$siteId = (int) $request->get_param( 'siteId' );
 		if ( $siteId ) {
+			// Ensure the user has access to the target site.
+			if (
+				is_multisite() &&
+				(
+					! is_user_member_of_blog( get_current_user_id(), $siteId ) &&
+					! is_super_admin()
+				)
+			) {
+				return new \WP_REST_Response( [
+					'success' => false,
+					'message' => 'You do not have permission to access this site.'
+				], 403 );
+			}
+
 			aioseo()->helpers->switchToBlog( $siteId );
 
 			// Re-initialize the options for this site.
@@ -58,8 +72,8 @@ class Settings {
 	public static function toggleCard( $request ) {
 		$body  = $request->get_json_params();
 		$card  = ! empty( $body['card'] ) ? sanitize_text_field( $body['card'] ) : null;
-		$cards = aioseo()->settings->toggledCards;
-		if ( array_key_exists( $card, $cards ) ) {
+		$cards = aioseo()->settings->toggledCards ?? [];
+		if ( $card && array_key_exists( $card, $cards ) ) {
 			$cards[ $card ] = ! $cards[ $card ];
 			aioseo()->settings->toggledCards = $cards;
 		}
@@ -81,8 +95,8 @@ class Settings {
 		$body   = $request->get_json_params();
 		$radio  = ! empty( $body['radio'] ) ? sanitize_text_field( $body['radio'] ) : null;
 		$value  = ! empty( $body['value'] ) ? sanitize_text_field( $body['value'] ) : null;
-		$radios = aioseo()->settings->toggledRadio;
-		if ( array_key_exists( $radio, $radios ) ) {
+		$radios = aioseo()->settings->toggledRadio ?? [];
+		if ( $radio && array_key_exists( $radio, $radios ) ) {
 			$radios[ $radio ] = $value;
 			aioseo()->settings->toggledRadio = $radios;
 		}
@@ -103,8 +117,8 @@ class Settings {
 	public static function dismissAlert( $request ) {
 		$body   = $request->get_json_params();
 		$alert  = ! empty( $body['alert'] ) ? sanitize_text_field( $body['alert'] ) : null;
-		$alerts = aioseo()->settings->dismissedAlerts;
-		if ( array_key_exists( $alert, $alerts ) ) {
+		$alerts = aioseo()->settings->dismissedAlerts ?? [];
+		if ( $alert && array_key_exists( $alert, $alerts ) ) {
 			$alerts[ $alert ] = true;
 			aioseo()->settings->dismissedAlerts = $alerts;
 		}
@@ -170,24 +184,49 @@ class Settings {
 	/**
 	 * Save options from the front end.
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.9.10 Strip option groups the caller cannot manage and gate the network-wide write.
 	 *
 	 * @param  \WP_REST_Request  $request The REST Request
 	 * @return \WP_REST_Response          The response.
 	 */
 	public static function saveChanges( $request ) {
-		$body           = $request->get_json_params();
-		$options        = ! empty( $body['options'] ) ? $body['options'] : [];
-		$dynamicOptions = ! empty( $body['dynamicOptions'] ) ? $body['dynamicOptions'] : [];
-		$network        = ! empty( $body['network'] ) ? (bool) $body['network'] : false;
-		$networkOptions = ! empty( $body['networkOptions'] ) ? $body['networkOptions'] : [];
+		$body            = $request->get_json_params();
+		$options         = ! empty( $body['options'] ) ? $body['options'] : [];
+		$dynamicOptions  = ! empty( $body['dynamicOptions'] ) ? $body['dynamicOptions'] : [];
+		$network         = ! empty( $body['network'] ) ? (bool) $body['network'] : false;
+		$networkOptions  = ! empty( $body['networkOptions'] ) ? $body['networkOptions'] : [];
+		$redirectOptions = ! empty( $body['redirectOptions'] ) ? $body['redirectOptions'] : [];
+
+		// Strip the option groups the caller is not allowed to manage (mirrors resetSettings()), so a
+		// non-administrator cannot write privileged groups - e.g. the access-control matrix or the
+		// redirect engine - through this generic save route. Returns [] for admins and on Lite.
+		$notAllowedOptions = aioseo()->access->getNotAllowedOptions();
+		foreach ( $notAllowedOptions as $group ) {
+			unset( $options[ $group ], $dynamicOptions[ $group ] );
+		}
+
+		if ( in_array( 'redirects', $notAllowedOptions, true ) ) {
+			$redirectOptions = [];
+		}
 
 		// If this is the network admin, reset the options.
 		if ( $network ) {
+			// Network-wide options are merged into every site, so require the network-settings capability.
+			if ( ! is_multisite() || ! current_user_can( 'manage_network_options' ) ) {
+				return new \WP_REST_Response( [
+					'success' => false
+				], 403 );
+			}
+
 			aioseo()->networkOptions->sanitizeAndSave( $networkOptions );
 		} else {
 			aioseo()->options->sanitizeAndSave( $options );
 			aioseo()->dynamicOptions->sanitizeAndSave( $dynamicOptions );
+
+			if ( ! empty( aioseo()->redirects ) ) {
+				aioseo()->redirects->options->sanitizeAndSave( $redirectOptions );
+			}
 		}
 
 		// Re-initialize notices.
@@ -225,6 +264,11 @@ class Settings {
 					aioseo()->options->tools->robots->reset();
 					aioseo()->options->searchAppearance->advanced->unwantedBots->reset();
 					aioseo()->options->searchAppearance->advanced->searchCleanup->settings->preventCrawling = false;
+					break;
+				case 'redirects':
+					if ( ! empty( aioseo()->redirects ) ) {
+						aioseo()->redirects->options->reset();
+					}
 					break;
 				default:
 					if ( 'searchAppearance' === $setting ) {
@@ -587,6 +631,20 @@ class Settings {
 		$contentPostType = null;
 		$return          = true;
 
+		// Ensure the user has access to the target site.
+		if (
+			is_multisite() &&
+			(
+				! is_user_member_of_blog( get_current_user_id(), $siteId ) &&
+				! is_super_admin()
+			)
+		) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'message' => 'You do not have permission to export data for this site.'
+			], 403 );
+		}
+
 		try {
 			aioseo()->helpers->switchToBlog( $siteId );
 
@@ -743,6 +801,20 @@ class Settings {
 		$network       = ! empty( $body['network'] ) ? boolval( $body['network'] ) : false;
 		$siteId        = ! empty( $body['siteId'] ) ? intval( $body['siteId'] ) : false;
 		$siteOrNetwork = empty( $siteId ) ? aioseo()->helpers->getNetworkId() : $siteId; // If we don't have a siteId, we will use the networkId.
+
+		// Ensure the user has access to the target site.
+		if (
+			$siteId &&
+			is_multisite() &&
+			(
+				! is_user_member_of_blog( get_current_user_id(), $siteId ) &&
+				! is_super_admin()
+		) ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'message' => 'You do not have permission to access this site.'
+			], 403 );
+		}
 
 		// When on network admin page and no siteId, it is supposed to perform on network level.
 		if ( $network && 'clear-cache' === $action && empty( $siteId ) ) {

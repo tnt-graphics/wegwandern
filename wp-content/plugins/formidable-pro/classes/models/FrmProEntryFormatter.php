@@ -20,6 +20,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 
 	/**
 	 * @var FrmProEntryValues
+	 *
 	 * @since 2.04
 	 */
 	protected $entry_values;
@@ -49,8 +50,6 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @since 3.0
 	 */
 	protected function skip_fields() {
-		$skip_fields = parent::skip_fields();
-
 		$skip_pro_fields = array(
 			'break',
 			'divider',
@@ -60,7 +59,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 			'credit_card',
 		);
 
-		return array_merge( $skip_fields, $skip_pro_fields );
+		return array_merge( parent::skip_fields(), $skip_pro_fields );
 	}
 
 	/**
@@ -74,7 +73,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 		parent::init_include_extras( $atts );
 
 		foreach ( $this->include_extras as $key => $field_type ) {
-			if ( in_array( $field_type, array( 'section', 'heading' ) ) ) {
+			if ( in_array( $field_type, array( 'section', 'heading' ), true ) ) {
 				$this->include_extras[ $key ] = 'divider';
 			} elseif ( $field_type === 'page' ) {
 				$this->include_extras[ $key ] = 'break';
@@ -134,13 +133,10 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 
 		if ( $field_value->has_child_entries() ) {
 			$this->add_rows_for_field_with_child_entries( $field_value, $content );
-
 		} elseif ( $field_type === 'divider' ) {
 			$this->add_section_to_content( $field_value, $content );
-
 		} elseif ( $field_type === 'end_divider' ) {
 			$this->remove_section_placeholder( $content );
-
 		} else {
 			parent::add_field_value_to_content( $field_value, $content );
 		}
@@ -162,10 +158,12 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 			$_POST['item_meta'] = $field_value->get_entry()->metas;
 		}
 
-		if ( $this->is_extra_field_included( $field_value ) ) {
-			$content .= $this->section_placeholder();
-			parent::add_field_value_to_content( $field_value, $content );
+		if ( ! $this->is_extra_field_included( $field_value ) ) {
+			return;
 		}
+
+		$content .= $this->section_placeholder();
+		parent::add_field_value_to_content( $field_value, $content );
 	}
 
 	/**
@@ -174,24 +172,27 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @since 3.0
 	 *
 	 * @param string $content
+	 *
+	 * @return void
 	 */
 	protected function remove_section_placeholder( &$content ) {
 		$section_pos = strpos( $content, $this->section_placeholder() );
 
-		if ( $section_pos !== false ) {
-			$section_substring = substr( $content, $section_pos );
+		if ( $section_pos === false ) {
+			return;
+		}
 
-			// Remove section substring from content
-			$content = str_replace( $section_substring, '', $content );
+		$section_substring = substr( $content, $section_pos );
 
-			// Clean up section substring
-			$section_substring = str_replace( $this->section_placeholder(), '', $section_substring );
+		// Remove section substring from content
+		$content = str_replace( $section_substring, '', $content );
 
-			if ( $this->section_heading_has_children( $section_substring ) ) {
+		// Clean up section substring
+		$section_substring = str_replace( $this->section_placeholder(), '', $section_substring );
 
-				// Add section substring to content
-				$content .= $section_substring;
-			}
+		if ( $this->section_heading_has_children( $section_substring ) ) {
+			// Add section substring to content
+			$content .= $section_substring;
 		}
 	}
 
@@ -199,6 +200,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @since 3.0
 	 *
 	 * @param string $section_substring
+	 *
 	 * @return bool
 	 */
 	protected function section_heading_has_children( $section_substring ) {
@@ -225,10 +227,12 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 		$child_content = '';
 		$this->append_child_entry_values( $field_value, $child_content );
 
-		if ( $child_content !== '' ) {
-			$this->append_parent_values( $field_value, $content );
-			$content .= $child_content;
+		if ( $child_content === '' ) {
+			return;
 		}
+
+		$this->append_parent_values( $field_value, $content );
+		$content .= $child_content;
 	}
 
 	/**
@@ -238,17 +242,20 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 *
 	 * @param FrmProFieldValue $field_value
 	 * @param string $content
+	 *
+	 * @return void
 	 */
 	protected function append_parent_values( $field_value, &$content ) {
-		if ( $this->include_field_in_content( $field_value ) ) {
+		if ( ! $this->include_field_in_content( $field_value ) ) {
+			return;
+		}
 
-			if ( $this->is_plain_text ) {
-				$this->prepare_plain_text_display_value_for_extra_fields( $field_value, $display_value );
-				$this->add_single_value_plain_text_row( $display_value, $content );
-			} else {
-				$this->prepare_html_display_value_for_extra_fields( $field_value, $display_value );
-				$this->add_single_cell_html_row( $display_value, $content );
-			}
+		if ( $this->is_plain_text ) {
+			$this->prepare_plain_text_display_value_for_extra_fields( $field_value, $display_value );
+			$this->add_single_value_plain_text_row( $display_value, $content );
+		} else {
+			$this->prepare_html_display_value_for_extra_fields( $field_value, $display_value );
+			$this->add_single_cell_html_row( $display_value, $content );
 		}
 	}
 
@@ -262,6 +269,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 */
 	protected function append_child_entry_values( $field_value, &$content ) {
 		$is_repeater = $field_value->is_repeater();
+
 		foreach ( $field_value->get_displayed_value() as $field_values ) {
 			$pre_content = $content;
 
@@ -293,6 +301,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * Add an empty line to separate repeater content.
 	 *
 	 * @since 3.06.01
+	 *
 	 * @param string $content - The final output for the entry.
 	 */
 	protected function add_separator( &$content ) {
@@ -309,7 +318,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @since 2.04
 	 *
 	 * @param FrmProFieldValue $field_value
-	 * @param mixed $display_value
+	 * @param string|null      $display_value
 	 */
 	protected function prepare_html_display_value_for_extra_fields( $field_value, &$display_value ) {
 		switch ( $field_value->get_field_type() ) {
@@ -331,6 +340,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 *
 	 * @param FrmProFieldValue $field_value FrmProFieldSummaryValue
 	 * @param string $display_value
+	 *
 	 * @return void
 	 */
 	protected function maybe_remove_section_title( $field_value, &$display_value ) {
@@ -341,6 +351,10 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 
 	/**
 	 * @since 4.03
+	 *
+	 * @param FrmProFieldValue $field_value
+	 *
+	 * @return bool
 	 */
 	protected function is_field_label_hidden( $field_value ) {
 		$label = $field_value->get_field_option( 'label' );
@@ -353,7 +367,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @since 2.04
 	 *
 	 * @param FrmProFieldValue $field_value
-	 * @param mixed $display_value
+	 * @param string|null      $display_value
 	 */
 	protected function prepare_plain_text_display_value_for_extra_fields( $field_value, &$display_value ) {
 		switch ( $field_value->get_field_type() ) {
@@ -376,17 +390,16 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @param array $output
 	 */
 	protected function push_single_field_to_array( $field_value, &$output ) {
-		$field_key  = $this->get_key_or_id( $field_value );
-		$field_type = $field_value->get_field_type();
-
+		$field_key       = $this->get_key_or_id( $field_value );
+		$field_type      = $field_value->get_field_type();
 		$add_child_array = ( 'divider' === $field_type || ( 'form' === $field_type && $this->atts['child_array'] ) ) && $field_value->has_child_entries();
 
 		if ( $add_child_array ) {
 			$this->push_children_to_array( compact( 'field_value', 'field_key' ), $output );
-
 		} elseif ( 'form' === $field_type ) {
 			$child_values = $field_value->get_displayed_value();
-			if ( ! empty( $child_values ) ) {
+
+			if ( $child_values ) {
 				$child_values = reset( $child_values );
 				$this->push_field_values_to_array( $child_values, $output );
 			}
@@ -400,6 +413,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 *
 	 * @param array $field_info
 	 * @param array $output
+	 *
 	 * @return void
 	 */
 	private function push_children_to_array( $field_info, &$output ) {
@@ -411,6 +425,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 		);
 
 		$count = 0;
+
 		foreach ( $field_value->get_displayed_value() as $entry_id => $row_values ) {
 			$index                          = 'i' . $entry_id;
 			$output[ $field_key ][ $index ] = array();
@@ -432,31 +447,31 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @param array $output
 	 */
 	protected function push_repeating_field_values_to_array( $row_values, $index, &$output ) {
-
 		foreach ( $row_values as $field_value ) {
 			/* @var FrmProFieldValue $field_value */
 
-			if ( $this->include_repeating_field_in_array( $field_value ) ) {
-
-				$key = $this->get_key_or_id( $field_value );
-
-				if ( ! isset( $output[ $key ] ) ) {
-					$output[ $key ] = array();
-				}
-
-				$displayed_value          = $this->prepare_display_value_for_array( $field_value->get_displayed_value() );
-				$output[ $key ][ $index ] = $displayed_value;
-
-				$saved_value = $field_value->get_saved_value();
-				if ( $displayed_value !== $saved_value ) {
-
-					if ( ! isset( $output[ $key ] ) ) {
-						$output[ $key . '-value' ] = array();
-					}
-
-					$output[ $key . '-value' ][ $index ] = $field_value->get_saved_value();
-				}
+			if ( ! $this->include_repeating_field_in_array( $field_value ) ) {
+				continue;
 			}
+
+			$key = $this->get_key_or_id( $field_value );
+
+			if ( ! isset( $output[ $key ] ) ) {
+				$output[ $key ] = array();
+			}
+
+			$displayed_value          = $this->prepare_display_value_for_array( $field_value->get_displayed_value() );
+			$output[ $key ][ $index ] = $displayed_value;
+
+			if ( $displayed_value === $field_value->get_saved_value() ) {
+				continue;
+			}
+
+			if ( ! isset( $output[ $key ] ) ) {
+				$output[ $key . '-value' ] = array();
+			}
+
+			$output[ $key . '-value' ][ $index ] = $field_value->get_saved_value();
 		}
 	}
 
@@ -470,13 +485,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 * @return bool
 	 */
 	protected function include_repeating_field_in_array( $field_value ) {
-		if ( $this->is_extra_field( $field_value ) ) {
-			$include = $this->is_extra_field_included( $field_value );
-		} else {
-			$include = true;
-		}
-
-		return $include;
+		return $this->is_extra_field( $field_value ) ? $this->is_extra_field_included( $field_value ) : true;
 	}
 
 	/**
@@ -484,8 +493,8 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 *
 	 * @since 2.04
 	 *
-	 * @param mixed $display_value
-	 * @param string $type
+	 * @param array|string $display_value
+	 * @param string       $type
 	 *
 	 * @return mixed|string
 	 */
@@ -494,9 +503,7 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 			$display_value = implode( '<br/><br/>', $display_value );
 		}
 
-		$display_value = parent::prepare_display_value_for_html_table( $display_value, $type );
-
-		return $display_value;
+		return parent::prepare_display_value_for_html_table( $display_value, $type );
 	}
 
 	protected function flatten_array( $value ) {
@@ -550,8 +557,8 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	}
 
 	protected function maybe_process_shortcodes_in_label( $label ) {
-		if ( false !== strpos( $label, '[' ) ) {
-			$label = $this->process_shortcodes_in_label( $label );
+		if ( str_contains( $label, '[' ) ) {
+			return $this->process_shortcodes_in_label( $label );
 		}
 		return $label;
 	}
@@ -568,38 +575,43 @@ class FrmProEntryFormatter extends FrmEntryFormatter {
 	 *
 	 * @since 5.0.04
 	 *
-	 * @param FrmFieldValue $field_value
+	 * @param FrmProFieldValue $field_value
 	 *
 	 * @return bool
 	 */
 	protected function is_extra_field_included( $field_value ) {
 		$included = parent::is_extra_field_included( $field_value );
 
-		if ( $included ) {
-			$field = $field_value->get_field();
-			if ( ! isset( $field->temp_id ) ) {
-				$field->temp_id = $field->id;
-			}
-			$errors = array();
-			FrmProEntryMeta::validate_no_input_fields( $errors, $field );
+		if ( ! $included ) {
+			return $included;
+		}
 
-			$unset_item_meta = false;
-			if ( ! isset( $_POST['item_meta'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				/**
-				 * Set $_POST using the data from entry.
-				 * FrmProEntryMeta::is_field_conditionally_hidden checks $_POST data.
-				 * But in some cases, like after a Stripe link payment redirect, the $_POST data is not set.
-				 */
-				$_POST['item_meta'] = $field_value->get_entry()->metas;
-				$unset_item_meta    = true;
-			}
+		$field = $field_value->get_field();
 
-			$included = ! FrmProEntryMeta::is_field_conditionally_hidden( $field );
+		if ( ! isset( $field->temp_id ) ) {
+			$field->temp_id = $field->id;
+		}
 
-			if ( $unset_item_meta ) {
-				// Revert $_POST meta to previous state.
-				unset( $_POST['item_meta'] );
-			}
+		$errors = array();
+		FrmProEntryMeta::validate_no_input_fields( $errors, $field );
+
+		$unset_item_meta = false;
+
+		if ( ! isset( $_POST['item_meta'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			/**
+			 * Set $_POST using the data from entry.
+			 * FrmProEntryMeta::is_field_conditionally_hidden checks $_POST data.
+			 * But in some cases, like after a Stripe link payment redirect, the $_POST data is not set.
+			 */
+			$_POST['item_meta'] = $field_value->get_entry()->metas;
+			$unset_item_meta    = true;
+		}
+
+		$included = ! FrmProEntryMeta::is_field_conditionally_hidden( $field );
+
+		if ( $unset_item_meta ) {
+			// Revert $_POST meta to previous state.
+			unset( $_POST['item_meta'] );
 		}
 
 		return $included;

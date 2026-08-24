@@ -9,13 +9,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	class="frm_add_logic_row frm_add_logic_link frm-collapsed frm-flex-justify <?php echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || reset( $field['hide_field'] ) != '' ) ? ' frm_hidden' : ''; ?>"
 	role="button" aria-expanded="false" tabindex="0" aria-controls="collapsible-section" aria-label="<?php esc_attr_e( 'Collapsible Conditional Logic Settings', 'formidable-pro' ); ?>"
 >
-	<?php esc_html_e( 'Conditional Logic', 'formidable-pro' ); ?>
+	<?php esc_html_e( 'Conditional Logic', 'formidable' ); ?>
 	<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown8_icon', array( 'aria-hidden' => 'true' ) ); ?>
 </a>
 
 <div class="frm_logic_rows frm_add_remove frm-toggle-group<?php echo ! empty( $field['hide_field'] ) && ( count( $field['hide_field'] ) > 1 || reset( $field['hide_field'] ) != '' ) ? '' : ' frm_hidden'; ?>" id="frm_logic_rows_<?php echo absint( $field['id'] ); ?>">
 	<h3 aria-expanded="true" tabindex="0" role="button" aria-label="<?php esc_attr_e( 'Collapsible Conditional Logic Settings', 'formidable-pro' ); ?>" aria-controls="collapsible-section">
-		<?php esc_html_e( 'Conditional Logic', 'formidable-pro' ); ?>
+		<?php esc_html_e( 'Conditional Logic', 'formidable' ); ?>
 		<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown8_icon', array( 'aria-hidden' => 'true' ) ); ?>
 	</h3>
 
@@ -56,9 +56,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<span class="frm-white-space-nowrap frm-text-grey-700 frm-pr-lg">
 					<?php
 					if ( in_array( $field['type'], array( 'submit', 'break' ), true ) ) {
-						echo esc_html__( 'if the following match:', 'formidable-pro' );
+						esc_html_e( 'if the following match:', 'formidable-pro' );
 					} else {
-						echo esc_html__( 'this field if the following match:', 'formidable-pro' );
+						esc_html_e( 'this field if the following match:', 'formidable-pro' );
 					}
 					?>
 				</span>
@@ -69,7 +69,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'field_options[any_all_' . absint( $field['id'] ) . ']',
 				array(
 					'any' => esc_html__( 'Any', 'formidable-pro' ),
-					'all' => esc_html__( 'All', 'formidable-pro' ),
+					'all' => esc_html__( 'All', 'formidable' ),
 				),
 				$field['any_all']
 			);
@@ -83,7 +83,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</div>
 
 		<a href="javascript:void(0)" class="frm-flex-center frm-gap-2xs frm_add_logic_row button frm-button-secondary">
-			<?php FrmProAppHelper::icon_by_class( 'frmfont frm_plus1_icon frm_svg12' ); ?>
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_plus1_icon frm_svg12' ); ?>
 			<span><?php esc_html_e( 'Add Condition', 'formidable-pro' ); ?></span>
 		</a>
 	</div>

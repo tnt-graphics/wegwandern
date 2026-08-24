@@ -25,7 +25,7 @@ class StyleInlineAttributeFinder extends TagAttributeFinder
     public function createMatch($m)
     {
         list($tag, $attributes, $linkAttribute, $link) = $this->extractAttributesFromMatch($m);
-        if ($link === null) {
+        if (!\is_string($link) || \trim($link) === '') {
             return \false;
         }
         return new StyleInlineAttributeMatch($this, $m[0], $tag, $attributes, $linkAttribute);

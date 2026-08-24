@@ -6,6 +6,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmTransLiteAppController {
 
 	/**
+	 * Install or upgrade database structures.
+	 *
+	 * @param mixed $old_db_version Previous database version, or false on fresh install.
+	 *
 	 * @return void
 	 */
 	public static function install( $old_db_version = false ) {
@@ -41,12 +45,23 @@ class FrmTransLiteAppController {
 	}
 
 	/**
-	 * Remove the cron when the plugin is deactivated.
+	 * Remove the payment cron when all gateways are disconnected.
+	 *
+	 * @since 6.32.1
+	 *
+	 * @param string $gateway 'stripe', 'square', or 'paypal'.
+	 * @param string $mode 'test' or 'live'.
 	 *
 	 * @return void
 	 */
-	public static function remove_cron() {
-		wp_clear_scheduled_hook( 'frm_payment_cron' );
+	public static function maybe_remove_payment_cron( $gateway, $mode ) {
+		$stripe_connected = FrmStrpLiteConnectHelper::at_least_one_mode_is_setup();
+		$square_connected = FrmSquareLiteConnectHelper::at_least_one_mode_is_setup();
+		$paypal_connected = FrmPayPalLiteConnectHelper::at_least_one_mode_is_setup();
+
+		if ( ! $stripe_connected && ! $square_connected && ! $paypal_connected ) {
+			wp_clear_scheduled_hook( 'frm_payment_cron' );
+		}
 	}
 
 	/**
@@ -55,19 +70,25 @@ class FrmTransLiteAppController {
 	 * @return void
 	 */
 	public static function run_payment_cron() {
-		$frm_sub     = new FrmTransLiteSubscription();
-		$frm_payment = new FrmTransLitePayment();
-
+		$frm_sub               = new FrmTransLiteSubscription();
+		$frm_payment           = new FrmTransLitePayment();
 		$overdue_subscriptions = $frm_sub->get_overdue_subscriptions();
-		FrmTransLiteLog::log_message( 'Stripe Cron Message', count( $overdue_subscriptions ) . ' subscriptions found to be processed.', false );
+
+		if ( ! $overdue_subscriptions && ! $frm_sub->get_active_subscriptions() ) {
+			return;
+		}
+
+		FrmTransLiteLog::log_message( 'Overdue Subscription Cron Message', count( $overdue_subscriptions ) . ' subscriptions found to be processed.', false );
 
 		foreach ( $overdue_subscriptions as $sub ) {
 			$last_payment = $frm_payment->get_one_by( $sub->id, 'sub_id' );
+
 			if ( ! $last_payment ) {
 				continue;
 			}
 
 			$log_message = 'Subscription #' . $sub->id . ': ';
+
 			if ( $sub->status === 'future_cancel' ) {
 				FrmTransLiteSubscriptionsController::change_subscription_status(
 					array(
@@ -81,7 +102,7 @@ class FrmTransLiteAppController {
 			} else {
 				// Get the most recent payment after the gateway has a chance to create one.
 				$check_payment = $frm_payment->get_one_by( $sub->id, 'sub_id' );
-				$new_payment   = $check_payment->id != $last_payment->id;
+				$new_payment   = (int) $check_payment->id !== (int) $last_payment->id;
 				$last_payment  = $check_payment;
 				$status        = 'no';
 
@@ -101,12 +122,13 @@ class FrmTransLiteAppController {
 				}
 
 				$log_message .= $status . ' triggers run ';
+
 				if ( $last_payment ) {
 					$log_message .= 'on payment #' . $last_payment->id;
 				}
 			}//end if
 
-			FrmTransLiteLog::log_message( 'Stripe Cron Message', $log_message );
+			FrmTransLiteLog::log_message( 'Overdue Subscription Cron Message', $log_message );
 
 			self::maybe_trigger_changes(
 				array(
@@ -127,6 +149,7 @@ class FrmTransLiteAppController {
 	 */
 	private static function update_sub_for_new_payment( $sub, $last_payment ) {
 		$frm_sub = new FrmTransLiteSubscription();
+
 		if ( $last_payment->status === 'complete' ) {
 			$frm_sub->update(
 				$sub->id,
@@ -145,6 +168,7 @@ class FrmTransLiteAppController {
 	 * If the subscription has failed > 3 times, set it to canceled.
 	 *
 	 * @param object $sub
+	 *
 	 * @return void
 	 */
 	private static function add_one_fail( $sub ) {
@@ -165,6 +189,7 @@ class FrmTransLiteAppController {
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	private static function maybe_trigger_changes( $atts ) {
@@ -180,19 +205,53 @@ class FrmTransLiteAppController {
 	 * @since 6.22
 	 *
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	public static function add_repeat_cadence_value( $args ) {
 		$action = $args['form_action'];
-		if ( ! empty( $action->post_content['repeat_cadence'] ) ) {
-			$params = array(
-				'type'  => 'hidden',
-				'class' => 'frm-repeat-cadence-value',
-				'value' => $action->post_content['repeat_cadence'],
-			);
-			echo '<input ';
-			FrmAppHelper::array_to_html_params( $params, true );
-			echo ' />';
+
+		if ( empty( $action->post_content['repeat_cadence'] ) ) {
+			return;
 		}
+
+		$params = array(
+			'type'  => 'hidden',
+			'class' => 'frm-repeat-cadence-value',
+			'value' => $action->post_content['repeat_cadence'],
+		);
+		echo '<input ';
+		FrmAppHelper::array_to_html_params( $params, true );
+		echo ' />';
+	}
+
+	/**
+	 * Gateway fields are included for add-on compatibility but we do not want it to be visible.
+	 * They do however need to be visible when the payments submodule is active.
+	 *
+	 * @since 6.30
+	 *
+	 * @return void
+	 */
+	public static function hide_gateway_fields_in_builder() {
+		wp_add_inline_style(
+			'formidable-admin',
+			'
+			#frm_builder_page li[data-ftype="gateway"] { display: none; }
+			.frm_field_box:has(li[data-ftype="gateway"]:only-child) { display: none; }
+			'
+		);
+	}
+
+	/**
+	 * Remove the cron when the plugin is deactivated.
+	 *
+	 * @deprecated 6.32.1
+	 *
+	 * @return void
+	 */
+	public static function remove_cron() {
+		_deprecated_function( __METHOD__, '6.32.1' );
+		wp_clear_scheduled_hook( 'frm_payment_cron' );
 	}
 }

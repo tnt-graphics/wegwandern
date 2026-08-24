@@ -43,6 +43,7 @@ class VueSettings {
 		'toggledCards'    => [
 			'dashboardOverview'            => true,
 			'dashboardSeoSetup'            => true,
+			'dashboardSeoChecklist'        => true,
 			'dashboardSeoSiteScore'        => true,
 			'dashboardNotifications'       => true,
 			'dashboardSupport'             => true,
@@ -121,8 +122,13 @@ class VueSettings {
 			'aiContentSettings'            => true,
 			'writingAssistantSettings'     => true,
 			'writingAssistantCta'          => true,
+			'seoAlerts'                    => true,
+			'seoAlertsDelivery'            => true,
 			'llmsSitemap'                  => true,
 			'llmsSitemapAdvancedSettings'  => true,
+			'redirectLogsSettings'         => true,
+			'connectAiAgentsStatus'        => true,
+			'connectAiAgentsClients'       => true,
 		],
 		'toggledRadio'    => [
 			'breadcrumbsShowMoreSeparators' => false,
@@ -157,7 +163,8 @@ class VueSettings {
 			'searchStatisticsKrtGroupsTableKeywords' => 10,
 			'searchStatisticsIndexStatus'            => 20,
 			'queryArgs'                              => 20,
-			'seoAnalysis'                            => 20
+			'seoAnalysis'                            => 20,
+			'seoChecklist'                           => 20
 		],
 		'semrushCountry'  => 'US'
 	];

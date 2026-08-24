@@ -18,11 +18,13 @@ msgstr ""
 #. translators:
 #: queue/Executor.php:145
 #, php-format
-msgid "%1$d / %2$d (thereof %3$d remaining) tasks could not be executed properly."
+msgid ""
+"%1$d / %2$d (thereof %3$d remaining) tasks could not be executed properly."
 msgstr ""
 
 #: queue/Job.php:349
-msgid "The passed callable persisted to the job cannot be called (`is_callable`)"
+msgid ""
+"The passed callable persisted to the job cannot be called (`is_callable`)"
 msgstr ""
 
 #: queue/Job.php:382

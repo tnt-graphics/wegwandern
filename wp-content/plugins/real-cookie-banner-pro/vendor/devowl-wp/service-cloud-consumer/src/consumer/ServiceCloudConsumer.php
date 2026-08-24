@@ -179,6 +179,30 @@ class ServiceCloudConsumer
         }
     }
     /**
+     * Use one or more templates and run all use-related middlewares.
+     *
+     * @param AbstractTemplate|AbstractTemplate[] $templates
+     * @return AbstractTemplate|AbstractTemplate[]
+     */
+    public function use($templates)
+    {
+        $isSingleTemplate = $templates instanceof AbstractTemplate;
+        $templates = $isSingleTemplate ? [$templates] : $templates;
+        $clones = \array_map(function ($template) {
+            return clone $template;
+        }, $templates);
+        $this->runMiddleware(AbstractConsumerMiddleware::class, function ($middleware) use(&$clones) {
+            $middleware->beforeUseTemplates($clones);
+        });
+        $this->runMiddleware(AbstractTemplateMiddleware::class, function ($middleware) use(&$clones) {
+            $middleware->beforeUsingTemplates($clones);
+        });
+        $this->runMiddleware(AbstractConsumerMiddleware::class, function ($middleware) use(&$clones) {
+            $middleware->afterUseTemplates($clones);
+        });
+        return $isSingleTemplate ? $clones[0] : $clones;
+    }
+    /**
      * Add data source to our consumer.
      *
      * @param AbstractDataSource $dataSource
@@ -298,9 +322,17 @@ class ServiceCloudConsumer
                 foreach ($consumers as $consumer) {
                     $consumer->getStorage()->persist($typeClassToAllTemplates[$consumer->getTypeClass()]);
                 }
-                $consumer->runMiddleware(AbstractPoolMiddleware::class, function ($middleware) use($consumers, &$typeClassToAllTemplates) {
-                    $middleware->afterPersistTemplatesWithinPool($consumers, $typeClassToAllTemplates);
-                });
+                $appliedPoolMiddleware = [];
+                foreach ($consumers as $consumer) {
+                    $consumer->runMiddleware(AbstractPoolMiddleware::class, function ($middleware) use($consumers, &$typeClassToAllTemplates, &$appliedPoolMiddleware) {
+                        $clazzName = \get_class($middleware);
+                        if (\in_array($clazzName, $appliedPoolMiddleware, \true)) {
+                            return;
+                        }
+                        $appliedPoolMiddleware[] = $clazzName;
+                        $middleware->afterPersistTemplatesWithinPool($consumers, $typeClassToAllTemplates);
+                    });
+                }
             }
             return \true;
         } catch (AbortDataSourceDownloadException $e) {
@@ -382,6 +414,21 @@ class ServiceCloudConsumer
         foreach ($this->middlewares as $middleware) {
             if (\is_a($middleware, $middlewareTypeClass) && !$middleware->isSuspended()) {
                 $closure($middleware);
+            }
+        }
+    }
+    /**
+     * Suspend or resume middlewares by middleware class.
+     *
+     * @param string[] $middlewareClasses
+     * @param boolean $state
+     * @return void
+     */
+    public function suspendMiddlewares($middlewareClasses, $state = \true)
+    {
+        foreach ($this->middlewares as $middleware) {
+            if (\in_array(\get_class($middleware), $middlewareClasses, \true)) {
+                $middleware->suspend($state);
             }
         }
     }

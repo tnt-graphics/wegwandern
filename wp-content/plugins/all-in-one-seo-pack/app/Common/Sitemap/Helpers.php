@@ -79,15 +79,13 @@ class Helpers {
 	 * @return string                 Formatted date string (ISO 8601).
 	 */
 	public function lastModifiedPostTime( $postTypes = [ 'post', 'page' ], $additionalArgs = [] ) {
-		if ( is_array( $postTypes ) ) {
-			$postTypes = implode( "', '", $postTypes );
-		}
+		$postTypesArray = ! is_array( $postTypes ) ? [ $postTypes ] : $postTypes;
 
 		$query = aioseo()->core->db
 			->start( aioseo()->core->db->db->posts . ' as p', true )
 			->select( 'MAX(`p`.`post_modified_gmt`) as last_modified' )
 			->where( 'p.post_status', 'publish' )
-			->whereRaw( "( `p`.`post_type` IN ( '$postTypes' ) )" );
+			->whereIn( 'p.post_type', $postTypesArray );
 
 		if ( isset( $additionalArgs['author'] ) ) {
 			$query->where( 'p.post_author', $additionalArgs['author'] );
@@ -232,8 +230,9 @@ class Helpers {
 				}
 			}
 
+			$postTypeOptions = $dynamicOptions->searchAppearance->postTypes->$postType;
 			if (
-				$dynamicOptions->searchAppearance->postTypes->$postType->advanced->robotsMeta->default &&
+				! empty( $postTypeOptions->advanced->robotsMeta->default ) &&
 				! $options->searchAppearance->advanced->globalRobotsMeta->default &&
 				$options->searchAppearance->advanced->globalRobotsMeta->noindex
 			) {
@@ -276,11 +275,20 @@ class Helpers {
 	/**
 	 * Returns the taxonomies that should be included in the sitemap.
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.9.9 Return early if the sitemap type has no taxonomies option node.
 	 *
 	 * @return array The included taxonomies.
 	 */
 	public function includedTaxonomies() {
+		if ( ! aioseo()->options->sitemap->has( aioseo()->sitemap->type ) ) {
+			return [];
+		}
+
+		if ( ! aioseo()->options->sitemap->{aioseo()->sitemap->type}->has( 'taxonomies' ) ) {
+			return [];
+		}
+
 		$taxonomies = [];
 		if ( aioseo()->options->sitemap->{aioseo()->sitemap->type}->taxonomies->all ) {
 			$taxonomies = get_taxonomies();
@@ -435,7 +443,7 @@ class Helpers {
 		// Allow WPML to filter out hidden language posts/terms.
 		$hiddenObjectIds = [];
 		if ( aioseo()->helpers->isWpmlActive() ) {
-			$hiddenLanguages = apply_filters( 'wpml_setting', [], 'hidden_languages' );
+			$hiddenLanguages = apply_filters( 'wpml_setting', [], 'hidden_languages' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 			foreach ( $hiddenLanguages as $language ) {
 				$objectTypes = [];
 				if ( 'excludePosts' === $option ) {
@@ -563,7 +571,7 @@ class Helpers {
 	public function extractSitemapUrlsFromRobotsTxt() {
 		// First, we need to remove our filter, so that it doesn't run unintentionally.
 		remove_filter( 'robots_txt', [ aioseo()->robotsTxt, 'buildRules' ], 10000 );
-		$robotsTxt = apply_filters( 'robots_txt', '', true );
+		$robotsTxt = apply_filters( 'robots_txt', '', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		add_filter( 'robots_txt', [ aioseo()->robotsTxt, 'buildRules' ], 10000 );
 
 		if ( ! $robotsTxt ) {

@@ -29,7 +29,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</td>
 	<td>
 		<a href="javascript:void(0)" class="frm_show_upgrade<?php echo esc_attr( $class ); ?>" <?php FrmAppHelper::array_to_html_params( $upgrade_data, true ); ?>>
-			<?php FrmProAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon frm_add_tag frm_svg14' ); ?>
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_plus1_icon frm_add_tag frm_svg14' ); ?>
 			<?php esc_html_e( 'More Datepicker Options', 'formidable-pro' ); ?>
 		</a>
 	</td>

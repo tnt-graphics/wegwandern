@@ -53,6 +53,12 @@ abstract class AbstractCustomizePanel
      */
     private $sections;
     /**
+     * Autofocus id prefixes that belong to this panel (panel id plus optional setting prefixes).
+     *
+     * @var string[]
+     */
+    private $customizeIdPrefixes;
+    /**
      * Cross-browser compatible font families.
      *
      * @see https://www.w3schools.com/cssref/css_websafe_fonts.asp
@@ -63,11 +69,16 @@ abstract class AbstractCustomizePanel
      *
      * @param string $panel The main panel ID.
      * @param string $name The name of this panel, e. g. "banner". This is needed for frontend localization
+     * @param string[] $customizeIdPrefixes Additional autofocus id prefixes (e.g. option name prefix). The panel id is always included.
      */
-    public function __construct($panel, $name)
+    public function __construct($panel, $name, $customizeIdPrefixes = [])
     {
         $this->panel = $panel;
         $this->name = $name;
+        $this->customizeIdPrefixes = \array_values(\array_unique(\array_merge([$panel], $customizeIdPrefixes)));
+        // WP_Customize_Manager::setup_theme() checks `customize` on `setup_theme`,
+        // before `init`. Construct the panel at plugin load so this filter is in place.
+        \add_filter('map_meta_cap', [$this, 'map_meta_cap'], 10, 3);
     }
     /**
      * Return main arguments for this panel.
@@ -76,6 +87,81 @@ abstract class AbstractCustomizePanel
      * @see https://developer.wordpress.org/reference/classes/wp_customize_panel/__construct/#parameters
      */
     protected abstract function getPanelArgs();
+    /**
+     * Capability required for this panel. Reads `settingDefaults` / `sectionDefaults` /
+     * `controlDefaults` so it can run on `setup_theme` (before `init` / translations).
+     * Override when the capability is not set on those defaults.
+     *
+     * @return string
+     */
+    protected function getCustomizeCapability()
+    {
+        foreach ([$this->settingDefaults(), $this->sectionDefaults(), $this->controlDefaults()] as $defaults) {
+            if (!empty($defaults['capability'])) {
+                return $defaults['capability'];
+            }
+        }
+        return 'edit_theme_options';
+    }
+    /**
+     * `customize` maps to `edit_theme_options`. Remap only for this panel's autofocus URL
+     * and the Customizer preview/ajax that follow it (those requests have no autofocus).
+     *
+     * @param string[] $caps
+     * @param string   $cap
+     * @param int      $user_id
+     * @return string[]
+     */
+    public function map_meta_cap($caps, $cap, $user_id)
+    {
+        if ($cap !== 'customize') {
+            return $caps;
+        }
+        $requiredCap = $this->getCustomizeCapability();
+        if ($requiredCap === 'edit_theme_options' || !\user_can($user_id, $requiredCap) || !$this->isOurCustomizeRequest()) {
+            return $caps;
+        }
+        $caps = \array_values(\array_diff($caps, ['edit_theme_options']));
+        if (!\in_array($requiredCap, $caps, \true)) {
+            $caps[] = $requiredCap;
+        }
+        return $caps;
+    }
+    /**
+     * True when this request is this panel's Customizer or its preview/save.
+     */
+    private function isOurCustomizeRequest()
+    {
+        // phpcs:disable WordPress.Security.NonceVerification.Missing -- capability map, not a form handler
+        if (isset($_REQUEST['autofocus']) && \is_array($_REQUEST['autofocus'])) {
+            foreach (['panel', 'section', 'control'] as $key) {
+                if (!isset($_REQUEST['autofocus'][$key]) || !\is_string($_REQUEST['autofocus'][$key])) {
+                    continue;
+                }
+                $id = \sanitize_text_field(\wp_unslash($_REQUEST['autofocus'][$key]));
+                if ($this->isOurCustomizeId($id)) {
+                    return \true;
+                }
+            }
+        }
+        $action = isset($_REQUEST['action']) ? \sanitize_key(\wp_unslash($_REQUEST['action'])) : '';
+        return isset($_REQUEST['wp_customize']) || isset($_REQUEST['customize_changeset_uuid']) || isset($_POST['data']) && \is_array($_POST['data']) && (isset($_POST['data']['wp_customize']) || isset($_POST['data']['customize_changeset_uuid'])) || \wp_doing_ajax() && \strpos($action, 'customize_') === 0;
+        // phpcs:enable WordPress.Security.NonceVerification.Missing
+    }
+    /**
+     * Whether a Customizer autofocus id belongs to this panel (panel, section, or control).
+     *
+     * @param string $id
+     */
+    private function isOurCustomizeId($id)
+    {
+        foreach ($this->customizeIdPrefixes as $prefix) {
+            if ($id === $prefix || \strpos($id, $prefix) === 0) {
+                return \true;
+            }
+        }
+        return \false;
+    }
     /**
      * Return sections for this panel. Do not directly use this, use `getSections` instead.
      *
@@ -115,7 +201,7 @@ abstract class AbstractCustomizePanel
     public function customize_register($wp_customize)
     {
         $this->manager = $wp_customize;
-        $wp_customize->add_panel(new WP_Customize_Panel($wp_customize, $this->getPanel(), ['title' => \__('Cookie Banner', 'real-cookie-banner'), 'description' => \__('Design your cookie banner.', 'real-cookie-banner')]));
+        $wp_customize->add_panel(new WP_Customize_Panel($wp_customize, $this->getPanel(), $this->getPanelArgs()));
         $this->registerSections($this->getSections());
     }
     /**

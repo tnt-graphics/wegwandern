@@ -10,13 +10,14 @@ class FrmProCopy {
 	 * @return string
 	 */
 	public static function table_name() {
-		global $wpmuBaseTablePrefix, $wpdb;
-		$prefix = $wpmuBaseTablePrefix ? $wpmuBaseTablePrefix : $wpdb->base_prefix;
+		global $wpdb;
+		$prefix = $wpdb->base_prefix;
 		return $prefix . 'frmpro_copies';
 	}
 
 	/**
 	 * @param array $values
+	 *
 	 * @return false|int
 	 */
 	public static function create( $values ) {
@@ -34,26 +35,33 @@ class FrmProCopy {
 				'type'    => $new_values['type'],
 			),
 			'',
-			' LIMIT 1' 
+			' LIMIT 1'
 		);
-		if ( ! $exists ) {
-			$query_results = $wpdb->insert( self::table_name(), $new_values );
 
-			if ( $query_results ) {
-				$id = $wpdb->insert_id;
-
-				// Clear caches after adding a new row so stale data isn't retrieved.
-				wp_cache_delete( 'all_templates_' . $blog_id, 'frm_copy' );
-
-				// Since Lite trims any trailing 's' characters for cache groups, our cache group is frmpro_copie with the s truncated.
-				wp_cache_delete( 'blog_id_' . $blog_id . 'form_id_' . $new_values['form_id'] . 'type_' . $new_values['type'] . '_LIMIT_1*_row', 'frmpro_copie' );
-			}
+		if ( $exists ) {
+			return $id;
 		}
+
+		$query_results = $wpdb->insert( self::table_name(), $new_values );
+
+		if ( ! $query_results ) {
+			return $id;
+		}
+
+		$id = $wpdb->insert_id;
+
+		// Clear caches after adding a new row so stale data isn't retrieved.
+		wp_cache_delete( 'all_templates_' . $blog_id, 'frm_copy' );
+
+		// Since Lite trims any trailing 's' characters for cache groups, our cache group is frmpro_copie with the s truncated.
+		wp_cache_delete( 'blog_id_' . $blog_id . 'form_id_' . $new_values['form_id'] . 'type_' . $new_values['type'] . '_LIMIT_1*_row', 'frmpro_copie' );
+
 		return $id;
 	}
 
 	/**
 	 * @param int|string $id
+	 *
 	 * @return false|int
 	 */
 	public static function destroy( $id ) {
@@ -65,6 +73,7 @@ class FrmProCopy {
 	 * @param array  $where
 	 * @param string $order_by
 	 * @param string $limit
+	 *
 	 * @return array
 	 */
 	public static function getAll( $where = array(), $order_by = '', $limit = '' ) {
@@ -72,14 +81,14 @@ class FrmProCopy {
 			return array();
 		}
 
-		$method  = $limit === ' LIMIT 1' ? 'row' : 'results';
-		$results = FrmDb::get_var( self::table_name(), $where, '*', $args = array( 'order_by' => $order_by ), $limit, $method );
+		$method = $limit === ' LIMIT 1' ? 'row' : 'results';
 
-		return $results;
+		return FrmDb::get_var( self::table_name(), $where, '*', $args = array( 'order_by' => $order_by ), $limit, $method );
 	}
 
 	/**
 	 * @since 2.02.10
+	 *
 	 * @param array $values
 	 * @param array $new_values
 	 */
@@ -87,13 +96,15 @@ class FrmProCopy {
 		global $blog_id;
 		$new_values['blog_id'] = $blog_id;
 		$new_values['form_id'] = isset( $values['form_id'] ) ? (int) $values['form_id'] : null;
-		$new_values['type']    = $values['type'] ?? 'form'; // options here are: form, display
+		$new_values['type']    = $values['type'] ?? 'form'; // Options here are: form, display
+
 		if ( 'form' === $new_values['type'] ) {
 			$form_copied            = FrmForm::getOne( $new_values['form_id'] );
 			$new_values['copy_key'] = $form_copied->form_key;
 		} elseif ( 'display' === $new_values['type'] && is_callable( 'FrmViewsCopy::prepare_values' ) ) {
 			$new_values['copy_key'] = FrmViewsCopy::prepare_values( $new_values['form_id'] );
 		}
+
 		$new_values['created_at'] = current_time( 'mysql', 1 );
 	}
 
@@ -115,7 +126,7 @@ class FrmProCopy {
 	 * @return bool true if table exists
 	 */
 	private static function table_exists() {
-		$db_version        = self::get_db_version_where_copies_table_is_expected_to_have_been_created(); // this is the version of the database we're moving to
+		$db_version        = self::get_db_version_where_copies_table_is_expected_to_have_been_created(); // This is the version of the database we're moving to
 		$active_db_version = get_site_option( 'frmpro_copies_db_version' );
 		return $active_db_version >= $db_version;
 	}
@@ -143,6 +154,9 @@ class FrmProCopy {
 		update_site_option( 'frmpro_copies_db_version', self::get_db_version_where_copies_table_is_expected_to_have_been_created() );
 	}
 
+	/**
+	 * @return float
+	 */
 	private static function get_db_version_where_copies_table_is_expected_to_have_been_created() {
 		return 1.2;
 	}
@@ -151,24 +165,24 @@ class FrmProCopy {
 	 * Copy forms that are set to copy from one site to another
 	 *
 	 * @param bool $force
+	 *
 	 * @return void
 	 */
 	public static function copy_forms( $force = false ) {
 		self::maybe_force( $force );
+
 		if ( ! $force ) {
 			return;
 		}
 
-		$templates = self::get_templates_to_copy();
-
-		foreach ( $templates as $template ) {
+		foreach ( self::get_templates_to_copy() as $template ) {
 			if ( 'form' === $template->type ) {
 				self::copy_form( $template );
 			} elseif ( 'display' === $template->type && is_callable( 'FrmViewsCopy::copy_view' ) ) {
 				FrmViewsCopy::copy_view( $template );
 			}
 
-			//TODO: replace any ids with field keys in the display before duplicated
+			// TODO: replace any ids with field keys in the display before duplicated
 			unset( $template );
 		}
 
@@ -177,14 +191,15 @@ class FrmProCopy {
 
 	/**
 	 * @since 2.02.10
+	 *
 	 * @param bool $force
 	 */
 	private static function maybe_force( &$force ) {
-		if ( ! $force ) { //don't check on every page load
+		if ( ! $force ) { // Don't check on every page load
 			$last_checked = get_option( 'frmpro_copies_checked' );
 
 			if ( ! $last_checked || ( time() - $last_checked >= 60 * 60 ) ) {
-				//check every hour
+				// Check every hour
 				$force = true;
 			}
 		}
@@ -194,6 +209,8 @@ class FrmProCopy {
 	 * Get all forms to be copied from global table
 	 *
 	 * @since 2.02.10
+	 *
+	 * @return array
 	 */
 	private static function get_templates_to_copy() {
 		if ( ! self::table_exists() ) {

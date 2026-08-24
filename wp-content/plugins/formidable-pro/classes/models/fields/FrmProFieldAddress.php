@@ -11,12 +11,14 @@ class FrmProFieldAddress extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'address';
 
 	/**
 	 * @var bool
+	 *
 	 * @since 3.0
 	 */
 	protected $has_for_label = false;
@@ -43,8 +45,7 @@ class FrmProFieldAddress extends FrmFieldType {
 			'address_type' => 'international',
 		);
 
-		$default_labels = $this->default_labels();
-		foreach ( $default_labels as $key => $label ) {
+		foreach ( $this->default_labels() as $key => $label ) {
 			$options[ $key . '_desc' ] = $label;
 		}
 
@@ -53,6 +54,7 @@ class FrmProFieldAddress extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'.
 	 */
 	public function show_primary_options( $args ) {
@@ -68,6 +70,7 @@ class FrmProFieldAddress extends FrmFieldType {
 	 * @since 6.25
 	 *
 	 * @param array $field
+	 *
 	 * @return bool
 	 */
 	private static function should_show_address_type_warning( $field ) {
@@ -76,6 +79,7 @@ class FrmProFieldAddress extends FrmFieldType {
 		}
 
 		$parent_form_id = $field['parent_form_id'] ?? $field['form_id'] ?? 0;
+
 		if ( ! $parent_form_id ) {
 			return false;
 		}
@@ -100,6 +104,7 @@ class FrmProFieldAddress extends FrmFieldType {
 	 * of the individual field labels.
 	 *
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display'.
 	 */
 	public function show_after_default( $args ) {
@@ -154,8 +159,7 @@ class FrmProFieldAddress extends FrmFieldType {
 	}
 
 	public function show_on_form_builder( $name = '' ) {
-		$field = FrmFieldsHelper::setup_edit_vars( $this->field );
-
+		$field    = FrmFieldsHelper::setup_edit_vars( $this->field );
 		$defaults = $this->empty_value_array();
 		$this->fill_values( $field['default_value'], $defaults );
 
@@ -175,14 +179,13 @@ class FrmProFieldAddress extends FrmFieldType {
 		);
 		ob_start();
 		FrmProAddressesController::show_in_form( $this->field, $args['field_name'], $pass_args );
-		$input_html = ob_get_contents();
-		ob_end_clean();
 
-		return $input_html;
+		return ob_get_clean();
 	}
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	protected function fill_default_atts( &$atts ) {
@@ -199,12 +202,25 @@ class FrmProFieldAddress extends FrmFieldType {
 			return $value;
 		}
 
-		$new_value = '';
-		if ( ! empty( $value['line1'] ) ) {
-			$new_value = $this->format_address_for_display( $value, $atts );
+		$keys_to_check                = array( 'line1', 'city', 'state', 'zip', 'country' );
+		$at_least_one_field_populated = false;
+
+		foreach ( $keys_to_check as $key ) {
+			if ( ! empty( $value[ $key ] ) ) {
+				$at_least_one_field_populated = true;
+				break;
+			}
 		}
 
-		return $new_value;
+		if ( ! $at_least_one_field_populated ) {
+			return '';
+		}
+
+		if ( ! isset( $value['line1'] ) ) {
+			$value['line1'] = '';
+		}
+
+		return $this->format_address_for_display( $value, $atts );
 	}
 
 	/**
@@ -223,33 +239,42 @@ class FrmProFieldAddress extends FrmFieldType {
 			return $value;
 		}
 
-		$format = $this->address_format_for_display( $atts );
+		$format = $this->address_format_for_display( $atts, $value );
+
 		foreach ( $defaults as $k => $part ) {
 			$format = str_replace( '[' . $k . ']', $value[ $k ], $format );
 		}
-		$format = str_replace( $atts['line_sep'] . $atts['line_sep'], $atts['line_sep'], $format );
 
-		return $format;
+		return str_replace( $atts['line_sep'] . $atts['line_sep'], $atts['line_sep'], $format );
 	}
 
 	/**
 	 * @since 3.0.06
+	 *
 	 * @param array $atts
+	 * @param array $value
+	 *
+	 * @return string
 	 */
-	private function address_format_for_display( $atts ) {
+	private function address_format_for_display( $atts, $value ) {
 		if ( ! empty( $atts['show'] ) ) {
 			return '[' . $atts['show'] . ']';
 		}
 
-		$line_sep     = $atts['line_sep'];
-		$address_type = FrmField::get_option( $this->field, 'address_type' );
+		$line_sep       = $atts['line_sep'];
+		$address_type   = FrmField::get_option( $this->field, 'address_type' );
+		$address_format = '';
 
-		$address_format = '[line1]' . $line_sep . '[line2]' . $line_sep;
+		if ( ! empty( $value['line1'] ) ) {
+			$address_format = '[line1]' . $line_sep . '[line2]' . $line_sep;
+		}
+
 		if ( 'europe' === $address_type ) {
 			$address_format .= '[zip] [city]';
 		} else {
 			$address_format .= '[city], [state] [zip]';
 		}
+
 		$address_format .= $line_sep . '[country]';
 
 		/**
@@ -262,13 +287,15 @@ class FrmProFieldAddress extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @return array|string
 	 */
 	private function default_value_to_array() {
 		$default_value = $this->get_field_column( 'default_value' );
-		if ( empty( $default_value ) ) {
+
+		if ( ! $default_value ) {
 			$default_value = array();
-		} elseif ( ! is_array( $default_value ) && strpos( $default_value, ']' ) === false ) {
+		} elseif ( ! is_array( $default_value ) && ! str_contains( $default_value, ']' ) ) {
 			// This is a default value without a shortcode so tear it up.
 			$default_value = $this->address_string_to_array( $default_value );
 		}
@@ -286,11 +313,10 @@ class FrmProFieldAddress extends FrmFieldType {
 			return $value;
 		}
 
-		$value = array_map( 'trim', explode( ',', $value ) );
-
-		$empty_array = array_keys( $this->empty_value_array() );
-
+		$value             = array_map( 'trim', explode( ',', $value ) );
+		$empty_array       = array_keys( $this->empty_value_array() );
 		$array_length_diff = count( $empty_array ) - count( $value );
+
 		if ( $array_length_diff === 1 ) {
 			$value[] = '';
 		} elseif ( $array_length_diff > 1 ) {
@@ -316,6 +342,7 @@ class FrmProFieldAddress extends FrmFieldType {
 	 * @since 2.02.13
 	 *
 	 * @param array|string $value
+	 * @param array $atts
 	 *
 	 * @return array
 	 */
@@ -326,7 +353,6 @@ class FrmProFieldAddress extends FrmFieldType {
 
 		$sep   = apply_filters( 'frm_csv_sep', ', ' );
 		$value = explode( $sep, $value );
-
 		$count = count( $value );
 
 		if ( $count < 4 || $count > 6 ) {
@@ -339,13 +365,13 @@ class FrmProFieldAddress extends FrmFieldType {
 
 		$last_item = end( $value );
 
-		if ( $count == 6 || ( $count == 5 && is_numeric( $last_item ) ) ) {
+		if ( $count === 6 || ( $count === 5 && is_numeric( $last_item ) ) ) {
 			$new_value['line2'] = $value[1];
 			$new_value['city']  = $value[2];
 			$new_value['state'] = $value[3];
 			$new_value['zip']   = $value[4];
 
-			if ( $count == 6 ) {
+			if ( $count === 6 ) {
 				$new_value['country'] = $value[5];
 			}
 		} else {
@@ -353,7 +379,7 @@ class FrmProFieldAddress extends FrmFieldType {
 			$new_value['state'] = $value[2];
 			$new_value['zip']   = $value[3];
 
-			if ( $count == 5 ) {
+			if ( $count === 5 ) {
 				$new_value['country'] = $value[4];
 			}
 		}
@@ -374,6 +400,7 @@ class FrmProFieldAddress extends FrmFieldType {
 	/**
 	 * @param array $errors
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	private function validate_required_fields( &$errors, $args ) {
@@ -386,11 +413,12 @@ class FrmProFieldAddress extends FrmFieldType {
 		}
 
 		$values = $args['value'];
+
 		if ( $values == '' ) {
 			$values = FrmProAddressesController::empty_value_array();
 		}
 
-		$blank_msg  = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
+		$blank_msg = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
 
 		$field_array          = (array) $this->field;
 		$field_array['value'] = $this->field->default_value;
@@ -403,30 +431,41 @@ class FrmProFieldAddress extends FrmFieldType {
 			}
 
 			$subfield_is_required = ! array_key_exists( $key, $sub_fields ) || empty( $sub_fields[ $key ]['optional'] );
-			if ( $subfield_is_required ) {
-				$errors[ 'field' . $args['id'] . '-' . $key ] = '';
-				$errors[ 'field' . $args['id'] ]              = $blank_msg;
+
+			if ( ! $subfield_is_required ) {
+				continue;
 			}
+
+			$errors[ 'field' . $args['id'] . '-' . $key ] = '';
+			$errors[ 'field' . $args['id'] ]              = $blank_msg;
 		}
 	}
 
 	private function validate_zip( &$errors, $args ) {
 		$values = $args['value'];
-		if ( ! empty( $values['zip'] ) ) {
-			$address_type = FrmField::get_option( $this->field, 'address_type' );
-			$format       = '';
-			if ( $address_type === 'us' ) {
-				$format = '/^[0-9]{5}(?:-[0-9]{4})?$/';
-			}
-			$format = apply_filters( 'frm_zip_format', $format, array( 'field' => $this->field ) );
-			if ( ! empty( $format ) && ! preg_match( $format, $values['zip'] ) ) {
-				$errors[ 'field' . $args['id'] . '-zip' ] = __( 'This value is invalid', 'formidable-pro' );
-			}
+
+		if ( empty( $values['zip'] ) ) {
+			return;
+		}
+
+		$address_type = FrmField::get_option( $this->field, 'address_type' );
+		$format       = '';
+
+		if ( $address_type === 'us' ) {
+			$format = '/^[0-9]{5}(?:-[0-9]{4})?$/';
+		}
+
+		$format = apply_filters( 'frm_zip_format', $format, array( 'field' => $this->field ) );
+
+		if ( $format && ! preg_match( $format, $values['zip'] ) ) {
+			$errors[ 'field' . $args['id'] . '-zip' ] = __( 'This value is invalid', 'formidable-pro' );
 		}
 	}
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );

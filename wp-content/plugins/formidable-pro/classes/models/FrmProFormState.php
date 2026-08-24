@@ -23,6 +23,7 @@ class FrmProFormState {
 	/**
 	 * @param string $key
 	 * @param mixed  $value
+	 *
 	 * @return void
 	 */
 	public static function set_initial_value( $key, $value ) {
@@ -48,6 +49,7 @@ class FrmProFormState {
 	/**
 	 * @param string $key
 	 * @param mixed  $default
+	 *
 	 * @return mixed
 	 */
 	public static function get_from_request( $key, $default ) {
@@ -60,6 +62,7 @@ class FrmProFormState {
 	/**
 	 * @param string $key
 	 * @param mixed  $default
+	 *
 	 * @return mixed
 	 */
 	public function get( $key, $default ) {
@@ -70,7 +73,7 @@ class FrmProFormState {
 	 * @return void
 	 */
 	public static function maybe_render_state_field() {
-		if ( empty( self::$instance ) && ! self::get_state_from_request() ) {
+		if ( ! self::$instance && ! self::get_state_from_request() ) {
 			return;
 		}
 		self::$instance->render_state_field();
@@ -81,21 +84,28 @@ class FrmProFormState {
 	 */
 	private static function get_state_from_request() {
 		$encrypted_state = FrmAppHelper::get_post_param( 'frm_state', '', 'sanitize_text_field' );
+
 		if ( ! $encrypted_state ) {
 			return false;
 		}
+
 		$secret          = self::get_encryption_secret();
 		$decrypted_state = openssl_decrypt( $encrypted_state, 'AES-128-ECB', $secret );
+
 		if ( false === $decrypted_state ) {
 			return false;
 		}
+
 		$decoded_state = json_decode( $decrypted_state, true );
+
 		if ( ! is_array( $decoded_state ) ) {
 			return false;
 		}
+
 		foreach ( $decoded_state as $key => $value ) {
 			self::set_initial_value( self::decompressed_key( $key ), self::decompressed_value( $value ) );
 		}
+
 		return true;
 	}
 
@@ -103,11 +113,12 @@ class FrmProFormState {
 		if ( ! self::open_ssl_is_installed() ) {
 			return;
 		}
+
 		if ( ! $this->state && ! self::get_state_from_request() ) {
 			return;
 		}
-		$state_string = $this->get_state_string();
-		echo '<input name="frm_state" type="hidden" value="' . esc_attr( $state_string ) . '" />';
+
+		echo '<input name="frm_state" type="hidden" value="' . esc_attr( $this->get_state_string() ) . '" />';
 	}
 
 	/**
@@ -117,17 +128,16 @@ class FrmProFormState {
 		if ( ! self::open_ssl_is_installed() ) {
 			return '';
 		}
-		$secret           = self::get_encryption_secret();
-		$compressed_state = $this->compressed_state();
-		$json_encoded     = json_encode( $compressed_state );
-		$encrypted        = openssl_encrypt( $json_encoded, 'AES-128-ECB', $secret );
-		return $encrypted;
+		$secret       = self::get_encryption_secret();
+		$json_encoded = json_encode( $this->compressed_state() );
+		return openssl_encrypt( $json_encoded, 'AES-128-ECB', $secret );
 	}
 
 	/**
 	 * Returns true if open SSL is installed.
 	 *
 	 * @since 6.12
+	 *
 	 * @return bool
 	 */
 	private static function open_ssl_is_installed() {
@@ -136,27 +146,29 @@ class FrmProFormState {
 
 	private function compressed_state() {
 		$compressed = array();
+
 		foreach ( $this->state as $key => $value ) {
 			$compressed[ self::compressed_key( $key ) ] = self::compressed_value( $value );
 		}
+
 		return $compressed;
 	}
 
 	/**
 	 * @param string $key
+	 *
 	 * @return string
 	 */
 	private static function compressed_key( $key ) {
 		if ( 'inplace_edit' === $key ) {
 			return 'ipe';
 		}
+
 		if ( 'global_post' === $key ) {
 			return 'gp';
 		}
-		if ( 'testmode' === $key ) {
-			return 'test';
-		}
-		return $key[0];
+
+		return 'testmode' === $key ? 'test' : $key[0];
 	}
 
 	private static function compressed_value( $value ) {
@@ -167,6 +179,7 @@ class FrmProFormState {
 	 * Keys are truncated to a single character to make the state string smaller.
 	 *
 	 * @param string $key
+	 *
 	 * @return string The full key name if one is found. If nothing is found, the $key param is passed back.
 	 */
 	private static function decompressed_key( $key ) {
@@ -201,6 +214,7 @@ class FrmProFormState {
 	/**
 	 * @param string $key
 	 * @param string $value
+	 *
 	 * @return void
 	 */
 	public static function set_get_param( $key, $value ) {

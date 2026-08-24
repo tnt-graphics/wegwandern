@@ -11,18 +11,21 @@ class FrmProFieldEndDivider extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'end_divider';
 
 	/**
 	 * @var bool
+	 *
 	 * @since 3.0
 	 */
 	protected $has_input = false;
 
 	/**
 	 * @var bool
+	 *
 	 * @since 3.0
 	 */
 	protected $has_html = false;
@@ -49,14 +52,15 @@ class FrmProFieldEndDivider extends FrmFieldType {
 
 	protected function extra_field_opts() {
 		return array(
-			'add_label'    => __( 'Add', 'formidable-pro' ),
-			'remove_label' => __( 'Remove', 'formidable-pro' ),
-			'format'       => 'both', // set icon format
+			'add_label'    => __( 'Add', 'formidable' ),
+			'remove_label' => __( 'Remove', 'formidable' ),
+			'format'       => 'both', // Set icon format
 		);
 	}
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -78,14 +82,14 @@ class FrmProFieldEndDivider extends FrmFieldType {
 
 		$html = '';
 
-		// close the section's frm_field_x_container div
-		if ( isset( $frm_vars['div'] ) && $frm_vars['div'] ) {
+		// Close the section's frm_field_x_container div
+		if ( ! empty( $frm_vars['div'] ) ) {
 			$html           .= "</div>\n";
 			$frm_vars['div'] = false;
 		}
 
-		// close the collapsible section toggle div
-		if ( isset( $frm_vars['collapse_div'] ) && $frm_vars['collapse_div'] ) {
+		// Close the collapsible section toggle div
+		if ( ! empty( $frm_vars['collapse_div'] ) ) {
 			$html                    .= "</div>\n";
 			$frm_vars['collapse_div'] = false;
 		}

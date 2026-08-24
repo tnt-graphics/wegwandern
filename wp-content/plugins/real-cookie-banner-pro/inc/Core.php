@@ -245,6 +245,7 @@ class Core extends BaseCore implements IOverrideCore
         \add_action('DevOwl/Utils/NewVersionInstallation/' . RCB_SLUG, [TCF::getInstance(), 'new_version_installation']);
         \add_action('DevOwl/Utils/NewVersionInstallation/' . RCB_SLUG, [new DatabaseUpgrades(), 'apply']);
         \add_filter('RCB/Blocker/Enabled', [$this->getScanner(), 'force_blocker_enabled']);
+        \add_filter('RCB/Blocker/ResolveBlockables', [$this->getScanner(), 'resolve_blockables'], 50, 2);
         \add_filter('customize_save_response', [$this, 'customize_save_response'], 10, 1);
         \add_filter('option_' . Consent::SETTING_COOKIE_DURATION, [Consent::getInstance(), 'option_cookie_duration']);
         \add_filter('option_' . Consent::SETTING_CONSENT_DURATION, [Consent::getInstance(), 'option_consent_duration']);
@@ -494,7 +495,6 @@ class Core extends BaseCore implements IOverrideCore
             ComingSoonPlugins::getInstance()->bypass();
             \add_action('shutdown', [$scanner, 'teardown']);
             \add_filter('show_admin_bar', '__return_false');
-            \add_filter('RCB/Blocker/ResolveBlockables', [$scanner, 'resolve_blockables'], 50, 2);
         }
         // If country bypass is active, add the filter so the frontend fetches the WP REST API and create consent
         if (CountryBypass::getInstance()->isActive()) {

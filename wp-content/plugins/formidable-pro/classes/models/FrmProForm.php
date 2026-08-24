@@ -14,6 +14,7 @@ class FrmProForm {
 	 * @param array $options Form options.
 	 * @param array $values  Form data.
 	 * @param bool  $update  Is form updating or creating. It's `true` if is updating.
+	 *
 	 * @return array
 	 */
 	public static function update_options( $options, $values, $update = false ) {
@@ -39,6 +40,7 @@ class FrmProForm {
 		$options = FrmAppHelper::maybe_filter_array( $options, array( 'edit_msg', 'draft_msg' ) );
 
 		$options['single_entry'] = $values['options']['single_entry'] ?? 0;
+
 		if ( $options['single_entry'] ) {
 			$options['single_entry_type'] = $values['options']['single_entry_type'] ?? array();
 		}
@@ -68,7 +70,7 @@ class FrmProForm {
 			return;
 		}
 
-		if ( false !== strpos( $options['submit_html'], '[if start_over]' ) ) {
+		if ( str_contains( $options['submit_html'], '[if start_over]' ) ) {
 			return;
 		}
 
@@ -81,6 +83,7 @@ class FrmProForm {
 	 *
 	 * @param array $options
 	 * @param array $values
+	 *
 	 * @return void
 	 */
 	private static function fill_option_defaults( &$options, $values ) {
@@ -98,6 +101,7 @@ class FrmProForm {
 	 * Turn on and off file protection for this form folder
 	 *
 	 * @since 2.02
+	 *
 	 * @param array $atts
 	 */
 	private static function setup_file_protection( $atts ) {
@@ -116,6 +120,7 @@ class FrmProForm {
 				$folder_name = str_replace( $upload_dir, '', $folder );
 				self::maybe_update_htaccess_file( $folder_name, $atts['new'] );
 			}
+
 			$args = array(
 				'form_id'   => $form_id,
 				'file_ids'  => $file_ids,
@@ -128,6 +133,7 @@ class FrmProForm {
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return bool
 	 */
 	private static function file_protection_setting_was_updated( $atts ) {
@@ -144,33 +150,40 @@ class FrmProForm {
 
 	/**
 	 * @param string $file_folder
+	 *
 	 * @return bool
 	 */
 	private static function file_folder_should_have_htaccess( $file_folder ) {
 		$formidable_uploads_dir = FrmProFileField::default_formidable_uploads_dir();
 		$dir_length             = strlen( $formidable_uploads_dir );
+
 		if ( strlen( $file_folder ) < $dir_length ) {
 			return false;
 		}
+
 		return $formidable_uploads_dir === substr( $file_folder, 0, $dir_length );
 	}
 
 	/**
 	 * @param array<int> $file_ids
+	 *
 	 * @return array<string>
 	 */
 	private static function get_all_file_folders_for_form( $file_ids ) {
 		$file_folders = array();
+
 		foreach ( $file_ids as $file_id ) {
 			$path                 = get_attached_file( $file_id );
 			$dir                  = dirname( $path );
 			$file_folders[ $dir ] = $dir;
 		}
+
 		return array_values( $file_folders );
 	}
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_all_file_ids_for_form( $form_id ) {
@@ -181,7 +194,7 @@ class FrmProForm {
 			array(
 				'form_id' => $all_form_ids,
 				'type'    => 'file',
-			) 
+			)
 		);
 
 		if ( ! $file_field_ids ) {
@@ -190,8 +203,9 @@ class FrmProForm {
 
 		$file_data = FrmDb::get_col( 'frm_item_metas', array( 'field_id' => $file_field_ids ), 'meta_value' );
 		$file_ids  = array();
+
 		foreach ( $file_data as $meta_value ) {
-			FrmProAppHelper::unserialize_or_decode( $meta_value );
+			FrmAppHelper::unserialize_or_decode( $meta_value );
 			$file_ids = array_merge( $file_ids, (array) $meta_value );
 		}
 
@@ -222,6 +236,7 @@ class FrmProForm {
 
 	/**
 	 * @param string $folder_name
+	 *
 	 * @return void
 	 */
 	private static function create_folder_if_it_does_not_already_exist( $folder_name ) {
@@ -229,7 +244,7 @@ class FrmProForm {
 			array(
 				'folder_name' => $folder_name,
 				'file_name'   => '',
-			) 
+			)
 		);
 	}
 
@@ -239,6 +254,8 @@ class FrmProForm {
 	 * Without this file, the chmod code will set prevent access to the files
 	 *
 	 * @since 2.02
+	 *
+	 * @param string $content
 	 */
 	public static function get_htaccess_content( &$content ) {
 		$url = home_url();
@@ -252,6 +269,7 @@ class FrmProForm {
 	/**
 	 * @param array $settings
 	 * @param array $action
+	 *
 	 * @return array
 	 */
 	public static function save_wppost_actions( $settings, $action ) {
@@ -281,6 +299,7 @@ class FrmProForm {
 	/**
 	 * @param array      $settings
 	 * @param int|string $form_id
+	 *
 	 * @return void
 	 */
 	private static function create_post_category_field( array &$settings, $form_id ) {
@@ -293,7 +312,7 @@ class FrmProForm {
 				continue;
 			}
 
-			//create a new field
+			// Create a new field
 			$new_values                                 = apply_filters( 'frm_before_field_created', FrmFieldsHelper::setup_new_vars( 'checkbox', $form_id ) );
 			$new_values['field_options']['taxonomy']    = $field_name['meta_name'] ?? 'category';
 			$new_values['name']                         = ucwords( str_replace( '_', ' ', $new_values['field_options']['taxonomy'] ) );
@@ -306,20 +325,26 @@ class FrmProForm {
 		}
 	}
 
+	/**
+	 * @param array $settings
+	 */
 	private static function create_post_status_field( array &$settings, $form_id ) {
-		if ( ! isset( $settings['post_status'] ) || 'dropdown' != $settings['post_status'] ) {
+		if ( ! isset( $settings['post_status'] ) || 'dropdown' !== $settings['post_status'] ) {
 			return;
 		}
 
-		//create a new field
+		// Create a new field
 		$new_values                                    = apply_filters( 'frm_before_field_created', FrmFieldsHelper::setup_new_vars( 'select', $form_id ) );
-		$new_values['name']                            = __( 'Status', 'formidable-pro' );
+		$new_values['name']                            = __( 'Status', 'formidable' );
 		$new_values['field_options']['post_field']     = 'post_status';
 		$new_values['field_options']['separate_value'] = 1;
 		$new_values['options']                         = FrmProFieldsHelper::get_initial_post_status_options();
 		$settings['post_status']                       = FrmField::create( $new_values );
 	}
 
+	/**
+	 * @param array $field_options
+	 */
 	public static function update_form_field_options( $field_options, $field ) {
 		$field_options['post_field']   = '';
 		$field_options['custom_field'] = '';
@@ -328,6 +353,7 @@ class FrmProForm {
 
 		$action_name = apply_filters( 'frm_save_post_name', 'wppost', $field );
 		$post_action = FrmFormAction::get_action_for_form( $field->form_id, $action_name, 1 );
+
 		if ( ! $post_action ) {
 			return $field_options;
 		}
@@ -343,15 +369,17 @@ class FrmProForm {
 		);
 
 		$this_post_field = array_search( $field->id, $post_action->post_content );
+
 		if ( in_array( $this_post_field, $post_fields ) ) {
 			$field_options['post_field'] = $this_post_field;
 		}
+
 		if ( $this_post_field === 'post_status' ) {
 			$field_options['separate_value'] = 1;
 		}
 		unset( $this_post_field );
 
-		//Set post categories
+		// Set post categories
 		foreach ( (array) $post_action->post_content['post_category'] as $field_name ) {
 			if ( ! isset( $field_name['field_id'] ) || $field_name['field_id'] != $field->id ) {
 				continue;
@@ -362,7 +390,7 @@ class FrmProForm {
 			$field_options['exclude_cat'] = $field_name['exclude_cat'] ?? 0;
 		}
 
-		//Set post custom fields
+		// Set post custom fields
 		foreach ( (array) $post_action->post_content['post_custom_fields'] as $field_name ) {
 			if ( ! isset( $field_name['field_id'] ) || $field_name['field_id'] != $field->id ) {
 				continue;
@@ -378,6 +406,7 @@ class FrmProForm {
 	/**
 	 * @param int|string $id
 	 * @param array      $values
+	 *
 	 * @return void
 	 */
 	public static function update( $id, $values ) {
@@ -401,10 +430,12 @@ class FrmProForm {
 			);
 		}
 
-		if ( ! empty( $updated ) ) {
-			FrmForm::clear_form_cache();
-			unset( $updated );
+		if ( empty( $updated ) ) {
+			return;
 		}
+
+		FrmForm::clear_form_cache();
+		unset( $updated );
 	}
 
 	/**
@@ -413,10 +444,12 @@ class FrmProForm {
 	 * @since 6.9
 	 *
 	 * @param  int $id Form ID.
+	 *
 	 * @return bool    Return `true` if updated.
 	 */
 	private static function update_builder_page( $id ) {
 		$options = self::get_form_options_from_builder_data();
+
 		if ( ! $options ) {
 			return false;
 		}
@@ -449,6 +482,7 @@ class FrmProForm {
 	public static function get_form_options_from_builder_data() {
 		// Only do if there are changed fields.
 		$fields_submitted = FrmAppHelper::get_post_param( 'frm_fields_submitted', array() );
+
 		if ( ! $fields_submitted || ! is_array( $fields_submitted ) ) {
 			return false;
 		}
@@ -494,6 +528,7 @@ class FrmProForm {
 	/**
 	 * @param array $new_opts
 	 * @param int   $form_id
+	 *
 	 * @return array
 	 */
 	public static function after_duplicate( $new_opts, $form_id = 0 ) {
@@ -502,26 +537,92 @@ class FrmProForm {
 		if ( isset( $new_opts['success_url'] ) ) {
 			$new_opts['success_url'] = FrmFieldsHelper::switch_field_ids( $new_opts['success_url'] );
 		}
+
 		if ( isset( $new_opts['rootline_titles'] ) ) {
 			$new_opts['rootline_titles'] = self::switch_rootline_field_id_keys( $new_opts['rootline_titles'] );
 		}
+
 		if ( $form_id ) {
 			self::maybe_fix_conditional_logic_after_duplicate( $form_id );
 		}
+
 		return $new_opts;
 	}
 
 	/**
 	 * @param array $new_opts
+	 *
 	 * @return void
 	 */
 	private static function maybe_switch_submit_condition_field_ids( &$new_opts ) {
-		if ( ! empty( $new_opts['submit_conditions']['hide_field'] ) ) {
-			global $frm_duplicate_ids;
-			foreach ( $new_opts['submit_conditions']['hide_field'] as $key => $val ) {
-				if ( isset( $frm_duplicate_ids[ $val ] ) ) {
-					$new_opts['submit_conditions']['hide_field'][ $key ] = $frm_duplicate_ids[ $val ];
+		if ( empty( $new_opts['submit_conditions']['hide_field'] ) ) {
+			return;
+		}
+
+		global $frm_duplicate_ids;
+
+		foreach ( $new_opts['submit_conditions']['hide_field'] as $key => $val ) {
+			if ( isset( $frm_duplicate_ids[ $val ] ) ) {
+				$new_opts['submit_conditions']['hide_field'][ $key ] = $frm_duplicate_ids[ $val ];
+			}
+		}
+	}
+
+	/**
+	 * Remap conditional-logic field references across every imported form after an XML import.
+	 *
+	 * Child forms are imported before their parent, so when a repeater's field references a
+	 * parent-form field in `hide_field`, that reference is still the old ID after the per-form
+	 * fix-up runs. Once every form has been imported, `$frm_duplicate_ids` contains the full
+	 * old-to-new map, so we can resolve any remaining cross-form references here.
+	 *
+	 * @since 6.30.2
+	 *
+	 * @param array $imported Summary returned by the XML importer. Expects
+	 *                        `forms` => array( old_form_id => new_form_id ).
+	 *
+	 * @return void
+	 */
+	public static function fix_cross_form_conditional_logic_after_import( $imported ) {
+		global $frm_duplicate_ids;
+
+		if ( empty( $imported['forms'] ) || ! $frm_duplicate_ids ) {
+			return;
+		}
+
+		$fields = FrmField::getAll(
+			array(
+				'fi.form_id'                => array_values( $imported['forms'] ),
+				'fi.field_options like'     => '"hide_field";a:',
+				'fi.field_options not like' => '"hide_field";a:0:{',
+			),
+			'field_order'
+		);
+
+		foreach ( $fields as $field ) {
+			if ( empty( $field->field_options['hide_field'] ) || ! is_array( $field->field_options['hide_field'] ) ) {
+				continue;
+			}
+
+			$updated = false;
+
+			foreach ( $field->field_options['hide_field'] as $key => $field_id ) {
+				// Skip entries already remapped to a new ID to avoid double-switching
+				// when a new ID happens to match another field's old ID.
+				if ( in_array( $field_id, $frm_duplicate_ids, true ) ) {
+					continue;
 				}
+
+				if ( ! isset( $frm_duplicate_ids[ $field_id ] ) ) {
+					continue;
+				}
+
+				$field->field_options['hide_field'][ $key ] = $frm_duplicate_ids[ $field_id ];
+				$updated                                    = true;
+			}
+
+			if ( $updated ) {
+				FrmField::update( $field->id, array( 'field_options' => $field->field_options ) );
 			}
 		}
 	}
@@ -544,12 +645,14 @@ class FrmProForm {
 			'fi.form_id'   => $form_id,
 		);
 		$fields = FrmField::getAll( $where, 'field_order' );
+
 		foreach ( $fields as $field ) {
 			if ( empty( $field->field_options['hide_field'] ) ) {
 				continue;
 			}
 
 			$updated = false;
+
 			foreach ( $field->field_options['hide_field'] as $key => $field_id ) {
 				if ( isset( $frm_duplicate_ids[ $field_id ] ) ) {
 					$field->field_options['hide_field'][ $key ] = $frm_duplicate_ids[ $field_id ];
@@ -567,17 +670,19 @@ class FrmProForm {
 
 	/**
 	 * @param array $original_titles
+	 *
 	 * @return array updated titles, indexed by the new duplicated page break field ids.
 	 */
 	private static function switch_rootline_field_id_keys( $original_titles ) {
 		global $frm_duplicate_ids;
-		$duplicate_ids = (array) $frm_duplicate_ids;
-
+		$duplicate_ids  = (array) $frm_duplicate_ids;
 		$updated_titles = array();
+
 		foreach ( $original_titles as $key => $value ) {
 			$use_key                    = $duplicate_ids[ $key ] ?? $key;
 			$updated_titles[ $use_key ] = $value;
 		}
+
 		return $updated_titles;
 	}
 
@@ -588,7 +693,7 @@ class FrmProForm {
 			array(
 				'field_options not like' => $has_no_logic,
 				'form_id'                => $form->id,
-			) 
+			)
 		);
 		return ! empty( $sub_fields );
 	}
@@ -597,17 +702,18 @@ class FrmProForm {
 	 * Check if the "Submit this form with AJAX" setting is toggled on.
 	 *
 	 * @param stdClass $form
+	 *
 	 * @return int
 	 */
 	public static function is_ajax_on( $form ) {
-		$ajax = $form->options['ajax_submit'] ?? 0;
-		return $ajax;
+		return $form->options['ajax_submit'] ?? 0;
 	}
 
 	/**
 	 * @since 3.04
 	 *
 	 * @param object $form
+	 *
 	 * @return bool
 	 */
 	public static function is_open( $form ) {
@@ -621,7 +727,7 @@ class FrmProForm {
 			return false;
 		}
 
-		if ( strpos( $options['open_status'], 'schedule' ) !== false ) {
+		if ( str_contains( $options['open_status'], 'schedule' ) ) {
 			$is_started = self::has_time_passed( $options['open_date'], true );
 			$is_ended   = self::has_time_passed( $options['close_date'], false );
 			$is_open    = $is_started && ! $is_ended;
@@ -631,52 +737,67 @@ class FrmProForm {
 			}
 		}
 
-		if ( strpos( $options['open_status'], 'limit' ) !== false && ! empty( $options['max_entries'] ) ) {
+		if ( str_contains( $options['open_status'], 'limit' ) && ! empty( $options['max_entries'] ) ) {
 			$count = FrmEntry::getRecordCount( $form->id );
-			return ( (int) $count < (int) $options['max_entries'] );
+			return (int) $count < (int) $options['max_entries'];
 		}
 
 		return true;
 	}
-
 
 	/**
 	 * @since 3.04
 	 *
 	 * @param string $time
 	 * @param bool $if_blank - If no time is set, should it default to passed?
+	 *
 	 * @return bool
 	 */
 	private static function has_time_passed( $time, $if_blank ) {
-		return empty( $time ) ? $if_blank : ( current_time( 'timestamp' ) > strtotime( $time ) );
+		return $time ? ( current_time( 'timestamp' ) > strtotime( $time ) ) : $if_blank;
 	}
 
+	/**
+	 * @param array $values
+	 */
 	public static function validate( $errors, $values ) {
-		// add a user id field if the form requires one
-		if ( isset( $values['logged_in'] ) || isset( $values['editable'] ) || ( isset( $values['options'] ) && FrmProFormsHelper::check_single_entry_type( $values['options'], 'user' ) ) || ( isset( $values['options']['save_draft'] ) && $values['options']['save_draft'] == 1 ) ) {
-			$form_id = $values['id'];
+		// Add a user id field if the form requires one
+		$requires_user_id = isset( $values['logged_in'] )
+			|| isset( $values['editable'] )
+			|| ( isset( $values['options'] ) && FrmProFormsHelper::check_single_entry_type( $values['options'], 'user' ) )
+			|| ( isset( $values['options']['save_draft'] ) && $values['options']['save_draft'] == 1 );
 
-			$user_field = FrmField::get_all_types_in_form( $form_id, 'user_id', 1 );
-			if ( ! $user_field ) {
-				$new_values         = FrmFieldsHelper::setup_new_vars( 'user_id', $form_id );
-				$new_values['name'] = __( 'User ID', 'formidable-pro' );
-				FrmField::create( $new_values );
-			}
+		if ( ! $requires_user_id ) {
+			return $errors;
 		}
+
+		$form_id    = $values['id'];
+		$user_field = FrmField::get_all_types_in_form( $form_id, 'user_id', 1 );
+
+		if ( $user_field ) {
+			return $errors;
+		}
+
+		$new_values         = FrmFieldsHelper::setup_new_vars( 'user_id', $form_id );
+		$new_values['name'] = __( 'User ID', 'formidable' );
+		FrmField::create( $new_values );
 
 		return $errors;
 	}
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	public static function get_child_form_ids( $form_id ) {
 		$form_ids       = array();
 		$child_form_ids = FrmDb::get_col( 'frm_forms', array( 'parent_form_id' => $form_id ) );
+
 		if ( $child_form_ids ) {
 			$form_ids = $child_form_ids;
 		}
+
 		return array_filter( $form_ids, 'is_numeric' );
 	}
 
@@ -691,8 +812,9 @@ class FrmProForm {
 			return;
 		}
 
-		// refactor submit condition logic so it is easier to work with
+		// Refactor submit condition logic so it is easier to work with
 		$submit_conditions = array();
+
 		if ( isset( $form->options['submit_conditions']['hide_field'] ) ) {
 			foreach ( $form->options['submit_conditions']['hide_field'] as $index => $field_id ) {
 				if ( ! isset( $submit_conditions[ $field_id ] ) ) {
@@ -707,6 +829,7 @@ class FrmProForm {
 		}
 
 		$updated = false;
+
 		foreach ( $map as $field_id => $values ) {
 			if ( ! isset( $submit_conditions[ $field_id ] ) ) {
 				continue;
@@ -738,6 +861,7 @@ class FrmProForm {
 			}
 
 			$updated = false;
+
 			foreach ( $action->post_content['conditions'] as $index => $condition ) {
 				if ( ! is_array( $condition ) ) {
 					// skip data like [send_stop] => send or [any_all] => any
@@ -745,20 +869,24 @@ class FrmProForm {
 				}
 
 				if ( ! isset( $map[ $condition['hide_field'] ] ) ) {
-					// condition is not for any updated fields
+					// Condition is not for any updated fields
 					continue;
 				}
 
-				if ( isset( $map[ $condition['hide_field'] ][ $condition['hide_opt'] ] ) ) {
-					$action->post_content['conditions'][ $index ]['hide_opt'] = $map[ $condition['hide_field'] ][ $condition['hide_opt'] ];
-					$updated = true;
+				if ( ! isset( $map[ $condition['hide_field'] ][ $condition['hide_opt'] ] ) ) {
+					continue;
 				}
+
+				$action->post_content['conditions'][ $index ]['hide_opt'] = $map[ $condition['hide_field'] ][ $condition['hide_opt'] ];
+				$updated = true;
 			}
 
-			if ( $updated ) {
-				global $wpdb;
-				$wpdb->update( $wpdb->posts, array( 'post_content' => wp_json_encode( $action->post_content ) ), array( 'ID' => $action->ID ) );
+			if ( ! $updated ) {
+				continue;
 			}
+
+			global $wpdb;
+			$wpdb->update( $wpdb->posts, array( 'post_content' => wp_json_encode( $action->post_content ) ), array( 'ID' => $action->ID ) );
 		}
 	}
 
@@ -772,7 +900,7 @@ class FrmProForm {
 	public static function maybe_fix_conditions( $id, $map ) {
 		$field_ids = array_keys( $map );
 
-		// filter the map to exclude anything that hasn't changed
+		// Filter the map to exclude anything that hasn't changed
 		$map = array_reduce(
 			$field_ids,
 			function ( $total, $field_id ) use ( $map ) {
@@ -794,9 +922,11 @@ class FrmProForm {
 			array()
 		);
 
-		if ( $map ) {
-			self::maybe_fix_submit_button_conditions( $id, $map );
-			self::maybe_fix_action_conditions( $id, $map );
+		if ( ! $map ) {
+			return;
 		}
+
+		self::maybe_fix_submit_button_conditions( $id, $map );
+		self::maybe_fix_action_conditions( $id, $map );
 	}
 }

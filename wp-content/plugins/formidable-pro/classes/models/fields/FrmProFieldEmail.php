@@ -29,6 +29,8 @@ class FrmProFieldEmail extends FrmFieldEmail {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -38,6 +40,7 @@ class FrmProFieldEmail extends FrmFieldEmail {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'.
 	 */
 	public function show_primary_options( $args ) {
@@ -49,6 +52,7 @@ class FrmProFieldEmail extends FrmFieldEmail {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display'.
 	 *
 	 * TODO: Remove this method once the majority of active LITE version installations are above 6.19.

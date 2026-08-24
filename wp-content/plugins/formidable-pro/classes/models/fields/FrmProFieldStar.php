@@ -13,6 +13,7 @@ class FrmProFieldStar extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'star';
@@ -54,6 +55,7 @@ class FrmProFieldStar extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -64,12 +66,9 @@ class FrmProFieldStar extends FrmFieldType {
 	}
 
 	public function get_container_class() {
-		// Add class to inline Scale field
-		$class = '';
-		if ( $this->field['label'] == 'inline' ) {
-			$class = ' frm_scale_container';
-		}
-		return $class;
+		// Add class to inline Star field
+
+		return $this->field['label'] === 'inline' ? ' frm_scale_container' : '';
 	}
 
 	protected function include_front_form_file() {
@@ -81,6 +80,7 @@ class FrmProFieldStar extends FrmFieldType {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	protected function prepare_display_value( $value, $atts ) {
@@ -117,13 +117,16 @@ class FrmProFieldStar extends FrmFieldType {
 	 *
 	 * @param array $values
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private function prepare_display_for_multiple_values( $values, $atts ) {
 		$output = '';
+
 		foreach ( $values as $value ) {
 			$output .= $this->prepare_display_value( $value, $atts );
 		}
+
 		return $output;
 	}
 
@@ -144,10 +147,12 @@ class FrmProFieldStar extends FrmFieldType {
 		 * @param stdClass $field
 		 * @param string   $contents The SVG HTML generated in prepare_display_value.
 		 * @param Closure  $filter This is passed so we can remove it when it's finished.
+		 *
 		 * @return string Either the same HTML as before, or the HTML generated in prepare_display_value.
 		 */
 		$filter = function ( $value, $field ) use ( $contents, &$filter ) {
 			$field_id = absint( is_array( $this->field ) ? $this->field['id'] : $this->field->id );
+
 			if ( (int) $field->id !== $field_id ) {
 				// Not this field so leave it alone.
 				return $value;
@@ -183,6 +188,7 @@ class FrmProFieldStar extends FrmFieldType {
 		if ( is_array( $options ) ) {
 			$max                 = max( $options );
 			$options_are_default = 5 === $max && 5 === count( $options );
+
 			if ( false !== $max_setting && $options_are_default ) {
 				$max = $max_setting;
 			}
@@ -202,14 +208,13 @@ class FrmProFieldStar extends FrmFieldType {
 		 * @param array $field     The field array.
 		 */
 		$max_limit = apply_filters( 'frm_pro_max_star_rating', static::MAX_STARS, $max, $this->field );
-		if ( $max > $max_limit ) {
-			return $max_limit;
-		}
-		return $max;
+
+		return $max > $max_limit ? $max_limit : $max;
 	}
 
 	/**
 	 * @param mixed $value
+	 *
 	 * @return array
 	 */
 	private function get_rounded_decimal( $value ) {
@@ -223,32 +228,36 @@ class FrmProFieldStar extends FrmFieldType {
 			'value'   => $value,
 		);
 
-		if ( $value != floor( $value ) ) {
-			$value = round( $value, 2 );
-			list( $numbers['digit'], $numbers['decimal'] ) = explode( '.', $value );
-
-			if ( strlen( $numbers['decimal'] ) === 1 ) {
-				// make sure there are two digits after the decimal
-				$numbers['decimal'] = $numbers['decimal'] * 10;
-			}
-
-			if ( $numbers['decimal'] < 25 ) {
-				$numbers['decimal'] = 0;
-			} elseif ( $numbers['decimal'] < 75 ) {
-				$numbers['decimal'] = 5;
-			} else {
-				$numbers['decimal'] = 0;
-				++$numbers['digit'];
-			}
-
-			$numbers['value'] = (float) ( $numbers['digit'] . '.' . $numbers['decimal'] );
+		if ( $value == floor( $value ) ) {
+			return $numbers;
 		}
+
+		$value = round( $value, 2 );
+		list( $numbers['digit'], $numbers['decimal'] ) = explode( '.', $value );
+
+		if ( strlen( $numbers['decimal'] ) === 1 ) {
+			// Make sure there are two digits after the decimal
+			$numbers['decimal'] = $numbers['decimal'] * 10;
+		}
+
+		if ( $numbers['decimal'] < 25 ) {
+			$numbers['decimal'] = 0;
+		} elseif ( $numbers['decimal'] < 75 ) {
+			$numbers['decimal'] = 5;
+		} else {
+			$numbers['decimal'] = 0;
+			++$numbers['digit'];
+		}
+
+		$numbers['value'] = (float) ( $numbers['digit'] . '.' . $numbers['decimal'] );
 
 		return $numbers;
 	}
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );

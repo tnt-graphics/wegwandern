@@ -1,6 +1,7 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Class WpmfDuplicateFile
@@ -69,7 +70,7 @@ class WpmfDuplicateFile
             $terms_parent = wp_get_object_terms($post->ID, WPMF_TAXO, $args);
             $alt_post     = get_post_meta($id, '_wp_attachment_image_alt', true);
 
-            $cloud_file_type = wpmfGetCloudFileType($id);
+            $cloud_file_type = WpmfHelper::wpmfGetCloudFileType($id);
             $awsS3infos = get_post_meta($id, 'wpmf_awsS3_info', true);
             $isLocal = false;
             $isLocalNew = false;

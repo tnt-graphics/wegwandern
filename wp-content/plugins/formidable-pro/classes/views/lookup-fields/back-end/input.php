@@ -5,9 +5,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( empty( $field['get_values_field'] ) ) {
 	?>
-	<span class="frm-with-left-icon frm-not-set" id="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
-		<?php FrmProAppHelper::icon_by_class( 'frmfont frm_report_problem_solid_icon' ); ?>
-		<input type="text" value="<?php esc_attr_e( 'This field is not set up yet.', 'formidable-pro' ); ?>" disabled />
+	<span class="frm-with-left-icon frm-not-set frm-block" id="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
+		<?php FrmAppHelper::icon_by_class( 'frmfont frm_report_problem_solid_icon' ); ?>
+		<input type="text" value="<?php esc_attr_e( 'This field is not set up yet.', 'formidable' ); ?>" disabled />
 	</span>
 	<input type="hidden" name="<?php echo esc_attr( $field_name ); ?>" value="" />
 	<?php
@@ -32,7 +32,6 @@ if ( 'select' === $field['data_type'] ) {
 </select>
 
 <?php
-
 } elseif ( 'radio' === $field['data_type'] || 'checkbox' === $field['data_type'] ) {
 	// Checkbox and Radio Lookup Fields
 
@@ -42,7 +41,7 @@ if ( 'select' === $field['data_type'] ) {
 			<input type="text" value="<?php esc_attr_e( 'No options found', 'formidable-pro' ); ?>" disabled />
 		</span>
 		<?php
-	} elseif ( count( $field['options'] ) == 1 && reset( $field['options'] ) == '' ) {
+	} elseif ( count( $field['options'] ) === 1 && reset( $field['options'] ) == '' ) {
 		?>
 		<span id="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
 			<input type="text" value="<?php esc_attr_e( 'This field content is dynamic', 'formidable-pro' ); ?>" disabled />
@@ -61,7 +60,7 @@ if ( 'select' === $field['data_type'] ) {
 			<input type="<?php echo esc_attr( $field['data_type'] ); ?>" name="<?php echo esc_attr( $field_name ); ?>"
 					value="<?php echo esc_attr( $opt_value ); ?>"<?php echo $checked; ?>/>
 			<label class="frm_ipe_field_option field_<?php echo esc_attr( $field['id'] ); ?>_option"
-					id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>"><?php echo FrmAppHelper::kses( $opt_label, 'all' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+					id="<?php echo esc_attr( $html_id . '-' . $opt_key ); ?>"><?php FrmAppHelper::kses_echo( $opt_label, 'all' ); ?></label>
 			</li><?php
 		}
 		unset( $opt_key, $checked, $opt_value, $opt_label );

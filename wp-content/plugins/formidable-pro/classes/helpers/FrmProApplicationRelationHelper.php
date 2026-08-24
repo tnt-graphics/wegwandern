@@ -25,12 +25,12 @@ class FrmProApplicationRelationHelper {
 	private $post_types_by_id;
 
 	/**
-	 * @var array<int,int>
+	 * @var array<int,array<int>>
 	 */
 	private $parent_post_ids_by_child_post_id;
 
 	/**
-	 * @var array<int,int>
+	 * @var array<int,array<int>>
 	 */
 	private $parent_post_ids_by_child_form_id;
 
@@ -50,7 +50,7 @@ class FrmProApplicationRelationHelper {
 	private $embedded_form_ids_by_parent_form_id;
 
 	/**
-	 * @var array<int,int>
+	 * @var array<int,array<int>>
 	 */
 	private $parent_form_ids_by_embedded_form_id;
 
@@ -67,7 +67,6 @@ class FrmProApplicationRelationHelper {
 	/**
 	 * @param array<stdClass> $forms
 	 * @param array<WP_Post>  $posts
-	 * @return void
 	 */
 	public function __construct( $forms, $posts ) {
 		$this->parent_post_ids_by_child_form_id    = array();
@@ -80,6 +79,7 @@ class FrmProApplicationRelationHelper {
 
 		if ( $forms ) {
 			$form_ids = array();
+
 			foreach ( $forms as $form ) {
 				$form_ids[]                          = $form->id;
 				$this->form_names_by_id[ $form->id ] = $form->name;
@@ -89,12 +89,14 @@ class FrmProApplicationRelationHelper {
 				$this->parent_form_ids_by_embedded_form_id[ $form->id ] = array();
 				$this->parent_form_id_by_repeater_form_id[ $form->id ]  = $form->parent_form_id;
 
-				if ( ! empty( $form->parent_form_id ) ) {
-					if ( ! array_key_exists( $form->parent_form_id, $this->repeater_form_ids_by_parent_form_id ) ) {
-						$this->repeater_form_ids_by_parent_form_id[ $form->parent_form_id ] = array();
-					}
-					$this->repeater_form_ids_by_parent_form_id[ $form->parent_form_id ][] = $form->id;
+				if ( empty( $form->parent_form_id ) ) {
+					continue;
 				}
+
+				if ( ! array_key_exists( $form->parent_form_id, $this->repeater_form_ids_by_parent_form_id ) ) {
+					$this->repeater_form_ids_by_parent_form_id[ $form->parent_form_id ] = array();
+				}
+				$this->repeater_form_ids_by_parent_form_id[ $form->parent_form_id ][] = $form->id;
 			}
 
 			$this->set_embedded_form_info( $form_ids );
@@ -111,13 +113,16 @@ class FrmProApplicationRelationHelper {
 			$this->post_types_by_id[ $post->ID ]                 = $post->post_type;
 			$this->parent_post_ids_by_child_post_id[ $post->ID ] = array();
 
-			if ( 'frm_display' === $post->post_type ) {
-				$form_id = get_post_meta( $post->ID, 'frm_form_id', true );
-				if ( ! is_numeric( $form_id ) || ! array_key_exists( $form_id, $this->view_ids_by_parent_form_id ) ) {
-					continue;
-				}
-				$this->view_ids_by_parent_form_id[ $form_id ][] = $post->ID;
+			if ( 'frm_display' !== $post->post_type ) {
+				continue;
 			}
+
+			$form_id = get_post_meta( $post->ID, 'frm_form_id', true );
+
+			if ( ! is_numeric( $form_id ) || ! array_key_exists( $form_id, $this->view_ids_by_parent_form_id ) ) {
+				continue;
+			}
+			$this->view_ids_by_parent_form_id[ $form_id ][] = $post->ID;
 		}
 
 		// Walk through posts and set children parents for embedded in column data.
@@ -125,6 +130,7 @@ class FrmProApplicationRelationHelper {
 			$posts,
 			/**
 			 * @param WP_Post $current
+			 *
 			 * @return void
 			 */
 			function ( $current ) {
@@ -144,6 +150,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param array<int> $form_ids
+	 *
 	 * @return void
 	 */
 	private function set_embedded_form_info( $form_ids ) {
@@ -152,15 +159,17 @@ class FrmProApplicationRelationHelper {
 			'type'    => 'form',
 		);
 		$field_data = FrmDb::get_results( 'frm_fields', $where, 'form_id, field_options' );
+
 		foreach ( $field_data as $field ) {
 			$field_options = $field->field_options;
-			FrmProAppHelper::unserialize_or_decode( $field_options );
+			FrmAppHelper::unserialize_or_decode( $field_options );
 
 			if ( ! is_array( $field_options ) || ! array_key_exists( 'form_select', $field_options ) ) {
 				continue;
 			}
 
 			$embedded_form_id = $field_options['form_select'];
+
 			if ( ! array_key_exists( $embedded_form_id, $this->form_names_by_id ) ) {
 				continue;
 			}
@@ -172,6 +181,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param stdClass|WP_Post $item
+	 *
 	 * @return array
 	 */
 	public function get_parent_of_data( $item ) {
@@ -196,6 +206,7 @@ class FrmProApplicationRelationHelper {
 	 * Get shortcode matches for all content in View (including detail page, before/after content and no entries message).
 	 *
 	 * @param WP_Post $view
+	 *
 	 * @return array
 	 */
 	private function get_parent_of_data_for_view( $view ) {
@@ -205,8 +216,10 @@ class FrmProApplicationRelationHelper {
 
 		$keys = array( 'before_content', 'after_content', 'dyncontent', 'empty_msg' );
 		$html = $view->post_content;
+
 		foreach ( $keys as $key ) {
 			$frm_key = 'frm_' . $key;
+
 			if ( ! empty( $view->$frm_key ) ) {
 				$html .= $view->$frm_key;
 			}
@@ -218,6 +231,7 @@ class FrmProApplicationRelationHelper {
 	/**
 	 * @param string $string
 	 * @param array  $tags
+	 *
 	 * @return array
 	 */
 	private function get_shortcode_matches_from_string( $string, $tags = array( 'formidable', 'display-frm-data' ) ) {
@@ -227,6 +241,7 @@ class FrmProApplicationRelationHelper {
 	/**
 	 * @param string $shortcode_found
 	 * @param int    $id_found
+	 *
 	 * @return array|false
 	 */
 	public function handle_shortcode( $shortcode_found, $id_found ) {
@@ -237,25 +252,30 @@ class FrmProApplicationRelationHelper {
 			case 'display-frm-data':
 				return $this->handle_view_shortcode( $id_found );
 		}
+
 		return false;
 	}
 
 	/**
 	 * @param int|string $form_id Form id or key.
+	 *
 	 * @return array|false
 	 */
 	private function handle_form_shortcode( $form_id ) {
 		if ( ! is_numeric( $form_id ) ) {
 			$form_id = FrmForm::get_id_by_key( $form_id );
 		}
+
 		if ( ! array_key_exists( $form_id, $this->form_names_by_id ) ) {
 			return false;
 		}
+
 		return $this->map_form_id_to_info_array( $form_id );
 	}
 
 	/**
 	 * @param int|string $view_id View id or key.
+	 *
 	 * @return array|false
 	 */
 	private function handle_view_shortcode( $view_id ) {
@@ -276,6 +296,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param WP_Post $page
+	 *
 	 * @return array
 	 */
 	private function get_parent_of_data_for_page( $page ) {
@@ -284,6 +305,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param stdClass $form
+	 *
 	 * @return array
 	 */
 	private function get_parent_of_data_for_form( $form ) {
@@ -295,7 +317,7 @@ class FrmProApplicationRelationHelper {
 		);
 
 		if ( array_key_exists( $form->id, $this->repeater_form_ids_by_parent_form_id ) ) {
-			$parent_of_data = array_merge(
+			return array_merge(
 				$parent_of_data,
 				$this->map_form_ids_to_info_arrays( $this->repeater_form_ids_by_parent_form_id[ $form->id ] )
 			);
@@ -306,10 +328,12 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param int $post_id
+	 *
 	 * @return array
 	 */
 	private function map_post_id_to_info_array( $post_id ) {
 		$post_type = $this->post_types_by_id[ $post_id ];
+
 		if ( 'frm_display' === $post_type ) {
 			return $this->map_view_id_to_info_array( $post_id );
 		}
@@ -323,6 +347,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param int $view_id
+	 *
 	 * @return array
 	 */
 	private function map_view_id_to_info_array( $view_id ) {
@@ -335,6 +360,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private function map_form_id_to_info_array( $form_id ) {
@@ -347,6 +373,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param stdClass|WP_Post $item
+	 *
 	 * @return array
 	 */
 	public function get_embedded_in_data( $item ) {
@@ -362,6 +389,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param WP_Post $item
+	 *
 	 * @return array
 	 */
 	private function get_embedded_in_data_for_view( $item ) {
@@ -373,6 +401,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param stdClass $form
+	 *
 	 * @return array<array>
 	 */
 	private function get_embedded_in_data_for_form( $form ) {
@@ -393,6 +422,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param array<int> $post_ids
+	 *
 	 * @return array<array>
 	 */
 	private function map_post_ids_to_info_arrays( $post_ids ) {
@@ -401,6 +431,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param array<int> $view_ids
+	 *
 	 * @return array<array>
 	 */
 	private function map_view_ids_to_info_arrays( $view_ids ) {
@@ -409,6 +440,7 @@ class FrmProApplicationRelationHelper {
 
 	/**
 	 * @param array<int> $form_ids
+	 *
 	 * @return array<array>
 	 */
 	private function map_form_ids_to_info_arrays( $form_ids ) {
@@ -419,6 +451,7 @@ class FrmProApplicationRelationHelper {
 	 * Return if specific form id was found in another form's embedded field form select field option data.
 	 *
 	 * @param int $form_id
+	 *
 	 * @return bool
 	 */
 	public function form_is_an_embed_field_form( $form_id ) {

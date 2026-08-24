@@ -130,9 +130,10 @@ class Query extends AbstractGvlPersistance
         $gvlSpecificationVersion = $args['gvlSpecificationVersion'] ?? $latestGvlSpecificationVersion;
         $tcfPolicyVersion = $args['tcfPolicyVersion'] ?? $latestTcfPolicyVersion;
         $inSql = isset($args['in']) ? \sprintf('AND id IN (%s)', \join(',', \array_map('intval', $args['in']))) : '';
+        $selectSql = $this->vendorSelectSql($args['columns'] ?? null);
         // Query purposes for current language
         // phpcs:disable WordPress.DB.PreparedSQL
-        $rows = $wpdb->get_results($wpdb->prepare("SELECT *\n                FROM {$table_name}\n                WHERE vendorListVersion = %d\n                    AND gvlSpecificationVersion = %d\n                    AND tcfPolicyVersion = %d\n                {$inSql}", $vendorListVersion, $gvlSpecificationVersion, $tcfPolicyVersion), ARRAY_A);
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT {$selectSql}\n                FROM {$table_name}\n                WHERE vendorListVersion = %d\n                    AND gvlSpecificationVersion = %d\n                    AND tcfPolicyVersion = %d\n                {$inSql}", $vendorListVersion, $gvlSpecificationVersion, $tcfPolicyVersion), ARRAY_A);
         // phpcs:enable WordPress.DB.PreparedSQL
         $rows = $this->castReadVendors($rows, $args);
         // We are reading all vendors in database, but when we do additionally `ORDER BY name ASC` this could lead to
@@ -207,6 +208,23 @@ class Query extends AbstractGvlPersistance
         return $result;
     }
     /**
+     * Allowlisted `SELECT` list for `vendors()`. Unknown names are dropped.
+     *
+     * @param string[]|null $columns
+     */
+    protected function vendorSelectSql($columns)
+    {
+        if (!\is_array($columns) || \count($columns) === 0) {
+            return '*';
+        }
+        $allowed = \array_merge(['id'], \DevOwl\RealCookieBanner\lite\tcf\Persist::VENDOR_OVERWRITE_FIELDS);
+        $selectColumns = \array_values(\array_intersect($columns, $allowed));
+        if (!\in_array('id', $selectColumns, \true)) {
+            \array_unshift($selectColumns, 'id');
+        }
+        return \count($selectColumns) > 0 ? \join(', ', $selectColumns) : '*';
+    }
+    /**
      * Cast the read vendors to valid scheme objects.
      *
      * @param array $rows
@@ -214,6 +232,9 @@ class Query extends AbstractGvlPersistance
      */
     protected function castReadVendors($rows, $args)
     {
+        if (isset($args['columns']) && \is_array($args['columns'])) {
+            return $this->castReadVendorsColumns($rows, $args['columns']);
+        }
         $language = $args['language'] ?? $this->getCurrentLanguage();
         $result = [];
         foreach ($rows as &$row) {
@@ -257,6 +278,26 @@ class Query extends AbstractGvlPersistance
                 $newRow[$purposeType] = \array_filter(\array_map('intval', \explode(',', $row[$purposeType] ?? '')));
             }
             $result[$row['id']] = $newRow;
+        }
+        return $result;
+    }
+    /**
+     * Cast a column-projected vendor query (cookie-policy table does not need URLs / additionalInformation).
+     *
+     * @param array $rows
+     * @param string[] $columns
+     */
+    protected function castReadVendorsColumns($rows, $columns)
+    {
+        $wantDisclosure = \in_array('deviceStorageDisclosure', $columns, \true);
+        $result = [];
+        foreach ($rows as $row) {
+            $id = \intval($row['id']);
+            $newRow = ['id' => $id, 'name' => $row['name'] ?? ''];
+            if ($wantDisclosure && isset($row['deviceStorageDisclosure'])) {
+                $newRow['deviceStorageDisclosure'] = \json_decode($row['deviceStorageDisclosure'], ARRAY_A);
+            }
+            $result[$id] = $newRow;
         }
         return $result;
     }

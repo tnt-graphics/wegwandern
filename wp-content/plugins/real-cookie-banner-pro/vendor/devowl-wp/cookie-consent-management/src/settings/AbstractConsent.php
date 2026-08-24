@@ -169,7 +169,7 @@ abstract class AbstractConsent extends BaseSettings
             }
             // Read TCF vendor names
             if (\count($vendorIds) > 0) {
-                $vendors = $tcf->getGvl()->vendors(['in' => $vendorIds])['vendors'];
+                $vendors = $tcf->getGvl()->vendors(['in' => $vendorIds, 'columns' => ['id', 'name']])['vendors'];
                 foreach ($candidates as $key => $candidate) {
                     if (isset($candidate['tcf'])) {
                         $candidates[$key]['name'] = $vendors[$candidate['name']]['name'];

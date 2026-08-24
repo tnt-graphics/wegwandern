@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+
 // TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 	<div class="frm5 frm_form_field">
@@ -20,7 +21,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 				'id'          => 'frm_toggle_on_color',
 				'action_slug' => 'toggle_on_color',
 			)
-		); 
+		);
 		?>
 	</div>
 
@@ -40,7 +41,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 				'id'          => 'frm_toggle_off_color',
 				'action_slug' => 'toggle_off_color',
 			)
-		); 
+		);
 		?>
 	</div>
 
@@ -48,7 +49,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		<label 
 			for="frm_toggle_font_size"
 			class="frm-style-item-heading">
-			<?php esc_html_e( 'Font Size', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Font Size', 'formidable' ); ?>
 		</label>
 	</div>
 	<div class="frm7 frm_form_field">
@@ -75,7 +76,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 </p>
 
 <p class="frm4 frm_form_field">
-	<label><?php esc_html_e( 'Font Size', 'formidable-pro' ); ?></label>
+	<label><?php esc_html_e( 'Font Size', 'formidable' ); ?></label>
 	<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'toggle_font_size' ) ); ?>" id="frm_toggle_font_size" value="<?php echo esc_attr( $style->post_content['toggle_font_size'] ); ?>" size="3" />
 </p>
 <?php endif; ?>

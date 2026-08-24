@@ -192,7 +192,6 @@
 	border-radius: var(--border-radius);
 }
 .frm_dropzone .dz-preview.dz-success .dz-success-mark {
-	-ms-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
 	animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);
 }
 
@@ -272,7 +271,7 @@
 .frm_compact_text button {
 	background: none !important;
 	color: inherit !important;
-	border: none !important;
+	border: none;
 	padding: 0 !important;
 	font: inherit !important;
 	font-weight: 500 !important;

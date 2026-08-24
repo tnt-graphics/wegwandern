@@ -4,6 +4,7 @@
  * Submit helper
  *
  * @since 6.9
+ *
  * @package FormidablePro
  */
 
@@ -31,6 +32,7 @@ class FrmProSubmitHelper {
 	 * @since 6.9
 	 *
 	 * @param stdClass $form Form object.
+	 *
 	 * @return object
 	 */
 	public static function copy_submit_field_settings_to_form( $form ) {
@@ -39,6 +41,7 @@ class FrmProSubmitHelper {
 		}
 
 		$submit_field = FrmSubmitHelper::get_submit_field( $form->id );
+
 		if ( ! $submit_field ) {
 			return $form;
 		}
@@ -54,6 +57,7 @@ class FrmProSubmitHelper {
 	/**
 	 * @param array $values
 	 * @param int   $field_id
+	 *
 	 * @return array
 	 */
 	public static function clean_field_options_before_update( $values, $field_id = 0 ) {
@@ -66,8 +70,10 @@ class FrmProSubmitHelper {
 		}
 
 		$field = FrmField::getOne( $field_id );
+
 		if ( $field ) {
 			$form = FrmForm::getOne( $field->form_id );
+
 			if ( $form ) {
 				$form->options['submit_conditions'] = array(
 					'show_hide'       => $values['field_options']['show_hide'],

@@ -63,7 +63,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) :
 				'id'          => 'frm_date_head_bg_color',
 				'action_slug' => 'date_head_bg_color',
 			)
-		); 
+		);
 		?>
 	</div>
 
@@ -71,7 +71,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) :
 		<label
 			class="frm-style-item-heading"
 			for="frm_date_head_color">
-			<?php esc_html_e( 'Font Color', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Font Color', 'formidable' ); ?>
 		</label>
 	</div>
 	<div class="frm7 frm_form_field">
@@ -83,7 +83,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) :
 				'id'          => 'frm_date_head_color',
 				'action_slug' => 'date_head_color',
 			)
-		); 
+		);
 		?>
 	</div>
 
@@ -103,7 +103,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) :
 				'id'          => 'frm_date_band_color',
 				'action_slug' => 'date_band_color',
 			)
-		); 
+		);
 		?>
 	</div>
 <?php else : ?>

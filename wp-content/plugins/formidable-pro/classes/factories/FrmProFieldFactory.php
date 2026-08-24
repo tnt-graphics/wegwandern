@@ -44,12 +44,13 @@ class FrmProFieldFactory {
 	 * @since 2.03.05
 	 *
 	 * @param stdClass $db_row
+	 *
 	 * @return FrmProFieldSettings
 	 */
 	public static function create_settings( $db_row ) {
 		$type          = $db_row->type;
 		$field_options = $db_row->field_options;
-		FrmProAppHelper::unserialize_or_decode( $field_options );
+		FrmAppHelper::unserialize_or_decode( $field_options );
 		$field_options = (array) $field_options;
 
 		switch ( $type ) {
@@ -71,9 +72,12 @@ class FrmProFieldFactory {
 
 	/**
 	 * @since 3.0
+	 *
+	 * @param mixed  $class
+	 * @param string $field_type
 	 */
 	public static function get_field_type_class( $class, $field_type ) {
-		if ( empty( $class ) ) {
+		if ( ! $class ) {
 			$type_classes = array(
 				'address'     => 'FrmProFieldAddress',
 				'break'       => 'FrmProFieldBreak',
@@ -97,6 +101,7 @@ class FrmProFieldFactory {
 				'time'        => 'FrmProFieldTime',
 				'toggle'      => 'FrmProFieldToggle',
 				'total'       => 'FrmProFieldTotal',
+				'virtual'     => 'FrmProFieldVirtual',
 			);
 
 			if ( class_exists( 'FrmFieldSubmit' ) ) {
@@ -104,11 +109,13 @@ class FrmProFieldFactory {
 			}
 
 			$class = $type_classes[ $field_type ] ?? '';
-			if ( empty( $class ) ) {
+
+			if ( ! $class ) {
 				$class = 'FrmProFieldDefault';
 			}
-		} elseif ( strpos( $class, 'FrmField' ) === 0 ) {
+		} elseif ( str_starts_with( $class, 'FrmField' ) ) {
 			$new_class = str_replace( 'FrmField', 'FrmProField', $class );
+
 			if ( class_exists( $new_class ) ) {
 				$class = $new_class;
 			}

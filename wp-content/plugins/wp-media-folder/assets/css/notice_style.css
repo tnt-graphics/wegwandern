@@ -195,7 +195,7 @@
 }
 
 .wpmfexternal_cats-item-title[data-id="0"] {
-    color: #0073aa;
+    color: var(--wp-admin-theme-color, #3858e9);
     font-weight: bold;
 }
 
@@ -237,8 +237,8 @@
 
 .wpmfexternal_cats_import_all_btn,
 .wpmfexternal_cats_import_selected_btn {
-    background-color: #0580b8 !important;
-    border-color: #0580b8;
+    background-color: var(--wp-admin-theme-color, #3858e9) !important;
+    border-color: var(--wp-admin-theme-color, #3858e9);
 }
 
 .wpmfexternal_cats_cancel_btn {

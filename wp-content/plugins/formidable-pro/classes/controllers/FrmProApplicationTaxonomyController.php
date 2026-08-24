@@ -22,7 +22,7 @@ class FrmProApplicationTaxonomyController {
 	}
 
 	/**
-	 * @return bool
+	 * @return void
 	 */
 	public static function maybe_include_embed_script() {
 		if ( self::on_application_edit_page() ) {
@@ -83,6 +83,7 @@ class FrmProApplicationTaxonomyController {
 		wp_enqueue_style( 'formidable_edit_application_term' );
 
 		global $wp_taxonomies;
+
 		if ( isset( $wp_taxonomies['frm_application'] ) ) {
 			$wp_taxonomies['frm_application']->show_ui = true;
 		}
@@ -92,6 +93,7 @@ class FrmProApplicationTaxonomyController {
 	 * Add custom applications data to wp_ajax_frm_get_applications_data AJAX hook.
 	 *
 	 * @param array $data
+	 *
 	 * @return array
 	 */
 	public static function applications_data( $data ) {
@@ -115,6 +117,7 @@ class FrmProApplicationTaxonomyController {
 
 	/**
 	 * @param int $limit 0 for no limit.
+	 *
 	 * @return array
 	 */
 	private static function get_custom_applications( $limit = 0 ) {
@@ -137,6 +140,7 @@ class FrmProApplicationTaxonomyController {
 	/**
 	 * @param array             $applications
 	 * @param FrmProApplication $application
+	 *
 	 * @return array
 	 */
 	private static function custom_application_reducer( $applications, $application ) {
@@ -149,12 +153,14 @@ class FrmProApplicationTaxonomyController {
 	 *
 	 * @param array<WP_Term> $terms
 	 * @param int            $limit
+	 *
 	 * @return array<FrmProApplication>
 	 */
 	private static function sort_custom_applications( $terms, $limit = 0 ) {
 		if ( 0 === $limit ) {
 			$sort_type = FrmAppHelper::get_param( 'sort', '', 'get', 'sanitize_text_field' );
-			if ( $sort_type && 'alphabet' === $sort_type ) {
+
+			if ( 'alphabet' === $sort_type ) {
 				usort(
 					$terms,
 					function ( $a, $b ) {
@@ -175,6 +181,7 @@ class FrmProApplicationTaxonomyController {
 		$args = array(
 			'order_by' => 'meta_value DESC',
 		);
+
 		if ( $limit ) {
 			$args['limit'] = $limit;
 		}
@@ -198,6 +205,7 @@ class FrmProApplicationTaxonomyController {
 		);
 
 		$applications = array();
+
 		foreach ( $metas as $meta ) {
 			if ( ! array_key_exists( $meta->term_id, $terms_by_id ) ) {
 				continue;
@@ -290,6 +298,7 @@ class FrmProApplicationTaxonomyController {
 	 */
 	public static function maybe_render_custom_applications_list() {
 		global $pagenow;
+
 		if ( 'edit-tags.php' !== $pagenow || 'frm_application' !== FrmAppHelper::simple_get( 'taxonomy' ) ) {
 			return;
 		}
@@ -318,6 +327,7 @@ class FrmProApplicationTaxonomyController {
 	 * Overwrite behaviour of URL when editing Term at /wp-admin/term.php?taxonomy=frm_application&tag_ID=XX for frm_application Taxonomy.
 	 *
 	 * @param WP_Term $tag
+	 *
 	 * @return void
 	 */
 	public static function pre_edit_form( $tag ) {
@@ -362,6 +372,7 @@ class FrmProApplicationTaxonomyController {
 		FrmProApplicationsHelper::custom_application_permission_check();
 
 		$id = FrmAppHelper::simple_get( 'id', 'absint' );
+
 		if ( ! $id ) {
 			wp_die();
 		}
@@ -373,6 +384,7 @@ class FrmProApplicationTaxonomyController {
 
 	/**
 	 * @param int $id
+	 *
 	 * @return array
 	 */
 	private static function get_table_data_for_application( $id ) {
@@ -382,7 +394,8 @@ class FrmProApplicationTaxonomyController {
 
 	/**
 	 * @param array $total
-	 * @param stdClass|WP_Post $current
+	 * @param mixed $current
+	 *
 	 * @return array
 	 */
 	private static function reduce_item( $total, $current ) {
@@ -419,7 +432,7 @@ class FrmProApplicationTaxonomyController {
 				$type_label       = __( 'Embedded Form', 'formidable-pro' );
 				$descriptive_type = 'embedded ' . $type;
 			} else {
-				$type_label       = __( 'Form', 'formidable-pro' );
+				$type_label       = __( 'Form', 'formidable' );
 				$descriptive_type = $type;
 			}
 
@@ -448,6 +461,7 @@ class FrmProApplicationTaxonomyController {
 
 	/**
 	 * @param int $id
+	 *
 	 * @return array<stdClass>|array<WP_Post>
 	 */
 	private static function get_children_for_application( $id ) {
@@ -465,6 +479,7 @@ class FrmProApplicationTaxonomyController {
 	 * @param int            $id Application id.
 	 * @param int            $form_count
 	 * @param array<WP_Post> $posts
+	 *
 	 * @return void
 	 */
 	private static function maybe_sync_counts( $id, $form_count, $posts ) {
@@ -476,6 +491,7 @@ class FrmProApplicationTaxonomyController {
 			'frm_display' => 0,
 			'page'        => 0,
 		);
+
 		foreach ( $posts as $post ) {
 			if ( isset( $post_counts[ $post->post_type ] ) ) {
 				++$post_counts[ $post->post_type ];
@@ -494,6 +510,7 @@ class FrmProApplicationTaxonomyController {
 	/**
 	 * @param int    $id Application id.
 	 * @param string $type supports 'view', 'page', and 'form'.
+	 *
 	 * @return int
 	 */
 	private static function get_count( $id, $type ) {
@@ -503,6 +520,7 @@ class FrmProApplicationTaxonomyController {
 
 	/**
 	 * @param stdClass|WP_Post $item
+	 *
 	 * @return array
 	 */
 	private static function get_parent_of_data( $item ) {
@@ -511,6 +529,7 @@ class FrmProApplicationTaxonomyController {
 
 	/**
 	 * @param stdClass|WP_Post $item
+	 *
 	 * @return array
 	 */
 	private static function get_embedded_in_data( $item ) {
@@ -551,16 +570,20 @@ class FrmProApplicationTaxonomyController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$term_id = FrmAppHelper::get_post_param( 'term_id', '', 'absint' );
+
 		if ( ! $term_id ) {
 			die();
 		}
 
 		$term = get_term( $term_id, 'frm_application' );
+
 		if ( ! ( $term instanceof WP_Term ) ) {
 			wp_send_json_error( 'Application does not exist' );
 			die();
 		}
+
 		$delete_related_items = FrmAppHelper::get_post_param( 'delete_related_items', '', 'absint' );
+
 		if ( $delete_related_items ) {
 			FrmProApplicationsController::delete_child_items( $term_id );
 		}
@@ -582,23 +605,22 @@ class FrmProApplicationTaxonomyController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$term_id = FrmAppHelper::get_post_param( 'term_id', 0, 'absint' );
+
 		if ( ! $term_id ) {
 			die();
 		}
 
 		$type = FrmAppHelper::get_post_param( 'type', '', 'sanitize_text_field' );
+
 		if ( ! $type || ! in_array( $type, array( 'form', 'page', 'view' ), true ) ) {
 			die();
 		}
 
 		$new = FrmAppHelper::get_post_param( 'new', 0, 'absint' );
-		if ( 1 === $new ) {
-			$redirect = self::get_new_item_redirect( $type, $term_id );
-			if ( '' === $redirect ) {
-				wp_send_json_error( 'Page name may be missing, or type is incorrect' );
-			}
-		} else {
+
+		if ( 1 !== $new ) {
 			$item_id = FrmAppHelper::get_post_param( 'item_id', 0, 'absint' );
+
 			if ( ! $item_id ) {
 				die();
 			}
@@ -610,7 +632,13 @@ class FrmProApplicationTaxonomyController {
 			die();
 		}
 
-		if ( empty( $redirect ) ) {
+		$redirect = self::get_new_item_redirect( $type, $term_id );
+
+		if ( '' === $redirect ) {
+			wp_send_json_error( 'Page name may be missing, or type is incorrect' );
+		}
+
+		if ( ! $redirect ) {
 			die();
 		}
 
@@ -624,6 +652,7 @@ class FrmProApplicationTaxonomyController {
 	 *
 	 * @param string $type supports 'form', 'page' and 'view'.
 	 * @param int    $term_id
+	 *
 	 * @return string redirect url to edit item.
 	 */
 	private static function get_new_item_redirect( $type, $term_id ) {
@@ -635,6 +664,7 @@ class FrmProApplicationTaxonomyController {
 				return admin_url( 'edit.php?post_type=frm_display&triggerNewViewModal=1&applicationId=' . $term_id );
 			case 'page':
 				$name = FrmAppHelper::get_post_param( 'name', '', 'sanitize_text_field' );
+
 				if ( ! $name ) {
 					return '';
 				}
@@ -658,6 +688,7 @@ class FrmProApplicationTaxonomyController {
 	 * @param string $type supports 'form', 'page' and 'view'.
 	 * @param int    $term_id
 	 * @param int    $item_id
+	 *
 	 * @return void
 	 */
 	private static function add_existing_item_to_application( $type, $term_id, $item_id ) {
@@ -668,6 +699,7 @@ class FrmProApplicationTaxonomyController {
 				break;
 			case 'view':
 				$form_id = get_post_meta( $item_id, 'frm_form_id', true );
+
 				if ( $form_id && is_numeric( $form_id ) ) {
 					self::add_missing_form_id_to_application( $term_id, (int) $form_id );
 				}
@@ -681,6 +713,7 @@ class FrmProApplicationTaxonomyController {
 	/**
 	 * @param int $term_id
 	 * @param int $form_id
+	 *
 	 * @return void
 	 */
 	private static function add_missing_view_ids_to_application( $term_id, $form_id ) {
@@ -694,6 +727,7 @@ class FrmProApplicationTaxonomyController {
 			array_map( 'intval', $view_ids ),
 			FrmProApplication::get_posts_for_application( $term_id, array( 'frm_display' ), array( 'fields' => 'ids' ) )
 		);
+
 		foreach ( $new_view_ids as $view_id ) {
 			FrmProApplication::add_post_to_application( $term_id, $view_id, 'view' );
 		}
@@ -702,6 +736,7 @@ class FrmProApplicationTaxonomyController {
 	/**
 	 * @param int $term_id
 	 * @param int $form_id
+	 *
 	 * @return void
 	 */
 	private static function add_missing_form_id_to_application( $term_id, $form_id ) {
@@ -711,6 +746,7 @@ class FrmProApplicationTaxonomyController {
 			'meta_value' => $form_id,
 			'term_id'    => $term_id,
 		);
+
 		if ( FrmDb::get_var( $wpdb->termmeta, $where, 'term_id' ) ) {
 			return;
 		}
@@ -721,6 +757,7 @@ class FrmProApplicationTaxonomyController {
 	/**
 	 * @param string $type
 	 * @param int    $object_id
+	 *
 	 * @return string
 	 */
 	private static function get_edit_url( $type, $object_id ) {
@@ -742,16 +779,19 @@ class FrmProApplicationTaxonomyController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$term_id = FrmAppHelper::get_post_param( 'term_id', 0, 'absint' );
+
 		if ( ! $term_id ) {
 			die();
 		}
 
 		$type = FrmAppHelper::get_post_param( 'type', '', 'sanitize_text_field' );
+
 		if ( ! $type || ! in_array( $type, array( 'form', 'page', 'view' ), true ) ) {
 			die();
 		}
 
 		$item_id = FrmAppHelper::get_post_param( 'item_id', 0, 'absint' );
+
 		if ( ! $item_id ) {
 			die();
 		}
@@ -781,11 +821,13 @@ class FrmProApplicationTaxonomyController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$application_id = FrmAppHelper::get_post_param( 'term_id', 0, 'absint' );
+
 		if ( ! $application_id ) {
 			die();
 		}
 
 		$name = FrmAppHelper::get_post_param( 'name', '', 'sanitize_text_field' );
+
 		if ( ! $name ) {
 			die();
 		}
@@ -809,6 +851,7 @@ class FrmProApplicationTaxonomyController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$name = FrmAppHelper::get_post_param( 'name', '', 'sanitize_text_field' );
+
 		if ( ! $name ) {
 			die();
 		}
@@ -838,6 +881,7 @@ class FrmProApplicationTaxonomyController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$application_id = FrmAppHelper::get_post_param( 'application_id', 0, 'absint' );
+
 		if ( ! $application_id ) {
 			wp_send_json_error( 'Missing required application id param' );
 			die();
@@ -860,7 +904,6 @@ class FrmProApplicationTaxonomyController {
 
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
-		global $wpdb;
 		$name  = FrmAppHelper::get_param( 'term', '', 'get', 'sanitize_text_field' );
 		$terms = get_terms(
 			array(
@@ -873,6 +916,7 @@ class FrmProApplicationTaxonomyController {
 		);
 
 		$results = array();
+
 		foreach ( $terms as $term ) {
 			$results[] = array(
 				'value' => $term->term_id,
@@ -898,16 +942,20 @@ class FrmProApplicationTaxonomyController {
 	 * @param int     $post_ID
 	 * @param WP_Post $post
 	 * @param bool    $update
+	 *
 	 * @return void
 	 */
 	public static function after_create_page_with_shortcode( $post_ID, $post, $update ) {
 		if ( $update || 'page' !== $post->post_type ) {
 			return;
 		}
+
 		$application_id = FrmAppHelper::get_post_param( 'application_id', 0, 'absint' );
+
 		if ( ! $application_id ) {
 			return;
 		}
+
 		FrmProApplication::add_post_to_application( $application_id, $post_ID, 'page' );
 	}
 

@@ -8,7 +8,7 @@ if ( ! $item_ids ) {
 }
 $item_form_id = 0;
 
-// fetch 20 posts at a time rather than loading the entire table into memory
+// Fetch 20 posts at a time rather than loading the entire table into memory
 while ( $next_set = array_splice( $item_ids, 0, 20 ) ) {
 $entries = FrmDb::get_results(
 	'frm_items',
@@ -43,7 +43,7 @@ foreach ( $entries as $entry ) {
 		<parent_item_id><?php echo absint( $entry->parent_item_id ); ?></parent_item_id>
 
 		<?php
-		$metas = FrmDb::get_results( $wpdb->prefix . 'frm_item_metas', array( 'item_id' => $entry->id ), 'meta_value, field_id' );
+		$metas = FrmDb::get_results( 'frm_item_metas', array( 'item_id' => $entry->id ), 'meta_value, field_id' );
 
 		foreach ( $metas as $meta ) {
 		?>

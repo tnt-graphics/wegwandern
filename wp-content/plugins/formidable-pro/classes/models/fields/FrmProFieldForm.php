@@ -11,17 +11,17 @@ class FrmProFieldForm extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'form';
 
 	public function default_html() {
-		$default_html = <<<DEFAULT_HTML
+		return <<<DEFAULT_HTML
 <div id="frm_field_[id]_container" class="frm_form_field form-field [required_class][error_class]">
 [input]
 </div>
 DEFAULT_HTML;
-		return $default_html;
 	}
 
 	protected function include_form_builder_file() {
@@ -43,6 +43,7 @@ DEFAULT_HTML;
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -60,10 +61,8 @@ DEFAULT_HTML;
 		ob_start();
 
 		FrmProNestedFormsController::display_front_end_embedded_form( $this->field, $args['field_name'], $args['errors'] );
-		$input_html = ob_get_contents();
-		ob_end_clean();
 
-		return $input_html;
+		return ob_get_clean();
 	}
 
 	protected function prepare_import_value( $value, $atts ) {

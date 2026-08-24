@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         selected( $selected_field->id, $field_option->id );
     }
     ?>><?php
-	echo '' == $field_option->name ? esc_html( $field_option->id . ' ' . __( '(no label)', 'formidable-pro' ) ) : esc_html( $field_option->name );
+	echo '' == $field_option->name ? esc_html( $field_option->id . ' ' . __( '(no label)', 'formidable' ) ) : esc_html( $field_option->name );
     ?></option>
     <?php } ?>
 </select>

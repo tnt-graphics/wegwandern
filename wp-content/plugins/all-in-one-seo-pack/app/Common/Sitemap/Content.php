@@ -15,6 +15,25 @@ use AIOSEO\Plugin\Common\Integrations\BuddyPress as BuddyPressIntegration;
  */
 class Content {
 	/**
+	 * Methods that can be called dynamically based on sitemap index name.
+	 * This prevents collisions with user-defined post type slugs that match internal method names.
+	 *
+	 * @since 4.9.3
+	 *
+	 * @var array
+	 */
+	private $dynamicIndexMethods = [
+		'addl',
+		'author',
+		'date',
+		'postArchive',
+		'rss',
+		'bpActivity',
+		'bpGroup',
+		'bpMember'
+	];
+
+	/**
 	 * Returns the entries for the requested sitemap.
 	 *
 	 * @since 4.0.0
@@ -50,7 +69,11 @@ class Content {
 
 		// Check if requested index has a dedicated method.
 		$methodName = aioseo()->helpers->dashesToCamelCase( aioseo()->sitemap->indexName );
-		if ( method_exists( $this, $methodName ) ) {
+		if (
+			in_array( $methodName, $this->dynamicIndexMethods, true ) &&
+			method_exists( $this, $methodName ) &&
+			! in_array( aioseo()->sitemap->indexName, [ 'posts', 'terms' ], true ) // Skip posts and terms indexes because they are handled differently.
+		) {
 			return $this->$methodName();
 		}
 
@@ -114,7 +137,11 @@ class Content {
 
 		// Check if requested index has a dedicated method.
 		$methodName = aioseo()->helpers->dashesToCamelCase( aioseo()->sitemap->indexName );
-		if ( method_exists( $this, $methodName ) ) {
+		if (
+			in_array( $methodName, $this->dynamicIndexMethods, true ) &&
+			method_exists( $this, $methodName ) &&
+			! in_array( aioseo()->sitemap->indexName, [ 'posts', 'terms' ], true ) // Skip posts and terms indexes because they are handled differently.
+		) {
 			$res = $this->$methodName();
 
 			return ! empty( $res ) ? count( $res ) : 0;
@@ -593,14 +620,14 @@ class Content {
 			"SELECT
 				YEAR(post_date) AS `year`,
 				MONTH(post_date) AS `month`,
-				post_date_gmt,
-				post_modified_gmt
+				MAX(post_date_gmt) AS post_date_gmt,
+				MAX(post_modified_gmt) AS post_modified_gmt
 			FROM {$postsTable}
 			WHERE post_type = 'post' AND post_status = 'publish'
 			GROUP BY
 				YEAR(post_date),
 				MONTH(post_date)
-			ORDER BY post_date ASC 
+			ORDER BY post_date ASC
 			LIMIT 50000",
 			true
 		)->result();
@@ -609,24 +636,38 @@ class Content {
 			return [];
 		}
 
-		$entries = [];
-		$year    = '';
+		$yearMaxLastmod = [];
 		foreach ( $dates as $date ) {
-			$entry = [
-				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $this->getLastModified( $date ) ),
-				'changefreq' => aioseo()->sitemap->priority->frequency( 'date' ),
-				'priority'   => aioseo()->sitemap->priority->priority( 'date' ),
-			];
+			$lastmod = $this->getLastModified( $date );
+			if ( ! isset( $yearMaxLastmod[ $date->year ] ) || $lastmod > $yearMaxLastmod[ $date->year ] ) {
+				$yearMaxLastmod[ $date->year ] = $lastmod;
+			}
+		}
 
-			// Include each year only once.
+		$entries   = [];
+		$year      = '';
+		$changefreq = aioseo()->sitemap->priority->frequency( 'date' );
+		$priority   = aioseo()->sitemap->priority->priority( 'date' );
+		foreach ( $dates as $date ) {
+			// Include each year only once, using the max lastmod across all months in that year.
 			if ( $year !== $date->year ) {
-				$year         = $date->year;
-				$entry['loc'] = get_year_link( $date->year );
-				$entries[]    = apply_filters( 'aioseo_sitemap_date_entry', $entry, $date, 'year', 'date' );
+				$year      = $date->year;
+				$yearEntry = [
+					'loc'        => get_year_link( $date->year ),
+					'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $yearMaxLastmod[ $date->year ] ),
+					'changefreq' => $changefreq,
+					'priority'   => $priority,
+				];
+				$entries[] = apply_filters( 'aioseo_sitemap_date_entry', $yearEntry, $date, 'year', 'date' );
 			}
 
-			$entry['loc'] = get_month_link( $date->year, $date->month );
-			$entries[]    = apply_filters( 'aioseo_sitemap_date_entry', $entry, $date, 'month', 'date' );
+			$monthEntry = [
+				'loc'        => get_month_link( $date->year, $date->month ),
+				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $this->getLastModified( $date ) ),
+				'changefreq' => $changefreq,
+				'priority'   => $priority,
+			];
+			$entries[] = apply_filters( 'aioseo_sitemap_date_entry', $monthEntry, $date, 'month', 'date' );
 		}
 
 		return apply_filters( 'aioseo_sitemap_date_archives', $entries );
@@ -715,7 +756,9 @@ class Content {
 		$query    = aioseo()->core->db
 			->start( 'bp_activity as a' )
 			->select( '`a`.`id`, `a`.`date_recorded`' )
-			->whereRaw( "a.is_spam = 0 AND a.hide_sitewide = 0 AND a.type NOT IN ('activity_comment', 'last_activity')" )
+			->where( 'a.is_spam', 0 )
+			->where( 'a.hide_sitewide', 0 )
+			->whereNotIn( 'a.type', [ 'activity_comment', 'last_activity' ] )
 			->limit( aioseo()->sitemap->linksPerIndex, aioseo()->sitemap->offset )
 			->orderBy( 'a.date_recorded DESC' );
 
@@ -771,7 +814,8 @@ class Content {
 			->start( 'bp_groups as g' )
 			->select( '`g`.`id`, `g`.`date_created`, `gm`.`meta_value` as date_modified' )
 			->leftJoin( 'bp_groups_groupmeta as gm', 'g.id = gm.group_id' )
-			->whereRaw( "g.status = 'public' AND gm.meta_key = 'last_activity'" )
+			->where( 'g.status', 'public' )
+			->where( 'gm.meta_key', 'last_activity' )
 			->limit( aioseo()->sitemap->linksPerIndex, aioseo()->sitemap->offset )
 			->orderBy( 'gm.meta_value DESC' )
 			->orderBy( 'g.date_created DESC' );
@@ -828,7 +872,8 @@ class Content {
 		$query    = aioseo()->core->db
 			->start( 'bp_activity as a' )
 			->select( '`a`.`user_id` as id, `a`.`date_recorded`' )
-			->whereRaw( "a.component = 'members' AND a.type = 'last_activity'" )
+			->where( 'a.component', 'members' )
+			->where( 'a.type', 'last_activity' )
 			->limit( aioseo()->sitemap->linksPerIndex, aioseo()->sitemap->offset )
 			->orderBy( 'a.date_recorded DESC' );
 

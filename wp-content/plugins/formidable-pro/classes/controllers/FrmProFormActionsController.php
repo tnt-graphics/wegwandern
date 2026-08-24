@@ -6,6 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class FrmProFormActionsController {
 
+	/**
+	 * @param array $actions
+	 */
 	public static function register_actions( $actions ) {
         $actions['wppost'] = 'FrmProPostAction';
 
@@ -14,6 +17,9 @@ class FrmProFormActionsController {
         return $actions;
     }
 
+	/**
+	 * @param array $settings
+	 */
 	public static function email_action_control( $settings ) {
 		$settings['event']    = array_unique(
 			array_merge(
@@ -42,6 +48,9 @@ class FrmProFormActionsController {
 		<?php
 	}
 
+	/**
+	 * @param array $atts
+	 */
 	public static function form_action_settings( $form_action, $atts ) {
 		global $wpdb;
 		extract( $atts );
@@ -58,8 +67,8 @@ class FrmProFormActionsController {
             $send           = __( 'Send', 'formidable-pro' );
             $stop           = __( 'Stop', 'formidable-pro' );
             $this_action_if = __( 'this notification if', 'formidable-pro' );
-        } if ( $form_action->post_excerpt === 'wppost' ) {
-            $send           = __( 'Create', 'formidable-pro' );
+        } elseif ( $form_action->post_excerpt === 'wppost' ) {
+            $send           = __( 'Create', 'formidable' );
             $stop           = __( 'Don\'t create', 'formidable-pro' );
             $this_action_if = __( 'this post if', 'formidable-pro' );
         } elseif ( $form_action->post_excerpt === 'register' ) {
@@ -81,6 +90,7 @@ class FrmProFormActionsController {
 	 * Adds necessary fields to attach a file as attachment to email.
 	 *
 	 * @since 4.06.02
+	 *
 	 * @param object $form_action Describes the current Form Action.
 	 * @param object $pass_args
 	 */
@@ -96,6 +106,7 @@ class FrmProFormActionsController {
 	 *
 	 * @param WP_Post  $action
 	 * @param stdClass $entry
+	 *
 	 * @return bool
 	 */
 	public static function action_conditions_met( $action, $entry ) {
@@ -106,11 +117,12 @@ class FrmProFormActionsController {
 
 		$notification = $action->post_content;
 		$stop         = false;
-		$met          = array();
 
 		if ( empty( $notification['conditions'] ) ) {
 			return $stop;
 		}
+
+        $met = array();
 
 		foreach ( $notification['conditions'] as $k => $condition ) {
 			if ( ! is_numeric( $k ) ) {
@@ -124,8 +136,7 @@ class FrmProFormActionsController {
 			self::prepare_logic_value( $condition['hide_opt'], $entry );
 
 			$observed_value = self::get_value_from_entry( $entry, $condition['hide_field'] );
-
-			$stop = FrmFieldsHelper::value_meets_condition( $observed_value, $condition['hide_field_cond'], $condition['hide_opt'] );
+            $stop           = FrmFieldsHelper::value_meets_condition( $observed_value, $condition['hide_field_cond'], $condition['hide_opt'] );
 
 			if ( $notification['conditions']['send_stop'] === 'send' ) {
 				$stop = $stop ? false : true;
@@ -134,8 +145,8 @@ class FrmProFormActionsController {
 			$met[ $stop ] = $stop;
 		}
 
-		if ( $notification['conditions']['any_all'] === 'all' && ! empty( $met ) && isset( $met[0] ) && isset( $met[1] ) ) {
-			$stop = ( $notification['conditions']['send_stop'] === 'send' );
+		if ( $notification['conditions']['any_all'] === 'all' && $met && isset( $met[0] ) && isset( $met[1] ) ) {
+			$stop = $notification['conditions']['send_stop'] === 'send';
 		} elseif ( $notification['conditions']['any_all'] === 'any' && $notification['conditions']['send_stop'] === 'send' && isset( $met[0] ) ) {
 			$stop = false;
 		}
@@ -151,6 +162,7 @@ class FrmProFormActionsController {
 	 *
 	 * @param array|string $logic_value
 	 * @param stdClass     $entry
+	 *
 	 * @return void
 	 */
 	public static function prepare_logic_value( &$logic_value, $entry ) {
@@ -208,14 +220,13 @@ class FrmProFormActionsController {
 		/**
 		 * @since 4.06.02
 		 */
-		$observed_value = apply_filters( 'frm_action_logic_value', $observed_value, compact( 'entry', 'field_id' ) );
-
-		return $observed_value;
+		return apply_filters( 'frm_action_logic_value', $observed_value, compact( 'entry', 'field_id' ) );
 	}
 
 	/**
 	 * @param stdClass $field
 	 * @param stdClass $entry
+	 *
 	 * @return array|string
 	 */
 	private static function maybe_get_child_values_from_entry( $field, $entry ) {
@@ -267,6 +278,7 @@ class FrmProFormActionsController {
 	 * @param string $key
 	 * @param string $type
 	 * @param array  $condition
+	 *
 	 * @return void
 	 */
 	public static function include_action_logic_row( $form_id, $meta_name, $key, $type, $condition ) {
@@ -277,11 +289,17 @@ class FrmProFormActionsController {
 		 *
 		 * @param array<string> $exclude_fields
 		 * @param array         $args {
+		 *
 		 *     @type int    $form_id
 		 *     @type string $type Type of action (ie email, quiz_outcome).
 		 * }
 		 */
 		$exclude_fields = apply_filters( 'frm_action_logic_exclude_fields', $exclude_fields, compact( 'form_id', 'type' ) );
+
+		// Backwards compatibility "@since 6.31".
+		$showlast = FrmProAppHelper::lite_supports_form_actions_refresh()
+			? '#frm_logic_' . $key
+			: '#logic_link_' . $key;
 
 		FrmProFormsController::include_logic_row(
 			array(
@@ -291,7 +309,7 @@ class FrmProFormActionsController {
 				'key'            => $key,
 				'name'           => 'frm_' . $type . '_action[' . $key . '][post_content][conditions][' . $meta_name . ']',
 				'hidelast'       => '#frm_logic_rows_' . $key,
-				'showlast'       => '#logic_link_' . $key,
+				'showlast'       => $showlast,
 				'exclude_fields' => $exclude_fields,
 			)
 		);
@@ -302,6 +320,10 @@ class FrmProFormActionsController {
 	 * needs to be removed.
 	 *
 	 * @since 3.0
+	 *
+	 * @param array $settings
+	 *
+	 * @return array
 	 */
 	public static function remove_incomplete_logic( $settings ) {
 		if ( isset( $settings['post_content']['conditions'] ) ) {
@@ -317,10 +339,11 @@ class FrmProFormActionsController {
 	 * @since 3.0
 	 *
 	 * @param array $conditions
+	 *
 	 * @return void
 	 */
 	private static function remove_logic_without_field( &$conditions ) {
-		if ( empty( $conditions ) ) {
+		if ( ! $conditions ) {
 			return;
 		}
 
@@ -341,6 +364,7 @@ class FrmProFormActionsController {
 	 * @since 3.0
 	 *
 	 * @param array $conditions
+	 *
 	 * @return bool
 	 */
 	private static function has_valid_conditions( $conditions ) {
@@ -350,7 +374,6 @@ class FrmProFormActionsController {
 
 	public static function fill_action_options( $action, $type ) {
         if ( 'wppost' === $type ) {
-
             $default_values = array(
                 'post_type'          => 'post',
                 'post_category'      => array(),
@@ -374,10 +397,15 @@ class FrmProFormActionsController {
 
 	/**
 	 * @since 2.0.23
+	 *
+	 * @param string $event
+	 * @param array  $args
+	 *
+	 * @return string
 	 */
 	public static function maybe_trigger_draft_actions( $event, $args ) {
 		if ( isset( $args['entry_id'] ) && FrmProEntry::is_draft( $args['entry_id'] ) ) {
-			$event = 'draft';
+			return 'draft';
 		}
 		return $event;
 	}
@@ -392,7 +420,7 @@ class FrmProFormActionsController {
 	}
 
 	public static function trigger_delete_actions( $entry_id, $entry = false ) {
-		if ( empty( $entry ) ) {
+		if ( ! $entry ) {
 			$entry = FrmEntry::getOne( $entry_id );
 		}
         FrmFormActionsController::trigger_actions( 'delete', $entry->form_id, $entry );
@@ -405,12 +433,14 @@ class FrmProFormActionsController {
 	 *
 	 * @param array $values
 	 * @param array $embedded_fields
+	 *
 	 * @return array
 	 */
 	public static function maybe_merge_fields( $values, $embedded_fields ) {
-		if ( empty( $embedded_fields ) ) {
+		if ( ! $embedded_fields ) {
 			return $values;
 		}
+
 		$values['fields'] = array_merge( $values['fields'], $embedded_fields );
 
 		return $values;
@@ -440,12 +470,13 @@ class FrmProFormActionsController {
                 'field_order'
             );
         }
-        $echo = false;
 
-		$cf_keys = self::get_post_meta_keys();
+        $echo    = false;
+        $cf_keys = self::get_post_meta_keys();
 
 		if ( $form_id ) {
 			$embedded_form_ids = FrmProFormsHelper::get_embedded_form_ids( $form_id );
+
 			if ( $embedded_form_ids ) {
 				$embedded_fields = FrmDb::get_results( 'frm_fields', array( 'form_id' => $embedded_form_ids ) );
 				$values          = self::maybe_merge_fields( $values, $embedded_fields );
@@ -526,9 +557,8 @@ class FrmProFormActionsController {
             $taxonomies = get_object_taxonomies( $post_type );
         }
 
-        $values = array();
-
-		$form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
+        $values  = array();
+        $form_id = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
 
         if ( $form_id ) {
 			$values['fields'] = FrmField::getAll(
@@ -553,7 +583,8 @@ class FrmProFormActionsController {
 	 *
 	 * @param array  $post_content
 	 * @param array  $instance
-	 * @return array $post_content
+	 *
+	 * @return array Post content.
 	 */
 	public static function update_create_post_action( $post_content, $instance ) {
 		if ( $instance['post_excerpt'] === 'wppost' && ! empty( $post_content['post_category'] ) ) {
@@ -584,6 +615,7 @@ class FrmProFormActionsController {
 	 * Display the taxonomy checkboxes for a specific taxonomy in a Create Post action
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $args (MUST include taxonomy, form_id, field_name, and value)
 	 */
 	public static function display_taxonomy_checkboxes_for_post_action( $args ) {
@@ -604,7 +636,7 @@ class FrmProFormActionsController {
 			)
 		);
 
-		foreach ( $children as $key => $cat ) {
+		foreach ( $children as $cat ) {
 			$args['cat'] = $cat;
 			?>
 			<div class="frm_catlevel_1"><?php
@@ -618,6 +650,7 @@ class FrmProFormActionsController {
 	 * Display a single taxonomy checkbox and its children
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $args (MUST include cat, value, field_name, post_type, taxonomy, and level)
 	 */
 	private static function display_taxonomy_checkbox_group( $args ) {
@@ -650,7 +683,8 @@ class FrmProFormActionsController {
 
 		if ( $children ) {
 				++$args['level'];
-				foreach ( $children as $key => $cat ) {
+
+				foreach ( $children as $cat ) {
 					$args['cat'] = $cat;
 					?>
 		<div class="frm_catlevel_<?php echo esc_attr( $args['level'] ); ?>"><?php self::display_taxonomy_checkbox_group( $args ); ?></div>
@@ -670,6 +704,7 @@ class FrmProFormActionsController {
 		check_ajax_referer( 'frm_ajax' );
 
 		$post_type = FrmAppHelper::get_post_param( 'post_type', '', 'sanitize_text_field' );
+
 		if ( ! $post_type ) {
 			wp_send_json_error( __( 'Post type is empty', 'formidable-pro' ) );
 		}
@@ -698,6 +733,7 @@ class FrmProFormActionsController {
 		check_ajax_referer( 'frm_ajax' );
 
 		$post_type = FrmAppHelper::get_post_param( 'post_type', '', 'sanitize_text_field' );
+
 		if ( ! $post_type ) {
 			wp_send_json_error( __( 'Post type is empty', 'formidable-pro' ) );
 		}
@@ -716,34 +752,31 @@ class FrmProFormActionsController {
 			return;
 		}
 
-		$data = FrmAddonsController::install_link( 'pdfs' );
+		$data   = FrmAddonsController::install_link( 'pdfs' );
+		$params = array(
+			'id'            => 'frm_attach_pdf_setting',
+			'class'         => 'frm-h-stack-xs frm-my-md',
+			'data-upgrade'  => __( 'Forms to PDF', 'formidable' ),
+			'data-oneclick' => json_encode( $data ),
+		);
 		?>
-		<div
-			id="frm_attach_pdf_setting"
-			style="margin-top: 15px;"
-			data-upgrade="<?php esc_attr_e( 'Forms to PDF', 'formidable-pro' ); ?>"
-			data-oneclick="<?php echo esc_attr( wp_json_encode( $data ) ); ?>"
-		>
+		<div <?php FrmAppHelper::array_to_html_params( $params, true ); ?>>
 			<?php
-			FrmProHtmlHelper::admin_toggle(
+			FrmHtmlHelper::toggle(
 				'frm_attach_pdf',
 				'frm_attach_pdf',
 				array(
 					'div_class' => 'with_frm_style frm_toggle',
 					'checked'   => false,
 					'echo'      => true,
+					'disabled'  => true,
 				)
 			);
 			?>
-			<label id="frm_attach_pdf_label" for="frm_attach_pdf">
+			<label id="frm_attach_pdf_label" for="frm_attach_pdf" class="frm_noallow">
 				<?php esc_html_e( 'Attach PDF of entry to email', 'formidable-pro' ); ?>
 			</label>
 		</div>
-		<style>
-			#frm_attach_pdf_setting label {
-				color: var(--grey);
-			}
-		</style>
 		<?php
 	}
 
@@ -760,13 +793,13 @@ class FrmProFormActionsController {
 		$data = FrmAddonsController::install_link( 'acf' );
 		?>
 		<div
+			class="frm-h-stack-xs frm-bt-200 frm-py-md"
 			id="frm_acf_setting"
-			style="margin-top: 15px;"
 			data-upgrade="<?php esc_attr_e( 'ACF integration', 'formidable-pro' ); ?>"
 			data-oneclick="<?php echo esc_attr( wp_json_encode( $data ) ); ?>"
 		>
 			<?php
-			FrmProHtmlHelper::admin_toggle(
+			FrmHtmlHelper::toggle(
 				'frm_acf',
 				'frm_acf',
 				array(
@@ -776,7 +809,7 @@ class FrmProFormActionsController {
 				)
 			);
 			?>
-			<label id="frm_acf_label" for="frm_acf" style="color: var(--grey);">
+			<label id="frm_acf_label" for="frm_acf">
 				<?php esc_html_e( 'Map form fields to Advanced Custom Fields', 'formidable-pro' ); ?>
 			</label>
 		</div>
@@ -789,6 +822,7 @@ class FrmProFormActionsController {
 	 * @since 6.0
 	 *
 	 * @param array $ops Action options.
+	 *
 	 * @return array
 	 */
 	public static function change_on_submit_action_ops( $ops ) {
@@ -802,6 +836,7 @@ class FrmProFormActionsController {
 	 * @since 6.10.1
 	 *
 	 * @param string $action_id_base Action ID base.
+	 *
 	 * @return bool
 	 */
 	public static function has_repeater_actions_support( $action_id_base ) {
@@ -852,6 +887,7 @@ class FrmProFormActionsController {
 		}
 
 		$repeaters = FrmProFieldsHelper::get_repeater_fields( $pass_args['form']->id );
+
 		if ( ! $repeaters ) {
 			return;
 		}
@@ -885,6 +921,7 @@ class FrmProFormActionsController {
 	 * @param object  $entry       Entry object.
 	 * @param object  $form        Form object.
 	 * @param string  $event       Event ('create' or 'update').
+	 *
 	 * @return bool
 	 */
 	public static function custom_trigger( $skip, $form_action, $entry, $form, $event ) {
@@ -899,6 +936,7 @@ class FrmProFormActionsController {
 		}
 
 		$sub_entries = FrmProEntry::get_sub_entries( $entry->id, true );
+
 		foreach ( $sub_entries as $sub_entry ) {
 			if ( intval( $sub_entry->form_id ) !== $child_form ) {
 				continue;
@@ -908,6 +946,7 @@ class FrmProFormActionsController {
 			$sub_entry->parent_entry = $entry;
 
 			$stop = self::action_conditions_met( $form_action, $sub_entry );
+
 			if ( $stop ) {
 				continue;
 			}

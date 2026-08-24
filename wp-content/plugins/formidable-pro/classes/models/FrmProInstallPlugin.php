@@ -9,9 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class FrmProInstallPlugin {
 
-	protected $plugin_file; // format: folder/filename.php
+	protected $plugin_file; // Format: folder/filename.php
 	protected $plugin_slug;
 
+	/**
+	 * @param array $atts
+	 */
 	public function __construct( $atts ) {
 		$this->plugin_file   = $atts['plugin_file'];
 		list( $slug, $file ) = explode( '/', $this->plugin_file );

@@ -113,6 +113,19 @@ class PolyLang extends AbstractSyncPlugin
         $result = \apply_filters('wpml_post_language_details', '', $id);
         return \is_array($result) ? $result['language_code'] : '';
     }
+    // Documented in AbstractLanguagePlugin
+    public function getTermLanguage($termTaxonomyId, $taxonomy)
+    {
+        if (!\function_exists('pll_get_term_language')) {
+            return '';
+        }
+        $term = \get_term_by('term_taxonomy_id', $termTaxonomyId, $taxonomy);
+        if (!$term instanceof WP_Term) {
+            return '';
+        }
+        $language = \pll_get_term_language($term->term_id);
+        return \is_string($language) ? $language : '';
+    }
     // Documented in AbstractSyncPlugin
     public function getOriginalPostId($id, $post_type)
     {

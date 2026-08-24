@@ -297,7 +297,7 @@ if (!class_exists('JuUpdaterWPMF', false)) :
                         align-items: center;
                         justify-content: center;
                         border-radius: .5rem;
-                        border-color: #0173ab;
+                        border-color: var(--wp-admin-theme-color, #3858e9);
                         padding-left: 1rem;
                         padding-right: 1rem;
                         text-align: center;
@@ -309,7 +309,7 @@ if (!class_exists('JuUpdaterWPMF', false)) :
                         transition-duration: .2s;
                         transition-timing-function: cubic-bezier(0,0,.2,1);
                         border-width: 1px;
-                        background-color: #0173ab;
+                        background-color: var(--wp-admin-theme-color, #3858e9);
                         color: white;
                     }
                 </style>
@@ -346,13 +346,13 @@ if (!class_exists('JuUpdaterWPMF', false)) :
             if (is_multisite() && current_user_can('manage_network')) {
                 delete_site_option('ju_user_token');
                 update_site_option('wpmf_license_token', '');
-                delete_site_option('wpmf_ai_quota_info');
+                delete_site_option('joomunited_ai_quota_info');
                 delete_site_option('wpmf_ai_plan_status');
                 delete_site_option('wpmf_ai_quota_initialized');
             } else {
                 delete_option('ju_user_token');
                 update_option('wpmf_license_token', '');
-                delete_option('wpmf_ai_quota_info');
+                delete_option('joomunited_ai_quota_info');
                 delete_option('wpmf_ai_plan_status');
                 delete_option('wpmf_ai_quota_initialized');
             }
@@ -1177,6 +1177,7 @@ if (!class_exists('JuPluginInfoV2', false)) :
     /**
      * A container class for holding and transforming various plugin metadata.
      */
+    #[\AllowDynamicProperties]
     class JuPluginInfoV2 // phpcs:ignore Generic.Files.OneClassPerFile.MultipleFound -- some classes have no function
     {
 

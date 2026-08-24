@@ -772,3 +772,53 @@
     content: "";
     display: block;
 }
+
+.dashicons-format-gallery::before {
+    content: ""; 
+    background-image: url("../../images/dashicons-format-gallery.svg"); 
+    display: inline-block;
+    width: 20px; 
+    height: 20px; 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.dashicons-upload::before {
+    content: ""; 
+    background-image: url("../../images/dashicons-upload.svg"); 
+    display: inline-block;
+    width: 20px; 
+    height: 20px; 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.dashicons-pdf::before {
+    content: ""; 
+    background-image: url("../../images/dashicons-pdf.svg"); 
+    display: inline-block;
+    width: 20px; 
+    height: 20px; 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.dashicons-no::before {
+    content: ""; 
+    display: inline-block;
+    width: 20px; 
+    height: 20px; 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    -webkit-mask: url("../../images/dashicons-xmark.svg") no-repeat center; 
+    -webkit-mask-size: contain; 
+    background-color: white;
+}
+
+.components-toolbar .dashicons-no::before {
+    background-color: black;
+}

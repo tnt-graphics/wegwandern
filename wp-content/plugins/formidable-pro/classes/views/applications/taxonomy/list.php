@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <div class="frm_wrap">
-	<?php FrmApplicationsController::render_applications_header( __( 'Applications', 'formidable-pro' ), 'list' ); ?>
+	<?php FrmApplicationsController::render_applications_header( __( 'Applications', 'formidable' ), 'list' ); ?>
 	<div class="wrap">
 		<div>
 		</div>

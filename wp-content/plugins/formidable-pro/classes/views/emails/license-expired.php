@@ -3,6 +3,7 @@
  * Template for license expired email
  *
  * @since 6.7
+ *
  * @package Formidable
  *
  * @var array $args Content args.
@@ -21,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<p>
 		<a href="<?php echo esc_url( $args['renew_url'] ); ?>" title="" style="<?php echo esc_attr( FrmEmailSummaryHelper::get_button_style( true ) ); ?>margin-top:0;">
-			<?php esc_html_e( 'Renew Now', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Renew Now', 'formidable' ); ?>
 		</a>
 	</p>
 

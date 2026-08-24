@@ -65,6 +65,11 @@ class None extends AbstractLanguagePlugin
     {
         return '';
     }
+    // Documented in AbstractLanguagePlugin
+    public function getTermLanguage($termTaxonomyId, $taxonomy)
+    {
+        return '';
+    }
     // Documented in AbstractSyncPlugin
     public function getOriginalPostId($id, $post_type)
     {

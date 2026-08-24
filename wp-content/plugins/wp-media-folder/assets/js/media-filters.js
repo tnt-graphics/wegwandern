@@ -852,6 +852,29 @@ var wpmfFoldersFiltersModule = void 0;
                 $current_frame.find('.wpmf-dropdowns-wrap').append('<a class="wpmf-allfiles-btn button">' + wpmf.l18n.display_all_files + '</a>');
             }
 
+            var attached_to = wpmfFoldersModule.getCookie('wpmf_attached_to');
+            if (attached_to && attached_to > 0) {
+                $current_frame.find('.wpmf-dropdowns-wrap').append('<a class="wpmf-attached-to-btn active button">' + wpmf.l18n.attached_to + '</a>');
+
+                setTimeout(function() {
+                $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'wpmf_get_post_title_for_attached_filter',
+                            post_id: attached_to,
+                        },
+                        success: function (res) {
+                            if (res.success) {
+                                wpmfFoldersFiltersModule.wpmfRenderAttachedTag(attached_to, res.data.title);
+                            }
+                        }
+                    });
+                }, 100);
+            } else {
+                $current_frame.find('.wpmf-dropdowns-wrap').append('<a class="wpmf-attached-to-btn button">' + wpmf.l18n.attached_to + '</a>');
+            }
+
             wpmfFoldersFiltersModule.renderFilters();
             // remove filter if not checked
             var filters = ['.wpmf-filter-type', '.wpmf-filter-date', '.wpmf-filter-sizes', '.wpmf-filter-weights'];
@@ -1183,6 +1206,70 @@ var wpmfFoldersFiltersModule = void 0;
             }
 
             wpmfFoldersFiltersModule.initDropdown(wpmfFoldersModule.getFrame());
+
+            setTimeout(function() {
+                wpmfFoldersModule.setCookie('wpmf_attached_to' , '0');
+                $('.wpmf-attached-to-btn').removeClass('active');
+            }, 100);
+        },
+
+        openAttachedToPopup: function openAttachedToPopup() {
+           if ($('#wpmf-attached-popup').length === 0) {
+                let html  = '<div id="wpmf-attached-popup" class="wpmf-popup-list-post">';
+                    html += '   <div class="wpmf-popup-list-post-inner">';
+                    html += '       <h3>Select content type</h3>';
+                    html += '       <div class="wpmf-popup-controls">';
+                    html += '           <select class="wpmf-post-type">';
+                    html += '               <option value="">All</option>';
+                    html += '               <option value="post">Posts</option>';
+                    html += '               <option value="page">Pages</option>';
+                    html += '           </select>';
+                    html += '           <input type="text" class="wpmf-post-search" placeholder="Search...">';
+                    html += '       </div>';
+                    html += '       <h3 class="title-list-post">Most recent content</h3>';
+                    html += '       <div class="wpmf-popup-list-post-body">';
+                    html += '           <div class="wpmf-post-list">Loading...</div>';
+                    html += '       </div>';
+                    html += '       <div class="wpmf-popup-list-post-footer">';
+                    html += '           <button class="button button-primary wpmf-apply-attached">Apply</button>';
+                    html += '           <button class="button wpmf-close-popup">Close</button>';
+                    html += '       </div>';
+                    html += '   </div>';
+                    html += '</div>';
+
+                $('body').append(html);
+            }
+
+            $('#wpmf-attached-popup').addClass('active');
+
+            // Load list posts/pages
+            wpmfFoldersFiltersModule.loadAttachedPostList();
+        },
+
+        loadAttachedPostList: function loadAttachedPostList() {
+            let type   = $('.wpmf-post-type').val();
+            let search = $('.wpmf-post-search').val();
+
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'wpmf_get_posts_for_attached_filter',
+                    post_type: type,
+                    s: search,
+                },
+                beforeSend: function () {
+                    $('.wpmf-post-list').html('Loading...');
+                },
+                success: function (res) {
+                    if (search.length > 0) {
+                        $('.title-list-post').hide();
+                    } else {
+                        $('.title-list-post').show();
+                    }
+                    $('.wpmf-post-list').html(res);
+                }
+            });
         },
 
         /**
@@ -1200,11 +1287,34 @@ var wpmfFoldersFiltersModule = void 0;
         },
 
         /**
+         * Render attached tag
+         * @param post_id
+         * @param post_title
+         */
+        wpmfRenderAttachedTag: function wpmfRenderAttachedTag(post_id, post_title) {
+            let short_title = post_title.length > 20 ? post_title.substring(0, 20) + '…' : post_title;
+            $('.wpmf-attached-tag').remove();
+
+            let tag_html = `
+                <span class="wpmf-attached-tag" data-post="${post_id}">
+                    ${short_title}
+                    <span class="wpmf-remove-attached">×</span>
+                </span>
+            `;
+
+            $('.wpmf-attached-to-btn').after(tag_html);
+        },
+
+        /**
          * Clear all filters
          */
         clearFilters: function clearFilters() {
             // delete cookie filter tag
             wpmfFoldersModule.setCookie('wpmf_tag', '0');
+
+            // delete cookie filter attached to
+            wpmfFoldersModule.setCookie('wpmf_attached_to', '0');
+            $('.wpmf-attached-to-btn').removeClass('active');
 
             $(['wpmf_post_mime_type', 'attachment-filter', 'wpmf_wpmf_date', 'wpmf_wpmf_size', 'wpmf_wpmf_weight', 'media-order-folder', 'media-order-media', 'wpmf-display-media-filters', 'wpmf_all_media']).each(function () {
                 // delete cookie filter
@@ -1313,6 +1423,120 @@ var wpmfFoldersFiltersModule = void 0;
             wpmfFoldersModule.setCookie('wpmf_all_media' + wpmf.vars.host, 1);
             wpmfFoldersModule.setCookie('wpmf_tag', get_wpmf_tag, 365);
         };
+
+        //Attached to filter
+        var attached_to = wpmfFoldersModule.getCookie('wpmf_attached_to');
+        if (attached_to && attached_to > 0) {
+            setTimeout(function() {
+                $('.wpmf-attached-to-btn').addClass('active');
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'wpmf_get_post_title_for_attached_filter',
+                        post_id: attached_to,
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            wpmfFoldersFiltersModule.wpmfRenderAttachedTag(attached_to, res.data.title);
+                        }
+                    }
+                });
+            }, 100);
+        } else {
+            setTimeout(function() {
+                $('.wpmf-attached-to-btn').removeClass('active');
+            }, 100);
+        }
+
+        // Open Attached To Popup
+        $(document).on('click', '.wpmf-attached-to-btn', function () {
+            wpmfFoldersFiltersModule.openAttachedToPopup();
+        });
+
+        $(document).on('click', '.wpmf-apply-attached', function () {
+            let $checked = $('input[name="wpmf_select_post"]:checked');
+            let post_title = $checked.closest('label').text().trim();
+
+            let post_id = $('input[name="wpmf_select_post"]:checked').val();
+
+            if (!post_id) {
+                $('.wpmf-attached-to-btn').removeClass('active');
+                showDialog({
+                    title: 'Attached to',
+                    text: 'Please select a post or page',
+                    closeicon: true
+                });
+                return;
+            }
+
+            if (post_id && !$('.wpmf-attached-to-btn').hasClass('active')) {
+                $('.wpmf-attached-to-btn').addClass('active');
+            }
+
+            wpmfFoldersModule.setCookie('wpmf_attached_to', post_id);
+            wpmfFoldersModule.changeFolder(0);
+            $('#wpmf_all_media').val(1).trigger('change');
+            wpmfFoldersModule.setCookie('wpmf_all_media' + wpmf.vars.host, 1, 365);
+
+            wpmfFoldersFiltersModule.wpmfRenderAttachedTag(post_id, post_title);
+
+            // Reload attachments
+            // GRID VIEW
+            if (wpmfFoldersModule.page_type !== 'upload-list') {
+                wpmfFoldersModule.reloadAttachments();
+            } 
+            // LIST VIEW
+            else {
+                // WordPress list table reload
+                if ($('#posts-filter').length) {
+                    $('#posts-filter').submit();
+                } else {
+                    window.location.reload();
+                }
+            }
+            $('#wpmf-attached-popup').remove();
+        });
+
+        $(document).on('click', '.wpmf-remove-attached', function () {
+
+            // Remove cookie
+            wpmfFoldersModule.setCookie('wpmf_attached_to', '', -1);
+
+            // Remove tag UI
+            $('.wpmf-attached-tag').remove();
+
+            // Remove active state
+            $('.wpmf-attached-to-btn').removeClass('active');
+
+            // Reload attachments
+            wpmfFoldersModule.changeFolder(0);
+
+            if (wpmfFoldersModule.page_type !== 'upload-list') {
+                wpmfFoldersModule.reloadAttachments();
+            } else {
+                $('#posts-filter').submit();
+            }
+        });
+
+        $(document).on('click', '.wpmf-close-popup', function () {
+            $('#wpmf-attached-popup').remove();
+        });
+
+        // Change post type
+        $(document).on('change', '.wpmf-post-type', function () {
+            wpmfFoldersFiltersModule.loadAttachedPostList();
+        });
+
+        // Search with debounce
+        let wpmfSearchTimer = null;
+        $(document).on('keyup', '.wpmf-post-search', function () {
+            clearTimeout(wpmfSearchTimer);
+            wpmfSearchTimer = setTimeout(function () {
+                wpmfFoldersFiltersModule.loadAttachedPostList();
+            }, 300);
+        });
+
         // Count tag button
         var element_count_tag = $('#the-list .column-posts').attr('data-colname');
         if (element_count_tag && element_count_tag.toLowerCase() == 'count') {

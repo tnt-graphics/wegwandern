@@ -3,17 +3,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
 
-if ( isset( $field['option_order'] ) ) {
-    $field_option_order = 'option_order';
-} else {
-    $field_option_order = 'lookup_option_order';
-}
+$field_option_order = isset( $field['option_order'] ) ? 'option_order' : 'lookup_option_order';
 ?>
 <p class="frm6 frm_form_field">
 	<label class="frm-h-stack-xs">
 		<span><?php esc_html_e( 'Option order', 'formidable-pro' ); ?></span>
 		<?php
-		FrmProAppHelper::tooltip_icon(
+		FrmAppHelper::tooltip_icon(
 			__( 'Set the order for the values in your field.', 'formidable-pro' ),
 			array(
 				'data-placement' => 'right',

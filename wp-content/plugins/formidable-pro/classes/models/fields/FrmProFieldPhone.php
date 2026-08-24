@@ -13,12 +13,25 @@ class FrmProFieldPhone extends FrmFieldPhone {
 		$settings = parent::field_settings_for_type();
 
 		$settings['autopopulate'] = true;
+		$settings['conf_field']   = true;
 		$settings['unique']       = true;
 		$settings['read_only']    = true;
 		$settings['prefix']       = true;
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
 		return $settings;
+	}
+
+	/**
+	 * @since 6.25.1
+	 *
+	 * @param array $args - Includes 'field', 'display', and 'values'.
+	 */
+	public function show_primary_options( $args ) {
+		$field = $args['field'];
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/confirmation.php';
+
+		parent::show_primary_options( $args );
 	}
 
 	/**
@@ -38,6 +51,8 @@ class FrmProFieldPhone extends FrmFieldPhone {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -62,12 +77,14 @@ class FrmProFieldPhone extends FrmFieldPhone {
 			// If we are using minified scripts, check if the intl phone input is included.
 			// If it is return before we enqueue the scripts.
 			$pro_js_files = FrmProAppController::get_pro_js_files( 'minified' );
+
 			if ( isset( $pro_js_files['intl-tel-input'] ) ) {
 				return;
 			}
 		}
 
 		$files = FrmProAppController::get_intl_phone_js_details();
+
 		foreach ( $files as $key => $file ) {
 			FrmProAppController::register_js( $key, $file );
 		}

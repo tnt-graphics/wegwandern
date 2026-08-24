@@ -25,17 +25,23 @@ class SuccessorMiddleware extends AbstractTemplateMiddleware
     public function beforeRetrievingTemplate($template)
     {
         $variableResolver = $this->getVariableResolver();
-        /**
-         * Templates.
-         *
-         * @var AbstractTemplate[]
-         */
-        $existing = $variableResolver->resolveRequired('created.global.' . \get_class($template));
         $result = [];
-        foreach ($template->successorOfIdentifierInfo as $row) {
-            $exists = Utils::in_array_column($existing, 'identifier', $row['identifier'], \true);
-            if ($exists) {
-                $result[] = \array_merge($row, ['id' => $exists->consumerData['id']]);
+        if (\count($template->successorOfIdentifierInfo) > 0) {
+            /**
+             * Templates.
+             *
+             * @var AbstractTemplate[]
+             */
+            $existing = $variableResolver->resolveRequired('created.global.' . \get_class($template));
+            $existingScoped = $variableResolver->resolveDefault('created.' . \get_class($template), []);
+            foreach ($template->successorOfIdentifierInfo as $row) {
+                $exists = Utils::in_array_column($existingScoped, 'identifier', $row['identifier'], \true);
+                if (!$exists) {
+                    $exists = Utils::in_array_column($existing, 'identifier', $row['identifier'], \true);
+                }
+                if ($exists) {
+                    $result[] = \array_merge($row, ['id' => $exists->consumerData['id']]);
+                }
             }
         }
         $template->consumerData['successorOf'] = $result;

@@ -81,9 +81,6 @@ class FrmProGlobalVarsHelper {
 		return self::$helper;
 	}
 
-	/**
-	 * @return void
-	 */
 	private function __construct() {
 		$this->initialize_arrays();
 	}
@@ -111,6 +108,7 @@ class FrmProGlobalVarsHelper {
 	 *
 	 * @since 4.03.03
 	 * @since 5.1 moved to FrmProGlobalVarsHelper from FrmProFormsController.
+	 *
 	 * @param array $atts
 	 */
 	public function set_included_fields( $atts ) {
@@ -127,9 +125,11 @@ class FrmProGlobalVarsHelper {
 
 		if ( empty( $atts['exclude_fields'] ) ) {
 			$this->adjust_included_fields( $atts );
+
 			if ( ! empty( $frm_vars['show_fields'] ) ) {
 				FrmProFormState::set_initial_value( 'include_fields', $frm_vars['show_fields'] );
 			}
+
 			return;
 		}
 
@@ -141,6 +141,7 @@ class FrmProGlobalVarsHelper {
 		list( $this->exclude_ids, $this->exclude_keys ) = FrmProAppHelper::pull_ids_and_keys( $atts['exclude_fields'] );
 
 		$include_ids = array();
+
 		foreach ( $fields as $field ) {
 			if ( ! $this->exclude_field( $field ) ) {
 				$include_ids[] = (int) $field->id;
@@ -154,10 +155,12 @@ class FrmProGlobalVarsHelper {
 
 	/**
 	 * @param array|stdClass $field
+	 *
 	 * @return bool
 	 */
 	public function field_is_visible( $field ) {
 		global $frm_vars;
+
 		if ( empty( $frm_vars['show_fields'] ) || ! is_array( $frm_vars['show_fields'] ) ) {
 			return true;
 		}
@@ -170,6 +173,7 @@ class FrmProGlobalVarsHelper {
 	 * Get field id and key from a field object or array.
 	 *
 	 * @param array|stdClass $field
+	 *
 	 * @return array
 	 */
 	private function get_id_and_key( $field ) {
@@ -195,6 +199,7 @@ class FrmProGlobalVarsHelper {
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	private function adjust_included_fields( $atts ) {
@@ -230,20 +235,24 @@ class FrmProGlobalVarsHelper {
 
 	/**
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	private function field_is_required( $field ) {
 		if ( 'form' === $field->type ) {
 			return ! empty( $field->field_options['form_select'] ) && in_array( (int) $field->field_options['form_select'], $this->required_embed_form_ids, true );
 		}
+
 		if ( 'divider' === $field->type ) {
 			return in_array( (int) $field->id, $this->required_section_ids, true );
 		}
+
 		return false;
 	}
 
 	/**
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	private function include_field( $field ) {
@@ -269,6 +278,7 @@ class FrmProGlobalVarsHelper {
 			} elseif ( ! empty( $this->embedded_form_field_id_by_form_id[ $field->form_id ] ) ) {
 				$this->required_embed_form_ids[ $field->form_id ] = (int) $field->form_id;
 			}
+
 			return true;
 		}
 
@@ -277,6 +287,7 @@ class FrmProGlobalVarsHelper {
 
 	/**
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	private function exclude_field( $field ) {
@@ -294,6 +305,7 @@ class FrmProGlobalVarsHelper {
 			} elseif ( 'form' === $field->type && ! empty( $field->field_options['form_select'] ) ) {
 				$this->excluded_embedded_form_ids[ (int) $field->field_options['form_select'] ] = (int) $field->id;
 			}
+
 			return true;
 		}
 

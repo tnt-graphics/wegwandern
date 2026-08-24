@@ -5,7 +5,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div class="frm_forms<?php echo FrmFormsHelper::get_form_style_class( $values ); ?>" id="frm_form_<?php echo (int) $form->id; ?>_container" <?php echo apply_filters( 'frm_form_div_attributes', '', $form ); ?>>
 <?php
-require FrmAppHelper::plugin_path() . '/classes/views/frm-entries/errors.php';
+$message_placement = $message_placement ?? 'before';
+
+if ( ! in_array( $message_placement, array( 'after', 'submit' ), true ) ) {
+	include FrmAppHelper::plugin_path() . '/classes/views/frm-entries/errors.php';
+}
 
 FrmProFormsHelper::maybe_init_antispam( $form->id );
 
@@ -25,6 +29,10 @@ if ( ! empty( $show_form ) ) {
 ?>
 </form>
 <?php
+}
+
+if ( $message_placement === 'after' ) {
+	include FrmAppHelper::plugin_path() . '/classes/views/frm-entries/errors.php';
 }
 ?>
 </div>

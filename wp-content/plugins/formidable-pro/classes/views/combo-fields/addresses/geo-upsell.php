@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Template for showing upgrade modal for Geolocation add on.
  *
  * @since 6.9
+ *
  * @package FormidablePro
  */
 $upgrade = wp_json_encode( FrmProAddonsController::install_link( 'geo' ) );

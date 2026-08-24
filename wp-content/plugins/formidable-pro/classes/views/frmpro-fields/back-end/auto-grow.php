@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<input type="checkbox" id="frm_auto_grow_field_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[auto_grow_<?php echo esc_attr( $field['id'] ); ?>]" value="1" <?php checked( $field['auto_grow'], 1 ); ?> />
 		<span><?php esc_html_e( 'Auto Grow', 'formidable-pro' ); ?></span>
 		<?php
-		FrmProAppHelper::tooltip_icon(
+		FrmAppHelper::tooltip_icon(
 			__( 'Auto Grow: Automatically expand the height of the field when the text reaches the maximum rows', 'formidable-pro' ),
 			array(
 				'data-placement' => 'left',

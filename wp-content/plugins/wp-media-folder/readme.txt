@@ -1,9 +1,9 @@
 === WP Media Folder ===
 Tags: media, folder
 Requires at least: 4.7.0
-Tested up to: 6.8.3
+Tested up to: 7.0
 Requires PHP: 5.6
-Stable tag: 6.1.7
+Stable tag: 6.2.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,48 @@ I can not tell more just watch our demo and please try it to make your own idea.
 Stop searching for an image through thousand of media, just navigate like you do on your desktop file manager.
 
 = Changelog = 
+
+= 6.2.4 =
+ * Add : Compatibility with Network Media plugin in multisite
+ * Fix : Style issue in the media library modal view
+
+= 6.2.3 =
+ * Add : WordPress 7.0 style compatibility
+ * Fix : Divi 5 migrator compatibility check
+
+= 6.2.2 =
+ * Fix : Select2 JS full build for compatibility
+ * Fix : Missing a backward compatibility function
+
+= 6.2.1 =
+ * Add : Divi 5 Builder compatibility
+ * Fix : Security: vulnerability in JS library
+
+= 6.2.0 =
+ * Add : Option to automatically download cloud files to the Media Library
+ * Fix : Gallery slider display issue on mobile devices
+
+= 6.1.12 =
+ * Fix : Lightbox popup issue in gallery
+ * Fix : Folder export improvement to include root folder
+ * Fix : Improve slider dots display on mobile devices
+
+= 6.1.11 =
+ * Fix : The issue where extra images are loaded in the gallery
+
+= 6.1.10 =
+ * Add : Option to show image detail info when hovering over image thumbnail in the media library
+ * Add : Filter media that attached to a specific post/page
+ * Fix : AI Optimizer: support for intranet or non-publicly accessible images
+ * Fix : Style conflict on frontend
+
+= 6.1.9 =
+ * Add : Create folder for selected images
+ * Add : Compatibility with WordPress Block Editor API v3
+ * Add : New capability for other users can edit folder permission setting
+
+= 6.1.8 =
+ * Add : Compatibility with WP Media Folder cloud addon version 4.1 - Vultr integration
 
 = 6.1.7 =
  * Add : Option to automatically convert new image uploads to WebP format

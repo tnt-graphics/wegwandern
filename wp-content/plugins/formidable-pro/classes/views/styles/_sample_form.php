@@ -15,44 +15,44 @@ $svg_args = array(
         <div class="frm_repeat_sec">
 
 			<div class="frm_form_field form-field <?php echo esc_attr( $pos_class ); ?>">
-				<label for="field_aq7w5ep" class="frm_primary_label"><?php esc_html_e( 'Text Area', 'formidable-pro' ); ?></label>
+				<label for="field_aq7w5ep" class="frm_primary_label"><?php esc_html_e( 'Text Area', 'formidable' ); ?></label>
 				<textarea id="field_aq7w5ep"></textarea>
-				<div class="frm_description"><?php esc_html_e( 'Another field with a description', 'formidable-pro' ); ?></div>
+				<div class="frm_description"><?php esc_html_e( 'Another field with a description', 'formidable' ); ?></div>
 			</div>
 
 			<div class="frm_form_field form-field frm_half frm_first <?php echo esc_attr( $pos_class ); ?>">
-				<label class="frm_primary_label"><?php esc_html_e( 'Radio Buttons', 'formidable-pro' ); ?></label>
+				<label class="frm_primary_label"><?php esc_html_e( 'Radio Buttons', 'formidable' ); ?></label>
 				<div class="frm_opt_container">
 					<div class="frm_radio">
 						<label><input type="radio" name="item_meta[1029]" />
-						<?php esc_html_e( 'Option 1', 'formidable-pro' ); ?></label>
+						<?php esc_html_e( 'Option 1', 'formidable' ); ?></label>
 					</div>
 					<div class="frm_radio">
 						<label><input type="radio" name="item_meta[1029]" />
-						<?php esc_html_e( 'Option 2', 'formidable-pro' ); ?></label>
+						<?php esc_html_e( 'Option 2', 'formidable' ); ?></label>
 					</div>
 				</div>
 			</div>
 
 			<div class="frm_form_field form-field frm_half <?php echo esc_attr( $pos_class ); ?>">
-				<label class="frm_primary_label"><?php esc_html_e( 'Check Boxes', 'formidable-pro' ); ?></label>
+				<label class="frm_primary_label"><?php esc_html_e( 'Check Boxes', 'formidable' ); ?></label>
 				<div class="frm_opt_container">
 					<div class="frm_checkbox"><label><input type="checkbox" />
-						<?php esc_html_e( 'Option 1', 'formidable-pro' ); ?>
+						<?php esc_html_e( 'Option 1', 'formidable' ); ?>
 					</label></div>
 					<div class="frm_checkbox"><label><input type="checkbox" />
-						<?php esc_html_e( 'Option 2', 'formidable-pro' ); ?>
+						<?php esc_html_e( 'Option 2', 'formidable' ); ?>
 					</label></div>
 				</div>
 			</div>
             <div class="frm_form_field frm_repeat_buttons frm_hidden_container">
 				<a href="javascript:void(0)" class="frm_button frm_add_form_row">
 					<?php FrmAppHelper::icon_by_class( 'frmfont frm_plus1_icon', $svg_args ); ?>
-					<?php esc_html_e( 'Add', 'formidable-pro' ); ?>
+					<?php esc_html_e( 'Add', 'formidable' ); ?>
 				</a>
 				<a href="javascript:void(0)" class="frm_button frm_remove_form_row">
 					<?php FrmAppHelper::icon_by_class( 'frmfont frm_minus1_icon', $svg_args ); ?>
-					<?php esc_html_e( 'Remove', 'formidable-pro' ); ?>
+					<?php esc_html_e( 'Remove', 'formidable' ); ?>
 				</a>
             </div>
         </div>
@@ -61,9 +61,11 @@ $svg_args = array(
 
 <div class="frm_form_field frm_section_heading form-field frm_half">
 	<h3 class="frm_pos_top frm_trigger active frm_section_spacing">
-		<i class="frm_icon_font frm_arrow_icon frm_before_collapse"></i>
-		<?php esc_html_e( 'Collapsible Section', 'formidable-pro' ); ?>
-		<i class="frm_icon_font frm_arrow_icon frm_after_collapse"></i>
+		<?php
+		FrmAppHelper::icon_by_class( 'frmfont frm_arrowup6_icon frm_before_collapse', $svg_args );
+		esc_html_e( 'Collapsible Section', 'formidable-pro' );
+		FrmAppHelper::icon_by_class( 'frmfont frm_arrowup6_icon frm_after_collapse', $svg_args );
+		?>
 	</h3>
 
     <div class="frm_toggle_container">
@@ -80,7 +82,7 @@ $svg_args = array(
 
 <div class="frm_form_field form-field frm_first frm_third <?php echo esc_attr( $pos_class ); ?>">
 	<label for="field_toggle" class="frm_primary_label">
-		<?php esc_html_e( 'Toggle', 'formidable-pro' ); ?>
+		<?php esc_html_e( 'Toggle', 'formidable' ); ?>
 	</label>
 	<div>
 		<?php
@@ -100,7 +102,7 @@ $svg_args = array(
 
 <div class="frm_form_field form-field frm_two_thirds <?php echo esc_attr( $pos_class ); ?>">
 	<label for="field_slider" class="frm_primary_label">
-		<?php esc_html_e( 'Slider', 'formidable-pro' ); ?>
+		<?php esc_html_e( 'Slider', 'formidable' ); ?>
 	</label>
 	<div class="frm_range_container">
 		<span class="frm_range_value">150</span>

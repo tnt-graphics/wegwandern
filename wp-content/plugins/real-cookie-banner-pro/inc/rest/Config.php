@@ -15,6 +15,7 @@ use DevOwl\RealCookieBanner\settings\Cookie;
 use DevOwl\RealCookieBanner\settings\CookiePolicy;
 use DevOwl\RealCookieBanner\settings\CountryBypass;
 use DevOwl\RealCookieBanner\settings\General;
+use DevOwl\RealCookieBanner\settings\Reset;
 use DevOwl\RealCookieBanner\settings\Revision;
 use DevOwl\RealCookieBanner\Utils;
 use DevOwl\RealCookieBanner\view\Checklist;
@@ -63,6 +64,7 @@ class Config extends WP_REST_Settings_Controller
         \register_rest_route($namespace, '/migration/(?P<migrationId>[a-zA-Z0-9_-]+)', ['methods' => 'DELETE', 'callback' => [$this, 'routeMigrationDelete'], 'permission_callback' => [$this, 'permission_callback']]);
         \register_rest_route($namespace, '/nav-menu/add-links', ['methods' => 'POST', 'callback' => [$this, 'routeNavMenuAddLinksPost'], 'permission_callback' => [$this, 'permission_callback'], 'args' => ['id' => ['type' => 'string', 'required' => \true]]]);
         \register_rest_route($namespace, '/create-cookie-policy', ['methods' => 'POST', 'callback' => [$this, 'routeCreateCookiePolicy'], 'permission_callback' => [$this, 'permission_callback']]);
+        \register_rest_route($namespace, '/reset-texts/dry', ['methods' => 'GET', 'callback' => [$this, 'routeGetResetTextsDry'], 'permission_callback' => [$this, 'permission_callback']]);
         // Make the search capable of embedded content and add the custom post statuses to the search results
         if (isset($_GET['_rcbExtendSearchResult'])) {
             $post_types = \get_post_types(['show_in_rest' => \true], 'objects');
@@ -396,6 +398,22 @@ class Config extends WP_REST_Settings_Controller
         }
         \update_option(General::SETTING_COOKIE_POLICY_ID, $result);
         return new WP_REST_Response(['id' => $result]);
+    }
+    /**
+     * See API docs.
+     *
+     * @api {get} /real-cookie-banner/v1/reset-texts/dry Get resettable text languages
+     * @apiHeader {string} X-WP-Nonce
+     * @apiName ResetTextsDryGet
+     * @apiGroup Config
+     * @apiPermission manage_options
+     * @apiVersion 1.0.0
+     */
+    public function routeGetResetTextsDry()
+    {
+        $dryResetTexts = [];
+        Reset::getInstance()->texts(null, $dryResetTexts);
+        return new WP_REST_Response($dryResetTexts);
     }
     /**
      * Retrieves all of the registered options for the Settings API, specific to Real Cookie Banner.

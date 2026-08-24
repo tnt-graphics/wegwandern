@@ -8,6 +8,7 @@ class FrmProPluginSearch {
 
 	/**
 	 * @param array $addons
+	 *
 	 * @return array
 	 */
 	public static function inject_search_suggestion( $addons ) {

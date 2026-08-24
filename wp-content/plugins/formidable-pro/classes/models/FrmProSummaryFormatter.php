@@ -48,6 +48,7 @@ class FrmProSummaryFormatter {
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	protected function init_summary_values( $atts ) {
@@ -55,6 +56,9 @@ class FrmProSummaryFormatter {
 		$this->summary_values = new FrmProSummaryValues( $this->form->id, $this->atts );
 	}
 
+	/**
+	 * @param array $atts
+	 */
 	protected function prepare_summary_attributes( $atts ) {
 		$defaults = array(
 			'excluded_ids'        => array(),
@@ -70,11 +74,15 @@ class FrmProSummaryFormatter {
 		$this->entry->form_id = $this->form->id;
 	}
 
+	/**
+	 * @return string
+	 */
 	private function get_page_link( $page_num ) {
 		if ( ! isset( $this->form_pages ) ) {
 			$this->form_pages = FrmProPageField::get_form_pages( $this->form );
-			if ( empty( $this->form_pages ) ) {
-				// very unlikely though
+
+			if ( ! $this->form_pages ) {
+				// Very unlikely though
 				return '';
 			}
 		}
@@ -82,20 +90,16 @@ class FrmProSummaryFormatter {
 		$page_data  = $this->form_pages['page_array'][ $page_num ];
 		$data_page  = $page_data['data-page'];
 		$data_field = $page_data['data-field'];
-		$link_text  = __( 'Edit', 'formidable-pro' );
+		$class      = $page_data['class'] . ' frm_page_' . $page_num;
 
-		$class = $page_data['class'] . ' frm_page_' . $page_num;
-
-		$link = sprintf(
+		return sprintf(
 			'<button type="button" data-page="%2$s" class="frm-edit-page-btn %3$s" data-field="%4$s">%5$s <span>%1$s</span></button>',
-			esc_html( $link_text ),
+			esc_html__( 'Edit', 'formidable' ),
 			esc_attr( $data_page ),
 			esc_attr( $class ),
 			esc_attr( $data_field ),
-			'<svg class="frm-icon frm-icon-pencil"><use xlink:href="#frm_pencil_icon"/></svg>'
+			'<svg class="frm-icon frm-icon-pencil"><use href="#frm_pencil_icon"/></svg>'
 		);
-
-		return $link;
 	}
 
 	private function svg() {
@@ -110,6 +114,9 @@ class FrmProSummaryFormatter {
 	<?php
 	}
 
+	/**
+	 * @return string
+	 */
 	public function get_formatted_entry_values() {
 		if ( ! $this->form ) {
 			return '';
@@ -124,21 +131,20 @@ class FrmProSummaryFormatter {
 
 	/**
 	 * @param string $content
+	 *
 	 * @return void
 	 */
 	protected function add_field_values_to_content( &$content ) {
 		$break_before_summary = $this->summary_values->get_break_before_summary();
 		$breaks_found         = 0;
-
-		$include_fields = array();
+		$include_fields       = array();
 
 		$this->svg();
 
 		foreach ( $this->summary_values->get_field_values() as $field_id => $field_value ) {
-
 			if ( 'break' === $field_value->get_field_type() ) {
 				if ( $field_value->get_field_attr( 'form_id' ) == $break_before_summary->form_id ) {
-					// this is a break in the main form, so set currentpage & begin a new pg
+					// This is a break in the main form, so set currentpage & begin a new pg
 					$this->summary_page( $content, ++$breaks_found, $include_fields );
 
 					if ( $field_value->get_field_attr( 'field_order' ) == $break_before_summary->field_order ) {
@@ -148,7 +154,7 @@ class FrmProSummaryFormatter {
 
 				$include_fields = array();
 
-				// we don't render a cell for page breaks
+				// We don't render a cell for page breaks
 				continue;
 			}
 
@@ -163,12 +169,14 @@ class FrmProSummaryFormatter {
 	}
 
 	/**
-	 * @param int   $page_num
-	 * @param array $include_fields
+	 * @param string $content
+	 * @param int    $page_num
+	 * @param array  $include_fields
+	 *
 	 * @return void
 	 */
 	protected function summary_page( &$content, $page_num, $include_fields ) {
-		if ( empty( $include_fields ) ) {
+		if ( ! $include_fields ) {
 			return;
 		}
 
@@ -211,17 +219,21 @@ class FrmProSummaryFormatter {
 
 	/**
 	 * @param string $compare_value
+	 *
 	 * @return bool
 	 */
 	private function check_file_display_format_setting( $compare_value ) {
 		$value = $this->atts['file_display_format'];
+
 		if ( $value === $compare_value ) {
 			return true;
 		}
-		if ( false !== strpos( $value, '+' ) ) {
+
+		if ( str_contains( $value, '+' ) ) {
 			$split = explode( '+', $value );
 			return in_array( $compare_value, $split, true );
 		}
+
 		return false;
 	}
 
@@ -246,7 +258,6 @@ class FrmProSummaryFormatter {
 	 */
 	protected function include_field_in_content( $field ) {
 		$include = ! FrmField::is_no_save_field( $field->type );
-
 		return apply_filters( 'frm_include_field_in_content', $include, $field );
 	}
 }

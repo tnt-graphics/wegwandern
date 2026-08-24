@@ -30,36 +30,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</select>
 </p>
 
-<p class="hide_form_status hide_hide_form_status_closed hide_hide_form_status_limit<?php echo strpos( $values['open_status'], 'schedule' ) === false ? ' frm_hidden' : ''; ?>">
+<p class="hide_form_status hide_hide_form_status_closed hide_hide_form_status_limit<?php echo str_contains( $values['open_status'], 'schedule' ) ? '' : ' frm_hidden'; ?>">
 	<label for="frm_open_date" class="frm_left_label">
 		<?php esc_html_e( 'Open Form On', 'formidable-pro' ); ?>
 	</label>
 	<input type="text" name="options[open_date]" id="frm_open_date" class="frm_date" value="<?php echo esc_attr( $values['open_date'] ); ?>" />
 </p>
-<p class="hide_form_status hide_hide_form_status_closed hide_hide_form_status_limit<?php echo strpos( $values['open_status'], 'schedule' ) === false ? ' frm_hidden' : ''; ?>">
+<p class="hide_form_status hide_hide_form_status_closed hide_hide_form_status_limit<?php echo str_contains( $values['open_status'], 'schedule' ) ? '' : ' frm_hidden'; ?>">
 	<label for="frm_close_date" class="frm_left_label">
 		<?php esc_html_e( 'Close Form On', 'formidable-pro' ); ?>
 	</label>
 	<input type="text" name="options[close_date]" id="frm_close_date" class="frm_date" value="<?php echo esc_attr( $values['close_date'] ); ?>" />
 </p>
-<p class="hide_form_status hide_hide_form_status_closed hide_hide_form_status_schedule<?php echo strpos( $values['open_status'], 'limit' ) === false ? ' frm_hidden' : ''; ?>">
+<p class="hide_form_status hide_hide_form_status_closed hide_hide_form_status_schedule<?php echo str_contains( $values['open_status'], 'limit' ) ? '' : ' frm_hidden'; ?>">
 	<label class="frm_left_label">
 		<?php esc_html_e( 'Entry Limit', 'formidable-pro' ); ?>
-		<?php FrmProAppHelper::tooltip_icon( __( 'Close the form after a specific number of entries have been received.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
+		<?php FrmAppHelper::tooltip_icon( __( 'Close the form after a specific number of entries have been received.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
 	</label>
 
-	<input type="text" name="options[max_entries]" id="frm_max_entries" size="4" value="<?php echo esc_attr( $values['max_entries'] ); ?>" />
+	<input type="number" name="options[max_entries]" id="frm_max_entries" size="4" value="<?php echo esc_attr( $values['max_entries'] ); ?>" />
 </p>
-<p class="hide_form_status<?php echo empty( $values['open_status'] ) ? ' frm_hidden' : ''; ?>">
+<p class="hide_form_status<?php echo ! empty( $values['open_status'] ) ? '' : ' frm_hidden'; ?>">
 	<label for="frm_closed_msg" class="frm_left_label">
 		<?php esc_html_e( 'Form Closed Message', 'formidable-pro' ); ?>
-		<?php FrmProAppHelper::tooltip_icon( __( 'This message is shown when a form is closed for new entries.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
+		<?php FrmAppHelper::tooltip_icon( __( 'This message is shown when a form is closed for new entries.', 'formidable-pro' ), array( 'data-placement' => 'right' ) ); ?>
 	</label>
 	<textarea name="options[closed_msg]" id="frm_closed_msg" rows="3"><?php echo FrmAppHelper::esc_textarea( $values['closed_msg'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></textarea>
 </p>
 <?php
 	if ( FrmProAppHelper::use_jquery_datepicker() ) {
-		?>
+	?>
 		<script>
 			jQuery( function() {
 				jQuery('.frm_date').datepicker({changeMonth:true,changeYear:true,dateFormat:'yy-mm-dd',
@@ -83,7 +83,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</script>
 	<?php
 	} else {
-		?>
+	?>
 		<script>
 			document.addEventListener( 'DOMContentLoaded', function() {
 				flatpickr( '.frm_date', {

@@ -299,11 +299,11 @@
 
 .add-video-thumbnail-btn,
 .wpmf_add_video_btn {
-    border: #0580b8 1px solid;
+    border: var(--wp-admin-theme-color, #3858e9) 1px solid;
     background: #fff;
     padding: 8px 15px;
     border-radius: 4px;
-    color: #0580b8;
+    color: var(--wp-admin-theme-color, #3858e9);
     font-size: 14px;
     box-shadow: none;
     outline: 0;
@@ -318,7 +318,7 @@
 
 .add-video-thumbnail-btn:hover,
 .wpmf_add_video_btn:hover {
-    background: #0580b8;
+    background: var(--wp-admin-theme-color, #3858e9);
     color: #fff;
 }
 
@@ -365,7 +365,7 @@
     position: absolute;
     bottom: -1px;
     height: 2px;
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
     left: 0;
     transition: ease all 300ms;
     max-width: 100%;
@@ -380,7 +380,7 @@
 }
 
 .wpmf-upload-head-icon {
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
     color: #fff;
     border-radius: 50%;
     font-size: 18px;
@@ -451,7 +451,7 @@
     display: flex;
     border-radius: 50%;
     transition: ease all 500ms;
-    background: radial-gradient(closest-side, white 70%, transparent 80% 100%),    conic-gradient(#0073ab 0%, #ddd 0);
+    background: radial-gradient(closest-side, white 70%, transparent 80% 100%),    conic-gradient(var(--wp-admin-theme-color, #3858e9) 0%, #ddd 0);
     width: 24px;
     height: 24px;
 }
@@ -486,14 +486,14 @@
 }
 
 .wpmf-folder-actions {
-    border: 0.5px solid #0073ab !important;
+    border: 0.5px solid var(--wp-admin-theme-color, #3858e9) !important;
     text-decoration: none;
     display: flex;
     text-align: center;
     padding: 8px 5px;
     font-size: 13px;
     margin: 0 0 10px 10px;
-    color: #0073ab;
+    color: var(--wp-admin-theme-color, #3858e9);
     box-sizing: border-box;
     border-radius: 4px;
     width: calc(50% - 40px);
@@ -648,7 +648,7 @@
 }
 
 .wpmf-attachment.mdc-list-item:hover {
-    background-color: #0073ab;
+    background-color: var(--wp-admin-theme-color, #3858e9);
 }
 
 .wpmf-attachment.mdc-list-item:hover .mdc-list-item__start-detail .material-icons,
@@ -735,7 +735,7 @@
 }
 
 .wpmf-contextmenu li:hover > .items_menu {
-    background: #0580b8;
+    background: var(--wp-admin-theme-color, #3858e9);
     color: #ffffff !important;
 }
 
@@ -946,7 +946,7 @@
 .wpmf-folder.ui-draggable-dragging,
 .wpmf-move-element {
     padding: 0 10px !important;
-    background: #0073ab !important;
+    background: var(--wp-admin-theme-color, #3858e9) !important;
     color: #ffffff;
     width: 210px !important;
     height: 40px !important;
@@ -1056,10 +1056,6 @@ ul.attachments .attachment {
     z-index: 110;
 }
 
-.media-frame.mode-grid .attachments-browser .media-toolbar {
-    margin-bottom: 0;
-}
-
 #wpmf-breadcrumb {
     display: block;
     left: 0;
@@ -1089,7 +1085,7 @@ ul.attachments .attachment {
 }
 
 #wpmf-breadcrumb li:last-child a {
-    color: #0073aa;
+    color: var(--wp-admin-theme-color, #3858e9);
 }
 
 #wp-media-grid .mode-edit .attachments {
@@ -1238,6 +1234,10 @@ ul.attachments .attachment {
 
 .media-frame.mode-grid .media-toolbar-secondary .delete-selected-button {
     margin-right: 10px !important;
+}
+
+.attachments-browser .media-toolbar {
+    padding: 0 10px;
 }
 
 .wpmf-move {
@@ -1412,6 +1412,30 @@ ul.attachments .attachment {
     text-align: center;
 }
 
+.wpmf_preview_image {
+    padding-left: 15px !important;
+    padding-bottom: 0px;
+    text-align: left !important;
+}
+
+.wpmf_preview_image .image{
+    text-align: center;
+}
+
+.wpmf_preview_image .label-desc:first-child{
+    margin-top: 5px;
+}
+
+.wpmf_preview_image .label-desc{
+    font-weight: normal;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.wpmf_preview_image .label-desc:last-child{
+    margin-bottom: 0;
+}
+
 #wpmf_preview_image .bottomlegend {
     width: 95%;
     max-width: 300px;
@@ -1431,7 +1455,6 @@ ul.attachments .attachment {
 }
 
 #wpmf_preview_image .bottomlegend_filename {
-    font-weight: bold;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1527,7 +1550,7 @@ ul.attachments .attachment {
 }
 
 .view-switch a.current::before {
-    color: #0073aa !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
 }
 
 .wpmf_wrap_icon_filter {
@@ -1776,13 +1799,13 @@ ul.attachments .attachment {
     position: relative;
     top: -3px;
     text-decoration: none;
-    border: 1px solid #0071a1;
+    border: 1px solid var(--wp-admin-theme-color, #3858e9);
     border-radius: 2px;
     text-shadow: none;
     font-weight: 600;
     font-size: 13px;
     line-height: normal;
-    color: #0071a1;
+    color: var(--wp-admin-theme-color, #3858e9);
     background: #f3f5f6;
     cursor: pointer;
     margin-left: 5px
@@ -1806,7 +1829,7 @@ ul.attachments .attachment {
 }
 
 .wpmf_icon_remote_video:hover {
-    background-color: #0073ab;
+    background-color: var(--wp-admin-theme-color, #3858e9);
     color: #fff;
 }
 
@@ -1931,14 +1954,14 @@ ul.attachments .attachment {
 }
 
 .wpmf-loadmore-folder {
-    border: 0.5px solid #0073ab !important;
+    border: 0.5px solid var(--wp-admin-theme-color, #3858e9) !important;
     text-decoration: none;
     display: inline-block;
     text-align: center;
     padding: 8px 25px;
     font-size: 14px;
     margin: 0 0 10px 20px;
-    color: #0073ab;
+    color: var(--wp-admin-theme-color, #3858e9);
     box-sizing: border-box;
     border-radius: 4px;
     width: calc(100% - 40px);
@@ -1947,14 +1970,14 @@ ul.attachments .attachment {
 }
 
 .wpmf-new-folder {
-    border: 0.5px solid #0073ab !important;
+    border: 0.5px solid var(--wp-admin-theme-color, #3858e9) !important;
     text-decoration: none;
     display: inline-block;
     text-align: center;
     padding: 8px 5px;
     font-size: 13px;
     margin: 0 0 10px 0;
-    color: #0073ab;
+    color: var(--wp-admin-theme-color, #3858e9);
     box-sizing: border-box;
     border-radius: 4px;
     width: calc(100% - 40px);
@@ -1973,7 +1996,7 @@ ul.attachments .attachment {
 
 .wpmf-new-folder .material-icons,
 .wpmf-loadmore-folder .material-icons {
-    color: #0073ab !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
 }
 
 .media-menu .wpmf-main-tree a:nth-child(2):not(.wpmf-folder-btn, .wpmf-new-folder), .media-menu .wpmf-main-tree a:nth-child(3), .media-menu .wpmf-main-tree a:nth-child(4),
@@ -2080,17 +2103,17 @@ ul.attachments .attachment {
     right: 0;
     top: 0;
     height: 100%;
-    border-right: #0073ab 5px solid;
+    border-right: var(--wp-admin-theme-color, #3858e9) 5px solid;
     box-sizing: content-box;
 }
 
 .wpmf-main-tree li.selected > .wpmf-item .wpmf-item-icon,
 .wpmf-main-tree li.selected > .wpmf-item .tree_drive_icon {
-    color: #0073ab !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
 }
 
 .wpmf-main-tree li.selected > .wpmf-item .tree_drive_icon_img * {
-    fill: #0073ab !important;
+    fill: var(--wp-admin-theme-color, #3858e9) !important;
 }
 
 .wpmf-main-tree li.selected > .wpmf-item .wpmf-item-title {
@@ -2098,13 +2121,13 @@ ul.attachments .attachment {
 }
 
 .wpmf-main-tree li.selected > .wpmf-item[data-id="0"] .wpmf-item-title {
-    color: #0073ab !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
 }
 
 .wpmf-main-tree li.selected > .wpmf-item .wpmf-item-count,
 .wpmf-main-tree li.selected > .wpmf-item .wpmf-item-count-all {
     color: #fff;
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
 }
 
 /* Hide if a parent folder is closed */
@@ -2150,7 +2173,7 @@ ul.attachments .attachment {
 }
 
 .wpmf-item > .wpmf-item-inside > a[data-id="0"] .wpmf-item-icon {
-    color: #0073ab !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
 }
 
 .wpmf-item > .wpmf-item-inside > a[data-id="0"] > .wpmf-item-title {
@@ -2161,7 +2184,7 @@ ul.attachments .attachment {
     line-height: 1.26;
     letter-spacing: normal;
     text-align: left;
-    color: #0073ab;
+    color: var(--wp-admin-theme-color, #3858e9);
 }
 
 .wpmf-item .wpmf-arrow {
@@ -2204,7 +2227,7 @@ ul.attachments .attachment {
 
 .wpmf-item:hover .wpmf-item-count,
 .wpmf-item:hover .wpmf-item-count-all {
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
     color: #ffffff;
 }
 
@@ -2240,7 +2263,7 @@ ul.attachments .attachment {
     font-weight: bold;
     color: #2196F3;
     border-radius: 10px !important;
-    border: solid 2px #0073ab !important;
+    border: solid 2px var(--wp-admin-theme-color, #3858e9) !important;
     background: #ffffff !important;
 }
 
@@ -2251,8 +2274,8 @@ ul.attachments .attachment {
     width: 2px;
     background: #f1f1f1;
     border: 0;
-    border-right: 2px solid #0073ab;
-    border-left: 2px solid #0073ab;
+    border-right: 2px solid var(--wp-admin-theme-color, #3858e9);
+    border-left: 2px solid var(--wp-admin-theme-color, #3858e9);
     height: 30px;
     cursor: col-resize;
 }
@@ -2264,7 +2287,7 @@ ul.attachments .attachment {
     height: 30px;
     top: 0;
     right: -6px;
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
     border-left: #f1f1f1 2px solid;
 }
 
@@ -2274,7 +2297,7 @@ ul.attachments .attachment {
 
 .elementor-editor-wp-post .media-frame-menu .wpmf-main-tree-resize:after,
 .elementor-editor-wp-page .media-frame-menu .wpmf-main-tree-resize:after {
-    border-left: #0073ab 2px solid;
+    border-left: var(--wp-admin-theme-color, #3858e9) 2px solid;
 }
 
 .acf-media-modal.-edit .wpmf-main-tree,
@@ -2291,7 +2314,9 @@ ul.attachments .attachment {
 .attachments-browser .wp-filter select,
 .media-toolbar-secondary select,
 .media-toolbar-secondary > label,
-.media-attachments-filter-heading {
+.media-attachments-filter-heading,
+.media-toolbar-secondary .type-filter,
+.media-toolbar-secondary .date-filter {
     display: none !important;
 }
 
@@ -2303,6 +2328,10 @@ ul.attachments .attachment {
     display: inline-block !important;
 }
 
+.wpmf-dropdowns-wrap .wpmf_filter_label {
+    display: contents !important;
+}
+
 .wp-filter.wpmf-no-tree.media-toolbar-mode-select #wpmf-media-category {
     display: none !important;
 }
@@ -2310,12 +2339,22 @@ ul.attachments .attachment {
 .wpmf-dropdowns-wrap {
     position: relative;
     display: inline-block;
-    margin-bottom: 10px;
-    margin-right: 5px;
+}
+
+.media-modal .wpmf-dropdowns-wrap {
+    display: flex;
 }
 
 .media-modal .media-toolbar .wpmf-dropdowns-wrap {
     float: left;
+}
+
+.media-modal .attachments-browser .media-toolbar {
+    padding-bottom: 0;
+}
+
+.media-modal .attachments-browser .media-toolbar-secondary {
+    max-width: 66%;
 }
 
 .media-modal .media-toolbar .spinner {
@@ -2337,6 +2376,7 @@ ul.attachments .attachment {
 
 .mobile .wpmf-dropdown-wrap,
 .mobile .wpmf-allfiles-btn,
+.mobile .wpmf-attached-to-btn,
 .mobile .select-mode-toggle-button {
     margin: 5px 0 5px 8px !important;
 }
@@ -2354,7 +2394,7 @@ ul.attachments .attachment {
     color: #fff;
     border-radius: 20px;
     padding: 5px;
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
     position: absolute;
     right: -5px;
     top: -10px;
@@ -2369,29 +2409,157 @@ ul.attachments .attachment {
 }
 
 .wpmf-dropdown-wrap > a.wpmf-dropdown-btn,
-.wpmf-allfiles-btn {
+.wpmf-allfiles-btn, .wpmf-attached-to-btn {
     text-decoration: none !important;
-    color: #0073ab !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
     text-align: center;
     box-shadow: none !important;
     outline: 0;
     padding: 0 1rem !important;
     vertical-align: middle !important;
     background-color: #f8f8f8 !important;
+    line-height: 2.3 !important;
+    min-height: auto !important;
 }
 
 .wpmf-filters-dropdown > .wpmf-filters-dropdown-button.active {
     color: #fff !important;
-    background: #0073ab !important;
-    border: #0073ab 1px solid !important;
+    background: var(--wp-admin-theme-color, #3858e9) !important;
+    border: var(--wp-admin-theme-color, #3858e9) 1px solid !important;
 }
 
-.wpmf-allfiles-btn {
+.wpmf-allfiles-btn, .wpmf-attached-to-btn {
     margin-left: 8px !important;
+}
+
+.wpmf-attached-to-btn.active{
+    color: #fff !important;
+    background: var(--wp-admin-theme-color, #3858e9) !important;
+    border: var(--wp-admin-theme-color, #3858e9) 1px solid !important;
+}
+
+#wpmf-attached-popup{
+    z-index: 999999;
+}
+
+#wpmf-attached-popup .wpmf-popup-list-post-inner{
+    height: 460px;
+    max-width: 500px;
+}
+
+#wpmf-attached-popup .wpmf-popup-list-post-footer {
+    margin-top: 10px;
+}
+
+#wpmf-attached-popup .title-list-post {
+    margin-bottom: 0;
+    font-size: 14px;
+}
+
+#wpmf-attached-popup .wpmf-post-type, #wpmf-attached-popup .wpmf-apply-attached{
+    margin-right: 10px;
+}
+
+#wpmf-attached-popup .wp-select-post{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#wpmf-attached-popup .wp-select-post i{
+    color: #a5a5a5;
+}
+
+#wpmf-attached-popup .wpmf-popup-controls{
+    display: flex;
+}
+
+#wpmf-attached-popup .wpmf-post-type, #wpmf-attached-popup .wpmf-post-search {
+    height: 35px;
+}
+
+#wpmf-attached-popup .wpmf-post-search {
+    width: 100%;
+}
+
+.wpmf-attached-tag {
+    display: inline-flex;
+    align-items: center;
+    background: #e5f3ff;
+    color: var(--wp-admin-theme-color, #3858e9);
+    border: 1px solid #b3d4fc;
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-left: 5px;
+    font-size: 12px;
+    line-height: 20px;
+    vertical-align: middle;
+}
+
+.wpmf-attached-tag .wpmf-remove-attached {
+    padding-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.wpmf-attached-tag .wpmf-remove-attached:hover {
+    color: red;
+}
+
+.wpmf-popup-list-post {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.attachments-browser .media-toolbar-secondary {
+    max-width: 75%;
+}
+
+.wpmf-popup-list-post .wpmf-popup-list-post-body { 
+    max-height: 320px;
+}
+.wpmf-popup-list-post-inner h3 {
+    margin-left: 5px;
+}
+
+.wpmf-popup-list-post li{
+    margin-bottom: 10px;
+}
+
+.wpmf-popup-list-post-inner {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 600px;
+    width: 90%;
+    margin-bottom: 300px;
+}
+
+.wpmf-popup-list-post.active {
+    display: flex;
+}
+
+.wpmf-popup-list-post-body {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0 10px 0 5px;
+}
+
+.wpmf-popup-list-post-footer {
+    margin: 20px 0 0 5px;
 }
 
 .media-frame.mode-grid.mode-edit .media-toolbar-secondary > .select-mode-toggle-button {
     background-color: #f8f8f8;
+    margin: 10px 5px 10px 0 !important;
 }
 
 .wpmf-dropdown-wrap ul {
@@ -2446,7 +2614,7 @@ ul.attachments .attachment {
     position: initial;
 }
 .wpmf-dropdown-wrap ul li:hover {
-    background: #0580b8;
+    background: var(--wp-admin-theme-color, #3858e9);
     color: #ffffff;
 }
 
@@ -2483,9 +2651,9 @@ ul.attachments .attachment {
 }
 
 .wpmf-filter-row-body-item {
-    color: #0073ab !important;
+    color: var(--wp-admin-theme-color, #3858e9) !important;
     border-radius: 4px !important;
-    border: #0073ab 1px solid !important;
+    border: var(--wp-admin-theme-color, #3858e9) 1px solid !important;
     padding: 0 8px;
     font-size: 13px;
     margin-top: 10px;
@@ -2620,6 +2788,10 @@ ul.attachments .attachment {
     display: none;
 }
 
+.media-frame-menu-heading {
+    cursor: pointer;
+}
+
 .tippy-box[data-theme~='wpmf'] {
     background: #23282D !important;
     border-radius: 4px;
@@ -2659,7 +2831,7 @@ ul.attachments .attachment {
 }
 
 .wpmf-snackbar-wrap {
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
     color: #FFF;
     padding: 10px 20px;
     border-radius: 4px;
@@ -2793,7 +2965,7 @@ ul.attachments .attachment {
 
 .mdl-header span {
     margin-left: 5px;
-    color: #0580b8;
+    color: var(--wp-admin-theme-color, #3858e9);
     cursor: pointer;
     font-size: 18px;
 }
@@ -2836,6 +3008,7 @@ ul.attachments .attachment {
 .wpmf_filter_label {
     line-height: 30px;
     vertical-align: middle;
+    display: inline-block !important;
 }
 
 .wpmf-filter-icon-left {
@@ -2870,7 +3043,7 @@ ul.attachments .attachment {
 }
 
 .permission_folder_name {
-    color: #0073ab;
+    color: var(--wp-admin-theme-color, #3858e9);
 }
 
 .wpmf_saving:before {
@@ -3057,9 +3230,9 @@ ul.attachments .attachment {
 }
 
 .ju-button.blue-button {
-    background-color: #0073ab;
+    background-color: var(--wp-admin-theme-color, #3858e9);
     color: #fff;
-    border-color: #0073ab;
+    border-color: var(--wp-admin-theme-color, #3858e9);
 }
 
 .ju-button.wpmf_save_btn {
@@ -3071,8 +3244,8 @@ ul.attachments .attachment {
 
 .ju-button.wpmf_cancel_btn {
     background-color: transparent;
-    color: #0073ab;
-    border-color: #0073ab;
+    color: var(--wp-admin-theme-color, #3858e9);
+    border-color: var(--wp-admin-theme-color, #3858e9);
     border-radius: 4px;
     min-width: 100px;
     margin-left: 5px;
@@ -3142,7 +3315,7 @@ ul.attachments .attachment {
 
 #folder_permissions .wpmf_tabs .wpmf_tab.active {
     color: #fff;
-    background: #0073ab;
+    background: var(--wp-admin-theme-color, #3858e9);
 }
 
 /** Search folder box */
@@ -3677,8 +3850,8 @@ svg.wpmf-icon-category {
 }
 
 .wpmf-dialog-container #positive {
-    background-color: #0580b8 !important;
-    border-color: #0580b8;
+    background-color: var(--wp-admin-theme-color, #3858e9) !important;
+    border-color: var(--wp-admin-theme-color, #3858e9);
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
     text-align: center;
@@ -3766,7 +3939,7 @@ svg.wpmf-icon-category {
     }
 
     .wpmf-dropdown-wrap,
-    .wpmf-allfiles-btn {
+    .wpmf-allfiles-btn, .wpmf-attached-to-btn {
         margin-bottom: 5px;
     }
 
@@ -3812,7 +3985,7 @@ svg.wpmf-icon-category {
         margin-left: 0 !important;
     }
 
-    .wpmf-allfiles-btn {
+    .wpmf-allfiles-btn, .wpmf-attached-to-btn {
         display: none !important;
     }
 
@@ -4027,7 +4200,7 @@ body.folded .wpmf-folder-post-type {
     cursor: pointer;
 }
 .wpmf-hide-folder-tree .wpmf-hide-show-buttons {
-    right: -22px;
+    right: -26px;
 }
 .wpmf-hide-show-buttons .toggle-buttons {
     display: none;
@@ -4092,4 +4265,13 @@ table.media .column-title .has-media-icon~.row-actions {
 }
 .wpmf-action-attachment div:last-child input {
     margin-bottom: 0;
+}
+
+/* hide filename in wordpress 7.0 */
+.wp-core-ui .attachment:not(:has(.filename))::after {
+    display: none !important;
+}
+
+#media-attachment-filters, #media-attachment-date-filters {
+    display: none !important;
 }

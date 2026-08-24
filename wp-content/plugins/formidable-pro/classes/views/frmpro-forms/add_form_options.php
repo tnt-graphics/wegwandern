@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<?php esc_html_e( 'Logged-in User', 'formidable-pro' ); ?>
 				</option>
 				<option <?php disabled( FrmAppHelper::ips_saved(), false ); ?> value="ip" <?php selected( in_array( 'ip', $values['single_entry_type'], true ) && FrmAppHelper::ips_saved() ); ?>>
-					<?php esc_html_e( 'IP Address', 'formidable-pro' ); ?>
+					<?php esc_html_e( 'IP Address', 'formidable' ); ?>
 				</option>
 				<option <?php disabled( FrmProAppHelper::no_gdpr_cookies(), true ); ?> value="cookie" <?php selected( in_array( 'cookie', $values['single_entry_type'], true ) && ! FrmProAppHelper::no_gdpr_cookies() ); ?>>
 					<?php esc_html_e( 'Saved Cookie', 'formidable-pro' ); ?>
@@ -46,7 +46,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php } ?>
 			</select>
 	</p>
-
+	<?php if ( FrmProFormsHelper::should_show_disable_on_choice_limit_setting( $values['fields'] ) ) { ?>
+	<p class="frm_form_field">
+		<label for="disable_on_choice_limit">
+			<input type="checkbox" name="options[disable_on_choice_limit]" id="disable_on_choice_limit" value="1" <?php checked( $values['disable_on_choice_limit'] ?? 0, 1 ); ?> />
+			<?php esc_html_e( 'Disable field choices that have reached their max limit rather than hiding them', 'formidable-pro' ); ?>
+		</label>
+	</p>
+	<?php } ?>
 	<div id="frm_cookie_expiration" class="frm-single-entry-type-cookie-setting frm_grid_container <?php echo FrmProFormsHelper::check_single_entry_type( $values, 'cookie' ) ? '' : 'frm_hidden'; ?>">
 		<p class="frm4 frm_indent_opt frm_first">
 			<label for="cookie_expiration">
@@ -55,7 +62,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</p>
 		<p class="frm8">
 			<input type="text" id="cookie_expiration" name="options[cookie_expiration]" value="<?php echo esc_attr( $values['cookie_expiration'] ); ?>" size="6" class="frm-w-auto">
-			<span class="howto"><?php esc_html_e( 'hours', 'formidable-pro' ); ?></span>
+			<span class="howto"><?php esc_html_e( 'hours', 'formidable' ); ?></span>
 			<i style="color:var(--grey-400);"><?php esc_html_e( '(eg. .25, 5, 200)', 'formidable-pro' ); ?></i>
 		</p>
 	</div>
@@ -69,6 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		$single_entry_email_wrapper_params = array(
 			'class' => 'frm8 frm_first frm_form_field frm_select_with_label frm-single-entry-type-email-setting',
 		);
+
 		if ( ! FrmProFormsHelper::check_single_entry_type( $values, 'email' ) ) {
 			$single_entry_email_wrapper_params['class'] .= ' frm_hidden';
 		}

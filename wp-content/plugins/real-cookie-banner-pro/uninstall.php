@@ -26,7 +26,7 @@ function rcb_uninstall() {
         define('RCB_SLUG', basename(RCB_PATH));
         define('RCB_INC', RCB_PATH . '/inc/');
         define('RCB_MIN_PHP', '7.4.0');
-        define('RCB_MIN_WP', '5.8.0');
+        define('RCB_MIN_WP', '6.1.0');
         define('RCB_NS', 'DevOwl\\RealCookieBanner');
         define('RCB_DB_PREFIX', 'rcb');
         define('RCB_OPT_PREFIX', 'rcb');

@@ -16,7 +16,8 @@ class WpmfSingleLightbox
     {
         add_action('wp_enqueue_media', array($this, 'loadScript'));
         add_action('wp_enqueue_scripts', array($this, 'enqueueScript'));
-        add_action('enqueue_block_editor_assets', array($this, 'addEditorAssets'));
+        add_action('enqueue_block_assets', array($this, 'addEditorAssets'));
+        add_action('init', array($this, 'registerBlocks'));
         add_filter('attachment_fields_to_edit', array($this, 'attachmentFieldsToEdit'), 10, 2);
         add_filter('attachment_fields_to_save', array($this, 'attachmentFieldsToSave'), 10, 2);
         add_filter('image_send_to_editor', array($this, 'imageLightboxSendToEditor'), 10, 8);
@@ -29,14 +30,32 @@ class WpmfSingleLightbox
      *
      * @return void
      */
-    public function addEditorAssets()
+    /**
+     * Register blocks
+     *
+     * @return void
+     */
+    public function registerBlocks()
     {
-        wp_enqueue_script(
-            'wpmf_lightbox_blocks',
+        global $pagenow;
+        $deps = (isset($pagenow) && $pagenow === 'widgets.php') ? array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor') : array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-editor');
+
+        wp_register_script(
+            'wpmf-image-lightbox-editor-script',
             WPMF_PLUGIN_URL . 'assets/js/blocks/image_lightbox/block.js',
-            array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor'),
+            $deps,
             WPMF_VERSION
         );
+        register_block_type(WP_MEDIA_FOLDER_PLUGIN_DIR . '/assets/js/blocks/image_lightbox/block.json');
+    }
+
+    /**
+     * Enqueue styles and scripts for gutenberg
+     *
+     * @return void
+     */
+    public function addEditorAssets()
+    {
 
         $sizes  = apply_filters('image_size_names_choose', array(
             'thumbnail' => __('Thumbnail', 'wpmf'),
@@ -53,7 +72,7 @@ class WpmfSingleLightbox
             )
         );
 
-        wp_localize_script('wpmf_lightbox_blocks', 'wpmf_lightbox_blocks', $params);
+        wp_localize_script('wpmf-image-lightbox-editor-script', 'wpmf_lightbox_blocks', $params);
     }
 
     /**

@@ -3,6 +3,7 @@
  * License expired email controller
  *
  * @since 6.7
+ *
  * @package FormidablePro
  */
 
@@ -35,6 +36,7 @@ class FrmProEmailLicenseExpiredController {
 					FrmEmailSummaryHelper::set_last_sent_date( self::get_email_option_key(), '' );
 				}
 			}
+
 			return;
 		}
 
@@ -54,8 +56,9 @@ class FrmProEmailLicenseExpiredController {
 	private static function get_email_option_key() {
 		$option_key  = self::LICENSE_EXPIRED;
 		$pro_license = FrmAddonsController::get_pro_license();
+
 		if ( $pro_license ) {
-			$option_key = $option_key . '_' . md5( $pro_license );
+			return $option_key . '_' . md5( $pro_license );
 		}
 
 		return $option_key;

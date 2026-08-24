@@ -19,6 +19,9 @@ use DevOwl\RealCookieBanner\Utils;
 use DevOwl\RealCookieBanner\view\customize\banner\CookiePolicy;
 use DevOwl\RealCookieBanner\view\customize\banner\Texts;
 use DevOwl\RealCookieBanner\view\customize\banner\individual\Texts as IndividualTexts;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\middlewares\blocker\ResolveServiceTemplatesMiddleware;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\middlewares\ScanResultsMiddleware;
+use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\middlewares\VersionsMiddleware;
 // @codeCoverageIgnoreStart
 \defined('ABSPATH') or die('No script kiddies please!');
 // Avoid direct file request
@@ -264,15 +267,21 @@ class Reset
             $identifiersToLoad[] = $post->metas[\DevOwl\RealCookieBanner\settings\Blocker::META_NAME_PRESET_ID];
         }
         $consumer = $cpt === \DevOwl\RealCookieBanner\settings\Cookie::CPT_NAME ? TemplateConsumers::getCurrentServiceConsumer() : TemplateConsumers::getCurrentBlockerConsumer();
-        $templates = $consumer->retrieveBy('identifier', $identifiersToLoad);
+        // Suspend middlewares that are not relevant for the reset operation and are expensive to resolve
+        $suspendMiddlewares = [VersionsMiddleware::class, ResolveServiceTemplatesMiddleware::class, ScanResultsMiddleware::class];
+        $consumer->suspendMiddlewares($suspendMiddlewares);
+        try {
+            $templates = $consumer->retrieveBy('identifier', $identifiersToLoad);
+            $templates = $consumer->use($templates);
+        } finally {
+            $consumer->suspendMiddlewares($suspendMiddlewares, \false);
+        }
         $templates = \array_column($templates, null, 'identifier');
         foreach ($existing as $post) {
             $template = $templates[$post->metas[\DevOwl\RealCookieBanner\settings\Blocker::META_NAME_PRESET_ID]] ?? null;
             if ($template === null) {
                 continue;
             }
-            // Make `translations` available
-            $template = $template->use();
             $persistForLanguages = \array_intersect($languages, \array_filter(\array_map(function ($translation) use($defaultLanguageWpCompatible) {
                 return $translation['isUntranslated'] || $translation['language'] === $defaultLanguageWpCompatible ? null : $translation['language'];
             }, $template->consumerData['translations'])));

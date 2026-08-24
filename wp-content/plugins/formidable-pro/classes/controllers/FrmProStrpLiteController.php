@@ -36,6 +36,7 @@ class FrmProStrpLiteController {
 		}
 
 		$suffix = FrmAppHelper::js_suffix();
+
 		if ( '.min' === $suffix && is_readable( FrmAppHelper::plugin_path() . '/js/frmstrp.min.js' ) ) {
 			// If the combined Stripe JS file is available, exit early.
 			return;
@@ -47,6 +48,7 @@ class FrmProStrpLiteController {
 		}
 
 		$dependencies = array( 'formidable' );
+
 		if ( ! $suffix || ! FrmFormsController::has_combo_js_file() ) {
 			$dependencies[] = 'formidablepro';
 		}
@@ -67,12 +69,15 @@ class FrmProStrpLiteController {
 	 * @since 6.5
 	 *
 	 * @param array $args {
+	 *
 	 *     @type FrmFormAction $action_control
 	 *     @type array         $field_dropdown_atts
 	 * }
+	 *
 	 * @return void
 	 */
 	public static function customer_info_after_email( $args ) {
+		$form_action         = $args['form_action'] ?? null;
 		$action_control      = $args['action_control'];
 		$field_dropdown_atts = $args['field_dropdown_atts'];
 
@@ -95,6 +100,7 @@ class FrmProStrpLiteController {
 			'frm_register_action_options',
 			/**
 			 * @param array $options
+			 *
 			 * @return array
 			 */
 			function ( $options ) {
@@ -106,6 +112,7 @@ class FrmProStrpLiteController {
 
 	/**
 	 * @param array $files
+	 *
 	 * @return array
 	 */
 	public static function combine_stripe_js_files( $files ) {
@@ -117,11 +124,38 @@ class FrmProStrpLiteController {
 	 * Define a default for the Address field in Stripe Lite payment actions.
 	 *
 	 * @param array $defaults
+	 *
 	 * @return array
 	 */
 	public static function add_payment_action_defaults( $defaults ) {
-		$defaults['billing_address'] = '';
+		$defaults['billing_address']     = '';
+		$defaults['shipping_email']      = '';
+		$defaults['shipping_first_name'] = '';
+		$defaults['shipping_last_name']  = '';
+		$defaults['shipping_address']    = '';
 		return $defaults;
+	}
+
+	/**
+	 * Render PayPal-specific Billing and Shipping sections in the payment action settings.
+	 *
+	 * @since 6.31
+	 *
+	 * @param array $args {
+	 *
+	 *     @type WP_Post      $form_action         The form action post object.
+	 *     @type FrmFormAction $action_control      The action controller object.
+	 *     @type array         $field_dropdown_atts Attributes for field dropdown rendering.
+	 * }
+	 *
+	 * @return void
+	 */
+	public static function render_paypal_shipping_billing( $args ) {
+		$form_action         = $args['form_action'];
+		$action_control      = $args['action_control'];
+		$field_dropdown_atts = $args['field_dropdown_atts'];
+
+		require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-form-actions/_paypal_shipping_billing.php';
 	}
 
 	/**
@@ -129,6 +163,7 @@ class FrmProStrpLiteController {
 	 *
 	 * @param array   $settings
 	 * @param WP_Post $action
+	 *
 	 * @return array
 	 */
 	public static function add_settings_for_js( $settings, $action ) {

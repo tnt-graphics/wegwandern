@@ -2,7 +2,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Class WpmfHandlerWizard
@@ -81,9 +81,9 @@ class WpmfHandlerWizard
         );
 
         if (isset($_POST['hide_remote_video'])) {
-            wpmfSetOption('hide_remote_video', $_POST['hide_remote_video']);
+            WpmfHelper::wpmfSetOption('hide_remote_video', $_POST['hide_remote_video']);
         } else {
-            wpmfSetOption('hide_remote_video', 1);
+            WpmfHelper::wpmfSetOption('hide_remote_video', 1);
         }
 
         foreach ($options as $name => $value) {

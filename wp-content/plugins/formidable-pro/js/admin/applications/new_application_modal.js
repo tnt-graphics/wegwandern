@@ -103,7 +103,7 @@
 		});
 
 		if ( ! frmNewApplicationModalVars.canAddViews ) {
-			container.appendChild( getViewsUpsell() );
+			container.append( getViewsUpsell() );
 		}
 
 		/**
@@ -229,7 +229,7 @@
 		doJsonFetch( 'get_application_item_options&type=' + type ).then( addItemsToExistingItemModalPage );
 
 		function addItemsToExistingItemModalPage( data ) {
-			container.appendChild(
+			container.append(
 				div({ child: getExistingItemSearch( type ) })
 			);
 			data.options.forEach( addOptionToContainer );
@@ -335,10 +335,10 @@
 			state.itemsPending = state.newItems.form.length + state.newItems.view.length;
 			const termId = data.term_id;
 			state.newItems.form.forEach(
-				form => container.appendChild( getSummaryItem( termId, form, 'form' ) )
+				form => container.append( getSummaryItem( termId, form, 'form' ) )
 			);
 			state.newItems.view.forEach(
-				view => container.appendChild( getSummaryItem( termId, view, 'view' ) )
+				view => container.append( getSummaryItem( termId, view, 'view' ) )
 			);
 		}
 
@@ -374,7 +374,7 @@
 			noDismiss: true
 		});
 		onClickPreventDefault( openButton, () => window.location.href = state.redirect );
-		footer.appendChild( openButton );
+		footer.append( openButton );
 	}
 
 	function addToApplication( termId, itemId, type, callback ) {

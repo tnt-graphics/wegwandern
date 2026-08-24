@@ -52,7 +52,6 @@
 		{ className: 'wp-list-table widefat fixed striped toplevel_page_formidable' }
 	);
 
-	frmDom.bootstrap.setupBootstrapDropdowns();
 	prepareApplicationDropdown();
 	pullDataForApplication( handleApplicationData );
 	addEventListeners();
@@ -88,15 +87,15 @@
 			const anchor = a({ className: 'frm-dropdown-toggle' });
 
 			topBar.classList.add( 'frm-with-dropdown' );
-			anchor.setAttribute( 'data-toggle', 'dropdown' );
-			h1.appendChild( document.createTextNode( ' ' ) );
-			h1.appendChild( svg({ href: '#frm_arrowdown4_icon' }) );
+			anchor.setAttribute( 'data-bs-toggle', 'dropdown' );
+			h1.append( document.createTextNode( ' ' ) );
+			h1.append( svg({ href: '#frm_arrowdown4_icon' }) );
 
 			h1.parentNode.replaceChild( anchor, h1 );
-			anchor.appendChild( h1 );
+			anchor.append( h1 );
 
 			const dropdownMenu = div({
-				className: 'frm-dropdown-menu frm_code_list frm-full-hover frm-inline-modal',
+				className: 'frm-dropdown-menu dropdown-menu frm_code_list frm-full-hover frm-inline-modal',
 				children: applications.map( getApplicationDropdownItem )
 			});
 			const searchWrapper = div({
@@ -149,7 +148,7 @@
 	function addSearchToWrapper() {
 		const searchWrapper = document.getElementById( 'frm_application_item_search_wrapper' );
 		if ( searchWrapper ) {
-			searchWrapper.appendChild( getItemSearch() );
+			searchWrapper.append( getItemSearch() );
 		}
 	}
 
@@ -159,7 +158,13 @@
 			return;
 		}
 
-		jQuery( syncButton ).tooltip();
+		jQuery( syncButton ).on(
+			'mouseenter.frm',
+			function() {
+				jQuery( this ).off( 'mouseenter.frm' );
+				jQuery( syncButton ).tooltip( 'show' );
+			}
+		);
 	}
 
 	function addEventListeners() {
@@ -173,13 +178,13 @@
 		const data = state.dataForApplication;
 
 		if ( ! data.rows ) {
-			container.appendChild( getNoItemsPlaceholder() );
+			container.append( getNoItemsPlaceholder() );
 			return;
 		}
 
 		state.rows = data.rows;
 		document.getElementById( 'frm_application_header' ).classList.remove( 'frm_hidden' );
-		container.appendChild( table );
+		container.append( table );
 		addDataToTable( data );
 	}
 
@@ -364,7 +369,7 @@
 					application_id: id
 				},
 				dataType: 'json',
-				success: function( response ) {
+				success( response ) {
 					if ( 'object' === typeof response && 'string' === typeof response.redirect ) {
 						window.location.href = response.redirect;
 					}
@@ -374,7 +379,7 @@
 
 		form.addEventListener(
 			'submit',
-			function( event ) {
+			( event ) => {
 				event.preventDefault();
 				createPageWithShortcode();
 				return false;
@@ -384,7 +389,7 @@
 
 		const title = tag( 'label', __( 'What will you call the new page?', 'formidable' ) );
 		title.setAttribute( 'for', 'frm_name_your_page' );
-		form.appendChild( title );
+		form.append( title );
 
 		const input = tag(
 			'input',
@@ -393,9 +398,9 @@
 		input.placeholder = __( 'Name your page', 'formidable' );
 		input.type = 'text';
 		input.addEventListener( 'change', () => state.newPageName = input.value );
-		form.appendChild( input );
+		form.append( input );
 
-		wrapper.appendChild( form );
+		wrapper.append( form );
 		return wrapper;
 	}
 
@@ -458,7 +463,7 @@
 		doJsonFetch( 'get_application_item_options&type=' + type ).then( addItemsToExistingItemModalPage );
 
 		function addItemsToExistingItemModalPage( data ) {
-			container.appendChild( getItemSearch( type ) );
+			container.append( getItemSearch( type ) );
 			data.options.forEach( addOptionToContainer );
 			setTimeout( () => centerModal( elements.addItemModal ), 0 );
 		}
@@ -518,7 +523,7 @@
 		let placeholder = document.getElementById( 'frm_no_modal_results_placeholder' );
 		if ( ! placeholder ) {
 			placeholder = getNoModalResultsPlaceholder( modalType );
-			modal.querySelector( '.frm-search' ).parentNode.appendChild( placeholder );
+			modal.querySelector( '.frm-search' ).parentNode.append( placeholder );
 		}
 
 		const showTable = ! notEmptySearchText || foundSomething;
@@ -570,7 +575,7 @@
 	function handleItemTableSearch({ foundSomething, notEmptySearchText }) {
 		if ( false === elements.noTableItemSearchResultsPlaceholder ) {
 			elements.noTableItemSearchResultsPlaceholder = getNoResultsPlaceholder();
-			document.getElementById( 'frm_edit_application_container' ).appendChild( elements.noTableItemSearchResultsPlaceholder );
+			document.getElementById( 'frm_edit_application_container' ).append( elements.noTableItemSearchResultsPlaceholder );
 		}
 
 		const showTable = ! notEmptySearchText || foundSomething;
@@ -640,7 +645,7 @@
 		state.newItems.forEach(
 			({ value, label }) => {
 				const item = getSummaryItem( label, type, value );
-				content.appendChild( item );
+				content.append( item );
 
 				const newValue = 0;
 				addToApplication(
@@ -716,7 +721,7 @@
 			text: __( 'Done', 'formidable-pro' ),
 			buttonType: 'primary'
 		});
-		footer.appendChild( openButton );
+		footer.append( openButton );
 	}
 
 	function getCheckmark() {
@@ -736,7 +741,7 @@
 		addHeadersToTable();
 		const children = data.rows.map( rowData => getTableRow( rowData ) );
 		const tableBodyArgs = { children };
-		table.appendChild( tag( 'tbody', tableBodyArgs ) );
+		table.append( tag( 'tbody', tableBodyArgs ) );
 	}
 
 	function addHeadersToTable() {
@@ -747,7 +752,7 @@
 			__( 'Embedded in', 'formidable-pro' ),
 			__( 'Embed', 'formidable-pro' )
 		];
-		table.appendChild(
+		table.append(
 			tag(
 				'thead',
 				{
@@ -885,7 +890,7 @@
 							container.removeChild( table );
 						}
 						document.getElementById( 'frm_application_header' ).classList.add( 'frm_hidden' );
-						container.appendChild( getNoItemsPlaceholder() );
+						container.append( getNoItemsPlaceholder() );
 					}
 				}
 			}
@@ -937,8 +942,8 @@
 			});
 
 			output.classList.add( 'frm-with-more-tag' );
-			output.appendChild( moreTag );
-			output.appendChild( dropdownMenu );
+			output.append( moreTag );
+			output.append( dropdownMenu );
 		}
 		return output;
 	}
@@ -1105,7 +1110,7 @@
 		function addSummaryForType({ name, matches }, type ) {
 			const item = getSummaryItem( name, type );
 			item.insertBefore( getCheckmark(), item.firstChild );
-			container.appendChild( item );
+			container.append( item );
 
 			const ul = tag( 'ul' );
 			matches.forEach( getAddMatchToListFunction( ul ) );
@@ -1124,7 +1129,7 @@
 					svg({ href: '#frm_dashed_list_icon' }),
 					span( description.replace( '%s', name ) )
 				];
-				ul.appendChild( li({ children }) );
+				ul.append( li({ children }) );
 			};
 		}
 	}
@@ -1151,7 +1156,7 @@
 			img({ src: getPathToImage( 'empty-sync.svg' ) }),
 			tag( 'h3', __( 'Your application is up to date', 'formidable-pro' ) ),
 			span( __( 'No new items were found.', 'formidable-pro' ) )
-		].forEach( child => container.appendChild( child ) );
+		].forEach( child => container.append( child ) );
 		centerModal( elements.syncSummaryModal );
 	}
 
@@ -1170,10 +1175,10 @@
 			const field = tag( 'input' );
 			field.setAttribute( 'name', name );
 			field.value = value;
-			form.appendChild( field );
+			form.append( field );
 		}
 
-		document.body.appendChild( form );
+		document.body.append( form );
 		form.submit();
 	}
 
@@ -1193,7 +1198,7 @@
 		notice.style.borderRadius = '4px';
 		notice.style.right = '10px';
 		notice.style.bottom = '10px';
-		container.appendChild( notice );
+		container.append( notice );
 		setTimeout( () => jQuery( notice ).fadeOut( () => notice.remove() ), 2000 );
 	}
 }() );

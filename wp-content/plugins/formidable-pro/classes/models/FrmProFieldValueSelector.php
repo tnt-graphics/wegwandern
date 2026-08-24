@@ -27,6 +27,7 @@ class FrmProFieldValueSelector extends FrmFieldValueSelector {
 		parent::set_options();
 
 		$post_field = $this->field_settings->get_post_field();
+
 		if ( $post_field === 'post_status' ) {
 			$this->options = FrmProFieldsHelper::get_post_status_options( $this->db_row->form_id, $this->options );
 		}
@@ -108,5 +109,14 @@ class FrmProFieldValueSelector extends FrmFieldValueSelector {
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo FrmProPost::get_category_dropdown( $temp_field, $pass_args );
+	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @since 6.25.1
+	 */
+	protected function use_value_as_label_in_dropdown() {
+		return str_contains( $this->html_name, 'hide_opt' );
 	}
 }

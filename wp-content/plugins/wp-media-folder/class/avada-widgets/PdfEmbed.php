@@ -120,17 +120,19 @@ function wpmfAvadaPdfEmbed()
         )
     );
 
-    wp_enqueue_style(
-        'wpmf-avada-style',
-        WPMF_PLUGIN_URL . 'assets/css/avada_style.css',
-        array(),
-        WPMF_VERSION
-    );
+    if (is_admin() || (function_exists('fusion_is_preview_frame') && fusion_is_preview_frame()) || (function_exists('fusion_is_builder_frame') && fusion_is_builder_frame())) {
+        wp_enqueue_style(
+            'wpmf-avada-style',
+            WPMF_PLUGIN_URL . 'assets/css/avada_style.css',
+            array(),
+            WPMF_VERSION
+        );
 
-    wp_enqueue_style(
-        'pdfemba_embed_pdf_css',
-        WPMF_PLUGIN_URL . 'assets/css/pdfemb-embed-pdf.css'
-    );
+        wp_enqueue_style(
+            'pdfemba_embed_pdf_css',
+            WPMF_PLUGIN_URL . 'assets/css/pdfemb-embed-pdf.css'
+        );
+    }
 }
 
 wpmfAvadaPdfEmbed();

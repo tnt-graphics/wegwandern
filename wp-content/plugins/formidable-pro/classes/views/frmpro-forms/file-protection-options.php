@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<input type="checkbox" name="options[protect_files]" id="protect_files" value="1" <?php checked( $values['protect_files'], 1 ); ?> onchange="document.getElementById('noindex_files').disabled=!this.checked;document.querySelector('label[for=\'noindex_files\']').classList.toggle('frm_noallow',!this.checked);" />
 			<?php
 			esc_html_e( 'Protect all files uploaded in this form', 'formidable-pro' );
+
 			if ( 'Windows NT' === FrmProAppHelper::get_server_os() ) :
 				?>
 				<span class="howto">
@@ -32,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<p class="frm8 frm_form_field hide_protect_files <?php echo esc_attr( $values['protect_files'] ? '' : 'frm_hidden' ); ?>">
 		<select name="options[protect_files_role][]" id="protect_files_role" multiple="multiple" class="frm_multiselect">
 			<?php $roles = $values['protect_files_role'] ?? array( '' ); ?>
-			<option <?php FrmProAppHelper::selected( $roles, '' ); ?> value=""><?php esc_html_e( 'Everyone', 'formidable-pro' ); ?></option>
+			<option <?php FrmProAppHelper::selected( $roles, '' ); ?> value=""><?php esc_html_e( 'Everyone', 'formidable' ); ?></option>
 			<?php FrmAppHelper::roles_options( $roles ); ?>
 		</select>
 	</p>
@@ -41,7 +42,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<label for="noindex_files" class="<?php echo esc_attr( $values['protect_files'] ? '' : 'frm_noallow' ); ?>">
 			<input type="checkbox" name="options[noindex_files]" id="noindex_files" value="1" <?php checked( $values['protect_files'] ? $values['noindex_files'] : 0, 1 ); ?> <?php disabled( $values['protect_files'], 0 ); ?> />
 			<?php esc_html_e( 'Prevent search engines from indexing uploads', 'formidable-pro' ); ?>
-			<?php FrmProAppHelper::tooltip_icon( __( 'This feature requires that file protection is turned on.', 'formidable-pro' ), array( 'data-container' => 'body' ) ); ?>
+			<?php FrmAppHelper::tooltip_icon( __( 'This feature requires that file protection is turned on.', 'formidable-pro' ), array( 'data-container' => 'body' ) ); ?>
 		</label>
 	</p>
 <?php else : ?>

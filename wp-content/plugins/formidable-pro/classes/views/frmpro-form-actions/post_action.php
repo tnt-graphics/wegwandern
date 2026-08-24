@@ -6,8 +6,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProPostAction extends FrmFormAction {
 
 	public function __construct() {
+		$classes = 'frm_wordpress_icon frm_icon_font';
+
+		// Backwards compatibility "@since 6.31".
+		if ( ! FrmProAppHelper::lite_supports_form_actions_refresh() ) {
+			$classes .= ' frm-inverse';
+		}
+
 		$action_ops = array(
-			'classes'     => 'frm_wordpress_icon frm_icon_font frm-inverse',
+			'classes'     => $classes,
 			'color'       => 'rgb(0,160,210)',
 			'limit'       => 1,
 			'priority'    => 40,
@@ -15,13 +22,14 @@ class FrmProPostAction extends FrmFormAction {
 			'force_event' => true,
 		);
 
-		parent::__construct( 'wppost', __( 'Create Post', 'formidable-pro' ), $action_ops );
+		parent::__construct( 'wppost', __( 'Create Post', 'formidable' ), $action_ops );
 	}
 
 	public function form( $form_action, $args = array() ) {
 	    extract( $args );
 
 	    $post_types = FrmProAppHelper::get_custom_post_types();
+
         if ( ! $post_types ) {
             return;
         }
@@ -35,6 +43,7 @@ class FrmProPostAction extends FrmFormAction {
 
         // Get array of all custom fields
         $custom_fields = array();
+
         if ( isset( $form_action->post_content['post_custom_fields'] ) ) {
             foreach ( $form_action->post_content['post_custom_fields'] as $custom_field_opts ) {
 				if ( isset( $custom_field_opts['meta_name'] ) ) {
@@ -44,12 +53,11 @@ class FrmProPostAction extends FrmFormAction {
             }
         }
 
-		$embedded_fields = $this->get_embedded_fields( $form_id );
-		$fields          = array_merge( $values['fields'], $embedded_fields );
+		$embedded_fields    = $this->get_embedded_fields( $form_id );
+		$fields             = array_merge( $values['fields'], $embedded_fields );
+        $embedded_field_ids = array_column( $embedded_fields, 'id' );
 
-		$embedded_field_ids = array_column( $embedded_fields, 'id' );
-
-		if ( empty( $form_action->post_content['post_category'] ) && ! empty( $fields ) ) {
+		if ( empty( $form_action->post_content['post_category'] ) && $fields ) {
 			foreach ( $values['fields'] as $fo_key => $fo ) {
 				if ( $fo['post_field'] === 'post_category' ) {
 					if ( ! isset( $fo['taxonomy'] ) || $fo['taxonomy'] == '' ) {
@@ -86,25 +94,29 @@ class FrmProPostAction extends FrmFormAction {
 	 * @since 6.8
 	 *
 	 * @param int   $form_id
+	 *
 	 * @return array
 	 */
 	private function get_embedded_fields( $form_id ) {
 		$embedded_form_ids = FrmProFormsHelper::get_embedded_form_ids( $form_id );
+
 		if ( ! $embedded_form_ids ) {
 			return array();
 		}
-		$embedded_fields = FrmDb::get_results( 'frm_fields', array( 'form_id' => $embedded_form_ids ) );
 
-		$formatted_fields = array();
+		$embedded_fields  = FrmDb::get_results( 'frm_fields', array( 'form_id' => $embedded_form_ids ) );
+        $formatted_fields = array();
 
 		foreach ( $embedded_fields as $field ) {
 			FrmAppHelper::unserialize_or_decode( $field->field_options );
 			$field = (array) $field;
 			$opts  = (array) $field['field_options'];
 			$field = array_merge( $opts, $field );
+
 			if ( ! isset( $field['post_field'] ) ) {
 				$field['post_field'] = '';
 			}
+
 			$formatted_fields[] = $field;
 			unset( $field, $opts );
 		}
@@ -173,9 +185,6 @@ class FrmProPostAction extends FrmFormAction {
 		);
 
 		$dropdown_args = array_merge( $defaults, $args );
-
-		if ( is_callable( 'FrmAppHelper::maybe_autocomplete_pages_options' ) ) {
-			FrmAppHelper::maybe_autocomplete_pages_options( $dropdown_args );
-		}
+		FrmAppHelper::maybe_autocomplete_pages_options( $dropdown_args );
 	}
 }

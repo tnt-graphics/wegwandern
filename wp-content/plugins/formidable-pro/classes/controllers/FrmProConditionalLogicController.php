@@ -46,7 +46,8 @@ class FrmProConditionalLogicController {
 				if ( $logic_field->form_id != $current_field['form_id'] && $logic_field->form_id != $parent_form_id ) {
 					$present = false;
 				} else {
-					$in_section_id  = $logic_field->field_options['in_section'] ?? '0';
+					$in_section_id = $logic_field->field_options['in_section'] ?? '0';
+
 					if ( $in_section_id == $current_field['id'] ) {
 						$present = false;
 					}
@@ -71,6 +72,7 @@ class FrmProConditionalLogicController {
 	 * @since 6.24
 	 *
 	 * @param array $field The field array.
+	 *
 	 * @return array
 	 */
 	public static function get_show_hide_options( $field ) {

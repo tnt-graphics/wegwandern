@@ -10,9 +10,9 @@ if ( 'dropdown' === $field['data_type'] ) {
 // Show a message until the field is set up.
 if ( empty( $field['form_select'] ) && $field['post_field'] !== 'post_category' ) {
 	?>
-	<span class="frm-with-left-icon frm-not-set" id="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
-		<?php FrmProAppHelper::icon_by_class( 'frm_icon_font frm_report_problem_solid_icon' ); ?>
-		<input type="text" value="<?php esc_attr_e( 'This field is not set up yet.', 'formidable-pro' ); ?>" disabled />
+	<span class="frm-with-left-icon frm-not-set frm-block" id="setup-message-<?php echo esc_attr( $field['id'] ); ?>">
+		<?php FrmAppHelper::icon_by_class( 'frmfont frm_report_problem_solid_icon' ); ?>
+		<input type="text" value="<?php esc_attr_e( 'This field is not set up yet.', 'formidable' ); ?>" disabled />
 	</span>
 	<input type="hidden" name="<?php echo esc_attr( $field_name ); ?>" value="" />
 	<?php
@@ -47,7 +47,6 @@ if ( ! isset( $field['data_type'] ) || $field['data_type'] === 'data' ) {
 <?php
 } elseif ( $field['data_type'] === 'data' && is_numeric( $field['hide_opt'] ) ) {
 	echo FrmEntryMeta::get_entry_meta_by_field( $field['hide_opt'], $field['form_select'] );
-
 } elseif ( $field['data_type'] === 'checkbox' ) {
 	$checked_values = $field['default_value'];
 

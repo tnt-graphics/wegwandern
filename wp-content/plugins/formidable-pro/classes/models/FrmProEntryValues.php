@@ -67,6 +67,7 @@ class FrmProEntryValues extends FrmEntryValues {
 
 		if ( ! empty( $this->exclude_fields ) ) {
 			$is_excluded = $this->is_self_or_parent_in_array( $field, $this->exclude_fields );
+
 			if ( $is_excluded ) {
 				$is_included = false;
 			}

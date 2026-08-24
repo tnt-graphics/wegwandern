@@ -29,6 +29,18 @@ abstract class AbstractTemplateMiddleware extends AbstractMiddleware
      */
     public abstract function beforeUsingTemplate($template);
     /**
+     * Before using templates (e.g. expose them to the frontend UI form) we can modify them in batch.
+     *
+     * @param AbstractTemplate[] $templates
+     * @return void
+     */
+    public function beforeUsingTemplates(&$templates)
+    {
+        foreach ($templates as $template) {
+            $this->beforeUsingTemplate($template);
+        }
+    }
+    /**
      * Before the template got read through `retrieve` or `retrieveBy`.
      *
      * @param AbstractTemplate $template

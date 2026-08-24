@@ -8,7 +8,7 @@ $field['options'] = $this->get_options( array() );
 if ( is_array( $field['options'] ) ) {
 	if ( ! isset( $field['value'] ) ) {
 		$field['value'] = $field['default_value'];
-		FrmProAppHelper::unserialize_or_decode( $field['value'] );
+		FrmAppHelper::unserialize_or_decode( $field['value'] );
 	}
 
 	foreach ( $field['options'] as $opt_key => $opt ) {
@@ -26,7 +26,6 @@ $field_obj->echo_option_label( $opt );
 ?></label>
 </div>
 <?php
-
 }
 }
 ?>

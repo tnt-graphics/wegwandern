@@ -3,80 +3,86 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "X-Generator: babel-plugin-makepot\n"
 
-#: js/src/builder/builder.js:108
-msgid "Choose type of slider"
-msgstr ""
-
-#: js/src/builder/builder.js:193
-msgid "Single"
-msgstr ""
-
-#: js/src/builder/builder.js:194
-msgid "Range"
-msgstr ""
-
-#: js/src/builder/builder.js:1990
-msgid "Page %d"
-msgstr ""
-
-#: js/src/builder/builder.js:572
-msgid "Please enter a valid number."
-msgstr ""
-
-#: js/src/builder/builder.js:578
-msgid "Minimum size cannot be greater than maximum size."
-msgstr ""
-
-#: js/src/builder/builder.js:611
-msgid "Minimum value cannot be greater than maximum value."
-msgstr ""
-
-#: js/src/builder/builder.js:622
-msgid "Minimum gap cannot be greater than maximum gap."
-msgstr ""
-
-#: js/src/builder/builder.js:625
-msgid ""
-"Maximum gap cannot be greater than the difference between minimum and "
-"maximum values."
-msgstr ""
-
-#: js/src/builder/builder.js:631
-msgid "Step value must be greater than 0."
-msgstr ""
-
-#: js/src/builder/builder.js:634
-msgid "Step value must be less than maximum value."
-msgstr ""
-
-#: js/src/builder/builder.js:852
+#: js/src/builder/builder.js:1219
 #. %s: type of the field (date or time)
 msgid ""
 "Disabling the %s range will delete the end %s field. Are you sure you want "
 "to continue?"
 msgstr ""
 
-#: js/src/builder/builder.js:878
+#: js/src/builder/builder.js:1245
 msgid "%s"
 msgstr ""
 
-#: js/src/builder/builder.js:945
+#: js/src/builder/builder.js:1312
 msgid "Start %s"
 msgstr ""
 
-#: js/src/builder/builder.js:946
+#: js/src/builder/builder.js:1313
 msgid "End %s"
 msgstr ""
 
-#: js/src/calculator/block.js:35
+#: js/src/builder/builder.js:2398
+msgid "Page %d"
+msgstr ""
+
+#: js/src/builder/builder.js:471
+msgid "Choose type of slider"
+msgstr ""
+
+#: js/src/builder/builder.js:556
+msgid "Single"
+msgstr ""
+
+#: js/src/builder/builder.js:557
+msgid "Range"
+msgstr ""
+
+#: js/src/builder/builder.js:935
+msgid "Please enter a valid number."
+msgstr ""
+
+#: js/src/builder/builder.js:941
+msgid "Minimum size cannot be greater than maximum size."
+msgstr ""
+
+#: js/src/builder/fieldFormula.js:174
+msgid "Insert Field"
+msgstr ""
+
+#: js/src/builder/settings/validateProRangeSettings.js:159
+msgid "Minimum value cannot be greater than or equal to maximum value."
+msgstr ""
+
+#: js/src/builder/settings/validateProRangeSettings.js:191
+msgid "Step value must be greater than 0."
+msgstr ""
+
+#: js/src/builder/settings/validateProRangeSettings.js:204
+msgid ""
+"Step value cannot be greater than the difference between the minimum and "
+"maximum values."
+msgstr ""
+
+#: js/src/builder/settings/validateProRangeSettings.js:240
+msgid "Minimum gap cannot be greater than maximum gap."
+msgstr ""
+
+#: js/src/builder/settings/validateProRangeSettings.js:251
+msgid ""
+"Maximum gap cannot be greater than the difference between minimum and "
+"maximum values."
+msgstr ""
+
+#: js/src/calculator/block.js:36
 msgid "Display a Calculator Form"
 msgstr ""
 
-#: js/src/calculator/block.js:51
+#: js/src/calculator/block.js:55
 msgid "This site does not have any calculator forms."
 msgstr ""
 
-#: js/src/calculator/block.js:61
+#: js/src/calculator/block.js:67
 msgid "Calculator Form"
 msgstr ""
 
@@ -103,19 +109,35 @@ msgstr ""
 msgid "License Activated"
 msgstr ""
 
-#: js/src/view/block.js:26
+#: js/src/components/logicRule.js:22
+msgid "And"
+msgstr ""
+
+#: js/src/components/logicRule.js:22
+msgid "Or"
+msgstr ""
+
+#: js/src/settings/index.js:274
+msgid "Select Image"
+msgstr ""
+
+#: js/src/settings/index.js:276
+msgid "Use this image"
+msgstr ""
+
+#: js/src/view/block.js:27
 msgid "Display a View"
 msgstr ""
 
-#: js/src/view/block.js:30
+#: js/src/view/block.js:31
 msgid "data display"
 msgstr ""
 
-#: js/src/view/block.js:31
+#: js/src/view/block.js:32
 msgid "show entries"
 msgstr ""
 
-#: js/src/view/block.js:40
+#: js/src/view/block.js:43
 msgid "This site does not have any Views."
 msgstr ""
 

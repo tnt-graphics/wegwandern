@@ -8,12 +8,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 3.0
  */
 class FrmProFieldRadio extends FrmFieldRadio {
+	use FrmProFieldTypeTrait;
 
 	protected function field_settings_for_type() {
 		$settings = parent::field_settings_for_type();
 
 		$settings['read_only']     = true;
 		$settings['default_value'] = true;
+		$settings['choice_limit']  = true;
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
 		return $settings;
@@ -23,10 +25,12 @@ class FrmProFieldRadio extends FrmFieldRadio {
 		return array_merge(
 			parent::extra_field_opts(),
 			array(
-				'limit_selections' => '',
-				'image_options'    => 0,
-				'hide_image_text'  => 0,
-				'image_size'       => '',
+				'limit_selections'        => '',
+				'image_options'           => 0,
+				'hide_image_text'         => 0,
+				'image_size'              => '',
+				'set_choices_limit'       => false,
+				'show_remaining_quantity' => false,
 			)
 		);
 	}
@@ -37,11 +41,13 @@ class FrmProFieldRadio extends FrmFieldRadio {
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_extra_field_choices( $args ) {
-		$field      = $args['field'];
-		$hide_other = $field['other'] == true;
+		$field = $args['field'];
+
 		if ( isset( $field['post_field'] ) && $field['post_field'] === 'post_category' ) {
 			return;
 		}
+
+		$hide_other = $field['other'] == true;
 
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/other-option.php';
 	}
@@ -53,6 +59,7 @@ class FrmProFieldRadio extends FrmFieldRadio {
 	 */
 	public function show_priority_field_choices( $args = array() ) {
 		FrmProImages::show_image_choices( $args );
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/choices-limit.php';
 	}
 
 	/**
@@ -70,15 +77,37 @@ class FrmProFieldRadio extends FrmFieldRadio {
 	}
 
 	/**
+	 * @since 6.28
+	 *
+	 * @param array $args
+	 *
+	 * @return array
+	 */
+	public function validate( $args ) {
+		$errors = parent::validate( $args );
+
+		if ( $errors ) {
+			return $errors;
+		}
+
+		return FrmProEntryValidate::validate_choice_limit( $this->field, $args );
+	}
+
+	/**
 	 * Format image options.
 	 *
 	 * @since 4.06
+	 *
+	 * @param mixed $value
+	 * @param array $atts
 	 */
 	protected function prepare_display_value( $value, $atts ) {
 		$value = parent::prepare_display_value( $value, $atts );
+
 		if ( FrmProImages::has_image_option_markup( $value ) ) {
-			$value = '<div class="frm_has_image_options">' . $value . ' </div>';
+			return '<div class="frm_has_image_options">' . $value . ' </div>';
 		}
+
 		return $value;
 	}
 
@@ -87,6 +116,7 @@ class FrmProFieldRadio extends FrmFieldRadio {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return string
 	 */
 	public function get_display_value( $value, $atts = array() ) {

@@ -11,7 +11,6 @@ class FrmProFieldDynamicValueSelector extends FrmProFieldValueSelector {
 
 	public function __construct( $field_id, $args ) {
 		parent::__construct( $field_id, $args );
-
 		$this->set_blank_option_label();
 	}
 
@@ -25,7 +24,7 @@ class FrmProFieldDynamicValueSelector extends FrmProFieldValueSelector {
 			$where          = array( 'it.field_id' => $this->field_settings->get_linked_field_id() );
 			$linked_entries = FrmEntryMeta::getAll( $where, '', '', true );
 
-			if ( ! empty( $linked_entries ) ) {
+			if ( $linked_entries ) {
 				foreach ( $linked_entries as $entry ) {
 					$this->options[ $entry->item_id ] = $entry->meta_value;
 				}

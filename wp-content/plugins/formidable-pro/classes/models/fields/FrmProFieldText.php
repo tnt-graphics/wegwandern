@@ -26,6 +26,8 @@ class FrmProFieldText extends FrmFieldText {
 
 	/**
 	 * @since 4.05
+	 *
+	 * @param string $name
 	 */
 	protected function builder_text_field( $name = '' ) {
 		$html  = FrmProFieldsHelper::builder_page_prepend( $this->field );
@@ -68,7 +70,7 @@ class FrmProFieldText extends FrmFieldText {
 	 */
 	public function set_value_before_save( $value ) {
 		if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) ) ) {
-			$value = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+			return FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
 		}
 
 		return $value;

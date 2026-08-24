@@ -86,6 +86,12 @@ trait CountryBypass
     public function updateDatabase($force = \false)
     {
         if ($this->isActive() || $force) {
+            // Before the download starts, we set the next download time to 1 hour in the future
+            // This is to avoid that the download is started multiple times at once and when the
+            // download takes longer than expected (e.g. multiple calls to the WordPress instance).
+            // When the download is successful, the next download time will be set accordingly.
+            // When the download fails, it will be retried in 1 hour.
+            \update_option(SettingsCountryBypass::OPTION_COUNTRY_DB_NEXT_DOWNLOAD_TIME, \strtotime('+1 hour'));
             $license = Core::getInstance()->getRpmInitiator()->getPluginUpdater()->getCurrentBlogLicense();
             $result = MaxMindDatabase::getInstance()->download(['licenseKey' => $license->getActivation()->getCode(), 'clientUuid' => $license->getUuid()]);
             // Persist the timestamp when it should get automatically be updated

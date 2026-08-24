@@ -13,7 +13,7 @@ class FrmProPageField {
 	 */
 	public static function add_pagination_hook( $form ) {
 		if ( empty( $form->options['pagination_position'] ) || FrmAppHelper::is_admin_page( 'formidable-entries' ) ) {
-			// show progress/rootline just below the form title by default, and regardless of the setting for entry add/edit pages.
+			// Show progress/rootline just below the form title by default, and regardless of the setting for entry add/edit pages.
 			add_action( 'frm_after_title', 'FrmProPageField::page_navigation' );
 			return;
 		}
@@ -33,6 +33,9 @@ class FrmProPageField {
 		}
 	}
 
+	/**
+	 * @param array $atts
+	 */
 	public static function page_navigation( $atts ) {
 		$setting_action = array(
 			''             => 'frm_after_title',
@@ -46,12 +49,12 @@ class FrmProPageField {
 				'id'   => false,
 				'form' => false,
 			),
-			$atts 
+			$atts
 		);
 		$form = $atts['form'];
 
 		if ( FrmAppHelper::is_admin_page( 'formidable-entries' ) ) {
-			// show progress/rootline on default position for entry add/edit pages.
+			// Show progress/rootline on default position for entry add/edit pages.
 			$form->options['pagination_position'] = '';
 		}
 
@@ -61,6 +64,7 @@ class FrmProPageField {
 		}
 
 		$position = $form->options['pagination_position'] ?? '';
+
 		if ( current_action() !== $setting_action[ $position ] ) {
 			return;
 		}
@@ -70,13 +74,15 @@ class FrmProPageField {
 				'form'    => $form,
 				'option'  => 'rootline',
 				'default' => '',
-			) 
+			)
 		);
-		if ( empty( $show_progress ) ) {
+
+		if ( ! $show_progress ) {
 			return;
 		}
 
 		$page_breaks = FrmProFormsHelper::has_field( 'break', $form->id, false );
+
 		if ( ! $page_breaks ) {
 			return;
 		}
@@ -88,8 +94,7 @@ class FrmProPageField {
 
 	private static function get_pages_array( $page_breaks, $form ) {
 		global $frm_vars;
-		$page_order = $frm_vars['prev_page'][ $form->id ] ?? 0;
-
+		$page_order   = $frm_vars['prev_page'][ $form->id ] ?? 0;
 		$page_number  = 1;
 		$current_page = 0;
 		$field_id     = 0;
@@ -101,15 +106,15 @@ class FrmProPageField {
 			}
 
 			if ( $page_break->field_order <= $page_order ) {
-				// going back
+				// Going back
 				$page_array[ $page_number ] = array(
 					'data-page'      => $page_break->field_order,
 					'class'          => 'frm_page_back',
 					'formnovalidate' => 'formnovalidate',
 					'data-field'     => $field_id,
 				);
-			} elseif ( $page_break->field_order > $page_order && $current_page == 0 ) {
-				// show current page
+			} elseif ( $page_break->field_order > $page_order && $current_page === 0 ) {
+				// Show current page
 				$page_array[ $page_number ] = array(
 					'data-page'     => '',
 					'class'         => '',
@@ -123,7 +128,7 @@ class FrmProPageField {
 			++$page_number;
 
 			if ( $page_break->field_order > $page_order ) {
-				// going forward
+				// Going forward
 				$page_array[ $page_number ] = array(
 					'data-page'  => $page_break->field_order,
 					'class'      => 'frm_page_skip',
@@ -132,8 +137,8 @@ class FrmProPageField {
 			}
 		}
 
-		if ( $current_page == 0 ) {
-			// show current page if last
+		if ( $current_page === 0 ) {
+			// Show current page if last
 			$page_array[ $page_number ] = array(
 				'data-page'     => '',
 				'class'         => '',
@@ -151,6 +156,7 @@ class FrmProPageField {
 	 * Show the rootline or progress element.
 	 *
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	private static function show_progress( $args ) {
@@ -159,28 +165,28 @@ class FrmProPageField {
 				'form'    => $args['form'],
 				'option'  => 'rootline_lines_off',
 				'default' => 0,
-			) 
+			)
 		);
 		$show_titles  = FrmForm::get_option(
 			array(
 				'form'    => $args['form'],
 				'option'  => 'rootline_titles_on',
 				'default' => 0,
-			) 
+			)
 		);
 		$hide_numbers = FrmForm::get_option(
 			array(
 				'form'    => $args['form'],
 				'option'  => 'rootline_numbers_off',
 				'default' => 0,
-			) 
+			)
 		);
 		$type         = FrmForm::get_option(
 			array(
 				'form'    => $args['form'],
 				'option'  => 'rootline',
 				'default' => '',
-			) 
+			)
 		);
 
 		$title_atts = compact( 'show_titles', 'type' );
@@ -223,9 +229,11 @@ class FrmProPageField {
 			$output                .= self::maybe_get_progress_title( $title_atts );
 
 			$output .= '<input type="button" value="' . esc_attr( $page_number ) . '" ';
+
 			foreach ( $page as $key => $attr ) {
 				$output .= $key . '="' . esc_attr( $attr ) . '" ';
 			}
+
 			$output .= ' />';
 
 			$title_atts['position'] = 'after';
@@ -237,6 +245,7 @@ class FrmProPageField {
 				$current_page = $page_number;
 			}
 		}
+
 		$output .= '</ul>';
 
 		if ( ! $hide_numbers && $type === 'progress' ) {
@@ -244,6 +253,7 @@ class FrmProPageField {
 			$output          .= '<div class="frm_percent_complete">' . sprintf( __( '%s Complete', 'formidable-pro' ), $percent_complete ) . '</div>';
 			$output          .= '<div class="frm_pages_complete">' . self::pages_complete( $current_page, $args['page_array'] ) . '</div>';
 		}
+
 		$output .= '<div class="frm_clearfix"></div>';
 		$output .= '</div>';
 
@@ -264,8 +274,7 @@ class FrmProPageField {
 			<ul class="frm_rootline_hidden_steps frm_hidden"></ul>
 		</li>
 		<?php
-		$html = ob_get_clean();
-		return $html;
+		return ob_get_clean();
 	}
 
 	/**
@@ -273,17 +282,24 @@ class FrmProPageField {
 	 */
 	private static function maybe_get_progress_title( $atts ) {
 		$title = '';
-		if ( $atts['show_titles'] ) {
 
-			$show_before = ( $atts['type'] === 'progress' && $atts['position'] === 'before' );
-			$show_after  = ( $atts['type'] === 'rootline' && $atts['position'] === 'after' );
-			if ( $show_before || $show_after ) {
-				$title = self::get_progress_title( $atts['title'] );
-			}
+		if ( ! $atts['show_titles'] ) {
+			return $title;
 		}
+
+		$show_before = $atts['type'] === 'progress' && $atts['position'] === 'before';
+		$show_after  = $atts['type'] === 'rootline' && $atts['position'] === 'after';
+
+		if ( $show_before || $show_after ) {
+			return self::get_progress_title( $atts['title'] );
+		}
+
 		return $title;
 	}
 
+	/**
+	 * @return string
+	 */
 	private static function get_progress_title( $title ) {
 		return '<span class="frm_rootline_title">' . strip_tags( $title ) . '</span>';
 	}
@@ -294,11 +310,13 @@ class FrmProPageField {
 	private static function get_title_for_page( $atts ) {
 		$field_id      = $atts['page']['data-field'];
 		$default_title = sprintf( __( 'Page %d', 'formidable-pro' ), $atts['page_number'] );
-		$title         = $atts['page_titles'][ $field_id ] ?? $default_title;
 
-		return $title;
+		return $atts['page_titles'][ $field_id ] ?? $default_title;
 	}
 
+	/**
+	 * @param array $page_array
+	 */
 	private static function add_titles_to_array( $form, &$page_array ) {
 		$page_titles = FrmForm::get_option(
 			array(
@@ -348,6 +366,8 @@ class FrmProPageField {
 	/**
 	 * @since 4.03
 	 *
+	 * @param int|object|string $form
+	 *
 	 * @return array
 	 */
 	public static function get_form_pages( $form ) {
@@ -356,7 +376,8 @@ class FrmProPageField {
 		}
 
 		$page_breaks = FrmProFormsHelper::has_field( 'break', $form->id, false );
-		if ( empty( $page_breaks ) ) {
+
+		if ( ! $page_breaks ) {
 			return array();
 		}
 

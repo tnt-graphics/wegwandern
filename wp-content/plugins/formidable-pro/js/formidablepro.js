@@ -10,23 +10,24 @@ function frmProFormJS() {
 	let currentlyAddingRow = false;
 	let action = '';
 	let processesRunning = 0;
-	let lookupQueues = {};
+	const lookupQueues = {};
 	let hiddenSubmitButtons = [];
 	let pendingDynamicFieldAjax = [];
-	let pendingLookupFieldAjax = [];
+	const frmMaskInstances = new Map();
+	const pendingLookupFieldAjax = [];
 	let listWrappersOriginal = {};
-	let intlPhoneInputs = {};
+	const intlPhoneInputs = {};
 	let autoId = 0;
 
 	function setNextPage( e ) {
 		var closestButton;
-		if ( this.className.indexOf( 'frm_rootline_title' ) !== -1 ) {
+		if ( this.className.includes('frm_rootline_title') ) {
 			closestButton = this.previousElementSibling;
 			closestButton.click();
 			return;
 		}
 
-		if ( this.className.indexOf( 'frm_rootline_single' ) !== -1 ) {
+		if ( this.className.includes('frm_rootline_single') ) {
 			this.querySelector( 'input' ).click();
 			return;
 		}
@@ -43,14 +44,14 @@ function frmProFormJS() {
 			d = '',
 			thisName = this.name;
 
-		if ( thisName === 'frm_prev_page' || this.className.indexOf( 'frm_prev_page' ) !== -1 ) {
+		if ( thisName === 'frm_prev_page' || this.className.includes('frm_prev_page') ) {
 			v = jQuery( f ).find( '.frm_next_page' ).attr( 'id' ).replace( 'frm_next_p_', '' );
 			if ( f.length ) {
 				maybeAddEmptyHiddenInputsForCheckboxes( f.get( 0 ) );
 			}
-		} else if ( thisName === 'frm_save_draft' || this.className.indexOf( 'frm_save_draft' ) !== -1 ) {
+		} else if ( thisName === 'frm_save_draft' || this.className.includes('frm_save_draft') ) {
 			d = 1;
-		} else if ( this.className.indexOf( 'frm_page_skip' ) !== -1 ) {
+		} else if ( this.className.includes('frm_page_skip') ) {
 			var goingTo = $thisObj.data( 'page' );
 			var formId = jQuery( f ).find( 'input[name="form_id"]' ).val();
 			var orderField = jQuery( f ).find( 'input[name="frm_page_order_' + formId + '"]' );
@@ -61,7 +62,7 @@ function frmProFormJS() {
 			} else {
 				orderField.val( goingTo );
 			}
-		} else if ( this.className.indexOf( 'frm_page_back' ) !== -1 ) {
+		} else if ( this.className.includes('frm_page_back') ) {
 			v = $thisObj.data( 'page' );
 		}
 
@@ -93,21 +94,21 @@ function frmProFormJS() {
 	 */
 	function maybeAddEmptyHiddenInputsForCheckboxes( form ) {
 		form.querySelectorAll( '.frm_opt_container' ).forEach(
-			function( optContainer ) {
+			( optContainer ) => {
 				var checkboxes, hiddenInput;
 				checkboxes = optContainer.querySelectorAll( 'input[type="checkbox"]' );
 				if ( checkboxes.length && ! jQuery( checkboxes ).filter( ':checked' ).length ) {
 					hiddenInput = document.createElement( 'input' );
 					hiddenInput.setAttribute( 'type', 'hidden' );
 					hiddenInput.setAttribute( 'name', checkboxes[ 0 ].getAttribute( 'name' ) );
-					optContainer.appendChild( hiddenInput );
+					optContainer.append( hiddenInput );
 				}
 			}
 		);
 	}
 
 	function resetTinyMceOnDraftSave() {
-		jQuery( document ).one( 'frmFormComplete', function() {
+		jQuery( document ).one( 'frmFormComplete', () => {
 			jQuery( '.wp-editor-area' ).each( function() {
 				reInitializeRichText( this.id );
 			});
@@ -121,7 +122,7 @@ function frmProFormJS() {
 				removeIds.push( this.id );
 			}
 		);
-		jQuery( document ).one( 'frmPageChanged', function() {
+		jQuery( document ).one( 'frmPageChanged', () => {
 			var removeIndex, removeId;
 			// Remove tinymce from RTE fields on page update so they can initialize properly when the page becomes active again
 			for ( removeIndex = 0; removeIndex < removeIds.length; ++removeIndex ) {
@@ -136,10 +137,10 @@ function frmProFormJS() {
 		var $toggleContainer, togglingOn;
 
 		if ( e.key !== undefined ) {
-			if ( e.key !== ' ' ) {
+			if ( e.key !== ' ' && e.key !== 'Enter' ) {
 				return;
 			}
-		} else if ( e.keyCode !== undefined && e.keyCode !== 32 ) {
+		} else if ( e.keyCode !== undefined && e.keyCode !== 32 && e.keyCode !== 13 ) {
 			return;
 		}
 
@@ -174,6 +175,8 @@ function frmProFormJS() {
 
 	function loadDateFields() {
 		jQuery( document ).on( 'focusin', '.frm_date', triggerDateField );
+		document.addEventListener( 'focusout', keepFloatingLabelOnDateBlur, true );
+
 		loadUniqueTimeFields();
 	}
 
@@ -350,19 +353,19 @@ function frmProFormJS() {
 			monthSelectorType: 'true' === settings.options.changeMonth ? 'dropdown' : 'static',
 			changeYear: settings.options.changeYear,
 			closeOnSelect: true,
-			showMonths: showMonths,
+			showMonths,
 			locale: {
 				...flatpickr.l10ns[ settings.locale || settings.options.locale ],
 				firstDayOfWeek: firstDay,
 			},
-			mode: mode,
+			mode,
 			disable: [
 				function( date ) {
 					return settings.formidable_dates && settings.formidable_dates.daysEnabled && -1 === settings.formidable_dates.daysEnabled.indexOf( date.getDay() );
 				},
 				...( disabledDates ? disabledDates : [] )
 			],
-			onReady: function( selectedDates, dateStr, instance ) {
+			onReady( selectedDates, dateStr, instance ) {
 				setTimeout( () => frmDatepickerPro.setDefaultRangeValue( instance.element ) );
 				if ( instance.config.inline ) {
 					instance.calendarContainer.classList.add( 'frm-datepicker', 'with_frm_style', 'frm_date_inline' );
@@ -383,7 +386,7 @@ function frmProFormJS() {
 				this.updateRangeFieldsOnChange( mode, instance, dateStr, selectedDates );
 
 			},
-			onOpen: function( selectedDates, dateStr, instance ) {
+			onOpen( selectedDates, dateStr, instance ) {
 				frmDatepickerPro.callbacks.onOpen( selectedDates, dateStr, instance );
 			},
 			onClose: frmDatepickerPro.callbacks.onClose,
@@ -512,7 +515,7 @@ function frmProFormJS() {
 			}
 			prevArrow.setAttribute( 'tabindex', '0' );
 			prevArrow.setAttribute( 'role', 'button' );
-			prevArrow.addEventListener( 'keydown', function( event ) {
+			prevArrow.addEventListener( 'keydown', ( event ) => {
 				if ( event.key === 'Enter' ) {
 					prevArrow.click();
 				}
@@ -533,7 +536,7 @@ function frmProFormJS() {
 			}
 			nextArrow.setAttribute( 'tabindex', '0' );
 			nextArrow.setAttribute( 'role', 'button' );
-			nextArrow.addEventListener( 'keydown', function( event ) {
+			nextArrow.addEventListener( 'keydown', ( event ) => {
 				if ( event.key === 'Enter' ) {
 					nextArrow.click();
 				}
@@ -656,7 +659,7 @@ function frmProFormJS() {
 
 	function triggerDateField() {
 		/*jshint validthis:true */
-		if ( this.className.indexOf( 'frm_custom_date' ) !== -1 || typeof __frmDatepicker === 'undefined' ) {
+		if ( this.className.includes('frm_custom_date') || typeof __frmDatepicker === 'undefined' ) {
 			return;
 		}
 
@@ -717,7 +720,7 @@ function frmProFormJS() {
 			selector = '#' + uploadField.htmlID + '_dropzone',
 			fieldName = uploadField.fieldName;
 
-		if ( typeof repeatRow !== 'undefined' && selector.indexOf( '-0_dropzone' ) !== -1 ) {
+		if ( repeatRow !== undefined && selector.includes('-0_dropzone') ) {
 			selector = selector.replace( '-0_dropzone', '-' + repeatRow + '_dropzone' );
 			fieldName = fieldName.replace( '[0]', '[' + repeatRow + ']' );
 			delete uploadField.mockFiles;
@@ -729,7 +732,7 @@ function frmProFormJS() {
 		}
 
 		max = uploadField.maxFiles;
-		if ( typeof uploadField.mockFiles !== 'undefined' ) {
+		if ( uploadField.mockFiles !== undefined ) {
 			uploadedCount = uploadField.mockFiles.length;
 			if ( max > 0 ) {
 				max = max - uploadedCount;
@@ -739,7 +742,7 @@ function frmProFormJS() {
 		form = field.closest( 'form' );
 		uploadField = uploadFields[ i ];
 
-		field.dropzone({
+		const dropzoneConfig = {
 			url: getAjaxUrl( form.get( 0 ) ),
 			headers: {
 				'Frm-Dropzone': 1
@@ -770,16 +773,16 @@ function frmProFormJS() {
 			timeout: uploadField.timeout,
 			previewTemplate: filePreviewHTML( uploadField ),
 			acceptedFiles: uploadField.acceptedFiles,
-			fallback: function() {
+			fallback() {
 				// Force ajax submit to turn off
 				jQuery( this.element ).closest( 'form' ).removeClass( 'frm_ajax_submit' );
 			},
-			init: function() {
+			init() {
 				var hidden, mockFileIndex, mockFileData, mockFile;
 
 				hidden = field.parent().find( '.dz-hidden-input' );
 
-				if ( typeof hidden.attr( 'id' ) === 'undefined' ) {
+				if ( hidden.attr( 'id' ) === undefined ) {
 					hidden.attr( 'id', uploadFields[ i ].label );
 				}
 
@@ -797,15 +800,15 @@ function frmProFormJS() {
 						this.removeFile( file );
 						alert( frm_js.file_spam );
 						return false;
-					} else {
-						formData.append( 'action', 'frm_submit_dropzone' );
-						formData.append( 'field_id', uploadFields[ i ].fieldID );
-						formData.append( 'form_id', uploadFields[ i ].formID );
-						formData.append( 'nonce', frm_js.nonce );
+					}
 
-						if ( form.get( 0 ).hasAttribute( 'data-token' ) ) {
-							formData.append( 'antispam_token', form.get( 0 ).getAttribute( 'data-token' ) );
-						}
+					formData.append( 'action', 'frm_submit_dropzone' );
+					formData.append( 'field_id', uploadFields[ i ].fieldID );
+					formData.append( 'form_id', uploadFields[ i ].formID );
+					formData.append( 'nonce', frm_js.nonce );
+
+					if ( form.get( 0 ).hasAttribute( 'data-token' ) ) {
+						formData.append( 'antispam_token', form.get( 0 ).getAttribute( 'data-token' ) );
 					}
 				});
 
@@ -835,14 +838,14 @@ function frmProFormJS() {
 					clearErrorsOnUpload( file.previewElement );
 				});
 
-				this.on( 'successmultiple', function( files, response ) {
+				this.on( 'successmultiple', ( files, response ) => {
 					var mediaIDs = JSON.parse( response );
 					for ( var m = 0; m < files.length; m++ ) {
 						jQuery( files[ m ].previewElement ).append( getHiddenUploadHTML( uploadFields[ i ], mediaIDs[ m ], fieldName ) );
 					}
 				});
 
-				this.on( 'complete', function( file ) {
+				this.on( 'complete', ( file ) => {
 					var fileName, node, img, thumbnail;
 
 					processesRunning--;
@@ -851,7 +854,7 @@ function frmProFormJS() {
 						removeSubmitLoading( form.get( 0 ), uploadFields[ i ].formID, processesRunning );
 					}
 
-					if ( typeof file.mediaID === 'undefined' ) {
+					if ( file.mediaID === undefined ) {
 						return;
 					}
 
@@ -881,7 +884,7 @@ function frmProFormJS() {
 					}
 				});
 
-				this.on( 'addedfile', function( file ) {
+				this.on( 'addedfile', ( file ) => {
 					var ext, thumbnail;
 					ext = file.name.split( '.' ).pop();
 					thumbnail = maybeGetExtensionThumbnail( ext );
@@ -900,7 +903,7 @@ function frmProFormJS() {
 
 					container.classList.remove( 'frm_blank_field', 'has-error' );
 					container.querySelectorAll( '.form-field .frm_error, .frm_error_style' ).forEach(
-						function( error ) {
+						( error ) => {
 							if ( error.parentNode ) {
 								error.parentNode.removeChild( error );
 							}
@@ -919,14 +922,14 @@ function frmProFormJS() {
 						jQuery( 'input[name="' + fieldName + '"]' ).val( '' );
 					}
 
-					if ( file.accepted !== false && typeof file.mediaID !== 'undefined' ) {
+					if ( file.accepted !== false && file.mediaID !== undefined ) {
 						jQuery( file.previewElement ).remove();
 						fileCount = this.files.length;
 						this.options.maxFiles = uploadFields[ i ].maxFiles - fileCount;
 					}
 				});
 
-				if ( typeof uploadFields[ i ].mockFiles !== 'undefined' ) {
+				if ( uploadFields[ i ].mockFiles !== undefined ) {
 					for ( mockFileIndex = 0; mockFileIndex < uploadFields[ i ].mockFiles.length; mockFileIndex++ ) {
 						mockFileData = uploadFields[ i ].mockFiles[ mockFileIndex ];
 						mockFile = {
@@ -949,7 +952,7 @@ function frmProFormJS() {
 					}
 				}
 			},
-			accept: function( file, done ) {
+			accept( file, done ) {
 				var message = this.options.dictFileTooSmall.replace( '{{minFilesize}}', this.options.minFilesize );
 				file.rejectSize = function() {
 					done( message );
@@ -957,7 +960,49 @@ function frmProFormJS() {
 
 				return done();
 			}
-		});
+		};
+
+		/**
+		 * Fixes Chrome Android bug where cloud storage files (Google Drive, etc.) fail to upload.
+		 *
+		 * @see https://bugs.chromium.org/p/chromium/issues/detail?id=1063576
+		 */
+		if ( /Android/i.test( navigator.userAgent ) && /Chrome/i.test( navigator.userAgent ) ) {
+			/**
+			 * Transforms a file before Dropzone uploads it on Android Chrome.
+			 *
+			 * @param {File}     file The file selected by the user.
+			 * @param {Function} done Callback invoked with the file or Blob to upload.
+			 * @returns {void}
+			 */
+			dropzoneConfig.transformFile = function( file, done ) {
+				/**
+				 * Forwards the file through Dropzone's resize when configured for images.
+				 *
+				 * @param {File|Blob} fileToUpload The file or in-memory Blob ready to upload.
+				 * @returns {void}
+				 */
+				const maybeResize = ( fileToUpload ) => {
+					if ( ( this.options.resizeWidth || this.options.resizeHeight ) && fileToUpload.type && fileToUpload.type.match( /image.*/ ) ) {
+						this.resizeImage( fileToUpload, this.options.resizeWidth, this.options.resizeHeight, this.options.resizeMethod, done );
+						return;
+					}
+					done( fileToUpload );
+				};
+
+				const reader = new FileReader();
+				reader.onload = () => {
+					const blob = new Blob( [ reader.result ], { type: file.type } );
+					blob.name = file.name;
+					blob.lastModified = file.lastModified;
+					maybeResize( blob );
+				};
+				reader.onerror = () => maybeResize( file );
+				reader.readAsArrayBuffer( file );
+			};
+		}
+
+		field.dropzone( dropzoneConfig );
 	}
 
 	/**
@@ -998,6 +1043,9 @@ function frmProFormJS() {
 						}
 					}
 				);
+
+				// Store the mask instance for later access
+				frmMaskInstances.set( input, mask );
 
 				input.addEventListener( 'change', () => mask.updateValue() );
 
@@ -1216,7 +1264,7 @@ function frmProFormJS() {
         if ( type === 'select-one' ) {
             select = true;
             var curOpt = this.options[ this.selectedIndex ];
-            if ( typeof curOpt !== 'undefined' && curOpt.className === 'frm_other_trigger' ) {
+            if ( curOpt !== undefined && curOpt.className === 'frm_other_trigger' ) {
                 other = true;
             }
         } else if ( type === 'select-multiple' ) {
@@ -1281,7 +1329,7 @@ function frmProFormJS() {
 
 	function getOriginalEvent( e ) {
 		var originalEvent;
-		if ( typeof e.originalEvent !== 'undefined' || e.currentTarget.className.indexOf( 'frm_chzn' ) > -1 || e.currentTarget.className.indexOf( 'frm_slimselect' ) > -1 ) {
+		if ( e.originalEvent !== undefined || e.currentTarget.className.includes('frm_chzn') || e.currentTarget.className.includes('frm_slimselect') ) {
 			originalEvent = 'value changed';
 		} else {
 			originalEvent = 'other';
@@ -1298,10 +1346,10 @@ function frmProFormJS() {
 	 */
 	function checkFieldsWithConditionalLogicDependentOnThis( fieldId, changedInput ) {
 		if ( typeof __FRMRULES  === 'undefined' ||
-			typeof __FRMRULES[ fieldId ] === 'undefined' ||
+			__FRMRULES[ fieldId ] === undefined ||
 			__FRMRULES[ fieldId ].dependents.length < 1 ||
 			changedInput === null ||
-			typeof changedInput === 'undefined'
+			changedInput === undefined
 		) {
 			return;
 		}
@@ -1374,10 +1422,10 @@ function frmProFormJS() {
 				form,
 				{
 					action: 'frm_fields_ajax_get_data_arr',
-					postData: postData
+					postData
 				},
 				ajaxHandler,
-				function( response ) {
+				( response ) => {
 					console.error( response );
 				},
 				{
@@ -1577,7 +1625,7 @@ function frmProFormJS() {
 	}
 
 	function getRulesForSingleField( fieldId ) {
-		if ( typeof __FRMRULES  === 'undefined' || typeof __FRMRULES[ fieldId ] === 'undefined' ) {
+		if ( typeof __FRMRULES  === 'undefined' || __FRMRULES[ fieldId ] === undefined ) {
 			return false;
 		}
 
@@ -1658,7 +1706,7 @@ function frmProFormJS() {
 		nameValues = [];
 
 		inputs.forEach(
-			function( input ) {
+			( input ) => {
 				nameValues.push( input.value );
 			}
 		);
@@ -1808,7 +1856,7 @@ function frmProFormJS() {
 		for ( var i = 0, l = inputs.length; i < l; i++ ) {
 			if ( inputs[ i ].type === 'hidden' || inputs[ i ].checked ) {
 				checkedVals.push( inputs[ i ].value );
-			} else if ( typeof inputs[ i ].dataset.off !== 'undefined' ) {
+			} else if ( inputs[ i ].dataset.off !== undefined ) {
 				checkedVals.push( inputs[ i ].dataset.off );
 			}
 		}
@@ -1821,7 +1869,7 @@ function frmProFormJS() {
 	}
 
 	function cleanFinalFieldValue( fieldValue ) {
-		if ( typeof fieldValue === 'undefined' ) {
+		if ( fieldValue === undefined ) {
 			fieldValue = '';
 		} else if ( typeof fieldValue === 'string' ) {
 			fieldValue = fieldValue.trim();
@@ -2022,25 +2070,25 @@ function frmProFormJS() {
 		}
 
 		theOperators = {
-			'==': function( c, d ) {
+			'=='( c, d ) {
 				return c === d;
 			},
-			'!=': function( c, d ) {
+			'!='( c, d ) {
 				return c !== d;
 			},
-			'<': function( c, d ) {
+			'<'( c, d ) {
 				return c > d;
 			},
-			'<=': function( c, d ) {
+			'<='( c, d ) {
 				return c >= d;
 			},
-			'>': function( c, d ) {
+			'>'( c, d ) {
 				return c < d;
 			},
-			'>=': function( c, d ) {
+			'>='( c, d ) {
 				return c <= d;
 			},
-			'LIKE': function( c, d ) {
+			'LIKE'( c, d ) {
 				if ( ! d ) {
 					/* If no value, then assume no match */
 					return false;
@@ -2049,9 +2097,9 @@ function frmProFormJS() {
 				c = prepareLogicValueForLikeComparison( c );
 				d = prepareEnteredValueForLikeComparison( c, d );
 
-				return d.indexOf( c ) != -1;
+				return d.includes(c);
 			},
-			'not LIKE': function( c, d ) {
+			'not LIKE'( c, d ) {
 				if ( ! d ) {
 					/* If no value, then assume no match */
 					return true;
@@ -2060,10 +2108,10 @@ function frmProFormJS() {
 				c = prepareLogicValueForLikeComparison( c );
 				d = prepareEnteredValueForLikeComparison( c, d );
 
-				return d.indexOf( c ) == -1;
+				return !d.includes(c);
 			},
 			// Starts with
-			'LIKE%': function( c, d ) {
+			'LIKE%'( c, d ) {
 				if ( ! d ) {
 					/* If no value, then assume no match */
 					return false;
@@ -2080,7 +2128,7 @@ function frmProFormJS() {
 				return d.substr( 0, c.length ) === c;
 			},
 			// Ends with
-			'%LIKE': function( c, d ) {
+			'%LIKE'( c, d ) {
 				if ( ! d ) {
 					/* If no value, then assume no match */
 					return false;
@@ -2124,7 +2172,7 @@ function frmProFormJS() {
 	}
 
 	function prepareEnteredValueForComparison( a, b ) {
-		if ( typeof b === 'undefined' || b === null || b === false ) {
+		if ( b === undefined || b === null || b === false ) {
 			b = '';
 		}
 
@@ -2154,7 +2202,7 @@ function frmProFormJS() {
 		if ( Array.isArray( enteredValue ) ) {
 			for ( var i = 0, l = enteredValue.length; i < l; i++ ) {
 				currentValue = enteredValue[ i ].toLowerCase();
-				if ( currentValue.indexOf( logicValue ) > -1 ) {
+				if ( currentValue.includes(logicValue) ) {
 					enteredValue = logicValue;
 					break;
 				}
@@ -2230,14 +2278,14 @@ function frmProFormJS() {
 	function getHideOrShowAction( depFieldArgs, logicOutcomes ) {
 		if ( depFieldArgs.anyAll === 'any' ) {
 			// If any of the following match logic
-			if ( logicOutcomes.indexOf( true ) > -1 ) {
+			if ( logicOutcomes.includes(true) ) {
 				action = depFieldArgs.showHide;
 			} else {
 				action = reverseAction( depFieldArgs.showHide );
 			}
 		} else {
 			// If all of the following match logic
-			if ( logicOutcomes.indexOf( false ) > -1 ) {
+			if ( logicOutcomes.includes(false) ) {
 				action = reverseAction( depFieldArgs.showHide );
 			} else {
 				action = depFieldArgs.showHide;
@@ -2321,7 +2369,7 @@ function frmProFormJS() {
 	 * @param depFieldArgs
 	 */
 	function removeSubmitButtonFromHiddenList( depFieldArgs ) {
-		hiddenSubmitButtons = hiddenSubmitButtons.filter( function( button ) {
+		hiddenSubmitButtons = hiddenSubmitButtons.filter( ( button ) => {
 			return button !== depFieldArgs.formKey;
 		});
 	}
@@ -2481,7 +2529,7 @@ function frmProFormJS() {
 	function skipSetValue( i, prevInput, inputs ) {
 		var typeArray = [ 'checkbox', 'radio' ];
 
-		if ( i < 1 || typeof prevInput === 'undefined' ) {
+		if ( i < 1 || prevInput === undefined ) {
 			return false;
 		}
 
@@ -2490,8 +2538,8 @@ function frmProFormJS() {
 			return false;
 		}
 
-		var isOther = inputs[ i ].className.indexOf( 'frm_other_input' ) !== -1;
-		return isOther || ( prevInput.name == inputs[ i ].name && typeArray.indexOf( prevInput.type ) > -1 );
+		var isOther = inputs[ i ].className.includes('frm_other_input');
+		return isOther || ( prevInput.name == inputs[ i ].name && typeArray.includes(prevInput.type) );
 	}
 
 	// Check if a field input inside of a section or embedded form is conditionally hidden
@@ -2572,7 +2620,7 @@ function frmProFormJS() {
 	 * @returns {boolean}
 	 */
 	function isOnPageSubmitButtonHidden( formKey ) {
-		return hiddenSubmitButtons.indexOf( formKey ) !== -1;
+		return hiddenSubmitButtons.includes(formKey);
 	}
 
 	/**
@@ -2699,7 +2747,7 @@ function frmProFormJS() {
 			reset      = resetToDefault && defaultVal;
 
 			// Don't remove values from some fields.
-			if ( input.className.indexOf( 'frm_dnc' ) > -1 || input.name.indexOf( '[row_ids]' ) > -1 ) {
+			if ( input.className.includes('frm_dnc') || input.name.includes('[row_ids]') ) {
 				prevInput = input;
 				continue;
 			}
@@ -2772,7 +2820,7 @@ function frmProFormJS() {
 					input.value = defaultVal;
 				}
 
-				linkedRadioInput = input.id.indexOf( '-otext' ) > -1 ? document.getElementById( input.id.replace( '-otext', '' ) ) : null;
+				linkedRadioInput = input.id.includes('-otext') ? document.getElementById( input.id.replace( '-otext', '' ) ) : null;
 				if ( linkedRadioInput && linkedRadioInput.checked === false ) {
 					input.classList.add( 'frm_pos_none' );
 				}
@@ -2971,7 +3019,7 @@ function frmProFormJS() {
 		var hidden = false,
 			hiddenFields = getHiddenFields( formId );
 
-		if ( hiddenFields.indexOf( containerId ) > -1 ) {
+		if ( hiddenFields.includes(containerId) ) {
 			hidden = true;
 		}
 
@@ -2987,7 +3035,7 @@ function frmProFormJS() {
 		// Get all currently hidden fields
 		var hiddenFields = getHiddenFields( formId );
 
-		if ( hiddenFields.indexOf( htmlFieldId ) > -1 ) {
+		if ( hiddenFields.includes(htmlFieldId) ) {
 			// If field id is already in the array, move on
 		} else {
 			// Add new conditionally hidden field to array
@@ -3040,7 +3088,7 @@ function frmProFormJS() {
 			$input = jQuery( input ),
 			defaultValue = $input.data( 'frmval' );
 
-		if ( typeof defaultValue === 'undefined' && input.classList.contains( 'wp-editor-area' ) ) {
+		if ( defaultValue === undefined && input.classList.contains( 'wp-editor-area' ) ) {
 			// set value in rich text
 			var defaultField = document.getElementById( input.id + '-frmval' );
 			if ( defaultField !== null ) {
@@ -3050,7 +3098,7 @@ function frmProFormJS() {
 					targetTinyMceEditor.setContent( defaultValue );
 				}
 			}
-		} else if ( typeof defaultValue === 'undefined' && input.type === 'hidden' ) {
+		} else if ( defaultValue === undefined && input.type === 'hidden' ) {
 			//with read only select input, value is in sibling select
 			var $select = $input.next( 'select[disabled]' );
 			if ( $select.length > 0 ) {
@@ -3064,17 +3112,17 @@ function frmProFormJS() {
 			placeholder = true;
 		}
 
-		if ( typeof defaultValue !== 'undefined' ) {
+		if ( defaultValue !== undefined ) {
 			var numericKey = new RegExp( /\[\d*\]$/i );
 
 			if ( input.type === 'checkbox' || input.type === 'radio' ) {
 				setCheckboxOrRadioDefaultValue( input.name, defaultValue );
 
-			} else if ( input.type === 'hidden' && input.name.indexOf( '[]' ) > -1 ) {
+			} else if ( input.type === 'hidden' && input.name.includes('[]') ) {
 				setHiddenCheckboxDefaultValue( input.name, defaultValue );
 
 			// Set for hidden checkbox fields that aren't on the current page. Skip hidden fields in a repeater.
-			} else if ( ! inContainer && input.type === 'hidden' && input.name.indexOf( '][' ) > -1 && numericKey.test( input.name ) ) {
+			} else if ( ! inContainer && input.type === 'hidden' && input.name.includes('][') && numericKey.test( input.name ) ) {
 				setHiddenCheckboxDefaultValue( input.name.replace( numericKey, '' ), defaultValue );
 
 			} else {
@@ -3094,7 +3142,7 @@ function frmProFormJS() {
 						if ( addressType !== null ) {
 							addressType = addressType.replace( ']', '' );
 							defaultValue = defaultValue[ addressType ];
-							if ( typeof defaultValue === 'undefined' ) {
+							if ( defaultValue === undefined ) {
 								defaultValue = '';
 							}
 						}
@@ -3116,7 +3164,8 @@ function frmProFormJS() {
 							maybeRemoveHiddenPlaceholder( input );
 						}
 
-						input.slim.setSelected( defaultValue );
+						// Convert numbers to strings so SlimSelect matches properly.
+						input.slim.setSelected( `${ defaultValue }` );
 					} else if ( input.classList.contains( 'frm_chzn' ) ) {
 						if ( '' === defaultValue ) {
 							maybeRemoveHiddenPlaceholder( input );
@@ -3195,7 +3244,7 @@ function frmProFormJS() {
 	 */
 	function setDropdownPlaceholder( defaultValue, input ) {
 		var placeholder;
-		if ( typeof defaultValue === 'undefined' && input.tagName === 'SELECT' ) {
+		if ( defaultValue === undefined && input.tagName === 'SELECT' ) {
 			placeholder = input.getAttribute( 'data-placeholder' );
 			if ( placeholder !== null ) {
 				defaultValue = '';
@@ -3213,7 +3262,7 @@ function frmProFormJS() {
 		if ( typeof defaultValue === 'object' ) {
 			// Convert the object to an array.
 			defaultValue = Object.keys( defaultValue ).map(
-				function( key ) {
+				( key ) => {
 					return defaultValue[ key ];
 				}
 			);
@@ -3237,7 +3286,7 @@ function frmProFormJS() {
 				hiddenFieldIndex++;
 				isSet = true;
 			} else if ( radioInputs[ i ].value == defaultValue ||
-				( Array.isArray( defaultValue ) && defaultValue.indexOf( radioInputs[ i ].value ) > -1 ) ) {
+				( Array.isArray( defaultValue ) && defaultValue.includes(radioInputs[ i ].value) ) ) {
 				// If input's value matches the default value, set checked to true
 
 				radioInputs[ i ].checked = true;
@@ -3261,7 +3310,7 @@ function frmProFormJS() {
 		if ( typeof defaultValue === 'object' ) {
 			// Convert the object to an array.
 			defaultValue = Object.keys( defaultValue ).map(
-				function( key ) {
+				( key ) => {
 					return defaultValue[ key ];
 				}
 			);
@@ -3275,7 +3324,7 @@ function frmProFormJS() {
 					// TODO: accommodate for when there are multiple default values but the user has removed some
 				}
 			}
-		} else if ( hiddenInputs[ 0 ] !== null && typeof hiddenInputs[ 0 ] !== 'undefined' ) {
+		} else if ( hiddenInputs[ 0 ] !== null && hiddenInputs[ 0 ] !== undefined ) {
 			hiddenInputs[ 0 ].value = defaultValue;
 		}
 	}
@@ -3306,10 +3355,10 @@ function frmProFormJS() {
  	 */
 	function checkFieldsWatchingLookup( fieldId, changedInput, originalEvent ) {
 		if ( typeof __FRMLOOKUP  === 'undefined' ||
-			typeof __FRMLOOKUP[ fieldId ] === 'undefined' ||
+			__FRMLOOKUP[ fieldId ] === undefined ||
 			__FRMLOOKUP[ fieldId ].dependents.length < 1 ||
 			changedInput === null ||
-			typeof changedInput === 'undefined'
+			changedInput === undefined
 		) {
 			return;
 		}
@@ -3403,7 +3452,7 @@ function frmProFormJS() {
 			const currentBatch = unprocessedPendingLookups.slice( start, end );
 
 			currentBatch.forEach(
-				function( pendingLookup ) {
+				( pendingLookup ) => {
 					pendingLookup.pending = false;
 					allFormIds.push( pendingLookup.childFieldArgs.formId );
 				}
@@ -3416,7 +3465,7 @@ function frmProFormJS() {
 					postData: currentBatch.map( pendingLookup => pendingLookup.childFieldArgs ),
 					nonce: frm_js.nonce
 				},
-				function( newOptionsByFieldId ) {
+				( newOptionsByFieldId ) => {
 					allFormIds.forEach( enableFormAfterLookup );
 
 					Object.entries( newOptionsByFieldId ).forEach( entry => {
@@ -3486,7 +3535,7 @@ function frmProFormJS() {
 	 * @return {boolean|Object}
      */
 	function getLookupArgsForSingleField( fieldId ) {
-		if ( typeof __FRMLOOKUP  === 'undefined' || typeof __FRMLOOKUP[ fieldId ] === 'undefined' ) {
+		if ( typeof __FRMLOOKUP  === 'undefined' || __FRMLOOKUP[ fieldId ] === undefined ) {
 			return false;
 		}
 
@@ -3676,7 +3725,7 @@ function frmProFormJS() {
 
 			getLookupValues(
 				childFieldArgs,
-				function( newOptions, optionLabels ) {
+				( newOptions, optionLabels ) => {
 					replaceSelectLookupFieldOptions( childFieldArgs, childSelect, newOptions, optionLabels );
 					triggerLookupOptionsLoaded( jQuery( childDiv ) );
 					enableFormAfterLookup( childFieldArgs.formId );
@@ -3687,7 +3736,7 @@ function frmProFormJS() {
 
 	// Update chosen options if autocomplete is enabled
 	function maybeUpdateChosenOptions( childSelect ) {
-		if ( childSelect.className.indexOf( 'frm_chzn' ) > -1 && jQuery().chosen ) {
+		if ( childSelect.className.includes('frm_chzn') && jQuery().chosen ) {
 			jQuery( childSelect ).trigger( 'chosen:updated' );
 		}
 	}
@@ -3823,12 +3872,12 @@ function frmProFormJS() {
 		}
 
 		// Reset all options to unselected
-		Array.from( element.options ).forEach( function( option ) {
+		Array.from( element.options ).forEach( ( option ) => {
 			option.selected = false;
 		});
 
 		// Set selected attribute for the specified values
-		values.forEach( function( value ) {
+		values.forEach( ( value ) => {
 			option = element.querySelector( 'option[value="' + value + '"]' );
 			if ( option ) {
 				option.selected = true;
@@ -4034,11 +4083,11 @@ function frmProFormJS() {
 		if ( childFieldArgs.parentVals === false  ) {
 			// If any parents have blank values, don't waste time looking for values
 			maybeHideRadioLookup( childFieldArgs, childDiv );
-			if ( typeof content !== 'undefined' ) {
+			if ( content !== undefined ) {
 				content.innerHTML = '';
 			}
 		} else {
-			getLookupValues( childFieldArgs, function( response, optionLabels ) {
+			getLookupValues( childFieldArgs, ( response, optionLabels ) => {
 				content.innerHTML = optionLabels.length ? optionLabels.join( ', ' ) : response.join( ', ' );
 				inputs[0].value = response;
 
@@ -4196,7 +4245,7 @@ function frmProFormJS() {
 					field_id: childFieldArgs.fieldId,
 					nonce: frm_js.nonce
 				},
-				function( newValue ) {
+				( newValue ) => {
 					if ( ! isChildInputConditionallyHidden( childInput, childFieldArgs.formId ) && childInput.value != newValue ) {
 						insertValueInFieldWatchingLookup( childFieldArgs.fieldKey, childInput, newValue );
 					}
@@ -4239,7 +4288,7 @@ function frmProFormJS() {
 			lookupQueues[ elementId ] = [];
 		}
 
-		lookupQueues[ elementId ].push({ childFieldArgs: childFieldArgs, childInput: childInput });
+		lookupQueues[ elementId ].push({ childFieldArgs, childInput });
 	}
 
 	/**
@@ -4391,7 +4440,7 @@ function frmProFormJS() {
 			formId: depFieldArgs.formId,
 			containerId: depFieldArgs.containerId,
 			repeatRow: depFieldArgs.repeatRow,
-			dataLogic: dataLogic,
+			dataLogic,
 			children: '',
 			inputType: depFieldArgs.inputType
 		};
@@ -4420,8 +4469,8 @@ function frmProFormJS() {
 
 		pendingDynamicFieldAjax.push({
 			args: {
-				depFieldArgs: depFieldArgs,
-				onCurrentPage: onCurrentPage
+				depFieldArgs,
+				onCurrentPage
 			},
 			data: {
 				entry_id: depFieldArgs.dataLogic.actualValue,
@@ -4465,7 +4514,7 @@ function frmProFormJS() {
 				prev_val: prevValue,
 				nonce: frm_js.nonce
 			},
-			function( html ) {
+			( html ) => {
 				var $optContainer = $fieldDiv.find( '.frm_opt_container, .frm_data_container' );
 				$optContainer.html( html );
 				var $dynamicFieldInputs = $optContainer.find( 'select, input[type="checkbox"], input[type="radio"]' );
@@ -4524,7 +4573,7 @@ function frmProFormJS() {
 	function addLoadingIcon( $fieldDiv ) {
 		var currentHTML = $fieldDiv.html();
 
-		if ( currentHTML.indexOf( 'frm-loading-img' ) > -1 ) {
+		if ( currentHTML.includes('frm-loading-img') ) {
 			// Loading image already present
 		} else {
 			var loadingIcon = '<span class="frm-loading-img"></span>';
@@ -4539,7 +4588,7 @@ function frmProFormJS() {
 	function addLoadingIconJS( fieldDiv, optContainer ) {
 		var currentHTML = fieldDiv.innerHTML;
 
-		if ( currentHTML.indexOf( 'frm-loading-img' ) > -1 ) {
+		if ( currentHTML.includes('frm-loading-img') ) {
 			// Loading image already present
 		} else {
 			optContainer.classList.add( 'frm_hidden' );
@@ -4635,7 +4684,7 @@ function frmProFormJS() {
 			vals = [];
 
 		for ( var fieldKey in calcs ) {
-			if ( calcs[ fieldKey ].fields.length < 1 && calcs[ fieldKey ].calc ) {
+			if ( calcs[ fieldKey ].fields.length < 1 && calcs[ fieldKey ].calc && '0' !== calcs[ fieldKey ].calc ) {
 				var totalField = document.getElementById( 'field_' + fieldKey );
 				if ( totalField !== null && ! isChildInputConditionallyHidden( totalField, calcs[ fieldKey ].form_id ) ) {
 					// if field is not hidden, do calculation
@@ -4655,7 +4704,7 @@ function frmProFormJS() {
 			calc = allCalcs.fields[ fieldId ],
 			vals = [];
 
-		if ( typeof calc === 'undefined' ) {
+		if ( calc === undefined ) {
 			// this field is not used in a calculation
 			return;
 		}
@@ -4691,7 +4740,7 @@ function frmProFormJS() {
 				return [];
 			}
 
-			formContainer = closest( fieldContainer, function( el ) {
+			formContainer = closest( fieldContainer, ( el ) => {
 				return el.tagName === 'FORM';
 			});
 
@@ -4724,7 +4773,7 @@ function frmProFormJS() {
 	 * @since 2.05.06
 	 */
 	function isTotalFieldOnPage( calcDetails, pages ) {
-		if ( typeof pages.start !== 'undefined' || typeof pages.end !== 'undefined' ) {
+		if ( pages.start !== undefined || pages.end !== undefined ) {
 			// the form has pages
 			var hiddenTotalField = jQuery( 'input[type=hidden][name*="[' + calcDetails.field_id + ']"]' );
 			if ( hiddenTotalField.length ) {
@@ -4748,10 +4797,10 @@ function frmProFormJS() {
 		var totalPos = hiddenTotalField.index();
 		var isAfterStart = true;
 		var isBeforeEnd = true;
-		if ( typeof pages.start !== 'undefined' ) {
+		if ( pages.start !== undefined ) {
 			isAfterStart = jQuery( pages.start ).index() < totalPos;
 		}
-		if ( typeof pages.end !== 'undefined' ) {
+		if ( pages.end !== undefined ) {
 			isBeforeEnd = jQuery( pages.end ).index() > totalPos;
 		}
 
@@ -4815,7 +4864,7 @@ function frmProFormJS() {
 	// Check if a non-repeating field is conditionally hidden
 	function isNonRepeatingFieldConditionallyHidden( fieldId, hiddenFields ) {
 		var htmlID = 'frm_field_' + fieldId + '_container';
-		return ( hiddenFields.indexOf( htmlID ) > -1 );
+		return ( hiddenFields.includes(htmlID) );
 	}
 
 	// Check if a repeating field is conditionally hidden
@@ -4825,7 +4874,7 @@ function frmProFormJS() {
 		if ( repeatArgs.repeatingSection ) {
 			var fieldRepeatId = 'frm_field_' + fieldId + '-' + repeatArgs.repeatingSection;
 			fieldRepeatId += '-' + repeatArgs.repeatRow + '_container';
-			hidden = ( hiddenFields.indexOf( fieldRepeatId ) > -1 );
+			hidden = ( hiddenFields.includes(fieldRepeatId) );
 		}
 
 		return hidden;
@@ -4919,17 +4968,98 @@ function frmProFormJS() {
 		return form.find( fieldKey );
 	}
 
+	/**
+	 * Set value on a field, properly handling IMask instances.
+	 * IMask handles formatting (leading zeros, fixed literals, etc.) natively
+	 * when value is set through the mask instance.
+	 *
+	 * @since 6.23
+	 *
+	 * @param {jQuery} field The field element
+	 * @param {string|number} value The value to set
+	 * @returns {void}
+	 */
+	function setFieldValueWithMask( field, value ) {
+		const fieldElement = field.get( 0 );
+
+		if ( fieldElement && frmMaskInstances.has( fieldElement ) ) {
+			const padded = padValueForMask( String( value ), fieldElement.dataset.frmmask || '' );
+			frmMaskInstances.get( fieldElement ).value = padded;
+		} else {
+			field.val( value );
+		}
+	}
+
+	/**
+	 * Pad a numeric value so it fills all digit slots in a mask pattern.
+	 * IMask processes characters left-to-right and cannot pad on its own,
+	 * so e.g. value "5" with mask "00.00" needs to become "05.00".
+	 *
+	 * Non-numeric values or masks without digit slots are returned as-is.
+	 *
+	 * @since 6.23
+	 *
+	 * @param {string} value The string value to pad.
+	 * @param {string} mask  The mask pattern (e.g. "00", "00.00", "P0").
+	 * @returns {string}
+	 */
+	function padValueForMask( value, mask ) {
+		if ( ! mask ) {
+			return value;
+		}
+
+		// Strip non-digit/non-decimal/non-minus characters from the value for counting.
+		const numericValue = value.replace( /[^0-9.\-]/g, '' );
+		if ( '' === numericValue || isNaN( Number( numericValue ) ) ) {
+			return value;
+		}
+
+		// Split the mask into parts around the literal "." if present.
+		const maskParts = mask.split( '.' );
+		const intMask = maskParts[0];
+		const decMask = maskParts.length > 1 ? maskParts.slice( 1 ).join( '.' ) : '';
+
+		// Count only digit-slot characters (0 and 9) in each part.
+		const intSlots = ( intMask.match( /[09]/g ) || [] ).length;
+		const decSlots = ( decMask.match( /[09]/g ) || [] ).length;
+
+		if ( 0 === intSlots && 0 === decSlots ) {
+			return value;
+		}
+
+		// Split the numeric value around the decimal point.
+		const valueParts = numericValue.split( '.' );
+		let intValue = ( valueParts[0] || '0' ).replace( /^-/, '' );
+		const isNegative = numericValue.startsWith( '-' );
+
+		// Pad integer part with leading zeros.
+		if ( intSlots > intValue.length ) {
+			intValue = intValue.padStart( intSlots, '0' );
+		}
+
+		let result = ( isNegative ? '-' : '' ) + intValue;
+
+		// Pad decimal part with trailing zeros.
+		if ( decSlots > 0 ) {
+			let decValue = valueParts[1] || '';
+			decValue = decValue.padEnd( decSlots, '0' ).substring( 0, decSlots );
+			result += '.' + decValue;
+		}
+
+		return result;
+	}
+
 	function doSingleCalculation( allCalcs, fieldKey, vals, triggerField ) {
 		var currency, total, dec, updatedTotal, totalField,
 			thisCalc = allCalcs.calc[ fieldKey ],
 			thisFullCalc = thisCalc.calc,
 			fieldInfo = {
-				triggerField: triggerField,
+				triggerField,
 				inSection: false,
 				thisFieldCall: 'input[id^="field_' + fieldKey + '-"]'
 			};
 
-		if ( typeof triggerField !== 'undefined' && triggerField && triggerField.length ) {
+		if ( triggerField !== undefined && triggerField && triggerField.length ) {
 			totalField = getTotalOrCalcField( triggerField, '#field_' + fieldKey );
 		} else {
 			totalField = jQuery( document.getElementById( 'field_' + fieldKey ) );
@@ -4945,7 +5075,7 @@ function frmProFormJS() {
 		}
 
 		// TODO: update this to work more like conditional logic
-		if ( totalField.length < 1 && typeof triggerField !== 'undefined' ) {
+		if ( totalField.length < 1 && triggerField !== undefined ) {
 			// check if the total field is inside of a repeating/embedded form
 			fieldInfo.inSection = true;
 			fieldInfo.thisFieldId = objectSearch( allCalcs.fieldsWithCalc, fieldKey );
@@ -4976,7 +5106,7 @@ function frmProFormJS() {
 			dec = thisCalc.calc_dec;
 
 			// allow .toFixed for reverse compatibility
-			if ( thisFullCalc.indexOf( ').toFixed(' ) > -1 ) {
+			if ( thisFullCalc.includes(').toFixed(') ) {
 				var calcParts = thisFullCalc.split( ').toFixed(' );
 				if ( isNumeric( calcParts[ 1 ]) ) {
 					dec = calcParts[ 1 ];
@@ -4994,7 +5124,7 @@ function frmProFormJS() {
 				}
 			}
 
-			if ( typeof total === 'undefined' || isNaN( total ) ) {
+			if ( total === undefined || isNaN( total ) ) {
 				total = 0;
 			}
 
@@ -5019,28 +5149,29 @@ function frmProFormJS() {
 		}
 
 		updatedTotal = false;
-		if ( ( isNumeric( dec ) || thisCalc.is_currency ) && [ 'number', 'text' ].indexOf( totalField.attr( 'type' ) ) > -1 ) {
-			if ( total.toString().slice( -1 ) == '0' && navigator.userAgent.toLowerCase().indexOf( 'firefox' ) > -1 ) {
+		if ( ( isNumeric( dec ) || thisCalc.is_currency ) && [ 'number', 'text' ].includes(totalField.attr( 'type' )) ) {
+			if ( total.toString().slice( -1 ) == '0' && navigator.userAgent.toLowerCase().includes('firefox') ) {
 				// Change the input to text in Firefox. Otherwise, trailing decimals will fail.
 				totalField[0].setAttribute( 'type', 'text' );
 			}
 
-			if ( totalField.parent().is( '.frm_input_group.frm_with_box.frm_hidden' ) && 'string' === typeof total ) {
+			if ( totalField.parent().is( '.frm_with_box.frm_hidden' ) && 'string' === typeof total ) {
 				updatedTotal = true;
-				totalField.val( total.replace( ',', '.' ) );
+				setFieldValueWithMask( totalField, total.replace( ',', '.' ) );
 			}
 		}
 
 		if ( ! updatedTotal ) {
-			totalField.val( total );
+			// Set value using proper mask handling
+			setFieldValueWithMask( totalField, total );
 		}
 
 		triggerEvent( document, 'frmCalcUpdatedTotal', {
-			totalField: totalField,
-			total: total
+			totalField,
+			total
 		});
 
-		if ( triggerField === null || typeof triggerField === 'undefined' || totalField.attr( 'name' ) != triggerField.attr( 'name' ) ) {
+		if ( triggerField === null || triggerField === undefined || totalField.attr( 'name' ) != triggerField.attr( 'name' ) ) {
 			totalField.trigger({ type: 'change', selfTriggered: true, frmTriggered: fieldKey });
 		}
 
@@ -5060,10 +5191,10 @@ function frmProFormJS() {
 
 		prepend = showTotal.data( 'prepend' );
 		append = showTotal.data( 'append' );
-		if ( typeof prepend === 'undefined' ) {
+		if ( prepend === undefined ) {
 			prepend = '';
 		}
-		if ( typeof append === 'undefined' ) {
+		if ( append === undefined ) {
 			append = '';
 		}
 
@@ -5111,7 +5242,7 @@ function frmProFormJS() {
 				field.valKey = 'num' + field.valKey;
 				vals = getCalcFieldId( field, allCalcs, vals );
 
-				if ( typeof vals[ field.valKey ] === 'undefined' || isNaN( vals[ field.valKey ]) ) {
+				if ( vals[ field.valKey ] === undefined || isNaN( vals[ field.valKey ]) ) {
 					vals[ field.valKey ] = 0;
 
 					if ( field.thisField.type === 'date' ) {
@@ -5129,7 +5260,7 @@ function frmProFormJS() {
 				// Text calc type.
 				field.valKey = 'text' + field.valKey;
 				vals = getTextCalcFieldId( field, vals );
-				if ( typeof vals[ field.valKey ] === 'undefined' ) {
+				if ( vals[ field.valKey ] === undefined ) {
 					vals[ field.valKey ] = '';
 				}
 			}
@@ -5158,14 +5289,14 @@ function frmProFormJS() {
 	function replaceShortcodesWithShowOptions( fullCalc, vals, field ) {
 		fullCalc = replaceShowShortcode(
 			fullCalc, vals, field, 'label',
-			function() {
+			() => {
 				return getOptionLabelsFromValues( vals[ field.valKey ], field );
 			}
 		);
 
 		Array.prototype.forEach.call(
 			[ 'first', 'middle', 'last' ],
-			function( nameFieldPart ) {
+			( nameFieldPart ) => {
 				fullCalc = replaceNameShortcode( fullCalc, vals, field, nameFieldPart );
 			}
 		);
@@ -5177,7 +5308,7 @@ function frmProFormJS() {
 		var valueCallback = function() {
 			var match = false;
 			document.querySelectorAll( field.thisFieldCall ).forEach(
-				function( input ) {
+				( input ) => {
 					if ( show === input.id.substr( -show.length ) ) {
 						match = input;
 					}
@@ -5353,7 +5484,7 @@ function frmProFormJS() {
 	}
 
 	function getCalcFieldId( field, allCalcs, vals ) {
-		if ( typeof vals[ field.valKey ] !== 'undefined' && vals[ field.valKey ] !== 0 ) {
+		if ( vals[ field.valKey ] !== undefined && vals[ field.valKey ] !== 0 ) {
 			return vals;
 		}
 
@@ -5367,7 +5498,8 @@ function frmProFormJS() {
 		}
 
 		calcField.each( function() {
-			var thisVal = getOptionValue( field.thisField, this );
+			const thisVal = getOptionValue( field.thisField, this );
+			const hasCustomFormat = this.classList.contains( 'frm-has-number-format' );
 
 			if ( field.thisField.type === 'date' ) {
 				var d = getDateFieldValue( allCalcs.date, thisVal );
@@ -5390,10 +5522,14 @@ function frmProFormJS() {
 						vals[ field.valKey ] = parseFloat( this.parentNode.textContent );
 					}
 				}
-			} else if ( this.hasAttribute( 'data-frmprice' ) || field.thisField.type === 'total' || this.classList.contains( 'frm-has-number-format' ) ) {
+			} else if ( this.hasAttribute( 'data-frmprice' ) || field.thisField.type === 'total' || hasCustomFormat ) {
 				// data-frmprice means product field.
 				currency = getCurrency( field.formID );
-				vals[ field.valKey ] += parseFloat( ! currency ? thisVal : preparePrice( thisVal, currency ) );
+				vals[ field.valKey ] += parseFloat(
+					! currency
+						? thisVal
+						: ( hasCustomFormat && String( thisVal ).trim().startsWith( '-' ) ? '-' : '' ) + preparePrice( thisVal, currency )
+					);
 			} else {
 				var n = thisVal;
 
@@ -5403,7 +5539,7 @@ function frmProFormJS() {
 					n = parseFloat( n.replace( /,/g, '' ).match( /-?[\d\.e]+$/ ) );
 				}
 
-				if ( typeof n === 'undefined' || isNaN( n ) || n === '' ) {
+				if ( n === undefined || isNaN( n ) || n === '' ) {
 					n = 0;
 				}
 				vals[ field.valKey ] += n;
@@ -5414,7 +5550,7 @@ function frmProFormJS() {
 	}
 
 	function getTextCalcFieldId( field, vals ) {
-		if ( typeof vals[ field.valKey ] !== 'undefined' && vals[ field.valKey ] !== '' ) {
+		if ( vals[ field.valKey ] !== undefined && vals[ field.valKey ] !== '' ) {
 			return vals;
 		}
 
@@ -5457,7 +5593,7 @@ function frmProFormJS() {
 			}
 
 			var customSep = jQuery( document ).triggerHandler( 'frmCalSeparation', [ field.thisField, count ]);
-			if ( typeof customSep !== 'undefined' ) {
+			if ( customSep !== undefined ) {
 				sep = customSep;
 			}
 		}
@@ -5487,7 +5623,7 @@ function frmProFormJS() {
 			calcField = getSiblingField( field );
 		}
 
-		if ( calcField === null || typeof calcField === 'undefined' || calcField.length < 1 ) {
+		if ( calcField === null || calcField === undefined || calcField.length < 1 ) {
 			calcField = false;
 		}
 
@@ -5510,7 +5646,7 @@ function frmProFormJS() {
 	function filterCalcField( $calcField, thisFieldId ) {
 		return $calcField.filter( function() {
 			var target = 'OPTION' === this.nodeName ? this.closest( 'select' ) : this;
-			return target && target.name && target.name.indexOf( thisFieldId ) !== -1;
+			return target && target.name && target.name.includes(thisFieldId);
 		});
 	}
 
@@ -5526,7 +5662,7 @@ function frmProFormJS() {
 
 		nameParts = [];
 		document.querySelectorAll( field.thisFieldCall ).forEach(
-			function( input ) {
+			( input ) => {
 				nameParts.push( input.value );
 			}
 		);
@@ -5545,14 +5681,10 @@ function frmProFormJS() {
 
 		if ( ! thisVal ) {
 			// If no value was selected in date field, use 0
-		} else if ( typeof jQuery.datepicker === 'undefined' ) {
+		} else if ( jQuery.datepicker === undefined ) {
 			// If date field is not on the current page
 
-			var splitAt = '-';
-			if ( dateFormat.indexOf( '/' ) > -1 ) {
-				splitAt = '/';
-			}
-
+			const splitAt = [ '/', '.' ].find( char => dateFormat.includes( char ) ) || '-';
 			var year = '',
 				month = '',
 				day = '',
@@ -5592,7 +5724,7 @@ function frmProFormJS() {
 	}
 
 	function getSiblingField( field ) {
-		if ( typeof field.triggerField === 'undefined' ) {
+		if ( field.triggerField === undefined ) {
 			return null;
 		}
 
@@ -5608,7 +5740,7 @@ function frmProFormJS() {
 				fields = jQuery( siblingFieldCall );
 			}
 
-			if ( fields === null || typeof fields === 'undefined' || fields.length < 1 ) {
+			if ( fields === null || fields === undefined || fields.length < 1 ) {
 				fields = uncheckedSiblingOrOutsideSection( field, container, siblingFieldCall );
 			}
 		} else {
@@ -5690,7 +5822,7 @@ function frmProFormJS() {
 			thisVal = jQuery( currentOpt ).val();
 		}
 
-		if ( typeof thisVal === 'undefined' ) {
+		if ( thisVal === undefined ) {
 			thisVal = '';
 		}
 		return thisVal;
@@ -5714,12 +5846,12 @@ function frmProFormJS() {
 		} else if ( thisField.type === 'select' ) {
 			// If a visible dropdown field
 			var optClass = currentOpt.className;
-			if ( optClass && optClass.indexOf( 'frm_other_trigger' ) > -1 ) {
+			if ( optClass && optClass.includes('frm_other_trigger') ) {
 				isOtherOpt = true;
 			}
 		} else if ( thisField.type === 'checkbox' || thisField.type === 'radio' ) {
 			// If visible checkbox/radio field
-			if ( currentOpt.id.indexOf( '-other_' ) > -1 && currentOpt.id.indexOf( '-otext' ) < 0 ) {
+			if ( currentOpt.id.includes('-other_') && !currentOpt.id.includes('-otext') ) {
 				isOtherOpt = true;
 			}
 		}
@@ -5795,7 +5927,7 @@ function frmProFormJS() {
 		fields.val( value );
 
 		for ( i = 0; i < thisField.options.length; i++ ) {
-			if ( thisField.options[ i ].className.indexOf( 'frm_other_trigger' ) !== -1 ) {
+			if ( thisField.options[ i ].className.includes('frm_other_trigger') ) {
 				thisField.options[ i ].selected = true;
 			}
 		}
@@ -5884,7 +6016,7 @@ function frmProFormJS() {
 			return;
 		}
 
-		Object.values( __FRMCALC.fieldKeys ).forEach( function( key ) {
+		Object.values( __FRMCALC.fieldKeys ).forEach( ( key ) => {
 			jQuery( key + ':not(label):not([type=hidden])' ).each( function() {
 				jQuery( this ).trigger({ type: 'change', selfTriggered: true });
 			});
@@ -5900,7 +6032,7 @@ function frmProFormJS() {
 	}
 
 	function generateSingleGoogleTable( opts, type ) {
-		google.load( 'visualization', '1.0', { packages: [ type ], callback: function() {
+		google.load( 'visualization', '1.0', { packages: [ type ], callback() {
 			compileGoogleTable( opts );
 		} });
 	}
@@ -5908,6 +6040,8 @@ function frmProFormJS() {
 	function compileGoogleTable( opts ) {
 		var data = new google.visualization.DataTable(),
 			showID = false;
+
+		const ownerDocument = opts.document || document;
 
 		if ( jQuery.inArray( 'id', opts.options.fields ) !== -1 ) {
 			showID = true;
@@ -5971,7 +6105,7 @@ function frmProFormJS() {
 				}
 
 				if ( showEdit ) {
-					if ( typeof entry.editLink !== 'undefined' ) {
+					if ( entry.editLink !== undefined ) {
 						data.setCell( row, col, '<a href="' + entry.editLink + '">' + opts.options.edit_link + '</a>' );
 					} else {
 						data.setCell( row, col, '' );
@@ -5980,7 +6114,7 @@ function frmProFormJS() {
 				}
 
 				if ( showDelete ) {
-					if ( typeof entry.deleteLink !== 'undefined' ) {
+					if ( entry.deleteLink !== undefined ) {
 						data.setCell( row, col, '<a href="' + entry.deleteLink + '" class="frm_delete_link" data-frmconfirm="' + opts.options.confirm + '">' + opts.options.delete_link + '</a>' );
 					} else {
 						data.setCell( row, col, '' );
@@ -6003,7 +6137,7 @@ function frmProFormJS() {
 			}
 		}
 
-		var chart = new google.visualization.Table( document.getElementById( 'frm_google_table_' + opts.options.form_id ) );
+		var chart = new google.visualization.Table( ownerDocument.getElementById( 'frm_google_table_' + opts.options.form_id ) );
 		chart.draw( data, opts.graphOpts );
 	}
 
@@ -6024,7 +6158,7 @@ function frmProFormJS() {
 	function addResponsiveGraphListener( graphData ) {
 		window.addEventListener(
 			'resize',
-			function() {
+			() => {
 				generateSingleGoogleGraph( graphData );
 			}
 		);
@@ -6032,7 +6166,7 @@ function frmProFormJS() {
 
 	function generateSingleGoogleGraph( graphData ) {
 		google.charts.load( 'current', { packages: [ graphData.package ] });
-		google.charts.setOnLoadCallback( function() {
+		google.charts.setOnLoadCallback( () => {
 			compileGoogleGraph( graphData );
 		});
 	}
@@ -6041,7 +6175,9 @@ function frmProFormJS() {
 		var data = new google.visualization.DataTable();
 		data = google.visualization.arrayToDataTable( graphData.data );
 
-		var chartDiv = document.getElementById( 'chart_' + graphData.graph_id );
+		const ownerDocument = graphData.document || document;
+
+		var chartDiv = ownerDocument.getElementById( 'chart_' + graphData.graph_id );
 		if ( chartDiv === null ) {
 			return;
 		}
@@ -6054,7 +6190,7 @@ function frmProFormJS() {
 		var chart = new google.visualization[ type ]( chartDiv );
 
 		chart.draw( data, graphData.options );
-		jQuery( document ).trigger( 'frmDrawChart', [ chart, 'chart_' + graphData.graph_id, data ]);
+		jQuery( ownerDocument ).trigger( 'frmDrawChart', [ chart, 'chart_' + graphData.graph_id, data ]);
 	}
 
 	function getGraphType( field ) {
@@ -6092,7 +6228,7 @@ function frmProFormJS() {
 			fields = thisRow.find( 'input, select, textarea, .frm_html_container' ),
 			formId = jQuery( this ).closest( 'form' ).find( 'input[name="form_id"]' ).val();
 
-		thisRow.fadeOut( 'slow', function() {
+		thisRow.fadeOut( 'slow', () => {
 			const repeaterRow = thisRow[0].closest( '.frm_section_heading');
 			if ( repeaterRow.querySelectorAll( '.frm_repeat_sec, .frm_repeat_inline, .frm_repeat_grid' )?.length === 1 ) {
 				repeaterRow.querySelector( '.frm_hidden_container.frm_repeat_buttons.frm_hidden' ).style.display = 'inline-block';
@@ -6197,7 +6333,7 @@ function frmProFormJS() {
 
 	function hideAddButton( sectionID ) {
 		getRepeaterAddButtons( sectionID ).forEach(
-			function( button ) {
+			( button ) => {
 				button.classList.add( 'frm_hide_add_button' );
 			}
 		);
@@ -6205,7 +6341,7 @@ function frmProFormJS() {
 
 	function showAddButton( sectionID ) {
 		getRepeaterAddButtons( sectionID ).forEach(
-			function( button ) {
+			( button ) => {
 				button.classList.remove( 'frm_hide_add_button' );
 			}
 		);
@@ -6217,7 +6353,7 @@ function frmProFormJS() {
 
 	function hideRemoveButtons( sectionID ) {
 		getRepeaterRemoveButtons( sectionID ).forEach(
-			function( button ) {
+			( button ) => {
 				button.classList.add( 'frm_hide_remove_button' );
 			}
 		);
@@ -6225,7 +6361,7 @@ function frmProFormJS() {
 
 	function showRemoveButtons( sectionID ) {
 		getRepeaterRemoveButtons( sectionID ).forEach(
-			function( button ) {
+			( button ) => {
 				button.classList.remove( 'frm_hide_remove_button' );
 			}
 		);
@@ -6271,7 +6407,7 @@ function frmProFormJS() {
 		if ( numberOfSections > 0 ) {
 			lastRowIndex = false;
 			document.querySelectorAll( '.frm_repeat_' + id ).forEach(
-				function( element ) {
+				( element ) => {
 					var strippedId = element.id.replace( 'frm_section_' + id + '-', '' ),
 						parsedId;
 
@@ -6302,8 +6438,8 @@ function frmProFormJS() {
 		data = {
 			action: 'frm_add_form_row',
 			field_id: id,
-			i: i,
-			numberOfSections: numberOfSections,
+			i,
+			numberOfSections,
 			nonce: frm_js.nonce,
 			frm_state: state
 		};
@@ -6502,11 +6638,11 @@ function frmProFormJS() {
 				entry_id: entryId,
 				id: formId,
 				nonce: frm_js.nonce,
-				fields: fields,
+				fields,
 				exclude_fields: excludeFields,
 				start_page: startPage
 			},
-			success: function( html ) {
+			success( html ) {
 				$cont.children( '.frm-loading-img' ).replaceWith( html );
 				$edit.removeClass( 'frm_inplace_edit' ).addClass( 'frm_cancel_edit' );
 				$edit.html( cancel );
@@ -6529,7 +6665,7 @@ function frmProFormJS() {
 
 		Array.prototype.forEach.call(
 			Object.keys( queryParams ),
-			function( queryParamKey ) {
+			( queryParamKey ) => {
 				url += -1 === url.indexOf( '?' ) ? '?' : '&';
 				url += queryParamKey + '=' + queryParams[ queryParamKey ];
 			}
@@ -6628,10 +6764,10 @@ function frmProFormJS() {
 				type: 'POST',
 				url: frm_js.ajax_url,
 				data: { action: 'frm_entries_destroy', entry: entryId, nonce: frm_js.nonce },
-				success: function( html ) {
+				success( html ) {
 					if ( html.replace( /^\s+|\s+$/g, '' ) === 'success' ) {
 						var container = jQuery( document.getElementById( prefix + entryId ) );
-						container.fadeOut( 'slow', function() {
+						container.fadeOut( 'slow', () => {
 							container.remove();
 						});
 						jQuery( document.getElementById( 'frm_delete_' + entryId ) ).fadeOut( 'slow' );
@@ -6673,7 +6809,7 @@ function frmProFormJS() {
 	 * @returns {boolean}
      */
 	function isCancelLink( link ) {
-		return ( link !== null && link.className.indexOf( 'frm_cancel_edit' ) > -1 );
+		return ( link !== null && link.className.includes('frm_cancel_edit') );
 	}
 
 	/**********************************************
@@ -6799,7 +6935,7 @@ function frmProFormJS() {
 			opts = '{' + __frmChosen + '}';
 		}
 
-		if ( typeof chosenContainer !== 'undefined' ) {
+		if ( chosenContainer !== undefined ) {
 			jQuery( '#' + chosenContainer ).find( '.frm_chzn' ).chosen( opts );
 		} else {
 			jQuery( '.frm_chzn' ).chosen( opts );
@@ -6825,7 +6961,7 @@ function frmProFormJS() {
 		}
 
 		dropdowns.forEach(
-			function( autocompleteInput ) {
+			( autocompleteInput ) => {
 				var emptyOption, allowDeselect, isMultiSelect, tabindex;
 
 				if ( 'none' === autocompleteInput.style.display || autocompleteInput.classList.contains( 'ss-main' ) || autocompleteInput.classList.contains( 'ss-content' ) ) {
@@ -6857,12 +6993,12 @@ function frmProFormJS() {
 						placeholderText: '',
 						searchText: frm_js.no_results,
 						searchPlaceholder: ' ', // Avoid default "Search" placeholder.
-						allowDeselect: allowDeselect,
+						allowDeselect,
 						closeOnSelect: ! isMultiSelect,
 						keepOrder: true
 					},
 					events: {
-						afterOpen: function() {
+						afterOpen() {
 							// Make some accessibility adjustments to the .ss-content pop up.
 							var ssContent, ssContentSearchInput, ssList, label;
 
@@ -7012,7 +7148,7 @@ function frmProFormJS() {
 			label.addEventListener( 'click', labelListener );
 			function labelListener() {
 				setTimeout(
-					function() {
+					() => {
 						autocompleteInput.slim.open();
 					},
 					0
@@ -7095,7 +7231,7 @@ function frmProFormJS() {
 		for ( var i = stars.length - 1; i > 0; i-- ) {
 			if ( stars[ i ].matches( '.' + starClass ) ) {
 				stars[ i ].classList.remove( 'star-rating-hover' );
-				if ( isSelected === '' && typeof selected !== 'undefined' && stars[ i ].getAttribute( 'for' ) == selected ) {
+				if ( isSelected === '' && selected !== undefined && stars[ i ].getAttribute( 'for' ) == selected ) {
 					isSelected = ' star-rating-on';
 				}
 				if ( isSelected !== '' ) {
@@ -7118,7 +7254,7 @@ function frmProFormJS() {
 
 		labels = starGroup.querySelectorAll( '.star-rating-on' );
 		if ( labels && labels.length ) {
-			labels.forEach( function( el ) {
+			labels.forEach( ( el ) => {
 				el.classList.remove( 'star-rating-on' );
 			});
 		}
@@ -7185,7 +7321,7 @@ function frmProFormJS() {
 			classList = field.attr( 'class' ),
 			layoutClasses = [ 'frm_full', 'half', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth' ];
 
-		if ( typeof classList === 'undefined' ) {
+		if ( classList === undefined ) {
 			return false;
 		}
 		for ( i = 1; i <= 12; i++ ) {
@@ -7195,7 +7331,7 @@ function frmProFormJS() {
 
 			if ( i === 12 ) {
 				for ( var c = 0; c < layoutClasses.length; c++ ) {
-					if ( classList.indexOf( layoutClasses[ c ]) !== -1 ) {
+					if ( classList.includes(layoutClasses[ c ]) ) {
 						return true;
 					}
 
@@ -7255,7 +7391,7 @@ function frmProFormJS() {
 	}
 
 	function triggerChange( input, fieldKey ) {
-		if ( typeof fieldKey === 'undefined' ) {
+		if ( fieldKey === undefined ) {
 			fieldKey = 'dependent';
 		}
 
@@ -7281,7 +7417,7 @@ function frmProFormJS() {
 	function getRepeatArgsFromFieldName( fieldName ) {
 		var repeatArgs = { repeatingSection: '', repeatRow: '' };
 
-		if ( typeof fieldName !== 'undefined' && isRepeatingFieldByName( fieldName ) ) {
+		if ( fieldName !== undefined && isRepeatingFieldByName( fieldName ) ) {
 			var inputNameParts = fieldName.split( '][' );
 			repeatArgs.repeatingSection = inputNameParts[ 0 ].replace( 'item_meta[', '' );
 			repeatArgs.repeatRow = inputNameParts[ 1 ];
@@ -7291,7 +7427,7 @@ function frmProFormJS() {
 	}
 
 	function fadeOut( $remove ) {
-		$remove.fadeOut( 'slow', function() {
+		$remove.fadeOut( 'slow', () => {
 			$remove.remove();
 		});
 	}
@@ -7321,7 +7457,7 @@ function frmProFormJS() {
 			span;
 
 		/*jshint validthis:true */
-		if ( this.className.indexOf( 'frm_strength_meter' ) > -1 ) {
+		if ( this.className.includes('frm_strength_meter') ) {
 			fieldId = this.name.substr( this.name.indexOf( '[' ) + 1 ).replace( /\]\[\d\]\[/, '-' );
 			if ( fieldId[ fieldId.length - 1 ] === ']' ) {
 				fieldId = fieldId.substr( 0, fieldId.length - 1 );
@@ -7403,7 +7539,11 @@ function frmProFormJS() {
 				}).attr( 'disabled', 'disabled' );
 			}
 		} else {
-			allBoxes.prop( 'disabled', false );
+			const checkboxesLimitNotReached = allBoxes.filter( function() {
+				return ! this.getAttribute( 'data-max-reached' );
+			});
+
+			checkboxesLimitNotReached.prop( 'disabled', false );
 		}
 	}
 
@@ -7510,7 +7650,7 @@ function frmProFormJS() {
 	 * @since 4.04.01
 	 */
 	function setHiddenProductContainer( container ) {
-		if ( container.innerHTML.indexOf( 'data-frmprice' ) !== -1 ) {
+		if ( container.innerHTML.includes('data-frmprice') ) {
 			jQuery( container ).find( 'input[data-frmprice], select:has([data-frmprice])' ).attr( 'data-frmhidden', '1' );
 		}
 	}
@@ -7566,7 +7706,7 @@ function frmProFormJS() {
 			formId = $form.find( 'input[name="form_id"]' ).val();
 			currency = getCurrency( formId );
 
-			if ( typeof formTotals[ formId ] !== 'undefined' && ! isRepeatingTotal ) {
+			if ( formTotals[ formId ] !== undefined && ! isRepeatingTotal ) {
 				total = formTotals[ formId ];
 			} else {
 
@@ -7607,6 +7747,10 @@ function frmProFormJS() {
 						price = parseFloat( quantity ) * parseFloat( price );
 					}
 
+					if ( 'true' === this.getAttribute( 'data-frmdiscount' ) ) {
+						price = price * -1;
+					}
+
 					total += price;
 				});
 
@@ -7623,8 +7767,18 @@ function frmProFormJS() {
 				currency.decimal_separator = '.';
 			}
 
+			// Round to the currency's decimal precision so floating-point artifacts
+			// like 189.89999999999998 aren't posted as the submitted total value.
+			// Avoid the normalized total as it can use commas as decimal separators.
+			totalField.val( roundTotal( total, currency ) );
+
+			// Make sure '0' is always set as '0.00' to avoid issues where
+			// the value is interpreted as empty instead of zero.
+			if ( '0' === totalField.val() && 2 === currency.decimals ) {
+				totalField.val( '0.00' );
+			}
+
 			total = normalizeTotal( total, currency );
-			totalField.val( total );
 
 			// because of e.g. fields that might be using this field for calculations
 			triggerChange( totalField );
@@ -7644,11 +7798,19 @@ function frmProFormJS() {
 	/**
 	 * Round total and maybe add trailing zeros so formatCurrency has a proper format to work with.
 	 *
-	 * @param {number} total The total amount to normalize.
+	 * @param {float|string} total The total amount to normalize.
 	 * @param {Object} currency The currency object containing decimal information.
-	 * @returns {number}
+	 * @returns {string}
 	 */
 	function normalizeTotal( total, currency ) {
+		const isLargeTotal = total > Number.MAX_SAFE_INTEGER;
+
+		total = roundTotal( total, currency );
+
+		return maybeAddTrailingZeroToPrice( total, currency, isLargeTotal );
+	}
+
+	function roundTotal( total, currency ) {
 		const isLargeTotal = total > Number.MAX_SAFE_INTEGER;
 
 		if ( ! isLargeTotal ) {
@@ -7656,7 +7818,7 @@ function frmProFormJS() {
 			total = decimals > 0 ? Math.round10( total, decimals ) : Math.ceil( total );
 		}
 
-		return maybeAddTrailingZeroToPrice( total, currency, isLargeTotal );
+		return total;
 	}
 
 	/**
@@ -7746,7 +7908,7 @@ function frmProFormJS() {
 	 * @since 4.04
 	 */
 	function getCurrency( formId ) {
-		if ( typeof __FRMCURR  !== 'undefined' && typeof __FRMCURR[ formId ] !== 'undefined' ) {
+		if ( typeof __FRMCURR  !== 'undefined' && __FRMCURR[ formId ] !== undefined ) {
 			return __FRMCURR[ formId ];
 		}
 	}
@@ -7818,7 +7980,7 @@ function frmProFormJS() {
 
 			// convert to array if necessary cos of existing fields that are already using single product fields
 			ids = 'string' === typeof ids ? [ ids.toString() ] : ids;
-			if ( ids.indexOf( fieldID ) > -1 ) {
+			if ( ids.includes(fieldID) ) {
 				quantity = this;
 				return false;
 			}
@@ -7981,10 +8143,10 @@ function frmProFormJS() {
 	 */
 	function setAutoHeightForTextArea() {
 		document.querySelectorAll( '.frm-show-form textarea' ).forEach(
-			function( element ) {
+			( element ) => {
 				var minHeight, callback;
 
-				if ( typeof element.dataset.autoGrow === 'undefined' || element.getAttribute( 'frm-autogrow' ) ) {
+				if ( element.dataset.autoGrow === undefined || element.getAttribute( 'frm-autogrow' ) ) {
 					return;
 				}
 
@@ -8023,7 +8185,7 @@ function frmProFormJS() {
 			return true;
 		}
 		const userAgent = navigator.userAgent.toLowerCase();
-		return userAgent.indexOf( 'android' ) === -1 && userAgent.indexOf( 'iphone' ) === -1;
+		return !userAgent.includes('android') && !userAgent.includes('iphone');
 	}
 
 	function getElementHeight( element ) {
@@ -8035,7 +8197,7 @@ function frmProFormJS() {
 		clone.style.top = '-10000px';
 
 		container = jQuery( element ).closest( '.frm_forms' ).get( 0 );
-		container.appendChild( clone );
+		container.append( clone );
 
 		height = clone.clientHeight;
 
@@ -8070,7 +8232,7 @@ function frmProFormJS() {
 			max  = parseInt( messageEl.getAttribute( 'data-max' ) );
 			if ( 'word' === type ) {
 				length = e.target.value.split( /\s+/ ).filter(
-					function( word ) {
+					( word ) => {
 						return word;
 					}
 				).length;
@@ -8151,7 +8313,7 @@ function frmProFormJS() {
 					repeatBtns.querySelector( '.frm_add_form_row' ).click();
 				} else if ( items.length > 1 ) {
 					// Remove all rows except the first one.
-					items.forEach( function( item, index ) {
+					items.forEach( ( item, index ) => {
 						if ( index ) {
 							item.parentElement.removeChild( item );
 						} else {
@@ -8168,7 +8330,7 @@ function frmProFormJS() {
 			clearValueForInputs( inputs, '', true );
 
 			// Remove "disabled" attribute added by limit selections option.
-			inputs.forEach( function( input ) {
+			inputs.forEach( ( input ) => {
 				if ( input.disabled && input.getAttribute( 'data-frmlimit' ) ) {
 					input.removeAttribute( 'disabled' );
 				}
@@ -8204,10 +8366,10 @@ function frmProFormJS() {
 					_ajax_nonce: frm_js.nonce,
 					frm_state: state
 				},
-				function( response ) {
+				( response ) => {
 					var idValueMapping;
 					if ( ! response.success ) {
-						console.log( response );
+						console.warn( response );
 						return;
 					}
 
@@ -8227,8 +8389,8 @@ function frmProFormJS() {
 
 					triggerCompletedEvent( formId );
 				},
-				function( response ) {
-					console.log( response );
+				( response ) => {
+					console.warn( response );
 				}
 			);
 		}
@@ -8244,7 +8406,7 @@ function frmProFormJS() {
 				values = {};
 
 			inputs = formEl.querySelectorAll( '[data-frmval]' );
-			inputs.forEach( function( input ) {
+			inputs.forEach( ( input ) => {
 				values[ input.id ] = input.getAttribute( 'data-frmval' );
 			});
 
@@ -8257,7 +8419,7 @@ function frmProFormJS() {
 		 * @param {Object} idValueMapping Object with keys are input IDs, values are the default values.
 		 */
 		function setDefaultValues( idValueMapping ) {
-			Object.keys( idValueMapping ).forEach( function( id ) {
+			Object.keys( idValueMapping ).forEach( ( id ) => {
 				var input = document.getElementById( id );
 				if ( ! input ) {
 					return;
@@ -8336,7 +8498,7 @@ function frmProFormJS() {
 		}
 
 		function triggerCompletedEvent( formId ) {
-			triggerEvent( document, 'frm_after_start_over', { formId: formId });
+			triggerEvent( document, 'frm_after_start_over', { formId });
 		}
 
 		document.addEventListener( 'click', function( e ) {
@@ -8395,15 +8557,15 @@ function frmProFormJS() {
 
 			hiddenStepsWrapper = showMoreButtonLi.querySelector( '.frm_rootline_hidden_steps' );
 
-			hiddenSteps.forEach( function( hiddenStep ) {
-				hiddenStepsWrapper.appendChild( hiddenStep );
+			hiddenSteps.forEach( ( hiddenStep ) => {
+				hiddenStepsWrapper.append( hiddenStep );
 			});
 
 			moveRootlineTitles( hiddenStepsWrapper, listWrapper, showMoreButton );
 
 			listWrapper.insertBefore( showMoreButtonLi, listWrapper.children[ listWrapper.children.length - 1 ]);
 
-			if ( listWrapper.children[ listWrapper.children.length - 1 ].className.indexOf( 'frm_current_page' ) !== -1 ) {
+			if ( listWrapper.children[ listWrapper.children.length - 1 ].className.includes('frm_current_page') ) {
 				updateRootlineStyle( hiddenStepsWrapper );
 			}
 		}
@@ -8418,7 +8580,7 @@ function frmProFormJS() {
 	function isOldIEVersion( max ) {
 		var version,
 			myNav = navigator.userAgent.toLowerCase();
-		version = myNav.indexOf( 'msie' ) !== -1 ? parseInt( myNav.split( 'msie' )[1]) : false;
+		version = myNav.includes('msie') ? parseInt( myNav.split( 'msie' )[1]) : false;
 		return version !== false && max >= version;
 	}
 
@@ -8427,7 +8589,7 @@ function frmProFormJS() {
 			wrappingElementsCount = 0;
 
 		for ( j = 0; j < rootlineSteps.length; j++ ) {
-			if ( rootlineSteps[ j ].offsetTop !== rootlineSteps[0].offsetTop && rootlineSteps[ j ].className.indexOf( 'frm_rootline_show_hidden_steps_btn' ) === -1 ) {
+			if ( rootlineSteps[ j ].offsetTop !== rootlineSteps[0].offsetTop && !rootlineSteps[ j ].className.includes('frm_rootline_show_hidden_steps_btn') ) {
 				wrappingElementsCount++;
 			}
 		}
@@ -8468,11 +8630,11 @@ function frmProFormJS() {
 		var rootlineCurrentStep = document.createElement( 'span' );
 		rootlineCurrentStep.className = 'frm_rootline_title';
 		rootlineCurrentStep.textContent = currentStepTitle;
-		document.querySelector( '.frm_rootline_show_hidden_steps_btn' ).appendChild( rootlineCurrentStep );
+		document.querySelector( '.frm_rootline_show_hidden_steps_btn' ).append( rootlineCurrentStep );
 	}
 
 	function copyRootlines( listWrappers ) {
-		var i, listWrappers, listWrapper, rootlinesBackup;
+		var i, listWrapper, rootlinesBackup;
 		rootlinesBackup = {};
 		for ( i = 0; i < listWrappers.length; i++ ) {
 			listWrapper = listWrappers[ i ];
@@ -8500,7 +8662,7 @@ function frmProFormJS() {
 			uptoIndex = hiddenStepsWrapper.children.length;
 		}
 		rootlineTitles = [].slice.call( hiddenStepsWrapper.children, 0, uptoIndex );
-		rootlineTitles.forEach( function( el ) {
+		rootlineTitles.forEach( ( el ) => {
 			rootlineTitle = el.querySelector( '.frm_rootline_title' );
 			if ( rootlineTitle ) {
 				rootlineTitle.className += ' frm_prev_page_title';
@@ -8510,7 +8672,7 @@ function frmProFormJS() {
 
 	function showMoreSteps( e ) {
 		var hiddenStepsWrapper = e.target.parentElement.querySelector( 'ul' );
-		if ( hiddenStepsWrapper.className.indexOf( 'frm_hidden' ) > -1 ) {
+		if ( hiddenStepsWrapper.className.includes('frm_hidden') ) {
 			hiddenStepsWrapper.className = hiddenStepsWrapper.className.replace( ' frm_hidden', '' );
 		} else {
 			hiddenStepsWrapper.className += ' frm_hidden';
@@ -8521,7 +8683,7 @@ function frmProFormJS() {
 	 * Validates form values when submitting form.
 	 */
 	function validateForm() {
-		document.addEventListener( 'frm_get_ajax_form_errors', function( event ) {
+		document.addEventListener( 'frm_get_ajax_form_errors', ( event ) => {
 			if ( ! event.frmData.formEl ) {
 				return;
 			}
@@ -8548,7 +8710,7 @@ function frmProFormJS() {
 		}
 
 		checkboxes = formEl.querySelectorAll( 'input[type="checkbox"][data-frmmin]:checked' );
-		checkboxes.forEach( function( checkbox ) {
+		checkboxes.forEach( ( checkbox ) => {
 			var min, fieldEl, checkedCheckboxes, key;
 
 			min = parseInt( checkbox.dataset.frmmin, 10 );
@@ -8578,7 +8740,7 @@ function frmProFormJS() {
 	}
 
 	function validateFieldValue() {
-		document.addEventListener( 'frm_validate_field_value', function( event ) {
+		document.addEventListener( 'frm_validate_field_value', ( event ) => {
 			if ( 'object' !== typeof event.frmData.field || 'object' !== typeof event.frmData.errors ) {
 				return;
 			}
@@ -8621,7 +8783,7 @@ function frmProFormJS() {
 	function showMoreStepsButtonEvents() {
 		var timeout;
 
-		window.addEventListener( 'resize', function() {
+		window.addEventListener( 'resize', () => {
 			var i, listWrappers, listWrapper, form;
 			listWrappers = document.getElementsByClassName( 'frm_rootline' );
 			for ( i = 0; i < listWrappers.length; i++ ) {
@@ -8636,7 +8798,7 @@ function frmProFormJS() {
 	}
 
 	function handleShowPasswordBtn() {
-		documentOn( 'click', '.frm_show_password_btn', function( event ) {
+		documentOn( 'click', '.frm_show_password_btn', ( event ) => {
 			var input = event.target.closest( '.frm_show_password_wrapper' ).querySelector( 'input' ),
 				button = input.nextElementSibling;
 
@@ -8654,7 +8816,7 @@ function frmProFormJS() {
 	}
 
 	function handleRangeSliders() {
-		document.querySelectorAll( '.frm_range_container' ).forEach( function( rangeContainer ) {
+		document.querySelectorAll( '.frm_range_container' ).forEach( ( rangeContainer ) => {
 			const rangeInput = rangeContainer.querySelector( 'input[type="hidden"]' );
 			if ( ! rangeInput || rangeInput.dataset.isRangeSliderInitialized ) {
 				return;
@@ -8700,12 +8862,12 @@ function frmProFormJS() {
 
 		if ( null !== elementorPopupWrapper ) {
 			// Make dropzone items clickable.
-			elementorPopupWrapper.querySelectorAll( '.frm_dropzone' ).forEach( function( item ) {
+			elementorPopupWrapper.querySelectorAll( '.frm_dropzone' ).forEach( ( item ) => {
 				item.classList.remove( 'dz-clickable' );
 			});
 
 			// Remove field chosen containers.
-			elementorPopupWrapper.querySelectorAll( '.frm_form_field .chosen-container' ).forEach( function( chosenContainer ) {
+			elementorPopupWrapper.querySelectorAll( '.frm_form_field .chosen-container' ).forEach( ( chosenContainer ) => {
 				chosenContainer.remove();
 			});
 		}
@@ -8725,7 +8887,7 @@ function frmProFormJS() {
 		formClasses = [];
 		Array.prototype.forEach.call(
 			formContainer.className.split( ' ' ),
-			function( className ) {
+			( className ) => {
 				var trimmedClassName = className.trim();
 				if ( '' !== trimmedClassName && 'frm_forms' !== trimmedClassName ) {
 					formClasses.push( trimmedClassName );
@@ -8741,17 +8903,17 @@ function frmProFormJS() {
 			return;
 		}
 
-		phoneInputs.forEach( function( phoneInput ) {
+		phoneInputs.forEach( ( phoneInput ) => {
 			const parentContainer = document.createElement( 'div' );
 			parentContainer.classList.add( 'frm_forms', 'with_frm_style' );
 
-			document.body.appendChild( parentContainer );
+			document.body.append( parentContainer );
 
-			var intlTelInputInstance = window.intlTelInput( phoneInput, {
+			const intlPhoneConfig = {
 				initialCountry: 'auto',
 				formatOnDisplay: false,
 				dropdownContainer: parentContainer,
-				geoIpLookup: function( callback ) {
+				geoIpLookup( callback ) {
 					if ( 'function' === typeof window.fetch ) {
 						fetch( 'https://ipapi.co/json' )
 							.then( function( res ) { return res.json(); } )
@@ -8759,7 +8921,25 @@ function frmProFormJS() {
 							.catch( function() { callback( 'us' ); } );
 					}
 				},
-			});
+				loadUtils: () => import( getProPluginUrl() + '/js/intl-tel-input-utils.min.js' ),
+			};
+
+			// Allow someone to specify which countries to show in the dropdown
+			// by adding data-only-countries in a shortcode.
+			if ( phoneInput.dataset.onlyCountries ) {
+				intlPhoneConfig.onlyCountries = phoneInput.dataset.onlyCountries.split( ',' );
+
+				if ( 1 === intlPhoneConfig.onlyCountries.length ) {
+					intlPhoneConfig.initialCountry = intlPhoneConfig.onlyCountries[0];
+					intlPhoneConfig.allowDropdown  = false;
+				}
+			}
+
+			if ( phoneInput.dataset.countryOrder ) {
+				intlPhoneConfig.countryOrder = phoneInput.dataset.countryOrder.split( ',' );
+			}
+
+			const intlTelInputInstance = window.intlTelInput( phoneInput, intlPhoneConfig );
 
 			phoneInput.addEventListener( 'countrychange', function() {
 				if ( ! this.value ) {
@@ -8770,11 +8950,32 @@ function frmProFormJS() {
 
 			// Update the input value with the full number including the country code
 			phoneInput.addEventListener( 'blur', function() {
-				phoneInput.value = intlTelInputInstance.getNumber();
+				if ( phoneInput.dataset.numberFormat ) {
+					phoneInput.value = intlTelInputInstance.getNumber( determineNumberFormat( phoneInput.dataset.numberFormat ) );
+				} else {
+					phoneInput.value = intlTelInputInstance.getNumber();
+				}
 			});
 
 			intlPhoneInputs[ phoneInput.id ] = intlTelInputInstance;
 		});
+	}
+
+	/**
+	 * Determines the number format based on the provided format string.
+	 *
+	 * @param {String} numberFormat The number format string used in the shortcode.
+	 * @returns {Number} The number format number.
+	 */
+	function determineNumberFormat( numberFormat ) {
+		numberFormat = numberFormat.toLowerCase();
+		const map = {
+			e164: 0,
+			international: 1,
+			national: 2,
+			rfc3966: 3,
+		};
+		return map[ numberFormat ] ?? 0;
 	}
 
 	/**
@@ -8785,7 +8986,7 @@ function frmProFormJS() {
 	 */
 	function maybeUpdateFormsOverflowX() {
 		document.querySelectorAll('.frm-show-form').forEach(
-			function ( slideinForm ) {
+			( slideinForm ) => {
 				slideinForm.style['overflow-x'] = 'visible';
 			}
 		);
@@ -8797,7 +8998,7 @@ function frmProFormJS() {
 	 * @since 6.12
 	 */
 	function initRangeInput( rangeInputs ) {
-		rangeInputs.forEach( function( rangeInput ) {
+		rangeInputs.forEach( ( rangeInput ) => {
 			updateRangeInputBackground( rangeInput );
 			rangeInput.addEventListener( 'input', function() {
 				updateRangeInputBackground( rangeInput );
@@ -8879,7 +9080,8 @@ function frmProFormJS() {
 		 *
 		 * @param {FocusEvent} event Blur event for the field.
 		 */
-		function handleBlur( { target: field } ) {
+		function handleBlur( event ) {
+			const field            = event.target;
 			const previousValue    = field.value;
 			const previousRawValue = field.getAttribute( 'data-raw-value' ) ?? '';
 			const fieldKey         = getFieldKey( field.id, field.name );
@@ -8889,7 +9091,11 @@ function frmProFormJS() {
 			field.value = applyNumberFormatting( userTyped, fieldKey );
 
 			if ( previousValue !== field.value || previousRawValue !== userTyped ) {
-				field.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				if ( event.isTrusted ) {
+					field.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+				} else {
+					jQuery( field ).trigger({ type: 'change', selfTriggered: true });
+				}
 			}
 		}
 
@@ -9109,8 +9315,8 @@ function frmProFormJS() {
 		}
 
 		const values          = rangeInput.value.split( ',' );
-		values[0]             = values[0] || min;
-		values[1]             = values[1] || max;
+		values[0]             ||= min;
+		values[1]             ||= max;
 		const step            = parseFloat( rangeInput.step, 10 );
 		const sliderRange     = max - min;
 		const stepInPercent   = step / sliderRange * 100;
@@ -9151,7 +9357,7 @@ function frmProFormJS() {
 			const originalNextSibling = element.nextSibling;
 
 			// Move to body to avoid parent's `display: none`
-			document.body.appendChild( element) ;
+			document.body.append( element) ;
 
 			const width = element.offsetWidth;
 
@@ -9159,7 +9365,7 @@ function frmProFormJS() {
 			if ( originalNextSibling ) {
 			  originalParent.insertBefore( element, originalNextSibling );
 			} else {
-			  originalParent.appendChild( element );
+			  originalParent.append( element );
 			}
 
 			return width;
@@ -9174,7 +9380,7 @@ function frmProFormJS() {
 		updateHandlesPositionAndValue();
 
 		// Update track dimensions on resize
-		window.addEventListener( 'resize', function() {
+		window.addEventListener( 'resize', () => {
 			trackWidth = getWidthWithHiddenParent( track );
 		} );
 
@@ -9368,8 +9574,8 @@ function frmProFormJS() {
 			const minRange        = minGap || 0;
 			const sliderRange     = max - min;
 			const values          = rangeInput.value.split( ',' );
-			values[0]             = values[0] || min;
-			values[1]             = values[1] || max;
+			values[0]             ||= min;
+			values[1]             ||= max;
 			const initialMinValue = Math.max( values[0], min );
 			const initialMaxValue = Math.min( Math.max( values[1], initialMinValue + minRange ), max );
 
@@ -9380,7 +9586,7 @@ function frmProFormJS() {
 	}
 
 	return {
-		init: function() {
+		init() {
 			maybeUpdateFormsOverflowX();
 
 			maybeAddIntlTelInput( document.querySelectorAll( '.frm-intl-tel-input' ) );
@@ -9483,15 +9689,15 @@ function frmProFormJS() {
 			jQuery( document ).on( 'input change', 'input[data-frmrange]', handleSliderEvent );
 		},
 
-		savingDraft: function( object ) {
+		savingDraft( object ) {
 			return savingDraftEntry( object );
 		},
 
-		goingToPreviousPage: function( object ) {
+		goingToPreviousPage( object ) {
 			return goingToPrevPage( object );
 		},
 
-		hideOrShowFields: function( ids, event ) {
+		hideOrShowFields( ids, event ) {
 			if ( 'pageLoad' === event ) {
 				clearHideFields();
 			}
@@ -9505,7 +9711,7 @@ function frmProFormJS() {
 			}
 		},
 
-		hidePreviouslyHiddenFields: function() {
+		hidePreviouslyHiddenFields() {
 			var hiddenFields = getAllHiddenFields(),
 				len = hiddenFields.length;
 			for ( var i = 0, l = len; i < l; i++ ) {
@@ -9514,7 +9720,7 @@ function frmProFormJS() {
 				//check for submit button
 				if ( container == null ) {
 					container = document.querySelector( '#' + hiddenFields[ i ]);
-					if ( container != null && hiddenFields[ i ].indexOf( 'frm_final_submit' ) > -1 ) {
+					if ( container != null && hiddenFields[ i ].includes('frm_final_submit') ) {
 						hidePreviouslyHiddenSubmitButton( hiddenFields[ i ]);
 						continue;
 					}
@@ -9527,7 +9733,7 @@ function frmProFormJS() {
 			}
 		},
 
-		submitAllowed: function( object ) {
+		submitAllowed( object ) {
 			var formElementId = object.getAttribute( 'id' );
 
 			if ( ! isSubmitButtonOnPage( formElementId + ' .frm_final_submit' ) || goingToPrevPage( object ) || savingDraftEntry( object ) ) {
@@ -9539,7 +9745,7 @@ function frmProFormJS() {
 			return ! isOnPageSubmitButtonHidden( formKey );
 		},
 
-		checkDependentDynamicFields: function( ids ) {
+		checkDependentDynamicFields( ids ) {
 			var len = ids.length,
 				repeatArgs = { repeatingSection: '', repeatRow: '' };
 			for ( var i = 0, l = len; i < l; i++ ) {
@@ -9547,7 +9753,7 @@ function frmProFormJS() {
 			}
 		},
 
-		checkDependentLookupFields: function( ids ) {
+		checkDependentLookupFields( ids ) {
 			var fieldId,
 				repeatArgs = { repeatingSection: '', repeatRow: '' };
 			for ( var i = 0, l = ids.length; i < l; i++ ) {
@@ -9556,7 +9762,7 @@ function frmProFormJS() {
 			}
 		},
 
-		loadGoogle: function() {
+		loadGoogle() {
 			var graphs, packages, i;
 
 			if ( typeof google === 'undefined' || ! google || ! google.load ) {
@@ -9576,7 +9782,7 @@ function frmProFormJS() {
 			}
 		},
 
-		removeUsedTimes: function( obj, timeField ) {
+		removeUsedTimes( obj, timeField ) {
 			var $form, form, e, data, success, extraParams;
 
 			$form = jQuery( obj ).parents( 'form' ).first();
@@ -9602,7 +9808,7 @@ function frmProFormJS() {
 				if ( opts.length > 0 ) {
 					for ( var i = 0, l = opts.length; i < l; i++ ) {
 						$timeField.get( 0 ).querySelectorAll( 'option[value="' + opts[ i ] + '"]' ).forEach(
-							function( option ) {
+							( option ) => {
 								option.disabled = true;
 								if ( option.selected ) {
 									option.selected = false;
@@ -9618,7 +9824,7 @@ function frmProFormJS() {
 			postToAjaxUrl( form, data, success, false, extraParams );
 		},
 
-		removeUsedTimesForMultipleDropdown: function( times, timeField ) {
+		removeUsedTimesForMultipleDropdown( times, timeField ) {
 			const self = this;
 
 			self.hDropdown = null;
@@ -9652,12 +9858,12 @@ function frmProFormJS() {
 					return;
 				}
 
-				getTimeDropdownsElements( timeField ).h.addEventListener( 'change', function( event ){
+				getTimeDropdownsElements( timeField ).h.addEventListener( 'change', ( event ) =>{
 					self.disableMinutes( event.target.value );
 				});
-				getTimeDropdownsElements( timeField ).m.addEventListener( 'change', function( event ){
+				getTimeDropdownsElements( timeField ).m.addEventListener( 'change', ( event ) =>{
 				});
-				getTimeDropdownsElements( timeField ).ampm.addEventListener( 'change', function(){
+				getTimeDropdownsElements( timeField ).ampm.addEventListener( 'change', () =>{
 					self.disableHours();
 				});
 
@@ -9718,7 +9924,7 @@ function frmProFormJS() {
 					return;
 				}
 
-				getTimeDropdownsElements( timeField ).h.querySelectorAll( 'option' ).forEach( function( option ) {
+				getTimeDropdownsElements( timeField ).h.querySelectorAll( 'option' ).forEach( ( option ) => {
 					option.disabled = ! self.hourHasEmptySlots( option.value );
 				});
 			};
@@ -9728,7 +9934,7 @@ function frmProFormJS() {
 					return;
 				}
 
-				getTimeDropdownsElements( timeField ).m.querySelectorAll( 'option' ).forEach( function( option ) {
+				getTimeDropdownsElements( timeField ).m.querySelectorAll( 'option' ).forEach( ( option ) => {
 					const timeString = hour + ':' + option.value + ' AM';
 					option.disabled = times.includes( timeString );
 				});
@@ -9738,7 +9944,7 @@ function frmProFormJS() {
 				if ( null === getTimeDropdownsElements( timeField ).ampm ) {
 					return;
 				}
-				getTimeDropdownsElements( timeField ).ampm.querySelectorAll( 'option' ).forEach( function( option ) {
+				getTimeDropdownsElements( timeField ).ampm.querySelectorAll( 'option' ).forEach( ( option ) => {
 					if ( times.includes( option.value ) ) {
 						option.disabled = true;
 					}
@@ -9748,37 +9954,39 @@ function frmProFormJS() {
 			this.init();
 		},
 
-		changeRte: function( editor ) {
-			editor.on( 'change', function() {
+		changeRte( editor ) {
+			editor.on( 'change', () => {
 				var content = editor.getBody().innerHTML;
 				jQuery( '#' + editor.id ).val( content ).trigger( 'change' );
 			});
 		},
 
-		addFormidableClassToDatepicker: function( _, options ) {
+		addFormidableClassToDatepicker( _, options ) {
 			if ( options.dpDiv ) {
 				Array.prototype.forEach.call(
 					getAllFormClasses( options.input.get( 0 ) ),
-					function( formClass ) {
+					( formClass ) => {
 						options.dpDiv.get( 0 ).classList.add( formClass );
 					}
 				);
 
 				options.dpDiv.addClass( 'frm-datepicker' );
 				options.dpDiv.get( 0 ).setAttribute( 'is-formidable-datepicker', 1 );
+				options.input.get( 0 )?.classList.add( 'active' );
 			}
 			return options;
 		},
 
-		removeFormidableClassFromDatepicker: function( _, options ) {
+		removeFormidableClassFromDatepicker( _, options ) {
 			var dpDiv;
 			if ( options.dpDiv ) {
 				dpDiv = options.dpDiv.get( 0 );
 				dpDiv.removeAttribute( 'is-formidable-datepicker' );
+				options.input.get( 0 )?.classList.remove( 'active' );
 
 				// Delay it slightly so it doesn't use styling while it's fading out.
 				setTimeout(
-					function() {
+					() => {
 						if ( dpDiv.hasAttribute( 'is-formidable-datepicker' ) ) {
 							// Avoid removing it the class if the datepicker was immediately opened again.
 							return;
@@ -9798,7 +10006,7 @@ function frmProFormJS() {
 			}
 		},
 
-		isIntlPhoneInput: function( field ) {
+		isIntlPhoneInput( field ) {
 			var pattern = field.getAttribute( 'pattern' );
 			if ( '\\+?\\d{1,4}[\\s\\-]?(?:\\(\\d{1,3}\\)[\\s\\-]?)?\\d{1,4}[\\s\\-]?\\d{1,4}[\\s\\-]?\\d{1,4}$' !== pattern ) {
 				return false;
@@ -9806,18 +10014,31 @@ function frmProFormJS() {
 			return 'undefined' !== typeof intlPhoneInputs && 'undefined' !== typeof intlPhoneInputs[ field.id ];
 		},
 
-		validateIntlPhoneInput: function( field ) {
+		validateIntlPhoneInput( field ) {
 			return intlPhoneInputs[ field.id ].isValidNumber();
 		},
 
 		frmDatepicker: frmDatepickerPro,
 	};
+
+	/**
+	 * Keep label floating if datepicker is open (prevents jumping when clicking date)
+	 *
+	 * @param {Event} event Focusout event
+	 * @return {void}
+	 */
+	function keepFloatingLabelOnDateBlur( event ) {
+		const input = event.target.closest( '.frm_date' );
+		if ( input?.classList.contains( 'active' ) ) {
+			input.closest( '.frm_inside_container' )?.classList.add( 'frm_label_float_top' );
+		}
+	}
 }
 var frmProForm = frmProFormJS();
 
 document.addEventListener(
 	'frmMaybeDelayFocus',
-	function( event ) {
+	( event ) => {
 		if ( 'object' !== typeof event.frmData || 'undefined' === typeof event.frmData.input ) {
 			return;
 		}
@@ -9836,39 +10057,35 @@ document.addEventListener(
 	}
 );
 
-jQuery( document ).ready( function() {
+jQuery( document ).ready( () => {
 	frmProForm.init();
 });
 
-( function() {
-	if ( ! Math.round10 ) {
-		// https://www.jacklmoore.com/notes/rounding-in-javascript/
-		Math.round10 = function( value, decimals ) {
-			return Number( Math.round( value + 'e' + decimals ) + 'e-' + decimals );
-		};
-	}
-}() );
-
-if ( undefined === window.frmUpdateField ) {
-	window.frmUpdateField = function( entryId, fieldId, value, message, num ) {
-		jQuery( document.getElementById( 'frm_update_field_' + entryId + '_' + fieldId + '_' + num ) ).html( '<span class="frm-loading-img"></span>' );
-		jQuery.ajax({
-			type: 'POST',
-			url: frm_js.ajax_url, // eslint-disable-line camelcase
-			data: {
-				action: 'frm_entries_update_field_ajax',
-				entry_id: entryId,
-				field_id: fieldId,
-				value: value,
-				nonce: frm_js.nonce // eslint-disable-line camelcase
-			},
-			success: function() {
-				if ( message.replace( /^\s+|\s+$/g, '' ) === '' ) {
-					jQuery( document.getElementById( 'frm_update_field_' + entryId + '_' + fieldId + '_' + num ) ).fadeOut( 'slow' );
-				} else {
-					jQuery( document.getElementById( 'frm_update_field_' + entryId + '_' + fieldId + '_' + num ) ).replaceWith( message );
-				}
-			}
-		});
+if ( ! Math.round10 ) {
+	// https://www.jacklmoore.com/notes/rounding-in-javascript/
+	Math.round10 = function( value, decimals ) {
+		return Number( Math.round( value + 'e' + decimals ) + 'e-' + decimals );
 	};
 }
+
+window.frmUpdateField = function( entryId, fieldId, value, message, num ) {
+	jQuery( document.getElementById( 'frm_update_field_' + entryId + '_' + fieldId + '_' + num ) ).html( '<span class="frm-loading-img"></span>' );
+	jQuery.ajax({
+		type: 'POST',
+		url: frm_js.ajax_url, // eslint-disable-line camelcase
+		data: {
+			action: 'frm_entries_update_field_ajax',
+			entry_id: entryId,
+			field_id: fieldId,
+			value,
+			nonce: frm_js.nonce // eslint-disable-line camelcase
+		},
+		success() {
+			if ( message.replace( /^\s+|\s+$/g, '' ) === '' ) {
+				jQuery( document.getElementById( 'frm_update_field_' + entryId + '_' + fieldId + '_' + num ) ).fadeOut( 'slow' );
+			} else {
+				jQuery( document.getElementById( 'frm_update_field_' + entryId + '_' + fieldId + '_' + num ) ).replaceWith( message );
+			}
+		}
+	});
+};

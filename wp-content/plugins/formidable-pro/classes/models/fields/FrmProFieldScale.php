@@ -11,6 +11,7 @@ class FrmProFieldScale extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'scale';
@@ -45,13 +46,16 @@ class FrmProFieldScale extends FrmFieldType {
 		);
 
 		$options = $this->get_field_column( 'options' );
-		if ( ! empty( $options ) ) {
-			$range = $options;
-			FrmProAppHelper::unserialize_or_decode( $range );
 
-			$opts['minnum'] = reset( $range );
-			$opts['maxnum'] = end( $range );
+		if ( ! $options ) {
+			return $opts;
 		}
+
+		$range = $options;
+		FrmAppHelper::unserialize_or_decode( $range );
+
+		$opts['minnum'] = reset( $range );
+		$opts['maxnum'] = end( $range );
 
 		return $opts;
 	}
@@ -64,6 +68,7 @@ class FrmProFieldScale extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -75,11 +80,8 @@ class FrmProFieldScale extends FrmFieldType {
 
 	public function get_container_class() {
 		// Add class to inline Scale field
-		$class = '';
-		if ( $this->field['label'] === 'inline' ) {
-			$class = ' frm_scale_container';
-		}
-		return $class;
+
+		return $this->field['label'] === 'inline' ? ' frm_scale_container' : '';
 	}
 
 	protected function include_front_form_file() {
@@ -88,6 +90,8 @@ class FrmProFieldScale extends FrmFieldType {
 
 	/**
 	 * @since 4.0.04
+	 *
+	 * @param mixed $value
 	 */
 	public function sanitize_value( &$value ) {
 		FrmAppHelper::sanitize_value( 'sanitize_text_field', $value );
@@ -116,9 +120,10 @@ class FrmProFieldScale extends FrmFieldType {
 	 * @return array
 	 */
 	public function get_options( $values ) {
-		if ( empty( $values ) ) {
+		if ( ! $values ) {
 			$values = (array) $this->field;
 		}
+
 		FrmAppHelper::unserialize_or_decode( $values['field_options'] );
 		$max = FrmField::get_option( $values, 'maxnum' );
 
@@ -128,17 +133,21 @@ class FrmProFieldScale extends FrmFieldType {
 
 		$max = (int) $max;
 		$min = FrmField::get_option( $values, 'minnum' );
+
 		if ( $min !== '' ) {
 			$min = (int) $min;
+
 			if ( $min === $max ) {
 				return array( $min );
 			}
 
 			$step_value = (int) FrmField::get_option( $values, 'step' );
 			$step       = $step_value ? $step_value : 1;
+
 			if ( $step > absint( $max - $min ) ) {
 				return array( $min );
 			}
+
 			$options = range( $min, $max, $step );
 		}
 

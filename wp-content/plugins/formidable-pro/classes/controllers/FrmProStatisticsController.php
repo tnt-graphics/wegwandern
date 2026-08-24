@@ -28,6 +28,7 @@ class FrmProStatisticsController {
 	 * @param string       $tag
 	 * @param array|string $attr
 	 * @param array        $m
+	 *
 	 * @return false|string
 	 */
 	public static function pre_stats_shortcode( $output, $tag, $attr, $m ) {
@@ -41,6 +42,7 @@ class FrmProStatisticsController {
 	 * Returns stats requested through the [frm-stats] shortcode
 	 *
 	 * @param array $atts
+	 *
 	 * @return float|int|string
 	 */
 	public static function stats_shortcode( $atts ) {
@@ -57,6 +59,7 @@ class FrmProStatisticsController {
 	 * @since 6.8.4
 	 *
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	private static function prepare_shortcode_atts( &$atts ) {
@@ -69,6 +72,7 @@ class FrmProStatisticsController {
 	 * Get the entry IDs for a field, operator, and value combination.
 	 *
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	public static function get_field_matches( $args ) {
@@ -89,16 +93,18 @@ class FrmProStatisticsController {
 	 * Flatten multi-dimensional arrays for stats and graphs.
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param object $field
 	 * @param bool   $save_other_key
 	 * @param array  $field_values
+	 *
 	 * @return void
 	 */
 	public static function flatten_multi_dimensional_arrays_for_stats( $field, $save_other_key, &$field_values ) {
 		$cleaned_values = array();
 
 		foreach ( $field_values as $i ) {
-			FrmProAppHelper::unserialize_or_decode( $i );
+			FrmAppHelper::unserialize_or_decode( $i );
 
 			if ( ! is_array( $i ) ) {
 				$cleaned_values[] = $i;
@@ -109,13 +115,7 @@ class FrmProStatisticsController {
 				$cleaned_values[] = implode( ' ', $i );
 			} else {
 				foreach ( $i as $i_key => $item_value ) {
-
-					if ( $save_other_key && strpos( $i_key, 'other' ) !== false ) {
-						// If this is an "other" option, keep key
-						$cleaned_values[] = $i_key;
-					} else {
-						$cleaned_values[] = $item_value;
-					}
+					$cleaned_values[] = $save_other_key && str_contains( $i_key, 'other' ) ? $i_key : $item_value;
 				}
 			}
 		}
@@ -127,6 +127,7 @@ class FrmProStatisticsController {
 	 * Remove and convert deprecated attributes
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $atts
 	 */
 	private static function convert_old_atts_to_new_atts( &$atts ) {
@@ -140,26 +141,28 @@ class FrmProStatisticsController {
 			unset( $atts['round'] );
 		}
 
-		if ( isset( $atts['value'] ) ) {
-			if ( isset( $atts['id'] ) ) {
-				$field_id          = $atts['id'];
-				$atts[ $field_id ] = $atts['value'];
-			}
-			unset( $atts['value'] );
+		if ( ! isset( $atts['value'] ) ) {
+			return;
 		}
+
+		if ( isset( $atts['id'] ) ) {
+			$field_id          = $atts['id'];
+			$atts[ $field_id ] = $atts['value'];
+		}
+		unset( $atts['value'] );
 	}
 
 	/**
 	 * Combine the default attributes with the user-defined attributes
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $atts
 	 */
 	private static function combine_defaults_and_user_defined_attributes( &$atts ) {
-		$defaults = self::get_stats_defaults();
-
 		$combined_atts = array();
-		foreach ( $defaults as $k => $value ) {
+
+		foreach ( self::get_stats_defaults() as $k => $value ) {
 			if ( isset( $atts[ $k ] ) ) {
 				$combined_atts[ $k ] = $atts[ $k ];
 				unset( $atts[ $k ] );
@@ -169,31 +172,29 @@ class FrmProStatisticsController {
 		}
 
 		$combined_atts['filters'] = $atts;
-
-		$atts = $combined_atts;
+		$atts                     = $combined_atts;
 	}
 
 	/**
 	 * Get the default attributes for stats
 	 *
 	 * @since 2.02.06
+	 *
 	 * @return array
 	 */
 	private static function get_stats_defaults() {
-		$defaults = array(
-			'id'            => false, //the ID of the field to show stats for
-			'type'          => 'total', //total, count, average, median, deviation, star, minimum, maximum, unique
-			'user_id'       => false, //limit the stat to a specific user id or "current"
-			'limit'         => false, //limit the number of entries used in this calculation
-			'drafts'        => 0, //don't include drafts by default
+		return array(
+			'id'            => false, // The ID of the field to show stats for
+			'type'          => 'total', // Total, count, average, median, deviation, star, minimum, maximum, unique
+			'user_id'       => false, // Limit the stat to a specific user id or "current"
+			'limit'         => false, // Limit the number of entries used in this calculation
+			'drafts'        => 0, // Don't include drafts by default
 			'entry'         => false,
 			'thousands_sep' => false,
-			'decimal'       => 2, //how many decimals to include
+			'decimal'       => 2, // How many decimals to include
 			'dec_point'     => false,
-			//any other field ID in the form => the value it should be equal to
+			// Any other field ID in the form => the value it should be equal to
 		);
-
-		return $defaults;
 	}
 
 	/**
@@ -202,6 +203,7 @@ class FrmProStatisticsController {
 	 * @since 2.02.06
 	 *
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	private static function format_atts( &$atts ) {
@@ -224,15 +226,18 @@ class FrmProStatisticsController {
 	 * Convert entry keys to IDs
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param string $entry_keys
+	 *
 	 * @return array
 	 */
 	private static function maybe_convert_entry_keys_to_ids( $entry_keys ) {
 		$entry_keys = explode( ',', $entry_keys );
+		$entry_ids  = array();
 
-		$entry_ids = array();
 		foreach ( $entry_keys as $key ) {
 			$entry_id = self::maybe_convert_entry_key_to_id( $key );
+
 			if ( $entry_id ) {
 				$entry_ids[] = $entry_id;
 			}
@@ -240,7 +245,6 @@ class FrmProStatisticsController {
 
 		return $entry_ids;
 	}
-
 
 	/**
 	 * Returns an entry id unchanged or converts an entry key to an entry id.
@@ -250,28 +254,20 @@ class FrmProStatisticsController {
 	 * @return int -- entry id
 	 */
 	private static function maybe_convert_entry_key_to_id( $key ) {
-		if ( is_numeric( $key ) ) {
-			return $key;
-		}
-
-		return FrmEntry::get_id_by_key( $key );
+		return is_numeric( $key ) ? $key : FrmEntry::get_id_by_key( $key );
 	}
 
 	/**
 	 * Convert a field key to an ID
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param string $key
+	 *
 	 * @return int|string
 	 */
 	private static function maybe_convert_field_key_to_id( $key ) {
-		if ( ! is_numeric( $key ) ) {
-			$id = FrmField::get_id_by_key( $key );
-		} else {
-			$id = $key;
-		}
-
-		return $id;
+		return is_numeric( $key ) ? $key : FrmField::get_id_by_key( $key );
 	}
 
 	/**
@@ -281,6 +277,7 @@ class FrmProStatisticsController {
 	 *
 	 * @param int   $id
 	 * @param array $atts
+	 *
 	 * @return float|int|string
 	 */
 	private static function get_field_stats( $id, $atts ) {
@@ -291,14 +288,10 @@ class FrmProStatisticsController {
 		}
 
 		$meta_values = self::get_meta_values_for_single_field( $field, $atts );
-		if ( $meta_values ) {
-			$statistic = self::get_stats_from_meta_values( $atts, $meta_values );
-		} else {
-			$statistic = 0;
-		}
+		$statistic   = $meta_values ? self::get_stats_from_meta_values( $atts, $meta_values ) : 0;
 
 		if ( 'star' === $atts['type'] ) {
-			$statistic = self::get_stars( $field, $statistic );
+			return self::get_stars( $field, $statistic );
 		}
 
 		return $statistic;
@@ -311,6 +304,7 @@ class FrmProStatisticsController {
 	 *
 	 * @param object $field
 	 * @param array  $atts
+	 *
 	 * @return array
 	 */
 	private static function get_meta_values_for_single_field( $field, $atts ) {
@@ -324,8 +318,7 @@ class FrmProStatisticsController {
 			return array();
 		}
 
-		$meta_args = self::package_filtering_arguments_for_query( $atts );
-
+		$meta_args    = self::package_filtering_arguments_for_query( $atts );
 		$field_values = FrmProEntryMeta::get_all_metas_for_field( $field, $meta_args );
 
 		if ( 'count' !== $atts['type'] ) {
@@ -351,6 +344,7 @@ class FrmProStatisticsController {
 	 *
 	 * @param object $field
 	 * @param array  $field_values
+	 *
 	 * @return void
 	 */
 	private static function translate_dynamic_field_entry_ids_to_meta_values( $field, &$field_values ) {
@@ -359,6 +353,7 @@ class FrmProStatisticsController {
 		}
 
 		$new_field_values = array();
+
 		foreach ( $field_values as $entry_id ) {
 			$new_field_values[] = FrmProFieldsHelper::get_data_value( $entry_id, $field );
 		}
@@ -370,14 +365,16 @@ class FrmProStatisticsController {
 	 * Get the stars for a given statistic
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param object $field
 	 * @param int    $value
+	 *
 	 * @return string
 	 */
 	private static function get_stars( $field, $value ) {
 		$atts = array( 'html' => true );
 
-		// force star field type to get stats
+		// Force star field type to get stats
 		$field->type = 'star';
 
 		return FrmFieldsHelper::get_unfiltered_display_value( compact( 'value', 'field', 'atts' ) );
@@ -387,8 +384,10 @@ class FrmProStatisticsController {
 	 * Calculate a count, total, etc from a field's meta values
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $atts
 	 * @param array $meta_values
+	 *
 	 * @return float|string
 	 */
 	private static function get_stats_from_meta_values( $atts, $meta_values ) {
@@ -397,10 +396,10 @@ class FrmProStatisticsController {
 		// Some types do not require a total.
 		// Avoid calling array_sum for some types as some types include non-numeric values.
 		// Like dates. "maximum" will get the highest date value, but a date cannot be used in array_sum.
-		if ( ! in_array( $atts['type'], array( 'count', 'minimum', 'maximum', 'unique', 'median' ), true ) ) {
-			$total = array_sum( $meta_values );
-		} else {
+		if ( in_array( $atts['type'], array( 'count', 'minimum', 'maximum', 'unique', 'median' ), true ) ) {
 			$total = 0;
+		} else {
+			$total = array_sum( $meta_values );
 		}
 
 		switch ( $atts['type'] ) {
@@ -415,14 +414,14 @@ class FrmProStatisticsController {
 			case 'deviation':
 				$mean = $total / $count;
 				$stat = 0.0;
+
 				foreach ( $meta_values as $i ) {
 					$stat += ( floatval( $i ) - $mean ) ** 2;
 				}
 
 				if ( $count > 1 ) {
 					$stat /= $count - 1;
-
-					$stat = sqrt( $stat );
+					$stat  = sqrt( $stat );
 				} else {
 					$stat = 0;
 				}
@@ -477,9 +476,11 @@ class FrmProStatisticsController {
 				if ( ! is_numeric( $a ) ) {
 					$a = 0;
 				}
+
 				if ( ! is_numeric( $b ) ) {
 					$b = 0;
 				}
+
 				return strnatcmp( $b, $a );
 			}
 		);
@@ -488,23 +489,23 @@ class FrmProStatisticsController {
 
 		if ( $count % 2 > 0 ) {
 			// Odd number of values
-			$median = (float) $meta_values[ $middle_index ];
-		} else {
-			// Even number of values, calculate avg of 2 medians
-			$low_middle  = $meta_values[ $middle_index - 1 ];
-			$high_middle = $meta_values[ $middle_index ];
-			$median      = ( (float) $low_middle + (float) $high_middle ) / 2;
+			return (float) $meta_values[ $middle_index ];
 		}
+		// Even number of values, calculate avg of 2 medians
+		$low_middle  = $meta_values[ $middle_index - 1 ];
+		$high_middle = $meta_values[ $middle_index ];
 
-		return $median;
+		return ( (float) $low_middle + (float) $high_middle ) / 2;
 	}
 
 	/**
 	 * Get the formatted statistic value
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $atts
-	 * @param float|int $stat
+	 * @param float|int|string $stat
+	 *
 	 * @return float|string
 	 */
 	private static function get_formatted_statistic( $atts, $stat ) {
@@ -525,7 +526,9 @@ class FrmProStatisticsController {
 	 * Get form posts
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $atts
+	 *
 	 * @return mixed
 	 */
 	private static function get_form_posts_for_statistics( $atts ) {
@@ -549,7 +552,9 @@ class FrmProStatisticsController {
 	 * Package the filtering arguments for a field meta query
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $atts
+	 *
 	 * @return array
 	 */
 	private static function package_filtering_arguments_for_query( $atts ) {
@@ -564,6 +569,7 @@ class FrmProStatisticsController {
 		);
 
 		$meta_args = array();
+
 		foreach ( $pass_args as $atts_key => $arg_key ) {
 			if ( isset( $atts[ $atts_key ] ) ) {
 				$meta_args[ $arg_key ] = $atts[ $atts_key ];
@@ -580,7 +586,9 @@ class FrmProStatisticsController {
 	 *
 	 * @since 2.02.06
 	 * TODO: update this so old filters are converted to new filters
+	 *
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	private static function check_field_filters( &$atts ) {
@@ -588,11 +596,11 @@ class FrmProStatisticsController {
 			return;
 		}
 
-		if ( ! isset( $atts['entry_ids'] ) ) {
+		if ( isset( $atts['entry_ids'] ) ) {
+			$after_where = true;
+		} else {
 			$atts['entry_ids'] = array();
 			$after_where       = false;
-		} else {
-			$after_where = true;
 		}
 
 		foreach ( $atts['filters'] as $orig_f => $val ) {
@@ -600,8 +608,8 @@ class FrmProStatisticsController {
 			$val = str_replace( array( '&gt;', '&lt;' ), array( '>', '<' ), $val );
 
 			// If first character is a quote, but the last character is not a quote
-			if ( ( strpos( $val, '"' ) === 0 && substr( $val, -1 ) != '"' ) || ( strpos( $val, "'" ) === 0 && substr( $val, -1 ) != "'" ) ) {
-				//parse atts back together if they were broken at spaces
+			if ( ( str_starts_with( $val, '"' ) && ! str_ends_with( $val, '"' ) ) || ( str_starts_with( $val, "'" ) && ! str_ends_with( $val, "'" ) ) ) {
+				// Parse atts back together if they were broken at spaces
 				$next_val = array(
 					'char' => substr( $val, 0, 1 ),
 					'val'  => $val,
@@ -609,11 +617,13 @@ class FrmProStatisticsController {
 				continue;
 				// If we don't have a previous value that needs to be parsed back together
 			}
+
 			if ( ! isset( $next_val ) ) {
 				$temp = FrmAppHelper::replace_quotes( $val );
+
 				foreach ( array( '"', "'" ) as $q ) {
 					// Check if <" or >" exists in string and string does not end with ".
-					if ( substr( $temp, -1 ) != $q && ( strpos( $temp, '<' . $q ) || strpos( $temp, '>' . $q ) ) ) {
+					if ( substr( $temp, -1 ) !== $q && ( strpos( $temp, '<' . $q ) || strpos( $temp, '>' . $q ) ) ) {
 						$next_val = array(
 							'char' => $q,
 							'val'  => $val,
@@ -632,13 +642,13 @@ class FrmProStatisticsController {
 
 			// If we have a previous value saved that needs to be parsed back together (due to WordPress pullling it apart)
 			if ( isset( $next_val ) ) {
-				if ( substr( FrmAppHelper::replace_quotes( $val ), -1 ) == $next_val['char'] ) {
-					$val = $next_val['val'] . ' ' . $val;
-					unset( $next_val );
-				} else {
+				if ( substr( FrmAppHelper::replace_quotes( $val ), -1 ) !== $next_val['char'] ) {
 					$next_val['val'] .= ' ' . $val;
 					continue;
 				}
+
+				$val = $next_val['val'] . ' ' . $val;
+				unset( $next_val );
 			}
 
 			$pass_args = array(
@@ -664,7 +674,9 @@ class FrmProStatisticsController {
 	 * Package the arguments needed for a field filter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	private static function get_filter_args( $args ) {
@@ -681,31 +693,23 @@ class FrmProStatisticsController {
 
 		$f = $args['orig_f'];
 
-		if ( strpos( $f, '_not_equal' ) !== false ) {
+		if ( str_contains( $f, '_not_equal' ) ) {
 			self::get_not_equal_filter_args( $f, $filter_args );
-
-		} elseif ( strpos( $f, '_less_than_or_equal_to' ) !== false ) {
+		} elseif ( str_contains( $f, '_less_than_or_equal_to' ) ) {
 			self::get_less_than_or_equal_to_filter_args( $f, $filter_args );
-
-		} elseif ( strpos( $f, '_less_than' ) !== false ) {
+		} elseif ( str_contains( $f, '_less_than' ) ) {
 			self::get_less_than_filter_args( $f, $filter_args );
-
-		} elseif ( strpos( $f, '_greater_than_or_equal_to' ) !== false ) {
+		} elseif ( str_contains( $f, '_greater_than_or_equal_to' ) ) {
 			self::get_greater_than_or_equal_to_filter_args( $f, $filter_args );
-
-		} elseif ( strpos( $f, '_greater_than' ) !== false ) {
+		} elseif ( str_contains( $f, '_greater_than' ) ) {
 			self::get_greater_than_filter_args( $f, $filter_args );
-
-		} elseif ( strpos( $f, '_contains' ) !== false ) {
+		} elseif ( str_contains( $f, '_contains' ) ) {
 			self::get_contains_filter_args( $f, $filter_args );
-
-		} elseif ( strpos( $f, '_does_not_contain' ) !== false ) {
+		} elseif ( str_contains( $f, '_does_not_contain' ) ) {
 			self::get_does_not_contain_filter_args( $f, $filter_args );
-
 		} elseif ( is_numeric( $f ) && $f <= 10 && self::using_legacy_format( $f ) ) {
 			// If using <, >, <=, >=, !=. $f will count up for certain atts
 			self::get_filter_args_for_deprecated_field_filters( $filter_args );
-
 		} else {
 			// $f is field ID, key, updated_at, or created_at
 			self::get_equal_to_filter_args( $f, $filter_args );
@@ -726,25 +730,29 @@ class FrmProStatisticsController {
 	 * @since 6.9.1
 	 *
 	 * @param int|string $field_id
+	 *
 	 * @return bool
 	 */
 	private static function using_legacy_format( $field_id ) {
-		if ( empty( self::$m ) || empty( self::$m[3] ) ) {
+		if ( ! self::$m || empty( self::$m[3] ) ) {
 			// If self::$m is not set, the pre_do_shortcode_tag filter was never hit.
 			// This shouldn't happen unless self::stats_shortcode is called directly.
 			return true;
 		}
+
 		if ( ! $field_id ) {
 			// If the field ID is 0, it's legacy.
 			return true;
 		}
-		return false === strpos( self::$m[3], $field_id . '=' );
+
+		return ! str_contains( self::$m[3], $field_id . '=' );
 	}
 
 	/**
 	 * Get the filter arguments for a not_equal filter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -758,6 +766,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for a less_than_or_equal_to filter
 	 *
 	 * @since 2.02.11
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -770,6 +779,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for a less_than filter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -782,6 +792,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for a greater_than_or_equal_to filter
 	 *
 	 * @since 2.02.11
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -794,6 +805,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for a greater_than filter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -806,6 +818,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for a like filter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -818,6 +831,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for a like filter
 	 *
 	 * @since 2.02.13
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -831,6 +845,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for an x=value filter
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param string $f
 	 * @param array $filter_args
 	 */
@@ -850,21 +865,18 @@ class FrmProStatisticsController {
 	 * @return string -- converted field name
 	 */
 	private static function maybe_convert_field_name( $field_name ) {
-		if ( 'parent_id' === $field_name ) {
-			return 'parent_item_id';
-		}
-
-		return $field_name;
+		return 'parent_id' === $field_name ? 'parent_item_id' : $field_name;
 	}
 
 	/**
 	 * Convert a filter field key to an ID
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $filter_args
 	 */
 	private static function convert_filter_field_key_to_id( &$filter_args ) {
-		if ( ! is_numeric( $filter_args['field'] ) && ! in_array( $filter_args['field'], array( 'created_at', 'updated_at', 'parent_item_id' ) ) ) {
+		if ( ! is_numeric( $filter_args['field'] ) && ! in_array( $filter_args['field'], array( 'created_at', 'updated_at', 'parent_item_id' ), true ) ) {
 			$filter_args['field'] = FrmField::get_id_by_key( $filter_args['field'] );
 		}
 	}
@@ -873,12 +885,13 @@ class FrmProStatisticsController {
 	 * Prepare a filter value
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $filter_args
 	 */
 	private static function prepare_filter_value( &$filter_args ) {
 		$filter_args['value'] = FrmAppHelper::replace_quotes( $filter_args['value'] );
 
-		if ( in_array( $filter_args['field'], array( 'created_at', 'updated_at' ) ) ) {
+		if ( in_array( $filter_args['field'], array( 'created_at', 'updated_at' ), true ) ) {
 			$filter_args['value'] = str_replace( array( '"', "'" ), '', $filter_args['value'] );
 			$filter_args['value'] = gmdate( 'Y-m-d H:i:s', strtotime( $filter_args['value'] ) );
 			$filter_args['value'] = get_gmt_from_date( $filter_args['value'] );
@@ -891,6 +904,7 @@ class FrmProStatisticsController {
 	 * Get the filter arguments for deprecated stats parameters
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $filter_args
 	 */
 	private static function get_filter_args_for_deprecated_field_filters( &$filter_args ) {
@@ -911,17 +925,16 @@ class FrmProStatisticsController {
 
 			$filter_args['field'] = $str[0];
 			$filter_args['value'] = $str[1];
-
 		} elseif ( $lpos !== false || $gpos !== false ) {
 			// Greater than or less than
 			$filter_args['operator'] = ( $gpos !== false && $lpos !== false && $lpos > $gpos ) || $lpos === false ? '>' : '<';
 			$str                     = explode( $filter_args['operator'], $filter_args['value'] );
 
-			if ( count( $str ) == 2 ) {
+			if ( count( $str ) === 2 ) {
 				$filter_args['field'] = $str[0];
 				$filter_args['value'] = $str[1];
-			} elseif ( count( $str ) == 3 ) {
-				//3 parts assumes a structure like '-1 month'<255<'1 month'
+			} elseif ( count( $str ) === 3 ) {
+				// 3 parts assumes a structure like '-1 month'<255<'1 month'
 				$pass_args           = $filter_args;
 				$pass_args['orig_f'] = 0;
 				$pass_args['val']    = str_replace( $str[0] . $filter_args['operator'], '', $filter_args['value'] );
@@ -933,11 +946,11 @@ class FrmProStatisticsController {
 				$filter_args['operator']    = $filter_args['operator'] === '<' ? '>' : '<';
 			}
 
-			if ( strpos( $filter_args['value'], '=' ) === 0 ) {
+			if ( str_starts_with( $filter_args['value'], '=' ) ) {
 				$filter_args['operator'] .= '=';
 				$filter_args['value']     = substr( $filter_args['value'], 1 );
 			}
-		} elseif ( $dash_pos !== false && strpos( $filter_args['value'], '=' ) !== false ) {
+		} elseif ( $dash_pos !== false && str_contains( $filter_args['value'], '=' ) ) {
 			// Field key contains dash
 			// If field key contains a dash, then it won't be put in as $f automatically (WordPress quirk maybe?)
 
@@ -951,12 +964,13 @@ class FrmProStatisticsController {
 	 * Get all the entry IDs for a form if entry IDs is empty and after_where is false
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $args
 	 */
 	private static function maybe_get_all_entry_ids_for_form( &$args ) {
 		if ( empty( $args['entry_ids'] ) && $args['after_where'] == 0 ) {
-
 			$query = array( 'form_id' => $args['form_id'] );
+
 			if ( $args['drafts'] !== 'both' ) {
 				$query['is_draft'] = $args['drafts'];
 			}
@@ -969,12 +983,13 @@ class FrmProStatisticsController {
 	 * Get the entry IDs for a field/column filter.
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param array $filter_args
+	 *
 	 * @return array
 	 */
 	private static function get_entry_ids_for_field_filter( $filter_args ) {
 		if ( in_array( $filter_args['field'], array( 'created_at', 'updated_at', 'parent_item_id' ), true ) ) {
-
 			if ( 'parent_item_id' === $filter_args['field'] ) {
 				$filter_args['value'] = self::maybe_convert_entry_key_to_id( $filter_args['value'] );
 			}
@@ -988,37 +1003,35 @@ class FrmProStatisticsController {
 				$where['id'] = $filter_args['entry_ids'];
 			}
 
-			$entry_ids = FrmDb::get_col( 'frm_items', $where );
-		} else {
-			$where_atts = apply_filters(
-				'frm_stats_where',
-				array(
-					'where_is'  => $filter_args['operator'],
-					'where_val' => $filter_args['value'],
-				),
-				$filter_args
-			);
-
-			$pass_args = array(
-				'where_opt'   => $filter_args['field'],
-				'where_is'    => $where_atts['where_is'],
-				'where_val'   => $where_atts['where_val'],
-				'form_id'     => $filter_args['form_id'],
-				'form_posts'  => $filter_args['form_posts'],
-				'after_where' => $filter_args['after_where'],
-				'drafts'      => $filter_args['drafts'],
-			);
-
-			$entry_ids = FrmProAppHelper::filter_where( $filter_args['entry_ids'], $pass_args );
+			return FrmDb::get_col( 'frm_items', $where );
 		}
 
-		return $entry_ids;
+		$where_atts = apply_filters(
+			'frm_stats_where',
+			array(
+				'where_is'  => $filter_args['operator'],
+				'where_val' => $filter_args['value'],
+			),
+			$filter_args
+		);
+		$pass_args  = array(
+			'where_opt'   => $filter_args['field'],
+			'where_is'    => $where_atts['where_is'],
+			'where_val'   => $where_atts['where_val'],
+			'form_id'     => $filter_args['form_id'],
+			'form_posts'  => $filter_args['form_posts'],
+			'after_where' => $filter_args['after_where'],
+			'drafts'      => $filter_args['drafts'],
+		);
+
+		return FrmProAppHelper::filter_where( $filter_args['entry_ids'], $pass_args );
 	}
 
 	/**
 	 * Format the retrieved meta values for a field
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param object $field
 	 * @param array $atts
 	 * @param array $field_values
@@ -1043,6 +1056,7 @@ class FrmProStatisticsController {
 	 *
 	 * @param object $field
 	 * @param array  $args
+	 *
 	 * @return bool
 	 */
 	public static function has_non_numeric_values( $field, $args ) {

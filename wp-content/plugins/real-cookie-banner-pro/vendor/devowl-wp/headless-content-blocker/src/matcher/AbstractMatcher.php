@@ -78,10 +78,13 @@ abstract class AbstractMatcher
      */
     public function iterateBlockablesInString($result, $string, $useContainsRegularExpression = \false, $multilineRegexp = \false, $useRegularExpressionFromMap = null, $useBlockables = null, $forceAllowMultiple = null)
     {
+        if (!\is_string($string) && !\is_array($string)) {
+            return;
+        }
         $cb = $this->getHeadlessContentBlocker();
         $allowMultiple = $forceAllowMultiple === null ? $cb->isAllowMultipleBlockerResults() : $forceAllowMultiple;
         $string = \is_array($string) ? $string : $this->prepareChunksFromString($string);
-        $blockables = $useBlockables === null ? $cb->getBlockables() : $useBlockables;
+        $blockables = $useBlockables === null ? $this->getBlockables() : $useBlockables;
         foreach ($blockables as $blockable) {
             $regularExpressions = $useContainsRegularExpression ? $blockable->getContainsRegularExpressions() : $blockable->getRegularExpressions();
             foreach ($regularExpressions as $expression => $regex) {

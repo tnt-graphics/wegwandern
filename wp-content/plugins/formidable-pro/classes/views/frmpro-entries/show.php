@@ -10,14 +10,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php
 		foreach ( $comments as $comment ) {
             $meta = $comment->meta_value;
+
             if ( ! isset( $meta['comment'] ) ) {
                 continue;
             }
         ?>
 			<tr class="frm_comment_block" id="frmcomment<?php echo esc_attr( $comment->id ); ?>">
 				<th scope="row">
-					<p><strong><?php echo FrmAppHelper::kses( FrmFieldsHelper::get_user_display_name( $meta['user_id'], 'display_name', array( 'link' => true ) ) ); ?></strong><br/>
-					<?php echo FrmAppHelper::kses( FrmAppHelper::get_formatted_time( $comment->created_at, $date_format, $time_format ) ); ?></p>
+					<p><strong><?php FrmAppHelper::kses_echo( FrmFieldsHelper::get_user_display_name( $meta['user_id'], 'display_name', array( 'link' => true ) ) ); ?></strong><br/>
+					<?php FrmAppHelper::kses_echo( FrmAppHelper::get_formatted_time( $comment->created_at, $date_format, $time_format ) ); ?></p>
                 </th>
 				<td><div class="frm_comment"><?php echo wpautop( FrmAppHelper::kses( $meta['comment'] ) ); ?></div></td>
             </tr>
@@ -39,7 +40,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<th scope="row"><?php esc_html_e( 'Comment/Note', 'formidable-pro' ); ?>:</th>
                     <td><textarea name="frm_comment" id="frm_comment" cols="50" rows="5" class="large-text"> </textarea>
                         <p class="submit">
-							<input class="button-primary" type="submit" value="<?php esc_attr_e( 'Submit', 'formidable-pro' ); ?>" />
+							<input class="button-primary" type="submit" value="<?php esc_attr_e( 'Submit', 'formidable' ); ?>" />
                         </p>
                     </td>
                 </tr>

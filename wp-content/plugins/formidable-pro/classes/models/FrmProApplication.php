@@ -29,7 +29,6 @@ class FrmProApplication {
 	/**
 	 * @param WP_Term $term
 	 * @param string  $updated_at
-	 * @return void
 	 */
 	public function __construct( $term, $updated_at ) {
 		$this->term       = $term;
@@ -38,17 +37,20 @@ class FrmProApplication {
 
 	/**
 	 * @param string $name
+	 *
 	 * @return array|WP_Error
 	 */
 	public static function create( $name ) {
 		$term = wp_insert_term( $name, 'frm_application' );
 
-		if ( is_array( $term ) ) {
-			$application_id = $term['term_id'];
-			$timestamp      = time();
-			add_term_meta( $application_id, '_frm_created_at', $timestamp );
-			add_term_meta( $application_id, '_frm_updated_at', $timestamp );
+		if ( ! is_array( $term ) ) {
+			return $term;
 		}
+
+		$application_id = $term['term_id'];
+		$timestamp      = time();
+		add_term_meta( $application_id, '_frm_created_at', $timestamp );
+		add_term_meta( $application_id, '_frm_updated_at', $timestamp );
 
 		return $term;
 	}
@@ -57,6 +59,7 @@ class FrmProApplication {
 	 * Set the updated timestamp for an application.
 	 *
 	 * @param int $application_id
+	 *
 	 * @return void
 	 */
 	public static function update_timestamp( $application_id ) {
@@ -72,6 +75,7 @@ class FrmProApplication {
 	/**
 	 * @param int $application_id
 	 * @param int $form_id
+	 *
 	 * @return void
 	 */
 	public static function add_form_to_application( $application_id, $form_id ) {
@@ -83,6 +87,7 @@ class FrmProApplication {
 	/**
 	 * @param int $application_id
 	 * @param int $form_id
+	 *
 	 * @return void
 	 */
 	public static function remove_form_from_application( $application_id, $form_id ) {
@@ -98,6 +103,7 @@ class FrmProApplication {
 	 *     Type of item being added. Possible values include '', 'view', 'page', or 'form'.
 	 *     If type is known, only update count for the specific type being added.
 	 * }
+	 *
 	 * @return void
 	 */
 	public static function add_post_to_application( $application_id, $post_id, $type = '' ) {
@@ -108,6 +114,7 @@ class FrmProApplication {
 	/**
 	 * @param int    $application_id
 	 * @param string $type Type of item being added. Possible values include '', 'view', 'page', or 'form'.
+	 *
 	 * @return void
 	 */
 	private static function maybe_update_post_count( $application_id, $type ) {
@@ -124,6 +131,7 @@ class FrmProApplication {
 	 * @param int    $application_id
 	 * @param int    $post_id
 	 * @param string $type
+	 *
 	 * @return void
 	 */
 	public static function remove_post_from_application( $application_id, $post_id, $type = '' ) {
@@ -133,6 +141,7 @@ class FrmProApplication {
 
 	/**
 	 * @param int $application_id
+	 *
 	 * @return void
 	 */
 	public static function update_form_count( $application_id ) {
@@ -143,6 +152,7 @@ class FrmProApplication {
 
 	/**
 	 * @param int $application_id
+	 *
 	 * @return void
 	 */
 	public static function update_view_count( $application_id ) {
@@ -154,6 +164,7 @@ class FrmProApplication {
 	 * Get number of views for application.
 	 *
 	 * @param int $application_id
+	 *
 	 * @return int
 	 */
 	private static function count_views( $application_id ) {
@@ -162,6 +173,7 @@ class FrmProApplication {
 
 	/**
 	 * @param int $application_id
+	 *
 	 * @return void
 	 */
 	public static function update_page_count( $application_id ) {
@@ -173,6 +185,7 @@ class FrmProApplication {
 	 * Get number of pages for application.
 	 *
 	 * @param int $application_id
+	 *
 	 * @return int
 	 */
 	private static function count_pages( $application_id ) {
@@ -184,6 +197,7 @@ class FrmProApplication {
 	 *
 	 * @param int    $application_id
 	 * @param string $post_type
+	 *
 	 * @return int
 	 */
 	private static function count_post_type( $application_id, $post_type ) {
@@ -217,6 +231,7 @@ class FrmProApplication {
 
 	/**
 	 * @param string $type supports 'view', 'page', and 'form'.
+	 *
 	 * @return int
 	 */
 	private function get_count( $type ) {
@@ -227,10 +242,12 @@ class FrmProApplication {
 	/**
 	 * @param int  $application_id
 	 * @param bool $get_ids_only
+	 *
 	 * @return array<int>|array<stdClass>
 	 */
 	public static function get_forms_for_application( $application_id, $get_ids_only = false ) {
 		$form_ids = get_term_meta( $application_id, '_frm_form_id' );
+
 		if ( ! $form_ids ) {
 			return array();
 		}
@@ -251,14 +268,17 @@ class FrmProApplication {
 	 * @param int   $application_id
 	 * @param array $post_type
 	 * @param array $args {
+	 *
 	 *     @type string $fields use 'ids' to get ids instead of WP_Post objects.
 	 * }
+	 *
 	 * @return array<int>|array<WP_Post>
 	 */
 	public static function get_posts_for_application( $application_id, $post_type = array( 'page', 'frm_display' ), $args = array() ) {
 		if ( ! FrmProApplicationsHelper::views_is_active_and_supports_applications() ) {
 			// Remove views from application if views is not active or up to date.
 			$views_key = array_search( 'frm_display', $post_type, true );
+
 			if ( false !== $views_key ) {
 				unset( $post_type[ $views_key ] );
 			}
@@ -292,13 +312,16 @@ class FrmProApplication {
 	 *
 	 * @param string $name
 	 * @param int    $application_id
+	 *
 	 * @return bool
 	 */
 	public static function name_is_taken( $name, $application_id ) {
 		$term = get_term_by( 'name', $name, 'frm_application' );
+
 		if ( ! ( $term instanceof WP_Term ) ) {
 			return false;
 		}
+
 		return $term->term_id !== $application_id;
 	}
 

@@ -27,6 +27,28 @@ class RecommendedHooksMiddleware extends AbstractPoolMiddleware
             $enabled = $templatePluginIntegrations->templates_cookies_enabled($template->identifier);
             if ($enabled !== null) {
                 $template->consumerData['isDisabled'] = !$enabled;
+                // Template card tooltip reads tags["Disabled"]; isDisabled alone leaves it empty.
+                if (!$enabled) {
+                    $disabledText = \__('Disabled', 'real-cookie-banner');
+                    switch ($template->identifier) {
+                        case 'wordpress-user-login':
+                            $template->consumerData['tags'][$disabledText] = \sprintf(
+                                // translators:
+                                \__('This template is currently disabled because user registration is not enabled. Enable <a href="%s">Anyone can register</a> under Settings > General to use this template.', 'real-cookie-banner'),
+                                \admin_url('options-general.php')
+                            );
+                            break;
+                        case 'wordpress-comments':
+                            $template->consumerData['tags'][$disabledText] = \sprintf(
+                                // translators:
+                                \__('This template is currently disabled because the comments cookies opt-in checkbox is turned off. Enable it under <a href="%s">Settings > Discussion</a> to use this template.', 'real-cookie-banner'),
+                                \admin_url('options-discussion.php')
+                            );
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             if ($template instanceof ServiceTemplate) {
                 $recommended = $templatePluginIntegrations->templates_cookies_recommended($recommended, $template->identifier);

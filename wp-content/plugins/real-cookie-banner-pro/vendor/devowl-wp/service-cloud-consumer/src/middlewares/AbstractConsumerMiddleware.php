@@ -37,17 +37,17 @@ abstract class AbstractConsumerMiddleware extends AbstractMiddleware
         // Silence is golden.
     }
     /**
-     * Before using a template and running all the middlewares of `AbstractTemplateMiddleware`.
+     * Before using templates and running all middlewares of `AbstractTemplateMiddleware`.
      *
-     * @param AbstractTemplate $template
+     * @param AbstractTemplate[] $templates
      * @return void
      */
-    public abstract function beforeUseTemplate($template);
+    public abstract function beforeUseTemplates(&$templates);
     /**
-     * Teardown of `beforeDownloadAndPersistFromDataSource`.
+     * Teardown of `beforeUseTemplates`.
      *
-     * @param AbstractTemplate $template
+     * @param AbstractTemplate[] $templates
      * @return void
      */
-    public abstract function afterUseTemplate($template);
+    public abstract function afterUseTemplates(&$templates);
 }

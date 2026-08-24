@@ -3,7 +3,6 @@
 namespace DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\templates;
 
 use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\consumer\ServiceCloudConsumer;
-use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\middlewares\AbstractConsumerMiddleware;
 use DevOwl\RealCookieBanner\Vendor\DevOwl\ServiceCloudConsumer\middlewares\AbstractTemplateMiddleware;
 /**
  * Abstract implementation of a single template with common attributes.
@@ -190,18 +189,7 @@ abstract class AbstractTemplate
      */
     public function use()
     {
-        // Never modify the original stored item for usage
-        $clone = clone $this;
-        $this->getConsumer()->runMiddleware(AbstractConsumerMiddleware::class, function ($middleware) use($clone) {
-            $middleware->beforeUseTemplate($clone);
-        });
-        $this->getConsumer()->runMiddleware(AbstractTemplateMiddleware::class, function ($middleware) use($clone) {
-            $middleware->beforeUsingTemplate($clone);
-        });
-        $this->getConsumer()->runMiddleware(AbstractConsumerMiddleware::class, function ($middleware) use($clone) {
-            $middleware->afterUseTemplate($clone);
-        });
-        return $clone;
+        return $this->getConsumer()->use($this);
     }
     /**
      * Run all `beforeRetrievingTemplate` middlewares.

@@ -11,6 +11,7 @@ class FrmProFieldRte extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'rte';
@@ -59,6 +60,7 @@ class FrmProFieldRte extends FrmFieldType {
 	 * When media_buttons is turned on process the shortcode (see https://formidableforms.com/knowledgebase/frm_rte_options/#kb-add-media-button-to-tinymce-editor).
 	 *
 	 * @param string $value
+	 *
 	 * @return string
 	 */
 	private function maybe_process_gallery_shortcode( $value ) {
@@ -81,10 +83,11 @@ class FrmProFieldRte extends FrmFieldType {
 	 * Only process gallery shortcodes if one can be detected, and if media_buttons are enabled for field.
 	 *
 	 * @param string $value
+	 *
 	 * @return bool True if the value should be processed.
 	 */
 	private function should_process_gallery_shortcode( $value ) {
-		return false !== strpos( $value, '[gallery' ) && $this->media_buttons_are_turned_on_for_field();
+		return str_contains( $value, '[gallery' ) && $this->media_buttons_are_turned_on_for_field();
 	}
 
 	/**
@@ -147,6 +150,7 @@ class FrmProFieldRte extends FrmFieldType {
 	 */
 	public static function enqueue_missing_media_gallery_scripts() {
 		global $pagenow;
+
 		if ( 'post.php' !== $pagenow ) {
 			return;
 		}
@@ -172,26 +176,37 @@ class FrmProFieldRte extends FrmFieldType {
 			),
 			'id'
 		);
+
 		if ( ! $rte_fields ) {
 			return;
 		}
+
 		wp_enqueue_style( 'media-views' );
 		wp_enqueue_script( 'media-audiovideo' );
 	}
 
 	/**
 	 * If submitting with Ajax or on preview page and tinymce is not loaded yet, load it now
+	 *
+	 * @param array $args
+	 *
+	 * @return void
 	 */
 	protected function load_field_scripts( $args ) {
-		if ( ! FrmAppHelper::is_admin() ) {
-			global $frm_vars;
-			$load_scripts = ( FrmAppHelper::doing_ajax() || FrmAppHelper::is_preview_page() ) && ( ! isset( $frm_vars['tinymce_loaded'] ) || ! $frm_vars['tinymce_loaded'] );
-			if ( $load_scripts ) {
-				add_action( 'wp_print_footer_scripts', '_WP_Editors::editor_js', 50 );
-				add_action( 'wp_print_footer_scripts', '_WP_Editors::enqueue_scripts', 1 );
-				$frm_vars['tinymce_loaded'] = true;
-			}
+		if ( FrmAppHelper::is_admin() ) {
+			return;
 		}
+
+		global $frm_vars;
+		$load_scripts = ( FrmAppHelper::doing_ajax() || FrmAppHelper::is_preview_page() ) && empty( $frm_vars['tinymce_loaded'] );
+
+		if ( ! $load_scripts ) {
+			return;
+		}
+
+		add_action( 'wp_print_footer_scripts', '_WP_Editors::editor_js', 50 );
+		add_action( 'wp_print_footer_scripts', '_WP_Editors::enqueue_scripts', 1 );
+		$frm_vars['tinymce_loaded'] = true;
 	}
 
 	/**
@@ -201,17 +216,21 @@ class FrmProFieldRte extends FrmFieldType {
 	 */
 	public function load_default_rte_script() {
 		global $frm_vars;
-		if ( isset( $frm_vars['tinymce_loaded'] ) && $frm_vars['tinymce_loaded'] ) {
+
+		if ( ! empty( $frm_vars['tinymce_loaded'] ) ) {
 			// It's already been loaded on the page.
 			return;
 		}
 
 		wp_enqueue_editor();
-		if ( FrmAppHelper::is_preview_page() ) {
-			// Call the right hooks instead of admin hooks.
-			add_action( 'wp_print_footer_scripts', '_WP_Editors::force_uncompressed_tinymce', 1 );
-			add_action( 'wp_print_footer_scripts', '_WP_Editors::print_default_editor_scripts', 45 );
+
+		if ( ! FrmAppHelper::is_preview_page() ) {
+			return;
 		}
+
+		// Call the right hooks instead of admin hooks.
+		add_action( 'wp_print_footer_scripts', '_WP_Editors::force_uncompressed_tinymce', 1 );
+		add_action( 'wp_print_footer_scripts', '_WP_Editors::print_default_editor_scripts', 45 );
 	}
 
 	/**
@@ -234,7 +253,7 @@ class FrmProFieldRte extends FrmFieldType {
 	 */
 	public function echo_field_default_setting_attributes( $field ) {
 		$params = array(
-			'data-modal-trigger-title' => __( 'Toggle Options', 'formidable-pro' ),
+			'data-modal-trigger-title' => __( 'Toggle Options', 'formidable' ),
 			'data-html-id'             => 'frm_default_value_' . absint( $field['id'] ),
 			'data-changeme'            => 'field_' . esc_attr( $field['field_key'] ),
 		);
@@ -270,15 +289,18 @@ class FrmProFieldRte extends FrmFieldType {
 	 * @since 6.1
 	 *
 	 * @param array $e_args TinyMce editor options.
+	 *
 	 * @return void
 	 */
 	public static function maybe_print_media_templates( $e_args ) {
 		global $frm_vars;
+
 		if ( empty( $frm_vars['inplace_edit'] ) ) {
 			return;
 		}
 
 		$action = self::class . '::print_media_templates';
+
 		if ( ! empty( $e_args['media_buttons'] ) && ! has_action( 'wp_enqueue_editor', $action ) ) {
 			add_action( 'wp_enqueue_editor', $action );
 		}

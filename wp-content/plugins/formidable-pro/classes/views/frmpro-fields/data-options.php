@@ -21,9 +21,11 @@ if ( $field['data_type'] === 'select' ) {
 
 		if ( $field['options'] ) {
 			$placeholder = FrmField::get_option( $field, 'placeholder' );
+
 			foreach ( $field['options'] as $opt_key => $opt ) {
 				$option_params  = array();
 				$is_placeholder = $opt == $placeholder;
+
 				if ( $is_placeholder && $field['autocom'] && ! FrmProAppHelper::use_chosen_js() ) {
 					$option_params['data-placeholder'] = 'true';
 				}
@@ -47,6 +49,7 @@ if ( $field['data_type'] === 'select' ) {
 } elseif ( $field['data_type'] === 'data' && is_numeric( $field['hide_field'] ) && is_numeric( $field['form_select'] ) ) {
 	$get_id    = FrmAppHelper::simple_get( 'id' );
 	$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+
 	if ( $item_meta ) {
 		$observed_field_val = $item_meta[ $field['hide_field'] ];
 	} elseif ( $get_id ) {
@@ -68,6 +71,7 @@ if ( $field['data_type'] === 'select' ) {
 } elseif ( $field['data_type'] === 'text' && is_numeric( $field['form_select'] ) ) {
 	$get_id    = FrmAppHelper::simple_get( 'id' );
 	$item_meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+
 	if ( $item_meta ) {
 		$observed_field_val = $item_meta[ $field['hide_field'] ];
 	} elseif ( $get_id ) {
@@ -88,6 +92,7 @@ if ( $field['data_type'] === 'select' ) {
 
     if ( ! empty( $field['options'] ) ) {
 		$option_index = 0;
+
 		foreach ( $field['options'] as $opt_key => $opt ) {
             $checked = ( ! is_array( $field['value'] ) && $field['value'] == $opt_key ) || ( is_array( $field['value'] ) && in_array( $opt_key, $field['value'] ) ) ? ' checked="checked"' : '';
 			?>

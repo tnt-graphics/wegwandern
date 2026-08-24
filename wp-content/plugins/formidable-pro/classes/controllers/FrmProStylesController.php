@@ -21,7 +21,6 @@ class FrmProStylesController extends FrmStylesController {
 
 		// Actions.
 		add_action( 'frm_sample_style_form', 'FrmProStylesController::append_style_form' );
-		add_action( 'admin_enqueue_scripts', 'FrmProAppController::load_style_manager_js_assets' );
 		add_action( 'frm_style_settings_input_atts', 'FrmProStylesController::echo_style_settings_input_atts' );
 		add_action( 'frm_style_settings_bg_image_component_upload_button', 'FrmProStylesController::echo_bg_image_settings', 10 );
 		add_action( 'frm_style_settings_general_section_after_background', 'FrmProStylesController::echo_additional_background_image_settings', 20 );
@@ -79,6 +78,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * Add additional style settings for Pro fields.
 	 *
 	 * @param array $boxes
+	 *
 	 * @return array
 	 */
 	public static function add_style_boxes( $boxes ) {
@@ -103,6 +103,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 3.01.01
 	 *
 	 * @param string $f
+	 *
 	 * @return string
 	 */
 	public static function style_box_file( $f ) {
@@ -112,6 +113,8 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @since 3.03
+	 *
+	 * @param string $selected_style
 	 *
 	 * @return array
 	 */
@@ -127,6 +130,8 @@ class FrmProStylesController extends FrmStylesController {
 	/**
 	 * @since 3.03
 	 *
+	 * @param string $selected_style
+	 *
 	 * @return array
 	 */
 	private static function get_date_themes( $selected_style = 'none' ) {
@@ -136,7 +141,7 @@ class FrmProStylesController extends FrmStylesController {
 			);
 		}
 
-		$themes = array(
+		return array(
 			'ui-lightness'   => 'Default',
 			'ui-darkness'    => 'UI Darkness',
 			'smoothness'     => 'Smoothness',
@@ -163,12 +168,12 @@ class FrmProStylesController extends FrmStylesController {
 			'swanky-purse'   => 'Swanky Purse',
 			'-1'             => 'None',
 		);
-
-		return $themes;
 	}
 
 	/**
 	 * @since 3.03
+	 *
+	 * @param int|string $theme_css
 	 */
 	public static function jquery_css_url( $theme_css ) {
 		if ( $theme_css == -1 ) {
@@ -182,6 +187,7 @@ class FrmProStylesController extends FrmStylesController {
 		} else {
 			$uploads   = FrmStylesHelper::get_upload_base();
 			$file_path = '/formidable/css/' . $theme_css . '/jquery-ui.css';
+
 			if ( file_exists( $uploads['basedir'] . $file_path ) ) {
 				$css_file = $uploads['baseurl'] . $file_path;
 			} else {
@@ -195,10 +201,12 @@ class FrmProStylesController extends FrmStylesController {
 	/**
 	 * @since 3.03
 	 *
+	 * @param string $selected
+	 *
 	 * @return bool
 	 */
 	private static function use_default_style( $selected ) {
-		return empty( $selected ) || 'ui-lightness' === $selected;
+		return ! $selected || 'ui-lightness' === $selected;
 	}
 
 	/**
@@ -212,7 +220,7 @@ class FrmProStylesController extends FrmStylesController {
 		$form       = self::get_form_for_page();
 		$theme_css  = FrmStylesController::get_style_val( 'theme_css', $form );
 		$action     = FrmAppHelper::get_param( 'frm_action', '', 'get', 'sanitize_text_field' );
-		$is_builder = FrmAppHelper::is_admin_page( 'formidable' ) && $action !== 'settings' && ! FrmAppHelper::is_admin_page( 'formidable-styles' );
+		$is_builder = FrmAppHelper::is_admin_page( 'formidable' ) && ! in_array( $action, array( 'settings', 'update_settings' ), true ) && ! FrmAppHelper::is_admin_page( 'formidable-styles' );
 
 		if ( $theme_css != -1 && ! $is_builder ) {
 			// Without this line, datepickers load without proper styling in the Form Scheduling settings when you set the form status dropdown to "Schedule".
@@ -228,6 +236,7 @@ class FrmProStylesController extends FrmStylesController {
 	private static function get_form_for_page() {
 		global $frm_vars;
 		$form_id = 'default';
+
 		if ( ! empty( $frm_vars['forms_loaded'] ) ) {
 			foreach ( $frm_vars['forms_loaded'] as $form ) {
 				if ( is_object( $form ) ) {
@@ -236,11 +245,13 @@ class FrmProStylesController extends FrmStylesController {
 				}
 			}
 		}
+
 		return $form_id;
 	}
 
 	/**
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	public static function append_style_form( $atts ) {
@@ -251,11 +262,13 @@ class FrmProStylesController extends FrmStylesController {
 
 	public static function maybe_new_style( $style ) {
 		$action = FrmAppHelper::get_param( 'frm_action', '', 'get', 'sanitize_title' );
+
 		if ( 'new_style' === $action ) {
 			$style = self::new_style( 'style' );
 		} elseif ( 'duplicate' === $action ) {
 			$style = self::duplicate( 'style' );
 		}
+
 		return $style;
 	}
 
@@ -263,6 +276,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * Handle the new style route. This doesn't create a new style, just an object with all defaults and no ID to use in the styler.
 	 *
 	 * @param string $return $return If 'style', the style will be returned and nothing will be echoed. Another value will return nothing, and will render the styler.
+	 *
 	 * @return stdClass|void
 	 */
 	public static function new_style( $return = '' ) {
@@ -282,6 +296,7 @@ class FrmProStylesController extends FrmStylesController {
 	 *
 	 * @param string $return If 'style', the style will be returned and nothing will be echoed. Another value will return nothing, and will render the styler.
 	 *                       'style' is used from the frm_style_head hook to copy the CSS for the target style we're copying.
+	 *
 	 * @return stdClass|void
 	 */
 	public static function duplicate( $return = '' ) {
@@ -296,7 +311,7 @@ class FrmProStylesController extends FrmStylesController {
 		$style     = $frm_style->duplicate( $style_id );
 
 		if ( 'style' === $return ) {
-			// return style object for header css link
+			// Return style object for header css link
 			return $style;
 		}
 
@@ -310,6 +325,7 @@ class FrmProStylesController extends FrmStylesController {
 	 */
 	public static function destroy() {
 		$permission_error = FrmAppHelper::permission_nonce_error( 'frm_edit_forms', 'nonce', 'frm_ajax' );
+
 		if ( $permission_error !== false ) {
 			$data = array(
 				'message' => __( 'Unable to delete style', 'formidable-pro' ),
@@ -319,6 +335,7 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$id = FrmAppHelper::get_post_param( 'id', 0, 'absint' );
+
 		if ( ! $id ) {
 			$data = array(
 				'message' => __( 'Missing style ID', 'formidable-pro' ),
@@ -358,8 +375,10 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @param array $args {
+	 *
 	 *     @type array $defaults
 	 * }
+	 *
 	 * @return void
 	 */
 	public static function include_front_css( $args ) {
@@ -398,6 +417,7 @@ class FrmProStylesController extends FrmStylesController {
 	 *
 	 * @param string $file File path.
 	 * @param string $mime_type
+	 *
 	 * @return string
 	 */
 	public static function base64_encode_image( $file, $mime_type = '' ) {
@@ -407,12 +427,14 @@ class FrmProStylesController extends FrmStylesController {
 
 		if ( ! $mime_type ) {
 			$mime_type = FrmProAppHelper::get_mime_content_type( $file );
+
 			if ( ! $mime_type ) {
 				return '';
 			}
 		}
 
 		$file_content = file_get_contents( $file );
+
 		if ( ! $file_content ) {
 			return '';
 		}
@@ -422,6 +444,8 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @since 3.01.01
+	 *
+	 * @param array $settings
 	 */
 	public static function add_defaults( $settings ) {
 		self::set_toggle_slider_colors( $settings );
@@ -432,6 +456,8 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @since 3.01.01
+	 *
+	 * @param array $settings
 	 */
 	public static function override_defaults( $settings ) {
 		if ( ! isset( $settings['toggle_on_color'] ) && isset( $settings['progress_active_bg_color'] ) ) {
@@ -447,6 +473,8 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @since 3.01.01
+	 *
+	 * @param array $settings
 	 */
 	private static function set_toggle_slider_colors( &$settings ) {
 		$settings['toggle_font_size'] = $settings['font_size'];
@@ -462,6 +490,8 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @since 3.03
+	 *
+	 * @param array $settings
 	 */
 	private static function set_toggle_date_colors( &$settings ) {
 		$settings['date_head_bg_color'] = $settings['bg_color'];
@@ -471,6 +501,8 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @since 5.0.08
+	 *
+	 * @param array $settings
 	 */
 	private static function set_bg_image_settings( &$settings ) {
 		$settings['bg_image_id']      = '';
@@ -481,6 +513,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * This CSS is only loaded with the ajax call.
 	 *
 	 * @since 3.0
+	 *
 	 * @return void
 	 */
 	public static function include_pro_fields_ajax_css() {
@@ -488,27 +521,23 @@ class FrmProStylesController extends FrmStylesController {
 
 		$defaults  = self::get_default_style();
 		$important = self::is_important( $defaults );
-
-		if ( is_callable( 'FrmStylesHelper::get_css_vars' ) ) {
-			$vars = FrmStylesHelper::get_css_vars( array_keys( $defaults ) );
-		} else {
-			$vars = array();
-		}
+		$vars      = FrmStylesHelper::get_css_vars( array_keys( $defaults ) );
 
 		include FrmProAppHelper::plugin_path() . '/css/pro_fields.css.php';
 	}
 
 	/**
 	 * @param array $settings
+	 *
 	 * @return void
 	 */
 	public static function output_single_style( $settings ) {
 		$important = self::is_important( $settings );
 
-		// calculate the top position based on field padding
+		// Calculate the top position based on field padding
 		$top_pad    = explode( ' ', $settings['field_pad'] );
-		$top_pad    = reset( $top_pad ); // the top padding is listed first
-		$pad_unit   = preg_replace( '/[0-9]+/', '', $top_pad ); //px, em, rem...
+		$top_pad    = reset( $top_pad ); // The top padding is listed first
+		$pad_unit   = preg_replace( '/[0-9]+/', '', $top_pad ); // Px, em, rem...
 		$top_margin = (int) str_replace( $pad_unit, '', $top_pad ) / 2;
 		$defaults   = self::get_default_style();
 		$vars       = array();
@@ -522,12 +551,14 @@ class FrmProStylesController extends FrmStylesController {
 	 * Get variables for background image URL and opacity to use in the stylesheet CSS.
 	 *
 	 * @param array $settings {
+	 *
 	 *     @type string|null $bg_image_id
 	 *     @type string|null $bg_image_opacity Supports '50%' percent values as well as '0.5' float values.
 	 *                                         An empty string will be treating as a 1 (full opacity).
 	 *                                         A '0' has no opacity so it will not be visible.
 	 *                                         Any unexpected negative value will use 0 instead.
 	 * }
+	 *
 	 * @return array<false|float|string>
 	 */
 	private static function get_bg_image_vars( $settings ) {
@@ -539,6 +570,7 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$bg_image_url = wp_get_attachment_url( $settings['bg_image_id'] );
+
 		if ( false === $bg_image_url || ( empty( $settings['bg_image_opacity'] ) && '0' !== $settings['bg_image_opacity'] ) ) {
 			return array( $bg_image_url, $bg_image_opacity );
 		}
@@ -556,15 +588,17 @@ class FrmProStylesController extends FrmStylesController {
 			}
 		}
 
-		if ( is_numeric( $bg_image_opacity ) ) {
-			if ( $bg_image_opacity < 0 ) {
-				$bg_image_opacity = 0;
-			}
-			if ( ! is_float( $bg_image_opacity ) ) {
-				$bg_image_opacity = floatval( $bg_image_opacity );
-			}
-		} else {
+		if ( ! is_numeric( $bg_image_opacity ) ) {
 			$bg_image_opacity = false;
+			return array( $bg_image_url, $bg_image_opacity );
+		}
+
+		if ( $bg_image_opacity < 0 ) {
+			$bg_image_opacity = 0;
+		}
+
+		if ( ! is_float( $bg_image_opacity ) ) {
+			$bg_image_opacity = floatval( $bg_image_opacity );
 		}
 
 		return array( $bg_image_url, $bg_image_opacity );
@@ -576,13 +610,14 @@ class FrmProStylesController extends FrmStylesController {
 	 * @return array
 	 */
 	private static function get_default_style() {
-		$frm_style     = new FrmStyle();
-		$default_style = $frm_style->get_default_style();
+		$frm_style = new FrmStyle();
+
 		if ( is_admin() && ! empty( $_POST ) && isset( $_POST['action'] ) && $_POST['action'] === 'frm_change_styling' ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			// Reset to prevent posted values from being used on styler page.
 			$_POST['action'] = '';
 		}
-		return FrmStylesHelper::get_settings_for_output( $default_style );
+
+		return FrmStylesHelper::get_settings_for_output( $frm_style->get_default_style() );
 	}
 
 	/**
@@ -594,6 +629,7 @@ class FrmProStylesController extends FrmStylesController {
 
 	/**
 	 * @param array $settings
+	 *
 	 * @return string
 	 */
 	private static function is_important( $settings ) {
@@ -635,12 +671,6 @@ class FrmProStylesController extends FrmStylesController {
 	 * @param array $args with keys 'frm_style', 'style'.
 	 */
 	public static function echo_additional_background_image_settings( $args ) {
-		// Support for FF LITE versions older than 6.14
-		// Starting from version 6.14, this is handled by a separate hook: "frm_style_settings_bg_image_component_upload_button" in FF LITE
-		if ( ! class_exists( 'FrmStyleComponent' ) ) {
-			self::echo_bg_image_settings( $args );
-		}
-
 		$style            = $args['style'];
 		$hidden           = empty( $style->post_content['bg_image_id'] );
 		$class            = $hidden ? 'frm_hidden ' : '';
@@ -653,6 +683,8 @@ class FrmProStylesController extends FrmStylesController {
 	 * Called when the frm_style_settings_input_atts action is triggered.
 	 *
 	 * @since 5.0.08
+	 *
+	 * @param mixed $key
 	 */
 	public static function echo_style_settings_input_atts( $key ) {
 		if ( self::is_colorpicker( $key ) ) {
@@ -667,13 +699,14 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 5.0.08
 	 *
 	 * @param string $key
+	 *
 	 * @return bool
 	 */
 	private static function is_colorpicker( $key ) {
 		if ( in_array( $key, array( 'error_bg', 'error_border', 'error_text' ), true ) ) {
 			return true;
 		}
-		return '_color' === substr( $key, -6 ) || '_color_error' === substr( $key, -12 ) || '_color_active' === substr( $key, -13 ) || '_color_disabled' === substr( $key, -15 );
+		return str_ends_with( $key, '_color' ) || str_ends_with( $key, '_color_error' ) || str_ends_with( $key, '_color_active' ) || str_ends_with( $key, '_color_disabled' );
 	}
 
 	/**
@@ -689,11 +722,15 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param array $args {
+	 *
 	 *     @type stdClass $form
 	 * }
+	 *
 	 * @return void
 	 */
 	public static function before_render_style_page( $args ) {
+		FrmProAppController::load_style_manager_js_assets();
+
 		$form           = $args['form'];
 		$preview_helper = new FrmProStylesPreviewHelper();
 
@@ -711,6 +748,7 @@ class FrmProStylesController extends FrmStylesController {
 	 *
 	 * @param array $params
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	public static function filter_style_card_params( $params, $args ) {
@@ -725,6 +763,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param stdClass $form
+	 *
 	 * @return void
 	 */
 	private static function force_jquery_css_for_styler( $form ) {
@@ -759,6 +798,7 @@ class FrmProStylesController extends FrmStylesController {
 		global $wpdb;
 
 		$permission_error = FrmAppHelper::permission_nonce_error( 'frm_edit_forms', 'nonce', 'frm_ajax' );
+
 		if ( $permission_error !== false ) {
 			$data = array(
 				'message' => __( 'Unable to set style as default', 'formidable-pro' ),
@@ -768,6 +808,7 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$style_id = FrmAppHelper::get_post_param( 'style_id', 0, 'absint' );
+
 		if ( ! $style_id ) {
 			$data = array(
 				'message' => __( 'Missing target style ID', 'formidable-pro' ),
@@ -777,6 +818,7 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$post = get_post( $style_id );
+
 		if ( ! $post || $post->post_type !== FrmStylesController::$post_type ) {
 			$data = array(
 				'message' => __( 'Invalid target style ID', 'formidable-pro' ),
@@ -830,6 +872,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param int $form_id
+	 *
 	 * @return WP_Post
 	 */
 	public static function get_active_style_for_form( $form_id ) {
@@ -837,10 +880,12 @@ class FrmProStylesController extends FrmStylesController {
 
 		$form         = FrmForm::getOne( $form_id );
 		$active_style = FrmStylesController::get_form_style( $form );
+
 		if ( is_null( $active_style ) ) {
 			$frm_style    = new FrmStyle( 'default' );
 			$active_style = $frm_style->get_one();
 		}
+
 		return $active_style;
 	}
 
@@ -850,6 +895,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param int $form_id
+	 *
 	 * @return void
 	 */
 	private static function maybe_add_conversational_form_style_filter( $form_id ) {
@@ -867,6 +913,7 @@ class FrmProStylesController extends FrmStylesController {
 	 *
 	 * @param array<WP_Post>   $styles
 	 * @param stdClass|WP_Post $active_style
+	 *
 	 * @return array
 	 */
 	private static function move_active_style_to_top( $styles, $active_style ) {
@@ -922,6 +969,7 @@ class FrmProStylesController extends FrmStylesController {
 	 */
 	public static function preview_style_template() {
 		$permission_error = FrmAppHelper::permission_nonce_error( 'frm_edit_forms', 'nonce', 'frm_ajax' );
+
 		if ( $permission_error !== false ) {
 			$data = array(
 				'message' => __( 'Unable to preview style template', 'formidable-pro' ),
@@ -936,6 +984,7 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$template_key = FrmAppHelper::get_post_param( 'template_key', '', 'sanitize_key' );
+
 		if ( ! $template_key ) {
 			$data = array(
 				'message' => __( 'Template key not specified', 'formidable-pro' ),
@@ -945,6 +994,7 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$template = self::get_template_match_from_api( $template_key );
+
 		if ( ! is_array( $template ) || empty( $template['url'] ) ) {
 			$data = array(
 				'message' => __( 'Template did not match with API', 'formidable-pro' ),
@@ -955,6 +1005,7 @@ class FrmProStylesController extends FrmStylesController {
 
 		$transient_key = 'frm_style_template_' . $template['slug'];
 		$transient     = get_transient( $transient_key );
+
 		if ( is_array( $transient ) ) {
 			$data = array(
 				'settings' => $transient,
@@ -1006,6 +1057,8 @@ class FrmProStylesController extends FrmStylesController {
 	 *
 	 * @since 6.0
 	 *
+	 * @param string $view
+	 *
 	 * @return void
 	 */
 	public static function preview_after_toggle( $view ) {
@@ -1017,7 +1070,7 @@ class FrmProStylesController extends FrmStylesController {
 		// It may be "Apply style", or "Install and apply style" if the card selected is a template.
 		?>
 		<a href="#" id="frm_apply_style" class="frm_floating_style_button button frm-button-secondary frm-with-icon frm_hidden" tabindex="0" role="button">
-			<?php FrmAppHelper::icon_by_class( 'frmfont frm_save_icon', array( 'echo' => true ) ); ?> <span class="frm-apply-button-text"></span>
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_save_icon' ); ?> <span class="frm-apply-button-text"></span>
 		</a>
 		<?php
 	}
@@ -1028,6 +1081,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param int $style_id
+	 *
 	 * @return int
 	 */
 	public static function maybe_import_style_template( $style_id ) {
@@ -1036,16 +1090,19 @@ class FrmProStylesController extends FrmStylesController {
 		}
 
 		$template_key = FrmAppHelper::get_post_param( 'style_id', '', 'sanitize_key' );
+
 		if ( ! $template_key ) {
 			return 0;
 		}
 
 		$template = self::get_template_match_from_api( $template_key );
+
 		if ( ! is_array( $template ) || empty( $template['url'] ) ) {
 			return 0; // Use 0 to flag the style ID input as invalid.
 		}
 
 		$xml = self::download_and_prepare_xml( $template['url'] );
+
 		if ( false === $xml ) {
 			return 0;
 		}
@@ -1060,9 +1117,7 @@ class FrmProStylesController extends FrmStylesController {
 		// Make sure the new CSS loads after we sync a new style template.
 		// Otherwise the preview may show without any styling until you refresh again.
 		echo '<link href="' . esc_url( admin_url( 'admin-ajax.php?action=frmpro_css' ) ) . '" type="text/css" rel="Stylesheet" class="frm-custom-theme" />';
-
-		$style_id = reset( $imported['posts'] );
-		return $style_id;
+		return reset( $imported['posts'] );
 	}
 
 	/**
@@ -1071,6 +1126,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param SimpleXMLElement $xml
+	 *
 	 * @return void
 	 */
 	private static function maybe_set_style_key( $xml ) {
@@ -1088,14 +1144,14 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param string $template_key
+	 *
 	 * @return array|false
 	 */
 	private static function get_template_match_from_api( $template_key ) {
 		$api      = new FrmStyleApi();
-		$info     = $api->get_api_info();
 		$template = false;
 
-		foreach ( $info as $key => $style ) {
+		foreach ( $api->get_api_info() as $key => $style ) {
 			if ( ! is_numeric( $key ) || ! is_array( $style ) || ! array_key_exists( 'slug', $style ) ) {
 				continue;
 			}
@@ -1115,6 +1171,7 @@ class FrmProStylesController extends FrmStylesController {
 	 * @since 6.0
 	 *
 	 * @param string $url
+	 *
 	 * @return false|SimpleXMLElement
 	 */
 	private static function download_and_prepare_xml( $url ) {
@@ -1148,6 +1205,8 @@ class FrmProStylesController extends FrmStylesController {
 	 *
 	 * @since 6.9.1
 	 *
+	 * @param array $defaults
+	 *
 	 * @return void
 	 */
 	private static function include_views_calendar_old_style( $defaults ) {
@@ -1155,38 +1214,5 @@ class FrmProStylesController extends FrmStylesController {
 			return;
 		}
 		include FrmProAppHelper::plugin_path() . '/css/views-calendar-old-style.css.php';
-	}
-
-	/**
-	 * @since 4.0
-	 * @deprecated 6.0
-	 *
-	 * @param array $atts
-	 * @return void
-	 */
-	public static function style_dropdown( $atts ) {
-		_deprecated_function( __METHOD__, '6.0' );
-	}
-
-	/**
-	 * @since 4.0
-	 * @deprecated 6.0
-	 *
-	 * @param WP_Post $style
-	 * @return void
-	 */
-	public static function add_new_button( $style ) {
-		_deprecated_function( __METHOD__, '6.0' );
-	}
-
-	/**
-	 * @since 6.0
-	 * @deprecated 6.11.2
-	 *
-	 * @return false|string
-	 */
-	public static function get_disabled_javascript_features() {
-		_deprecated_function( __METHOD__, '6.11.2' );
-		return false;
 	}
 }

@@ -96,7 +96,7 @@ class SystemStatus {
 				],
 				[
 					'header' => __( 'Search Engine Visibility', 'all-in-one-seo-pack' ),
-					'value'  => get_option( 'blog_public' ) ? __( 'Visible', 'all-in-one-seo-pack' ) : __( 'Hidden', 'all-in-one-seo-pack' )
+					'value'  => ! aioseo()->helpers->isSearchEnginesDiscouraged() ? __( 'Visible', 'all-in-one-seo-pack' ) : __( 'Hidden', 'all-in-one-seo-pack' )
 				],
 				[
 					'header' => __( 'Upload Directory Info', 'all-in-one-seo-pack' ),
@@ -120,10 +120,6 @@ class SystemStatus {
 	public static function getDatabaseInfo() {
 		$dbInfo = aioseo()->core->db->getDatabaseInfo();
 		if ( empty( $dbInfo['tables'] ) ) {
-			return [];
-		}
-
-		if ( ! aioseo()->helpers->isDev() ) {
 			return [];
 		}
 

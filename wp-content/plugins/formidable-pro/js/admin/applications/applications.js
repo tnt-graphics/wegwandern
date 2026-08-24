@@ -30,8 +30,6 @@
 	addAction( 'frm_view_application_modal_content', changeViewApplicationModalContent );
 	addAction( 'frm_application_render_templates', addCustomApplicationCardsToPage );
 
-	frmDom.bootstrap.setupBootstrapDropdowns();
-
 	function changeViewApplicationModalPrimaryActionButton( button, { data } = {}) {
 		if ( ! frmProApplicationsVars.canAddApplications ) {
 			// There is already a Learn More button, so just avoid adding another button if user cannot install application.
@@ -167,13 +165,13 @@
 			const details = container.querySelector( '.frm-application-modal-details' );
 
 			if ( data.found.form.length ) {
-				details.appendChild(
+				details.append(
 					div({
 						className: 'frm-application-modal-label',
 						text: __( 'Forms', 'formidable-pro' )
 					})
 				);
-				details.appendChild( getBasicList( data.found.form ) );
+				details.append( getBasicList( data.found.form ) );
 			}
 
 			if ( data.found.view.length ) {
@@ -218,23 +216,23 @@
 					}
 				}
 
-				details.appendChild(
+				details.append(
 					div({
 						className: 'frm-application-modal-label',
 						text: __( 'Views', 'formidable-pro' )
 					})
 				);
-				details.appendChild( getBasicList( data.found.view ) );
+				details.append( getBasicList( data.found.view ) );
 			}
 
 			if ( data.found.page.length ) {
-				details.appendChild(
+				details.append(
 					div({
 						className: 'frm-application-modal-label',
 						text: __( 'Pages', 'formidable-pro' )
 					})
 				);
-				details.appendChild( getBasicList( data.found.page ) );
+				details.append( getBasicList( data.found.page ) );
 			}
 
 			// Recenter modal.
@@ -294,7 +292,7 @@
 		contentWrapper.insertBefore( customApplicationCards, customTemplatesNav.nextElementSibling );
 
 		if ( frmProApplicationsVars.canAddApplications ) {
-			customTemplatesNav.querySelector( 'h2' ).appendChild(
+			customTemplatesNav.querySelector( 'h2' ).append(
 				a({
 					href: frmProApplicationsVars.allApplicationsUrl,
 					text: __( 'View all applications', 'formidable-pro' )
@@ -311,7 +309,7 @@
 		});
 
 		span.innerHTML = '';
-		span.appendChild( anchor );
+		span.append( anchor );
 	}
 
 	function removeLockIconFromCard( card ) {
@@ -399,11 +397,11 @@
 			}
 
 			data.applications.forEach(
-				application => container.appendChild( getCustomApplicationCard( application ) )
+				application => container.append( getCustomApplicationCard( application ) )
 			);
 
 			if ( elements.viewAllButtonWrapper ) {
-				container.appendChild( elements.viewAllButtonWrapper );
+				container.append( elements.viewAllButtonWrapper );
 			}
 		}
 	}
@@ -426,7 +424,7 @@
 		elements.customApplicationsGrid = container;
 
 		applications.forEach(
-			application => container.appendChild( getCustomApplicationCard( application ) )
+			application => container.append( getCustomApplicationCard( application ) )
 		);
 
 		if ( moreApplications && frmProApplicationsVars.canAddApplications ) {
@@ -435,7 +433,7 @@
 				className: 'frm-view-all-applications-button-wrapper',
 				child: getViewAllButton()
 			});
-			container.appendChild( elements.viewAllButtonWrapper );
+			container.append( elements.viewAllButtonWrapper );
 		}
 
 		return container;
@@ -455,7 +453,7 @@
 		const args     = { data };
 		card = wp.hooks.applyFilters( hookName, card, args );
 
-		card.appendChild( getUpdatedAtTimestamp( data.updatedAt ) );
+		card.append( getUpdatedAtTimestamp( data.updatedAt ) );
 
 		card.addEventListener( 'mouseenter', highlightCard );
 		card.addEventListener( 'mouseleave', removeCardHighlight );
@@ -640,7 +638,7 @@
 
 		Object.keys( map ).forEach( addTypeToContainer );
 		function addTypeToContainer( type ) {
-			map[ type ].forEach( ({ id, name }) => container.appendChild( getSummaryItem( name, type, id, applicationId ) ) );
+			map[ type ].forEach( ({ id, name }) => container.append( getSummaryItem( name, type, id, applicationId ) ) );
 		}
 
 		return container;

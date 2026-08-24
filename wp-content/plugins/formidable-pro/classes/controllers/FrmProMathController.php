@@ -11,6 +11,7 @@ class FrmProMathController {
 	 *
 	 * @param array  $atts
 	 * @param string $content
+	 *
 	 * @return string
 	 */
 	public static function math_shortcode( $atts, $content = '' ) {
@@ -35,14 +36,17 @@ class FrmProMathController {
 		);
 
 		$expression = self::get_math_expression_from_shortcode_content( $content, $atts );
+
 		if ( $expression === '' ) {
 			return $expression;
 		}
+
 		if ( self::expression_contains_non_math_characters( $expression ) ) {
 			return self::get_error_content( $atts, $expression );
 		}
 
 		$result = self::calculate_math_in_string( $expression );
+
 		if ( ! is_numeric( $result ) ) {
 			return self::get_error_content( $atts, $expression );
 		}
@@ -55,14 +59,14 @@ class FrmProMathController {
 	 *
 	 * @param string $content
 	 * @param array  $atts
+	 *
 	 * @return string
 	 */
 	private static function get_math_expression_from_shortcode_content( $content, $atts ) {
 		$expression = do_shortcode( $content );
 		$expression = preg_replace( '/&#8211;/', '-', $expression );
-		$expression = self::clear_expression_of_extra_characters( $expression, $atts );
 
-		return $expression;
+		return self::clear_expression_of_extra_characters( $expression, $atts );
 	}
 
 	/**
@@ -70,6 +74,7 @@ class FrmProMathController {
 	 *
 	 * @param string $expression
 	 * @param array  $atts
+	 *
 	 * @return string
 	 */
 	private static function clear_expression_of_extra_characters( $expression, $atts ) {
@@ -79,7 +84,7 @@ class FrmProMathController {
 			// Without this the calculations include unexpected invisible numbers and too many minus symbols.
 			$expression = strip_tags( $expression );
 
-			//remove /> and </ so HTML tags can be fully removed
+			// Remove /> and </ so HTML tags can be fully removed
 			$expression = preg_replace( '/\/>|<\/|&lt;\/|\/&gt;/', '', $expression );
 			return preg_replace( '/[^\+\-\/\*0-9\.\(\)\%]/', '', $expression );
 		}
@@ -90,12 +95,13 @@ class FrmProMathController {
 	/**
 	 * Tests if an expression contains characters that don't belong in a math expression, e.g. letters
 	 *
+	 * @param string $expression
+	 *
 	 * @return bool
 	 */
 	private static function expression_contains_non_math_characters( $expression ) {
 		$result = preg_match( '/[^\+\-\/\*0-9\.\s\(\)\%]/', $expression );
-
-		return ( $result === 1 );
+		return $result === 1;
 	}
 
 	/**
@@ -111,25 +117,25 @@ class FrmProMathController {
 			return '';
 		}
 
-		if ( $atts['error'] === 'debug' ) {
-			return $expression;
-		}
-
-		return $atts['error'];
+		return $atts['error'] === 'debug' ? $expression : $atts['error'];
 	}
 
 	/**
 	 * Calculate value of string math expression.
 	 *
 	 * @param string $math_string
+	 *
 	 * @return mixed
 	 */
 	private static function calculate_math_in_string( $math_string ) {
 		$math_array = self::parse_math_string_into_array( $math_string );
+
 		if ( ! is_array( $math_array ) ) {
 			return $math_array;
 		}
+
 		$post_fix = self::convert_to_postfix( $math_array );
+
 		if ( ! is_array( $post_fix ) ) {
 			return $post_fix;
 		}
@@ -150,16 +156,16 @@ class FrmProMathController {
 			$math_array,
 			/**
 			 * @param string $string
+			 *
 			 * @return bool
 			 */
 			function ( $string ) {
-				return strlen( $string ) > 0;
+				return $string !== '';
 			}
 		);
 		$math_array = array_values( $math_array );
-		$math_array = self::set_negative_numbers( $math_array );
 
-		return $math_array;
+		return self::set_negative_numbers( $math_array );
 	}
 
 	/**
@@ -172,13 +178,14 @@ class FrmProMathController {
 	private static function set_negative_numbers( $math_array ) {
 		$negatives = preg_grep( '/\-/', $math_array );
 
-		if ( count( $negatives ) === 0 ) {
+		if ( $negatives === array() ) {
 			return $math_array;
 		}
 
 		foreach ( $negatives as $key => $negative ) {
 			if ( $key === 0 || ( preg_match( '/[\-\+\*\/\(\%]/', $math_array[ $key - 1 ] ) > 0 ) ) {
 				$next = $key + 1;
+
 				if ( isset( $math_array[ $next ] ) && is_numeric( $math_array[ $next ] ) ) {
 					$math_array[ $next ] = - 1 * $math_array[ $next ];
 					unset( $math_array[ $key ] );
@@ -209,6 +216,7 @@ class FrmProMathController {
 				array_push( $operators, $element );
 			} elseif ( ')' === $element ) {
 				$status = self::process_right_paren_in_postfix_conversion( $output, $operators );
+
 				if ( false === $status ) {
 					return 'error';
 				}
@@ -217,11 +225,7 @@ class FrmProMathController {
 
 		$status = self::move_remaining_operators_to_stack( $output, $operators );
 
-		if ( false === $status ) {
-			return 'error';
-		}
-
-		return $output;
+		return false === $status ? 'error' : $output;
 	}
 
 	/**
@@ -243,7 +247,6 @@ class FrmProMathController {
 	 * @return int
 	 */
 	private static function operator_precedence( $operator ) {
-
 		switch ( $operator ) {
 			case '-':
 			case '+':
@@ -271,16 +274,18 @@ class FrmProMathController {
 			do {
 				$top_operator            = array_pop( $operators );
 				$top_operator_precedence = self::operator_precedence( $top_operator );
+
 				if ( $current_element_precedence <= $top_operator_precedence ) {
 					array_push( $output, $top_operator );
 				} else {
-					// replace last top operator in operator stack; it was only removed for testing
+					// Replace last top operator in operator stack; it was only removed for testing
 					array_push( $operators, $top_operator );
 				}
 
 				$operators_count = count( $operators );
 			} while ( $operators_count > 0 && $current_element_precedence <= $top_operator_precedence );
 		}
+
 		array_push( $operators, $operator );
 	}
 
@@ -293,16 +298,20 @@ class FrmProMathController {
 	 * @return bool
 	 */
 	private static function process_right_paren_in_postfix_conversion( &$output, &$operators ) {
-		if ( count( $operators ) === 0 ) {
+		if ( $operators === array() ) {
 			return false;
 		}
 		do {
 			$next_operator = array_pop( $operators );
-			if ( $next_operator !== '(' ) {
-				array_push( $output, $next_operator );
-				if ( count( $operators ) === 0 ) {
-					return false;
-				}
+
+			if ( $next_operator === '(' ) {
+				continue;
+			}
+
+			array_push( $output, $next_operator );
+
+			if ( $operators === array() ) {
+				return false;
 			}
 		} while ( $next_operator !== '(' );
 
@@ -319,11 +328,14 @@ class FrmProMathController {
 	 */
 	private static function move_remaining_operators_to_stack( &$output, &$operators ) {
 		$operators_count = count( $operators );
+
 		while ( $operators_count > 0 ) {
 			$next_operator = array_pop( $operators );
+
 			if ( $next_operator === '(' ) {
 				return false;
 			}
+
 			array_push( $output, $next_operator );
 
 			$operators_count = count( $operators );
@@ -341,6 +353,7 @@ class FrmProMathController {
 	 */
 	private static function evaluate_postfix_expression( $postfix_array ) {
 		$stack = array();
+
 		foreach ( $postfix_array as $element ) {
 			if ( is_numeric( $element ) ) {
 				array_push( $stack, $element );
@@ -348,16 +361,20 @@ class FrmProMathController {
 					$operand2 = array_pop( $stack );
 					$operand1 = array_pop( $stack );
 					$result   = self::evaluate_simple_math_expression( $operand1, $operand2, $element );
+
 				if ( ! is_numeric( $result ) ) {
 					return 'error';
 				}
+
 					array_push( $stack, $result );
 			} else {
 				return 'error';
 			}
 		}
+
 		if ( count( $stack ) === 1 ) {
 			$answer = array_pop( $stack );
+
 			if ( is_numeric( $answer ) ) {
 				return $answer;
 			}
@@ -369,9 +386,9 @@ class FrmProMathController {
 	/**
 	 * Perform simple arithmetic on two operands.
 	 *
-	 * @param mixed  $operand1
-	 * @param mixed  $operand2
-	 * @param string $operator
+	 * @param float|int|string $operand1
+	 * @param float|int|string $operand2
+	 * @param string           $operator
 	 *
 	 * @return float|int
 	 */
@@ -410,9 +427,12 @@ class FrmProMathController {
 	 *
 	 * @param array    $errors
 	 * @param stdClass $posted_field
+	 * @param mixed    $value The current posted value for the field being validated.
+	 * @param array    $args  Validation args including parent_field_id and key_pointer.
+	 *
 	 * @return array
 	 */
-	public static function maybe_force_calculation( $errors, $posted_field ) {
+	public static function maybe_force_calculation( $errors, $posted_field, $value = '', $args = array() ) {
 		if ( empty( $posted_field->field_options['calc'] ) ) {
 			return $errors;
 		}
@@ -427,6 +447,7 @@ class FrmProMathController {
 		 * @param stdClass $posted_field
 		 */
 		$should_force_calculation = apply_filters( 'frm_force_calculation_on_validate', false, $posted_field );
+
 		if ( ! $should_force_calculation ) {
 			return $errors;
 		}
@@ -436,6 +457,7 @@ class FrmProMathController {
 		}
 
 		$calc_type = $posted_field->field_options['calc_type'];
+
 		if ( $calc_type && 'text' !== $calc_type ) {
 			// Skip date calculations.
 			return $errors;
@@ -443,29 +465,40 @@ class FrmProMathController {
 
 		$calculation = $posted_field->field_options['calc'];
 		$shortcodes  = self::get_shortcodes_from_string( $calculation );
+
 		foreach ( $shortcodes as $shortcode ) {
 			$field = FrmField::getOne( $shortcode );
+
 			if ( ! $field ) {
 				continue;
 			}
 
-			$field_id      = $field->id;
-			$replace_value = isset( $_POST['item_meta'][ $field_id ] ) ? FrmAppHelper::strip_most_html( $_POST['item_meta'][ $field_id ] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, SlevomatCodingStandard.Files.LineLength.LineTooLong
+			$field_id           = $field->id;
+			$field_value        = self::get_calc_field_value( $field_id, $args, $calc_type, $field->type );
+			$has_repeater_value = false;
 
-			if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) ) ) {
-				$replace_value = FrmProCurrencyHelper::normalize_formatted_numbers( $field, $replace_value );
+			// When calc field is outside repeater, aggregate values from repeater fields across all rows.
+			if ( '' === $field_value && empty( $args['parent_field_id'] ) ) {
+				$field_value        = self::collect_repeater_field_values( $field_id, $field, $calc_type );
+				$has_repeater_value = '' !== $field_value;
 			}
 
-			if ( ! $calc_type ) {
-				$replace_value = floatval( $replace_value );
+			$replace_value = FrmAppHelper::strip_most_html( $field_value );
+
+			if ( ! $has_repeater_value ) {
+				if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) ) ) {
+					$replace_value = FrmProCurrencyHelper::normalize_formatted_numbers( $field, $replace_value );
+				}
+
+				if ( ! $calc_type ) {
+					$replace_value = floatval( $replace_value );
+				}
 			}
 
 			$calculation = str_replace( '[' . $shortcode . ']', $replace_value, $calculation );
 		}
 
-		if ( 'text' === $calc_type ) {
-			$_POST['item_meta'][ $posted_field->id ] = $calculation;
-		} else {
+		if ( ! $calc_type ) {
 			$trim           = false;
 			$shortcode_atts = array(
 				'thousands_sep' => '',
@@ -479,16 +512,133 @@ class FrmProMathController {
 				$trim                      = true;
 			}
 
-			$result = self::math_shortcode( $shortcode_atts, $calculation );
+			$calculation = self::math_shortcode( $shortcode_atts, $calculation );
 
 			if ( $trim ) {
-				$result = rtrim( rtrim( $result, '0' ), '.' );
+				$calculation = rtrim( rtrim( $calculation, '0' ), '.' );
 			}
-
-			$_POST['item_meta'][ $posted_field->id ] = $result;
 		}
 
+		FrmEntriesHelper::set_posted_value( $posted_field, $calculation, $args );
+
 		return $errors;
+	}
+
+	/**
+	 * Collect and aggregate all values of a field from all repeater rows in the posted data.
+	 *
+	 * @since 6.29
+	 *
+	 * @param int|string $field_id  The field ID to look up in repeater rows.
+	 * @param object     $field     The field object, used for currency normalization.
+	 * @param string     $calc_type The calculation type: '' for math, 'text' for text.
+	 *
+	 * @return string
+	 */
+	private static function collect_repeater_field_values( $field_id, $field, $calc_type ) {
+		$section_id = FrmField::get_option( $field, 'in_section' );
+
+		if ( ! $section_id ) {
+			return '';
+		}
+
+		$values       = array();
+		$is_currency  = FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) );
+		$section_meta = FrmAppHelper::get_post_param( 'item_meta', array() )[ $section_id ] ?? array();
+
+		foreach ( $section_meta as $row_key => $row_data ) {
+			if ( $row_key && in_array( $row_key, array( 'form', 'row_ids' ), true ) ) {
+				continue;
+			}
+
+			if ( ! is_array( $row_data ) || ! isset( $row_data[ $field_id ] ) ) {
+				continue;
+			}
+
+			$row_value = FrmProEntriesHelper::get_posted_meta(
+				$field_id,
+				array(
+					'parent_field_id' => $section_id,
+					'key_pointer'     => $row_key,
+				)
+			);
+
+			if ( '' === $row_value ) {
+				continue;
+			}
+
+			if ( is_array( $row_value ) ) {
+				$row_value = self::convert_array_value_for_calc( $row_value, $calc_type, FrmField::get_field_type( $field ) );
+			}
+
+			if ( $is_currency ) {
+				$row_value = FrmProCurrencyHelper::normalize_formatted_numbers( $field, $row_value );
+			}
+
+			$values[] = $row_value;
+		}
+
+		if ( ! $values ) {
+			return '';
+		}
+
+		if ( ! $calc_type ) {
+			/** @var string[] $values */
+			return (string) array_sum( array_map( 'floatval', $values ) );
+		}
+
+		return implode( ', ', $values );
+	}
+
+	/**
+	 * Get a field value by reading from the correct nested path and converts array values to strings.
+	 *
+	 * @since 6.29
+	 *
+	 * @param int|string $field_id   The field ID.
+	 * @param array      $args       Validation args with parent_field_id and key_pointer.
+	 * @param string     $calc_type  The calculation type: '' for math, 'text' for text.
+	 * @param string     $field_type The field type (e.g. 'name', 'address', 'checkbox').
+	 *
+	 * @return string
+	 */
+	private static function get_calc_field_value( $field_id, $args, $calc_type = '', $field_type = '' ) {
+		$value = FrmProEntriesHelper::get_posted_meta( $field_id, $args );
+
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+
+		return self::convert_array_value_for_calc( $value, $calc_type, $field_type );
+	}
+
+	/**
+	 * Convert an array field value to a string for a calculation.
+	 *
+	 * @since 6.29
+	 *
+	 * @param array  $value      The array value to convert.
+	 * @param string $calc_type  The calculation type: '' for math, 'text' for text.
+	 * @param string $field_type The field type (e.g. 'name', 'address', 'checkbox').
+	 *
+	 * @return string
+	 */
+	private static function convert_array_value_for_calc( $value, $calc_type, $field_type = '' ) {
+		$flat = (array) FrmAppHelper::array_flatten( $value );
+
+		if ( ! $calc_type ) {
+			return (string) array_sum( array_map( 'floatval', $flat ) );
+		}
+
+		return implode(
+			'name' === $field_type ? ' ' : ', ',
+			array_filter(
+				$flat,
+				static function ( $item_value ) {
+					return '' !== $item_value;
+				}
+			)
+		);
 	}
 
 	/**
@@ -497,13 +647,11 @@ class FrmProMathController {
 	 * @since 6.21
 	 *
 	 * @param string $string
+	 *
 	 * @return array
 	 */
 	private static function get_shortcodes_from_string( $string ) {
 		preg_match_all( '/\[(\d+|[\w\s]+)\]/', $string, $matches );
-		if ( empty( $matches[1] ) ) {
-			return array();
-		}
-		return array_unique( $matches[1] );
+		return ! empty( $matches[1] ) ? array_unique( $matches[1] ) : array();
 	}
 }

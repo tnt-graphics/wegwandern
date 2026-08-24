@@ -59,12 +59,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	width:14.28%;
 	vertical-align:top;
 	padding:0 !important;
-	color:<?php echo esc_attr( $defaults['text_color'] ); ?>;
+	color:<?php echo esc_html( $defaults['text_color'] ); ?>;
 	font-size:12px;
 }
 
 table.frmcal-calendar .frmcal_date {
-	background-color:<?php echo esc_html( empty( $defaults['bg_color'] ) ? 'transparent' : $defaults['bg_color'] ); ?>;
+	background-color:<?php echo esc_html( ! empty( $defaults['bg_color'] ) ? $defaults['bg_color'] : 'transparent' ); ?>;
 	padding:0 5px;
 	text-align:right;
 	box-shadow:0 2px 5px <?php echo esc_html( $defaults['border_color'] ); ?>;

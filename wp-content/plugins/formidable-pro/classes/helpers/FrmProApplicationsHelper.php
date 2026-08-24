@@ -11,6 +11,7 @@ class FrmProApplicationsHelper {
 
 	/**
 	 * @param int $application_id
+	 *
 	 * @return string
 	 */
 	public static function get_edit_url( $application_id ) {
@@ -28,14 +29,15 @@ class FrmProApplicationsHelper {
 	 * Search application items for connected items (whether embedded or used as a data source) and add them to the application as well.
 	 *
 	 * @param int $application_id
+	 *
 	 * @return array<array> summary of each page added, indexed by type and id with shortcode match details.
 	 */
 	public static function sync( $application_id ) {
 		$page_data_summary  = self::search_pages_for_forms_and_views( $application_id );
 		$field_data_summary = self::search_form_fields_for_source_forms( $application_id );
+		$summary            = array();
+		$types              = array( 'form', 'view', 'page' );
 
-		$summary = array();
-		$types   = array( 'form', 'view', 'page' );
 		foreach ( $types as $type ) {
 			$summary[ $type ]  = $page_data_summary[ $type ] ?? array();
 			$summary[ $type ] += $field_data_summary[ $type ] ?? array();
@@ -48,16 +50,16 @@ class FrmProApplicationsHelper {
 	 * Scan pages for embedded forms and views that match application.
 	 *
 	 * @param int $application_id
+	 *
 	 * @return array<array> summary of each page added, indexed by type and id with shortcode match details.
 	 */
 	private static function search_pages_for_forms_and_views( $application_id ) {
-		$where     = array(
+		$where             = array(
 			'post_type'   => 'page',
 			'post_status' => array( 'publish', 'private', 'draft' ),
 		);
-		$fields    = 'ID, post_title, post_content';
-		$page_data = FrmDb::get_results( 'posts', $where, $fields );
-
+		$fields            = 'ID, post_title, post_content';
+		$page_data         = FrmDb::get_results( 'posts', $where, $fields );
 		$page_ids          = FrmProApplication::get_posts_for_application( $application_id, array( 'page' ), array( 'fields' => 'ids' ) );
 		$shortcode_matches = array();
 
@@ -71,6 +73,7 @@ class FrmProApplicationsHelper {
 			}
 
 			$page_name = $page->post_title;
+
 			foreach ( $result as $shortcode_match ) {
 				$shortcode_matches[] = array_merge(
 					$shortcode_match,
@@ -86,9 +89,8 @@ class FrmProApplicationsHelper {
 			return array();
 		}
 
-		$form_ids = FrmProApplication::get_forms_for_application( $application_id, true );
-		$view_ids = FrmProApplication::get_posts_for_application( $application_id, array( 'frm_display' ), array( 'fields' => 'ids' ) );
-
+		$form_ids           = FrmProApplication::get_forms_for_application( $application_id, true );
+		$view_ids           = FrmProApplication::get_posts_for_application( $application_id, array( 'frm_display' ), array( 'fields' => 'ids' ) );
 		$summary_by_form_id = array();
 		$summary_by_view_id = array();
 		$summary_by_page_id = array();
@@ -99,13 +101,13 @@ class FrmProApplicationsHelper {
 			$page_name = $shortcode_match['pageName'];
 
 			unset( $shortcode_match['pageId'], $shortcode_match['pageName'] );
-			$object_id = $shortcode_match['objectId'];
-
+			$object_id                        = $shortcode_match['objectId'];
 			$page_was_assigned_to_application = in_array( $page_id, $page_ids, true );
 
 			if ( 'form' === $type ) {
 				if ( ! is_int( $object_id ) ) {
 					$object_id = FrmForm::get_id_by_key( $object_id );
+
 					if ( ! $object_id ) {
 						continue;
 					}
@@ -118,6 +120,7 @@ class FrmProApplicationsHelper {
 
 					$where     = array( 'id' => $object_id );
 					$form_name = FrmDb::get_var( 'frm_forms', $where, 'name' );
+
 					if ( ! $form_name ) {
 						continue;
 					}
@@ -144,6 +147,7 @@ class FrmProApplicationsHelper {
 					}
 
 					$object_id = FrmViewsDisplay::get_id_by_key( $object_id );
+
 					if ( ! $object_id ) {
 						continue;
 					}
@@ -157,6 +161,7 @@ class FrmProApplicationsHelper {
 					global $wpdb;
 					$where      = array( 'ID' => $object_id );
 					$view_title = FrmDb::get_var( $wpdb->posts, $where, 'post_title' );
+
 					if ( ! $view_title ) {
 						continue;
 					}
@@ -205,10 +210,12 @@ class FrmProApplicationsHelper {
 
 	/**
 	 * @param int $application_id
+	 *
 	 * @return array<array> summary of each page added, indexed by page id with shortcode match details.
 	 */
 	private static function search_form_fields_for_source_forms( $application_id ) {
 		$form_ids = FrmProApplication::get_forms_for_application( $application_id, true );
+
 		if ( ! $form_ids ) {
 			return array();
 		}
@@ -219,11 +226,13 @@ class FrmProApplicationsHelper {
 				'type'    => array( 'data', 'lookup', 'form' ),
 			)
 		);
+
 		if ( ! $fields ) {
 			return array();
 		}
 
 		$summary_by_form_id = array();
+
 		foreach ( $fields as $field ) {
 			switch ( $field->type ) {
 				case 'lookup':
@@ -245,6 +254,7 @@ class FrmProApplicationsHelper {
 
 			if ( ! array_key_exists( $form_id, $summary_by_form_id ) ) {
 				$form_name = FrmDb::get_var( 'frm_forms', array( 'id' => $form_id ), 'name' );
+
 				if ( ! $form_name ) {
 					continue;
 				}
@@ -264,8 +274,6 @@ class FrmProApplicationsHelper {
 			);
 		}
 
-		unset( $form_id );
-
 		return array( 'form' => $summary_by_form_id );
 	}
 
@@ -273,19 +281,23 @@ class FrmProApplicationsHelper {
 	 * @param string   $string
 	 * @param callable $callback for handling the shortcode results
 	 * @param array    $tags
+	 *
 	 * @return array
 	 */
 	public static function get_shortcode_matches_from_string( $string, $callback, $tags = array( 'formidable', 'display-frm-data' ) ) {
 		$regex = '/' . get_shortcode_regex( $tags ) . '/';
 
 		preg_match_all( $regex, $string, $matches );
+
 		if ( empty( $matches[0] ) ) {
 			return array();
 		}
 
 		$result = array();
+
 		foreach ( $matches[0] as $index => $match ) {
 			$id = self::parse_id_from_options( $matches[3][ $index ] );
+
 			if ( false === $id ) {
 				continue;
 			}
@@ -297,34 +309,37 @@ class FrmProApplicationsHelper {
 				$result[] = $callback_response;
 			}
 		}
+
 		return $result;
 	}
 
 	/**
 	 * @param string $options
+	 *
 	 * @return false|int|string form or view id (or key) found in shortcode options. False when there is no match.
 	 */
 	private static function parse_id_from_options( $options ) {
 		$split = explode( ' ', $options );
+
 		foreach ( $split as $current ) {
-			if ( 0 === strpos( $current, 'id=' ) ) {
-				$current = str_replace( '"', '', $current );
-				$current = str_replace( "'", '', $current );
-
-				$substr = substr( $current, 3 );
-				if ( is_numeric( $substr ) ) {
-					return intval( $substr );
-				}
-
-				return sanitize_key( $substr );
+			if ( ! str_starts_with( $current, 'id=' ) ) {
+				continue;
 			}
+
+			$current = str_replace( '"', '', $current );
+			$current = str_replace( "'", '', $current );
+
+			$substr = substr( $current, 3 );
+			return is_numeric( $substr ) ? intval( $substr ) : sanitize_key( $substr );
 		}
+
 		return false;
 	}
 
 	/**
 	 * @param string $shortcode_found
 	 * @param int    $id_found
+	 *
 	 * @return array|false
 	 */
 	public static function handle_shortcode( $shortcode_found, $id_found ) {
@@ -349,10 +364,12 @@ class FrmProApplicationsHelper {
 	 * @since 6.19
 	 *
 	 * @param array $values
+	 *
 	 * @return void
 	 */
 	public static function maybe_update_form_applications( $values ) {
 		$lite_version_is_met = version_compare( FrmAppHelper::plugin_version(), '6.18', '>=' );
+
 		if ( empty( $values['id'] ) || ! isset( $values['form_applications'] ) && ! $lite_version_is_met ) {
 			return;
 		}
@@ -363,6 +380,7 @@ class FrmProApplicationsHelper {
 		}
 
 		$form_id = absint( $values['id'] );
+
 		if ( ! $form_id ) {
 			return;
 		}
@@ -370,13 +388,17 @@ class FrmProApplicationsHelper {
 		$selected_application_ids = ! empty( $values['form_applications'] ) ? array_map( 'absint', $values['form_applications'] ) : array();
 		$form_application_ids     = self::get_application_ids_for_form( $form_id );
 		$old_application_ids      = array_diff( $form_application_ids, $selected_application_ids );
+
 		foreach ( $old_application_ids as $application_id ) {
 			FrmProApplication::remove_form_from_application( $application_id, $form_id );
 		}
+
 		$new_application_ids = array_diff( $selected_application_ids, $form_application_ids );
+
 		foreach ( $new_application_ids as $application_id ) {
 			FrmProApplication::add_form_to_application( $application_id, $form_id );
 		}
+
 		FrmDb::cache_delete_group( 'termmeta' ); // Clear cache to get the latest application data when settings page is reloaded.
 	}
 
@@ -384,6 +406,7 @@ class FrmProApplicationsHelper {
 	 * Get all application ids for a single form.
 	 *
 	 * @param int $form_id
+	 *
 	 * @return array<int>
 	 */
 	public static function get_application_ids_for_form( $form_id ) {
@@ -407,6 +430,7 @@ class FrmProApplicationsHelper {
 	 * @since 5.3.1
 	 *
 	 * @param array<int> $application_ids
+	 *
 	 * @return string
 	 */
 	public static function get_application_tags_html( $application_ids ) {
@@ -422,6 +446,7 @@ class FrmProApplicationsHelper {
 
 				$class = 'frm-meta-tag frm-grey-tag';
 				$href  = FrmProApplicationsHelper::get_edit_url( $application_id );
+
 				if ( $can_edit_applications ) {
 					$link = '<a href="' . esc_url( $href ) . '" class="' . esc_attr( $class ) . '">' .
 						esc_html( $application->name ) .
@@ -467,10 +492,12 @@ class FrmProApplicationsHelper {
 	 */
 	public static function get_required_templates_capability() {
 		$cap = 'frm_application_dashboard';
+
 		if ( ! current_user_can( $cap ) && current_user_can( 'administrator' ) ) {
 			// Make sure administrator can always access Applications.
-			$cap = 'administrator';
+			return 'administrator';
 		}
+
 		return $cap;
 	}
 

@@ -48,26 +48,29 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 		}
 
 		$max_limit = intval( FrmField::get_option( $this->field, 'max_limit' ) );
-		if ( $max_limit ) {
-			$max_limit_type = FrmField::get_option( $this->field, 'max_limit_type' );
-			$content_length = self::get_content_length( $value );
-			$class          = 'frm_pro_max_limit_desc';
-			if ( $content_length > $max_limit ) {
-				$class .= ' frm_error';
-			}
 
-			$input_html .= '<div class="' . esc_attr( $class ) . '" data-max="' . intval( $max_limit ) . '" data-max-type="' . esc_attr( $max_limit_type ) . '">';
-			$input_html .= sprintf(
-				// Translators: %1$s: the current content length, %2$s: the max limitation of content, %3$s: type of max limitation.
-				esc_html( _x( '%1$s of %2$s max %3$s', 'content limitation description', 'formidable-pro' ) ),
-				'<span id="frm_pro_content_length_' . intval( $this->field_id ) . '">' . intval( $content_length ) . '</span>',
-				intval( $max_limit ),
-				esc_html( 'word' === $max_limit_type ? __( 'words', 'formidable-pro' ) : __( 'characters', 'formidable-pro' ) )
-			);
-			$input_html .= '</div>';
+		if ( ! $max_limit ) {
+			return $input_html;
 		}
 
-		return $input_html;
+		$max_limit_type = FrmField::get_option( $this->field, 'max_limit_type' );
+		$content_length = self::get_content_length( $value );
+		$class          = 'frm_pro_max_limit_desc';
+
+		if ( $content_length > $max_limit ) {
+			$class .= ' frm_error';
+		}
+
+		$input_html .= '<div class="' . esc_attr( $class ) . '" data-max="' . intval( $max_limit ) . '" data-max-type="' . esc_attr( $max_limit_type ) . '">';
+		$input_html .= sprintf(
+			// Translators: %1$s: the current content length, %2$s: the max limitation of content, %3$s: type of max limitation.
+			esc_html_x( '%1$s of %2$s max %3$s', 'content limitation description', 'formidable-pro' ),
+			'<span id="frm_pro_content_length_' . intval( $this->field_id ) . '">' . intval( $content_length ) . '</span>',
+			intval( $max_limit ),
+			esc_html( 'word' === $max_limit_type ? __( 'words', 'formidable-pro' ) : __( 'characters', 'formidable-pro' ) )
+		);
+
+		return $input_html . '</div>';
 	}
 
 	/**
@@ -77,16 +80,19 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 	 */
 	public function validate( $args ) {
 		$max_limit = intval( FrmField::get_option( $this->field, 'max_limit' ) );
+
 		if ( ! $max_limit ) {
 			return array();
 		}
 
 		$length = $this->get_content_length( $args['value'] );
+
 		if ( $length <= $max_limit ) {
 			return array();
 		}
 
 		$message = '';
+
 		if ( ! FrmField::is_option_empty( $this->field, 'invalid' ) ) {
 			$message = FrmFieldsHelper::get_error_msg( $this->field, 'invalid' );
 		}
@@ -117,6 +123,7 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 	 * Gets content length based on the content limitation options.
 	 *
 	 * @param string $content The content.
+	 *
 	 * @return int
 	 */
 	private function get_content_length( $content ) {
@@ -135,6 +142,7 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 		if ( function_exists( 'mb_strlen' ) ) {
 			return mb_strlen( $content );
 		}
+
 		return strlen( $content );
 	}
 
@@ -145,7 +153,7 @@ class FrmProFieldTextarea extends FrmFieldTextarea {
 	 */
 	public function set_value_before_save( $value ) {
 		if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) ) ) {
-			$value = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+			return FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
 		}
 
 		return $value;

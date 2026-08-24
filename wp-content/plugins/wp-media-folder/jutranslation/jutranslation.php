@@ -386,7 +386,7 @@ class Jutranslation
             echo json_encode(array('status' => 'error', 'message' => 'language empty'));
             die();
         }
-        if (!preg_match('/^[a-z]{2,3}(?:-[a-zA-Z]{4})?(?:-[A-Z]{2,3})?$/', $language)) {
+        if (!preg_match('/^[a-z]{2,3}(?:-[A-Za-z0-9]+)*$/', $language)) {
             echo json_encode(array('status' => 'error', 'message' => 'invalid language code'));
             die();
         }
@@ -531,7 +531,7 @@ class Jutranslation
             echo json_encode(array('status' => 'error', 'message' => 'language empty'));
             die();
         }
-        if (!preg_match('/^[a-z]{2,3}(?:-[a-zA-Z]{4})?(?:-[A-Z]{2,3})?$/', $language)) {
+        if (!preg_match('/^[a-z]{2,3}(?:-[A-Za-z0-9]+)*$/', $language)) {
             echo json_encode(array('status' => 'error', 'message' => 'invalid language code'));
             die();
         }

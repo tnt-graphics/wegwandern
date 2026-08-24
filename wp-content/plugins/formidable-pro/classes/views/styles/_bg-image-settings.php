@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+
 // TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 <div class="frm5 frm_form_field <?php echo esc_attr( $class ); ?>">

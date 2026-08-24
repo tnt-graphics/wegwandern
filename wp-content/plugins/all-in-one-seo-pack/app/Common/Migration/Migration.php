@@ -51,15 +51,11 @@ class Migration {
 		// NOTE: This needs to go above the is_admin check in order for it to run at all.
 		add_action( 'aioseo_migrate_post_meta', [ $this->meta, 'migratePostMeta' ] );
 
-		if ( ! is_admin() ) {
-			return;
-		}
-
 		if ( wp_doing_ajax() || wp_doing_cron() ) {
 			return;
 		}
 
-		add_action( 'init', [ $this, 'init' ], 2000 );
+		add_action( 'admin_init', [ $this, 'init' ], 2000 );
 	}
 
 	/**
@@ -235,6 +231,16 @@ class Migration {
 	 * @return bool Whether the V3 migration is running.
 	 */
 	public function isMigrationRunning() {
-		return aioseo()->core->cache->get( 'v3_migration_in_progress_settings' ) || aioseo()->core->cache->get( 'v3_migration_in_progress_posts' );
+		static $migrationRunning = null;
+		if ( null !== $migrationRunning ) {
+			return $migrationRunning;
+		}
+
+		$migrationRunning = (
+			aioseo()->core->cache->get( 'v3_migration_in_progress_settings' ) ||
+			aioseo()->core->cache->get( 'v3_migration_in_progress_posts' )
+		) ?? false;
+
+		return $migrationRunning;
 	}
 }

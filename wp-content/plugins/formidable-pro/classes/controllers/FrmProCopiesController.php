@@ -27,11 +27,14 @@ class FrmProCopiesController {
 		$importing = defined( 'WP_IMPORTING' ) && WP_IMPORTING;
 		$upgrading = $frm_vars['doing_upgrade'] ?? false;
 
-		if ( $importing || $upgrading ) {
-			$install_complete = get_option( 'frmpro_db_version' );
-			if ( ! $install_complete ) {
-				self::install();
-			}
+		if ( ! $importing && ! $upgrading ) {
+			return;
+		}
+
+		$install_complete = get_option( 'frmpro_db_version' );
+
+		if ( ! $install_complete ) {
+			self::install();
 		}
 	}
 
@@ -42,14 +45,18 @@ class FrmProCopiesController {
 		FrmProCopy::copy_forms();
 	}
 
+	/**
+	 * @param array $values
+	 */
 	public static function save_copied_form( $id, $values ) {
 		global $blog_id, $wpdb;
 
 		self::maybe_install_import();
 
 		$form_key = FrmForm::get_key_by_id( $id );
+
 		if ( 'contact' === $form_key ) {
-			// don't copy the form that is already autocreated
+			// Don't copy the form that is already autocreated
 			return;
 		}
 
@@ -60,16 +67,18 @@ class FrmProCopiesController {
 					'type'    => 'form',
 				)
 			);
-		} else {
-			$wpdb->delete(
-				FrmProCopy::table_name(),
-				array(
-					'type'    => 'form',
-					'form_id' => $id,
-					'blog_id' => $blog_id,
-				)
-			);
+
+			return;
 		}
+
+		$wpdb->delete(
+			FrmProCopy::table_name(),
+			array(
+				'type'    => 'form',
+				'form_id' => $id,
+				'blog_id' => $blog_id,
+			)
+		);
 	}
 
 	public static function destroy_copied_form( $id ) {
@@ -79,8 +88,9 @@ class FrmProCopiesController {
 				'blog_id' => $blog_id,
 				'form_id' => $id,
 				'type'    => 'form',
-			) 
+			)
 		);
+
 		foreach ( $copies as $copy ) {
 			FrmProCopy::destroy( $copy->id );
 		}
@@ -88,6 +98,7 @@ class FrmProCopiesController {
 
 	/**
 	 * @param mixed $site
+	 *
 	 * @return void
 	 */
 	public static function delete_copy_rows( $site ) {
@@ -100,6 +111,7 @@ class FrmProCopiesController {
 		}
 
 		$copies = FrmProCopy::getAll( array( 'blog_id' => $blog_id ) );
+
 		foreach ( $copies as $copy ) {
 			FrmProCopy::destroy( $copy->id );
 			unset( $copy );

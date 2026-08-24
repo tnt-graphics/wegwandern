@@ -43,16 +43,14 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 
 	/**
 	 * @since 4.07
+	 *
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	public function validate( $args ) {
 		if ( ! $this->should_validate() ) {
 			return array();
-		}
-
-		if ( ! is_callable( array( $this, 'validate_against_api' ) ) ) {
-			return parent::validate( $args );
 		}
 
 		if ( is_callable( self::class . '::post_data_includes_token' ) ) {
@@ -140,6 +138,7 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	private function maybe_set_captcha_score_in_form_state() {
 		global $frm_vars;
 		$form_id = $this->get_form_id();
+
 		if ( ! empty( $frm_vars['captcha_scores'][ $form_id ] ) ) {
 			FrmProFormState::set_initial_value( 'captcha', $frm_vars['captcha_scores'][ $form_id ] );
 		}
@@ -154,11 +153,13 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 	 */
 	private function maybe_pull_captcha_score_from_form_state() {
 		$score = FrmProFormState::get_from_request( 'captcha', false );
+
 		if ( ! is_numeric( $score ) ) {
 			return;
 		}
 
 		global $frm_vars;
+
 		if ( ! isset( $frm_vars['captcha_scores'] ) ) {
 			$frm_vars['captcha_scores'] = array();
 		}
@@ -189,6 +190,7 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 
 		if ( isset( $_POST['recaptcha_checked'] ) ) {
 			$nonce = FrmAppHelper::get_param( 'recaptcha_checked', '', 'post', 'sanitize_text_field' );
+
 			if ( wp_verify_nonce( $nonce, 'frm_captcha' ) ) {
 				self::$checked = wp_create_nonce( 'frm_captcha' );
 				return self::$checked;
@@ -200,10 +202,11 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 
 	/**
 	 * @since 4.07
+	 *
 	 * @return false|string
 	 */
 	public static function checked() {
-		// pass along recaptcha_checked even if there is no captcha being validated
+		// Pass along recaptcha_checked even if there is no captcha being validated
 		// (which would happen if we're going to a previous page without a captcha)
 		return self::$checked ?? self::validate_checked();
 	}
@@ -248,17 +251,24 @@ class FrmProFieldCaptcha extends FrmFieldCaptcha {
 
 		global $frm_vars;
 		$is_in_place_edit = ! empty( $frm_vars['inplace_edit'] );
+
 		if ( $is_in_place_edit ) {
 			self::$checked = wp_create_nonce( 'frm_captcha' );
 		}
-		if ( self::posting_captcha_data() || $is_in_place_edit ) {
-			$checked = self::checked();
-			if ( $checked ) {
-				?>
-				<input type="hidden" name="recaptcha_checked" value="<?php echo esc_attr( $checked ); ?>" />
-				<?php
-			}
+
+		if ( ! self::posting_captcha_data() && ! $is_in_place_edit ) {
+			return;
 		}
+
+		$checked = self::checked();
+
+		if ( ! $checked ) {
+			return;
+		}
+
+		?>
+		<input type="hidden" name="recaptcha_checked" value="<?php echo esc_attr( $checked ); ?>" />
+		<?php
 	}
 
 	/**

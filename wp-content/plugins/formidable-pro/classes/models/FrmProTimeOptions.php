@@ -3,6 +3,7 @@
  * Handle time options
  *
  * @package FormidablePro
+ *
  * @since 6.9
  */
 
@@ -241,6 +242,7 @@ class FrmProTimeOptions {
 		}
 
 		$step = $this->step->get_minute_step();
+
 		if ( ! $step ) {
 			// Example: step is 1 hour, so minute won't change.
 			return array( zeroise( $this->m_start, 2 ) );
@@ -273,6 +275,7 @@ class FrmProTimeOptions {
 		}
 
 		$step = $this->step->get_second_step();
+
 		if ( ! $step ) {
 			return array( zeroise( $this->m_start, 2 ) );
 		}
@@ -299,6 +302,7 @@ class FrmProTimeOptions {
 	 */
 	public function get_millisecond_options() {
 		$step = $this->step->get_millisecond_step();
+
 		if ( ! $step ) {
 			return array( zeroise( $this->ms_start, 3 ) );
 		}
@@ -326,10 +330,12 @@ class FrmProTimeOptions {
 	 * @param int $step  Step value. Default is `1`.
 	 * @param int $num_length Number of character in the option. Example, `num_length` is `3`, option will be `001`.
 	 * @param int $max_value  Max value of option. If option is greater or equal to this value, it will subtract this value.
+	 *
 	 * @return array
 	 */
 	private function range_options( $start, $end, $step = 1, $num_length = 2, $max_value = 60 ) {
 		$options = array();
+
 		for ( $i = intval( $start ); $i <= intval( $end ); $i += $step ) {
 			$options[] = zeroise( $i >= $max_value ? $i - $max_value : $i, $num_length );
 		}

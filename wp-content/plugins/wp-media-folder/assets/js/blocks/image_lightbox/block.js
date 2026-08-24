@@ -8,19 +8,21 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-(function (wpI18n, wpBlocks, wpElement, wpEditor, wpComponents) {
+(function (wpI18n, wpBlocks, wpElement, wpBlockEditor, wpComponents) {
     var __ = wpI18n.__;
     var Component = wpElement.Component,
         Fragment = wpElement.Fragment;
     var registerBlockType = wpBlocks.registerBlockType;
-    var InspectorControls = wpEditor.InspectorControls,
-        MediaUpload = wpEditor.MediaUpload,
-        BlockControls = wpEditor.BlockControls,
-        BlockAlignmentToolbar = wpEditor.BlockAlignmentToolbar;
+    var InspectorControls = wpBlockEditor.InspectorControls,
+        MediaUpload = wpBlockEditor.MediaUpload,
+        BlockControls = wpBlockEditor.BlockControls,
+        BlockAlignmentToolbar = wpBlockEditor.BlockAlignmentToolbar,
+        useBlockProps = wpBlockEditor.useBlockProps;
     var PanelBody = wpComponents.PanelBody,
         SelectControl = wpComponents.SelectControl,
         Toolbar = wpComponents.Toolbar,
         Button = wpComponents.Button,
+        ToolbarButton = wpComponents.ToolbarButton,
         IconButton = wpComponents.IconButton;
 
     var wpmfImageLightbox = function (_Component) {
@@ -46,6 +48,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     lightbox_url = attributes.lightbox_url,
                     align = attributes.align;
 
+                var blockProps = this.props.blockProps;
+
                 var list_sizes = Object.keys(wpmf_lightbox_blocks.vars.sizes).map(function (key, label) {
                     return {
                         label: wpmf_lightbox_blocks.vars.sizes[key],
@@ -59,10 +63,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     id !== 0 && React.createElement(
                         Toolbar,
                         null,
-                        React.createElement(BlockAlignmentToolbar, { value: align,
+                        React.createElement(BlockAlignmentToolbar, {
+                            value: align,
                             onChange: function onChange(align) {
                                 return setAttributes({ align: align });
-                            } }),
+                            }
+                        }),
                         React.createElement(MediaUpload, {
                             onSelect: function onSelect(img) {
                                 setAttributes({
@@ -77,7 +83,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             render: function render(_ref) {
                                 var open = _ref.open;
 
-                                return React.createElement(IconButton, {
+                                return React.createElement(ToolbarButton, {
                                     className: "components-toolbar__control",
                                     label: __('Change Image', 'wpmf'),
                                     icon: "edit",
@@ -94,7 +100,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     controls,
                     React.createElement(
                         "div",
-                        { className: "wp-block-shortcode" },
+                        _extends({ className: "wp-block-shortcode" }, blockProps),
                         id !== 0 && React.createElement(
                             "div",
                             { className: "wpmf-image-lightbox-block" },
@@ -105,6 +111,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     PanelBody,
                                     { title: __('PDF Settings', 'wpmf') },
                                     React.createElement(SelectControl, {
+                                        __next40pxDefaultSize: true,
+                                        __nextHasNoMarginBottom: true,
                                         label: __('Image size', 'wpmf'),
                                         value: size,
                                         options: list_sizes,
@@ -113,6 +121,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                         }
                                     }),
                                     React.createElement(SelectControl, {
+                                        __next40pxDefaultSize: true,
+                                        __nextHasNoMarginBottom: true,
                                         label: __('Lightbox size', 'wpmf'),
                                         value: lightbox_size,
                                         options: list_sizes,
@@ -128,10 +138,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             React.createElement(
                                 "a",
                                 null,
-                                React.createElement("img", { src: url, "data-wpmflightbox": "1",
+                                React.createElement("img", {
+                                    src: url, "data-wpmflightbox": "1",
                                     className: "align" + align + " size-" + size + " wp-image-" + id,
                                     "data-wpmf_size_lightbox": lightbox_size,
-                                    "data-wpmf_image_lightbox": lightbox_url })
+                                    "data-wpmf_image_lightbox": lightbox_url
+                                })
                             )
                         ),
                         id === 0 && React.createElement(MediaUpload, {
@@ -167,45 +179,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         return wpmfImageLightbox;
     }(Component);
 
+    var wpmfImageLightboxEdit = function wpmfImageLightboxEdit(props) {
+        var blockProps = useBlockProps();
+        return React.createElement(wpmfImageLightbox, Object.assign({}, props, { blockProps: blockProps }));
+    };
+
     registerBlockType('wpmf/image-lightbox', {
-        title: wpmf_lightbox_blocks.l18n.block_image_lightbox_title,
-        icon: 'format-image',
-        category: 'wp-media-folder',
-        attributes: {
-            image: {
-                type: 'object',
-                default: {}
-            },
-            link_to: {
-                type: 'string',
-                default: 'full'
-            },
-            id: {
-                type: 'number',
-                default: 0
-            },
-            size: {
-                type: 'string',
-                default: 'full'
-            },
-            url: {
-                type: 'string',
-                default: ''
-            },
-            lightbox_size: {
-                type: 'string',
-                default: 'full'
-            },
-            lightbox_url: {
-                type: 'string',
-                default: ''
-            },
-            align: {
-                type: 'string',
-                default: 'center'
-            }
-        },
-        edit: wpmfImageLightbox,
+        edit: wpmfImageLightboxEdit,
         save: function save(_ref3) {
             var attributes = _ref3.attributes;
             var id = attributes.id,
@@ -214,13 +194,16 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                 lightbox_size = attributes.lightbox_size,
                 lightbox_url = attributes.lightbox_url,
                 align = attributes.align;
+            var blockProps = useBlockProps.save();
 
             return React.createElement(
                 "a",
-                {className: "align" + align},
-                React.createElement("img", { src: url, "data-wpmflightbox": "1", className: "align" + align + " size-" + size + " wp-image-" + id,
+                _extends({ className: "align" + align }, blockProps),
+                React.createElement("img", {
+                    src: url, "data-wpmflightbox": "1", className: "align" + align + " size-" + size + " wp-image-" + id,
                     "data-wpmf_size_lightbox": lightbox_size,
-                    "data-wpmf_image_lightbox": lightbox_url })
+                    "data-wpmf_image_lightbox": lightbox_url
+                })
             );
         },
         getEditWrapperProps: function getEditWrapperProps(attributes) {

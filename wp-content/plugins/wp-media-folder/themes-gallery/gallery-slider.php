@@ -1,6 +1,7 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 wp_enqueue_style('wpmf-slick-style');
 wp_enqueue_style('wpmf-slick-theme-style');
@@ -57,7 +58,9 @@ $items = array();
 foreach ($gallery_items as $item_id => $attachment) {
     $post_title = (!empty($caption_lightbox) && $attachment->post_excerpt !== '') ? $attachment->post_excerpt : $attachment->post_title;
     $remote_video = get_post_meta($attachment->ID, 'wpmf_remote_video_link', true);
-    $item_urls = wp_get_attachment_image_url($attachment->ID, $targetsize);
+    $item_urls = function_exists('wpmfResolveAttachmentUrl')
+        ? wpmfResolveAttachmentUrl($attachment->ID, 'full', $targetsize)
+        : wp_get_attachment_image_url($attachment->ID, $targetsize);
     $url = (!empty($remote_video)) ? $remote_video : $item_urls;
     if (!empty($remote_video)) {
         $lightbox_urls = $this->getLightboxUrl($attachment->ID, $targetsize);
@@ -74,7 +77,7 @@ $output .= '<div id="' . $selector . '" data-id="' . $selector . '" data-gutterw
  class="' . implode(' ', $class_default) . '" data-count="'. esc_attr(count($gallery_items)) .'" data-wpmfcolumns="' . $columns . '" data-auto_animation="' . esc_html($autoplay) . '" data-duration="' . (int)$duration . '" data-border-width="' . $border_width . '" data-shadow="' . $shadow . '">';
 
 $pos = 0;
-$caption_lightbox = wpmfGetOption('caption_lightbox_gallery');
+$caption_lightbox = WpmfHelper::wpmfGetOption('caption_lightbox_gallery');
 foreach ($gallery_items as $item_id => $attachment) {
     $post_title = (!empty($caption_lightbox) && $attachment->post_excerpt !== '') ? $attachment->post_excerpt : $attachment->post_title;
     $post_excerpt = esc_html($attachment->post_excerpt);
@@ -128,14 +131,20 @@ class="wpmfgalleryaddonswipe wpmf_overlay '. (!empty($remote_video) ? 'isvideo' 
 
     $output .= '<div class="wpmf-gallery-item item" data-index="'. esc_attr($pos) .'" data-tags="' . esc_html($img_tags) . '" style="opacity: 0; padding: '. (int)$gutterwidth / 2 .'px">';
     $output .= '<div class="wpmf-gallery-icon">';
-    $output .= wpmfRenderVideoIcon($attachment->ID);
+    $output .= WpmfHelper::wpmfRenderVideoIcon($attachment->ID);
 
     $output .= $icon; // phpcs:ignore WordPress.Security.EscapeOutput -- Content already escaped in the method
     $output .= '<a class="'. (((int)$columns === 1) ? '' : 'square_thumbnail') .'" data-lightbox="'. esc_attr($lightbox) .'" data-href="' . esc_url($url) . '" title="'. esc_attr($post_title) .'" data-index="'. esc_attr($pos) .'">';
     if ((int)$columns > 1) {
         $output .= '<div class="img_centered">';
     }
-    $output .= '<img alt="'. esc_attr($image_alt) .'" class="wpmf_slider_img" src="'. esc_url(wp_get_attachment_image_url($attachment->ID, $size)) .'">';
+    $preview_url = function_exists('wpmfResolveAttachmentUrl')
+        ? wpmfResolveAttachmentUrl($attachment->ID, 'preview', $size)
+        : wp_get_attachment_image_url($attachment->ID, $size);
+    if ($preview_url === '') {
+        $preview_url = wp_get_attachment_url($attachment->ID);
+    }
+    $output .= '<img alt="'. esc_attr($image_alt) .'" class="wpmf_slider_img" data-attachment-id="'. (int) $attachment->ID .'" data-wpmf-size="'. esc_attr($size) .'" src="'. esc_url($preview_url) .'">';
     if ((int)$columns > 1) {
         $output .= '</div>';
     }

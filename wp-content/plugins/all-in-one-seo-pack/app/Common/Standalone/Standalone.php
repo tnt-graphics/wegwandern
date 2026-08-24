@@ -91,7 +91,7 @@ class Standalone {
 	 *
 	 * @since 4.2.7
 	 *
-	 * @var array[Object]
+	 * @var object[]
 	 */
 	public $pageBuilderIntegrations = [];
 
@@ -100,7 +100,7 @@ class Standalone {
 	 *
 	 * @since 4.2.7
 	 *
-	 * @var array[Object]
+	 * @var object[]
 	 */
 	public $standaloneBlocks = [];
 
@@ -120,6 +120,7 @@ class Standalone {
 		$this->bbPress          = aioseo()->pro ? new ProStandalone\BbPress\BbPress() : new BbPress\BbPress();
 
 		aioseo()->pro ? new ProStandalone\DetailsColumn() : new DetailsColumn();
+		aioseo()->pro ? new ProStandalone\NpsSurvey() : null;
 
 		new AdminBarNoindexWarning();
 		new LimitModifiedDate();
@@ -134,7 +135,9 @@ class Standalone {
 			'wpbakery'   => new PageBuilders\WPBakery(),
 			'avada'      => new PageBuilders\Avada(),
 			'siteorigin' => new PageBuilders\SiteOrigin(),
-			'thrive'     => new PageBuilders\ThriveArchitect()
+			'thrive'     => new PageBuilders\ThriveArchitect(),
+			'bricks'     => new PageBuilders\Bricks(),
+			'oxygen'     => new PageBuilders\Oxygen()
 		];
 
 		$this->standaloneBlocks = [

@@ -45,7 +45,13 @@ class Scanner
         \register_rest_route($namespace, '/scanner/result/externals/template/(?P<template>[a-zA-Z0-9_-]+)', ['methods' => 'GET', 'callback' => [$this, 'routeResultAllExternalUrlsByTemplate'], 'permission_callback' => [$this, 'permission_callback']]);
         \register_rest_route($namespace, '/scanner/result/ignore', ['methods' => 'POST', 'callback' => [$this, 'routeResultIgnorePost'], 'permission_callback' => [$this, 'permission_callback'], 'args' => ['type' => ['type' => 'string', 'enum' => ['template', 'host'], 'required' => \true], 'value' => ['type' => 'string', 'required' => \true], 'ignored' => ['type' => 'boolean', 'required' => \true]]]);
         \register_rest_route($namespace, '/scanner/result/markup/(?P<id>\\d+)', ['methods' => 'GET', 'callback' => [$this, 'routeResultMarkupById'], 'permission_callback' => [$this, 'permission_callback']]);
-        \register_rest_route($namespace, '/scanner/scan-without-login', ['methods' => 'GET', 'callback' => [$this, 'routeScanWithoutLogin'], 'permission_callback' => [$this, 'permission_callback'], 'args' => ['url' => ['type' => 'string', 'required' => \true], 'jobId' => ['type' => 'number', 'required' => \true]]]);
+        \register_rest_route($namespace, '/scanner/scan-without-login', [
+            'methods' => 'GET',
+            'callback' => [$this, 'routeScanWithoutLogin'],
+            // Same gate as real-queue workers: editors already run non-loopback client scans.
+            'permission_callback' => [$this, 'permission_callback_queue'],
+            'args' => ['url' => ['type' => 'string', 'required' => \true], 'jobId' => ['type' => 'number', 'required' => \true]],
+        ]);
     }
     /**
      * Check if user is allowed to call this service requests.
@@ -53,6 +59,13 @@ class Scanner
     public function permission_callback()
     {
         return \current_user_can(Core::MANAGE_MIN_CAPABILITY);
+    }
+    /**
+     * Same capability gate as real-queue (`edit_posts` ∪ registered caps).
+     */
+    public function permission_callback_queue()
+    {
+        return Core::getInstance()->getRealQueue()->currentUserAllowedToQuery();
     }
     /**
      * See API docs.
@@ -203,7 +216,7 @@ class Scanner
      * @apiName ScanWithoutLogin
      * @apiGroup Scanner
      * @apiVersion 1.0.0
-     * @apiPermission manage_options
+     * @apiPermission edit_posts (real-queue query capability)
      */
     public function routeScanWithoutLogin($request)
     {

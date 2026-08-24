@@ -22,11 +22,10 @@ class FrmProPost {
 	 * @param int|object   $entry
 	 * @param int|object   $form
 	 * @param false|object $action
+	 *
 	 * @return int|null
 	 */
 	public static function create_post( $entry, $form, $action = false ) {
-		global $wpdb;
-
 		$entry_id = is_object( $entry ) ? $entry->id : $entry;
 		$form_id  = is_object( $form ) ? $form->id : $form;
 
@@ -56,19 +55,21 @@ class FrmProPost {
 			// Do not set frm_display_id if the content is mapped to a single field
 			// check for auto view and set frm_display_id - for reverse compatibility
 			$display = FrmProDisplay::get_auto_custom_display( compact( 'form_id', 'entry_id' ) );
+
 			if ( $display ) {
 				$post['post_custom']['frm_display_id'] = $display->ID;
 			}
 		}
 
-		$post_id = self::insert_post( $entry, $post, array(), $form, $action );
-		return $post_id;
+		return self::insert_post( $entry, $post, array(), $form, $action );
 	}
 
 	/**
-	 * @param array      $new_post
-	 * @param array|null $post
-	 * @param mixed      $form
+	 * @param object       $entry
+	 * @param array        $new_post
+	 * @param array|null   $post
+	 * @param false|object $form
+	 * @param false|object $action
 	 */
 	public static function insert_post( $entry, $new_post, $post, $form = false, $action = false ) {
 		if ( ! $action ) {
@@ -80,9 +81,9 @@ class FrmProPost {
 		}
 
 		$post_fields = self::get_post_fields( $new_post, 'insert_post' );
+		$editing     = true;
 
-		$editing = true;
-		if ( empty( $post ) ) {
+		if ( ! $post ) {
 			$editing = false;
 			$post    = array();
 		}
@@ -104,12 +105,12 @@ class FrmProPost {
 			array(
 				'form'  => $form,
 				'entry' => $entry,
-			) 
+			)
 		);
 
 		$post_ID = wp_insert_post( $post );
 
-		if ( is_wp_error( $post_ID ) || empty( $post_ID ) ) {
+		if ( is_wp_error( $post_ID ) || ! $post_ID ) {
 			return;
 		}
 
@@ -126,19 +127,14 @@ class FrmProPost {
 	}
 
 	public static function destroy_post( $entry_id, $entry = false ) {
-		global $wpdb;
-
-		if ( $entry ) {
-			$post_id = $entry->post_id;
-		} else {
-			$post_id = FrmDb::get_var( $wpdb->prefix . 'frm_items', array( 'id' => $entry_id ), 'post_id' );
-		}
+		$post_id = $entry ? $entry->post_id : FrmDb::get_var( 'frm_items', array( 'id' => $entry_id ), 'post_id' );
 
 		// Trigger delete actions for parent entry
 		FrmProFormActionsController::trigger_delete_actions( $entry_id, $entry );
 
-		// delete child entries
-		$child_entries = FrmDb::get_col( $wpdb->prefix . 'frm_items', array( 'parent_item_id' => $entry_id ) );
+		// Delete child entries
+		$child_entries = FrmDb::get_col( 'frm_items', array( 'parent_item_id' => $entry_id ) );
+
 		foreach ( $child_entries as $child_entry ) {
 			FrmEntry::destroy( $child_entry );
 		}
@@ -154,11 +150,13 @@ class FrmProPost {
 	 * @param WP_Post  $action
 	 * @param stdClass $entry
 	 * @param stdClass $form
+	 *
 	 * @return array
 	 */
 	public static function setup_post( $action, $entry, $form ) {
 		$temp_fields = FrmField::get_all_for_form( $form->id, '', 'include' );
 		$fields      = array();
+
 		foreach ( $temp_fields as $f ) {
 			$fields[ $f->id ] = $f;
 			unset( $f );
@@ -185,29 +183,31 @@ class FrmProPost {
 			$new_post['comment_status'] = $action->post_content['comment_status'];
 		}
 
-		$new_post = apply_filters( 'frm_new_post', $new_post, compact( 'form', 'action', 'entry' ) );
-
-		return $new_post;
+		return apply_filters( 'frm_new_post', $new_post, compact( 'form', 'action', 'entry' ) );
 	}
 
 	/**
 	 * @param array $post
+	 *
 	 * @return void
 	 */
 	private static function populate_post_author( &$post ) {
 		$new_author = FrmAppHelper::get_post_param( 'frm_user_id', 0, 'absint' );
+
 		if ( ! isset( $post['post_author'] ) && $new_author ) {
 			$post['post_author'] = $new_author;
 		}
 	}
 
 	/**
-	 * @param WP_Post $action
+	 * @param WP_Post  $action
 	 * @param stdClass $entry
+	 * @param array    $new_post
+	 *
+	 * @return void
 	 */
 	private static function populate_post_fields( $action, $entry, &$new_post ) {
-		$post_fields = self::get_post_fields( $new_post, 'post_fields' );
-
+		$post_fields    = self::get_post_fields( $new_post, 'post_fields' );
 		$combined_metas = self::get_combined_metas( $entry );
 
 		foreach ( $post_fields as $setting_name ) {
@@ -243,6 +243,7 @@ class FrmProPost {
 	 * @since 6.8
 	 *
 	 * @param object $entry
+	 *
 	 * @return array
 	 */
 	private static function get_combined_metas( $entry ) {
@@ -267,6 +268,7 @@ class FrmProPost {
 	 *
 	 * @since 2.0.2
 	 *
+	 * @param array  $new_post
 	 * @param string $function
 	 *
 	 * @psalm-param 'insert_post'|'post_fields' $function
@@ -284,15 +286,15 @@ class FrmProPost {
 			'menu_order',
 		);
 
-		if ( $function === 'insert_post' ) {
-			$post_fields    = array_merge( $post_fields, array( 'post_author', 'post_type', 'post_category' ) );
-			$extra_fields   = array_keys( $new_post );
-			$exclude_fields = array( 'post_custom', 'taxonomies', 'post_category' );
-			$extra_fields   = array_diff( $extra_fields, $exclude_fields, $post_fields );
-			$post_fields    = array_merge( $post_fields, $extra_fields );
+		if ( $function !== 'insert_post' ) {
+			return $post_fields;
 		}
 
-		return $post_fields;
+		$post_fields    = array_merge( $post_fields, array( 'post_author', 'post_type', 'post_category' ) );
+		$extra_fields   = array_keys( $new_post );
+		$exclude_fields = array( 'post_custom', 'taxonomies', 'post_category' );
+		$extra_fields   = array_diff( $extra_fields, $exclude_fields, $post_fields );
+		return array_merge( $post_fields, $extra_fields );
 	}
 
 	/**
@@ -301,10 +303,12 @@ class FrmProPost {
 	 * @param WP_Post $action
 	 * @param stdClass $entry
 	 * @param array $fields
+	 * @param array $new_post
 	 */
 	private static function populate_custom_fields( $action, $entry, $fields, &$new_post ) {
 		$combined_metas = self::get_combined_metas( $entry );
-		// populate custom fields
+
+		// Populate custom fields
 		foreach ( $action->post_content['post_custom_fields'] as $custom_field ) {
 			if ( empty( $custom_field['field_id'] ) || empty( $custom_field['meta_name'] ) || ! isset( $fields[ $custom_field['field_id'] ] ) ) {
 				continue;
@@ -331,6 +335,7 @@ class FrmProPost {
 	 * @param WP_Post $action
 	 * @param stdClass $entry
 	 * @param array $fields
+	 * @param array $new_post
 	 */
 	private static function populate_taxonomies( $action, $entry, $fields, &$new_post ) {
 		foreach ( $action->post_content['post_category'] as $taxonomy ) {
@@ -346,12 +351,13 @@ class FrmProPost {
 				$value = array_map( 'trim', explode( ',', $value ) );
 
 				if ( is_taxonomy_hierarchical( $tax_type ) ) {
-					//create the term or check to see if it exists
+					// Create the term or check to see if it exists
 					$terms = array();
+
 					foreach ( $value as $v ) {
 						$term_id = term_exists( $v, $tax_type );
 
-						// create new terms if they don't exist
+						// Create new terms if they don't exist
 						if ( ! $term_id ) {
 							$term_id = wp_insert_term( $v, $tax_type );
 						}
@@ -379,14 +385,15 @@ class FrmProPost {
 			} else {
 				$value = (array) $value;
 
-				// change text to numeric ids while importing
+				// Change text to numeric ids while importing
 				if ( defined( 'WP_IMPORTING' ) ) {
 					foreach ( $value as $k => $val ) {
-						if ( empty( $val ) ) {
+						if ( ! $val ) {
 							continue;
 						}
 
 						$term = term_exists( $val, $fields[ $taxonomy['field_id'] ]->field_options['taxonomy'] );
+
 						if ( $term ) {
 							$value[ $k ] = is_array( $term ) ? $term['term_id'] : $term;
 						}
@@ -396,11 +403,12 @@ class FrmProPost {
 				}
 
 				if ( 'category' === $tax_type ) {
-					if ( ! empty( $value ) ) {
+					if ( $value ) {
 						$new_post['post_category'] = array_merge( $new_post['post_category'], $value );
 					}
 				} else {
 					$new_value = array();
+
 					foreach ( $value as $val ) {
 						if ( $val == 0 ) {
 							continue;
@@ -420,26 +428,22 @@ class FrmProPost {
 	 * If no term is retrieved, the ID will be returned
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param int|string $term_id
 	 * @param string $taxonomy
+	 *
 	 * @return string
 	 */
 	public static function get_taxonomy_term_name_from_id( $term_id, $taxonomy ) {
 		$term = get_term( $term_id, $taxonomy );
-
-		if ( $term && ! isset( $term->errors ) ) {
-			$value = $term->name;
-		} else {
-			$value = $term_id;
-		}
-
-		return $value;
+		return $term && ! isset( $term->errors ) ? $term->name : $term_id;
 	}
 
 	/**
 	 * @param array    $taxonomies
 	 * @param string   $tax_type
 	 * @param string[] $new_value
+	 *
 	 * @return void
 	 */
 	private static function fill_taxonomies( &$taxonomies, $tax_type, $new_value ) {
@@ -455,11 +459,15 @@ class FrmProPost {
 	/**
 	 * Override the post content and date format
 	 *
+	 * @param array  $post
+	 * @param array  $new_post
 	 * @param bool   $editing
+	 * @param object $form
+	 * @param object $entry
 	 * @param string $dyn_content
 	 */
 	private static function post_value_overrides( &$post, $new_post, $editing, $form, $entry, &$dyn_content ) {
-		//if empty post content and auto display, then save compiled post content
+		// If empty post content and auto display, then save compiled post content
 		$default_display = $new_post['post_custom']['frm_display_id'] ?? 0;
 		$display_id      = $editing ? get_post_meta( $post['ID'], 'frm_display_id', true ) : $default_display;
 
@@ -468,7 +476,7 @@ class FrmProPost {
 		}
 
 		if ( ! empty( $post['post_date'] ) ) {
-			// set post date gmt if post date is set
+			// Set post date gmt if post date is set
 			$post['post_date_gmt'] = get_gmt_from_date( $post['post_date'] );
 		}
 	}
@@ -484,6 +492,7 @@ class FrmProPost {
 	 *
 	 * @param array $new_post
 	 * @param int   $post_ID
+	 *
 	 * @return void
 	 */
 	private static function save_taxonomies( $new_post, $post_ID ) {
@@ -506,19 +515,22 @@ class FrmProPost {
 	/**
 	 * @param int  $post_ID
 	 * @param bool $editing
+	 *
 	 * @return void
 	 */
 	private static function link_post_attachments( $post_ID, $editing ) {
 		global $frm_vars, $wpdb;
 
 		$exclude_attached = array();
+
 		if ( ! empty( $frm_vars['media_id'] ) ) {
 			foreach ( (array) $frm_vars['media_id'] as $media_id ) {
 				$exclude_attached = array_merge( $exclude_attached, (array) $media_id );
 
 				if ( is_array( $media_id ) ) {
 					$attach_string = array_filter( $media_id );
-					if ( ! empty( $attach_string ) ) {
+
+					if ( $attach_string ) {
 						$where = array(
 							'post_type' => 'attachment',
 							'ID'        => $attach_string,
@@ -542,7 +554,7 @@ class FrmProPost {
 						array(
 							'ID'        => $media_id,
 							'post_type' => 'attachment',
-						) 
+						)
 					);
 					delete_post_meta( $media_id, '_frm_file' );
 					clean_attachment_cache( $media_id );
@@ -554,7 +566,10 @@ class FrmProPost {
 	}
 
 	/**
+	 * @param int   $post_ID
+	 * @param bool  $editing
 	 * @param array $exclude_attached
+	 *
 	 * @return void
 	 */
 	private static function unlink_post_attachments( $post_ID, $editing, $exclude_attached ) {
@@ -573,6 +588,7 @@ class FrmProPost {
 		global $wpdb;
 
 		$attachments = get_posts( $args );
+
 		foreach ( $attachments as $attachment ) {
 			$wpdb->update( $wpdb->posts, array( 'post_parent' => null ), array( 'ID' => $attachment->ID ) );
 			update_post_meta( $attachment->ID, '_frm_file', 1 );
@@ -587,6 +603,7 @@ class FrmProPost {
 	 * @param array $new_post         Post data passed to FrmProPost::insert_post().
 	 * @param int   $post_ID          Created post ID.
 	 * @param array $insert_post_data Processed post data passed to wp_insert_post().
+	 *
 	 * @return void
 	 */
 	private static function save_post_meta( $new_post, $post_ID, $insert_post_data = array() ) {
@@ -600,6 +617,7 @@ class FrmProPost {
 				delete_post_meta( $post_ID, $post_data );
 			} else {
 				$is_acf_field = self::maybe_save_acf_field( $post_data, $value, $post_ID );
+
 				if ( ! $is_acf_field ) {
 					update_post_meta( $post_ID, $post_data, $value );
 				}
@@ -613,6 +631,10 @@ class FrmProPost {
 	}
 
 	/**
+	 * @param string       $key
+	 * @param array|string $value
+	 * @param int          $post_ID
+	 *
 	 * @return bool true if an acf field was saved.
 	 */
 	private static function maybe_save_acf_field( $key, $value, $post_ID ) {
@@ -630,6 +652,7 @@ class FrmProPost {
 			),
 			'post_name'
 		);
+
 		if ( $acf_field_key ) {
 			$is_acf_field = true;
 			update_field( $acf_field_key, $value, $post_ID );
@@ -641,11 +664,12 @@ class FrmProPost {
 	/**
 	 * @param int    $post_id
 	 * @param string $key
+	 *
 	 * @return bool
 	 */
 	public static function is_acf_field( $post_id, $key ) {
 		if ( ! function_exists( 'get_field_objects' ) ) {
-			// never try to save an acf field if ACF is not active.
+			// Never try to save an acf field if ACF is not active.
 			return false;
 		}
 
@@ -654,18 +678,14 @@ class FrmProPost {
 		}
 
 		$field_objects = get_field_objects( $post_id );
+
 		if ( ! $field_objects ) {
-			// no ACF fields assigned to post type.
+			// No ACF fields assigned to post type.
 			return false;
 		}
 
 		$acf_meta_key = substr( $key, 1 );
-		if ( ! isset( $field_objects[ $acf_meta_key ] ) ) {
-			// meta is not assigned to this post.
-			return false;
-		}
-
-		return true;
+		return isset( $field_objects[ $acf_meta_key ] );
 	}
 
 	/**
@@ -675,6 +695,7 @@ class FrmProPost {
 	 * @param int      $post_ID
 	 * @param stdClass $entry
 	 * @param bool     $editing
+	 *
 	 * @return void
 	 */
 	private static function save_post_id_to_entry( $post_ID, &$entry, $editing ) {
@@ -684,18 +705,25 @@ class FrmProPost {
 
 		global $wpdb;
 		$updated = $wpdb->update( $wpdb->prefix . 'frm_items', array( 'post_id' => $post_ID ), array( 'id' => $entry->id ) );
-		if ( $updated ) {
-			wp_cache_delete( $entry->id, 'frm_entry' );
-			wp_cache_delete( $entry->id . '_nometa', 'frm_entry' );
-			// Save new post ID for later use
-			$entry->post_id = $post_ID;
+
+		if ( ! $updated ) {
+			return;
 		}
+
+		wp_cache_delete( $entry->id, 'frm_entry' );
+		wp_cache_delete( $entry->id . '_nometa', 'frm_entry' );
+		// Save new post ID for later use
+		$entry->post_id = $post_ID;
 	}
 
 	/**
 	 * Update dynamic content after all post fields are updated
 	 *
-	 * @param int $post_ID
+	 * @param array  $post
+	 * @param int    $post_ID
+	 * @param string $dyn_content
+	 * @param object $form
+	 * @param object $entry
 	 *
 	 * @return void
 	 */
@@ -705,10 +733,13 @@ class FrmProPost {
 		}
 
 		$new_content = apply_filters( 'frm_content', $dyn_content, $form, $entry );
-		if ( $new_content != $post['post_content'] ) {
-			global $wpdb;
-			$wpdb->update( $wpdb->posts, array( 'post_content' => $new_content ), array( 'ID' => $post_ID ) );
+
+		if ( $new_content == $post['post_content'] ) {
+			return;
 		}
+
+		global $wpdb;
+		$wpdb->update( $wpdb->posts, array( 'post_content' => $new_content ), array( 'ID' => $post_ID ) );
 	}
 
 	/**
@@ -716,26 +747,28 @@ class FrmProPost {
 	 *
 	 * @param object $action
 	 * @param object $entry
+	 *
 	 * @return void
 	 */
 	private static function delete_duplicated_meta( $action, $entry ) {
 		global $wpdb;
 
 		$filtered_settings = self::get_post_field_settings( $action->post_content );
-
-		$field_ids = array();
+		$field_ids         = array();
 		self::get_post_field_ids_from_settings( $filtered_settings, $field_ids );
 
-		if ( ! empty( $field_ids ) ) {
-			$where = array(
-				'item_id'  => $entry->id,
-				'field_id' => $field_ids,
-			);
-			FrmDb::get_where_clause_and_values( $where );
-
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->prefix . 'frm_item_metas' . $where['where'], $where['values'] ) );
+		if ( ! $field_ids ) {
+			return;
 		}
+
+		$where = array(
+			'item_id'  => $entry->id,
+			'field_id' => $field_ids,
+		);
+		FrmDb::get_where_clause_and_values( $where );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$wpdb->query( $wpdb->prepare( 'DELETE FROM ' . $wpdb->prefix . 'frm_item_metas' . $where['where'], $where['values'] ) );
 	}
 
 	/**
@@ -744,12 +777,14 @@ class FrmProPost {
 	 * @since 2.2.11
 	 *
 	 * @param array $settings
-	 * @return array $filtered
+	 *
+	 * @return array Filtered.
 	 */
 	private static function get_post_field_settings( $settings ) {
 		$filtered = $settings;
+
 		foreach ( $settings as $name => $value ) {
-			if ( strpos( $name, 'post' ) !== 0 ) {
+			if ( ! str_starts_with( $name, 'post' ) ) {
 				unset( $filtered[ $name ] );
 			}
 		}
@@ -764,11 +799,11 @@ class FrmProPost {
 	 *
 	 * @param array $settings
 	 * @param array $field_ids
+	 *
 	 * @return void
 	 */
 	private static function get_post_field_ids_from_settings( $settings, &$field_ids ) {
 		foreach ( $settings as $name => $value ) {
-
 			if ( is_numeric( $value ) ) {
 				$field_ids[] = $value;
 			} elseif ( is_array( $value ) ) {
@@ -786,8 +821,10 @@ class FrmProPost {
 	 * Get a category dropdown (for form builder, logic, or front-end)
 	 *
 	 * @since 2.02.07
+	 *
 	 * @param array $field Not multi-dimensional.
 	 * @param array $args  Must include 'name', 'id', and 'location'.
+	 *
 	 * @return string
 	 */
 	public static function get_category_dropdown( $field, $args ) {
@@ -797,7 +834,7 @@ class FrmProPost {
 
 		$category_args = self::get_category_args( $field, $args );
 
-		if ( empty( $category_args ) ) {
+		if ( ! $category_args ) {
 			return '';
 		}
 
@@ -818,6 +855,7 @@ class FrmProPost {
 	 * Format a category dropdown for a front-end form
 	 *
 	 * @since 2.02.07
+	 *
 	 * @param array $field
 	 * @param array $args - must include placeholder_class, name, and id
 	 * @param string $dropdown
@@ -840,6 +878,7 @@ class FrmProPost {
 	 * Format a category dropdown form the form builder page
 	 *
 	 * @since 2.02.07
+	 *
 	 * @param array $field
 	 * @param array $args - must include placeholder_class and id
 	 * @param string $dropdown
@@ -858,6 +897,7 @@ class FrmProPost {
 	 * Format a category dropdown for logic (in field or action)
 	 *
 	 * @since 2.02.07
+	 *
 	 * @param array $args - must include id and placeholder_class
 	 * @param string $dropdown
 	 */
@@ -877,20 +917,27 @@ class FrmProPost {
 	 * This is necessary because only one value can be passed into the wp_dropdown_categories() function
 	 *
 	 * @since 2.02.07
+	 *
 	 * @param array $field
 	 * @param string $dropdown
+	 *
+	 * @return void
 	 */
 	private static function select_saved_values_in_category_dropdown( $field, &$dropdown ) {
-		if ( is_array( $field['value'] ) ) {
-			$skip = true;
-			foreach ( $field['value'] as $v ) {
-				if ( $skip ) {
-					$skip = false;
-					continue;
-				}
-				$dropdown = str_replace( ' value="' . esc_attr( $v ) . '"', ' value="' . esc_attr( $v ) . '" selected="selected"', $dropdown );
-				unset( $v );
+		if ( ! is_array( $field['value'] ) ) {
+			return;
+		}
+
+		$skip = true;
+
+		foreach ( $field['value'] as $v ) {
+			if ( $skip ) {
+				$skip = false;
+				continue;
 			}
+
+			$dropdown = str_replace( ' value="' . esc_attr( $v ) . '"', ' value="' . esc_attr( $v ) . '" selected="selected"', $dropdown );
+			unset( $v );
 		}
 	}
 
@@ -898,8 +945,10 @@ class FrmProPost {
 	 * Get the arguments that will be passed into the wp_dropdown_categories function
 	 *
 	 * @since 2.02.07
+	 *
 	 * @param array $field
 	 * @param array $args - must include 'name', 'id', 'location', and 'placeholder_class'
+	 *
 	 * @return array
 	 */
 	private static function get_category_args( $field, $args ) {
@@ -909,9 +958,10 @@ class FrmProPost {
 		$exclude = apply_filters( 'frm_exclude_cats', $exclude, $field );
 
 		if ( is_array( $field['value'] ) ) {
-			if ( ! empty( $exclude ) ) {
+			if ( $exclude ) {
 				$field['value'] = array_diff( $field['value'], explode( ',', $exclude ) );
 			}
+
 			$selected = reset( $field['value'] );
 		} else {
 			$selected = $field['value'];
@@ -934,6 +984,7 @@ class FrmProPost {
 
 		$post_type            = FrmProFormsHelper::post_type( $field['form_id'] );
 		$tax_atts['taxonomy'] = FrmProAppHelper::get_custom_taxonomy( $post_type, $field );
+
 		if ( ! $tax_atts['taxonomy'] ) {
 			return array();
 		}
@@ -954,9 +1005,13 @@ class FrmProPost {
 	 * @param array $args includes key "old_id" with the original entry id.
 	 */
 	public static function duplicate_post_data( $entry_id, $form_id, $args ) {
+		if ( empty( $args['old_id'] ) ) {
+			return;
+		}
+
 		$action = FrmFormAction::get_action_for_form( $form_id, 'wppost', 1 );
 
-		if ( ! $action || empty( $args['old_id'] ) ) {
+		if ( ! $action ) {
 			return;
 		}
 
@@ -989,6 +1044,7 @@ class FrmProPost {
 	 */
 	private static function duplicate_post_meta( $original_post_id, $duplicate_post_id ) {
 		$post_meta = FrmDb::get_results( 'postmeta', array( 'post_id' => $original_post_id ), 'meta_key, meta_value' );
+
 		foreach ( $post_meta as $row ) {
 			add_post_meta( $duplicate_post_id, $row->meta_key, $row->meta_value );
 		}

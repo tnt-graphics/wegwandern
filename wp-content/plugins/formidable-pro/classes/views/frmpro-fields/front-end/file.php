@@ -6,15 +6,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 $is_multiple = FrmField::is_option_true( $field, 'multiple' );
 $is_required = FrmField::is_required( $field );
 $media_ids   = $field['value'];
-FrmProAppHelper::unserialize_or_decode( $media_ids );
+FrmAppHelper::unserialize_or_decode( $media_ids );
+
 if ( $is_multiple ) {
 	$media_ids = array_map( 'trim', array_filter( (array) $media_ids, 'is_numeric' ) );
 } elseif ( is_array( $media_ids ) ) {
 	$media_ids = reset( $media_ids );
 }
 $field['value'] = $media_ids;
-
-$input_name = $field_name . ( $is_multiple ? '[]' : '' );
+$input_name     = $field_name . ( $is_multiple ? '[]' : '' );
 
 if ( FrmField::is_read_only( $field ) ) {
 	// Read only file upload field shows the entry without an upload button

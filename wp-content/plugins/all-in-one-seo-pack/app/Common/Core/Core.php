@@ -43,9 +43,9 @@ class Core {
 		'aioseo_revisions',
 		'aioseo_seo_analyzer_objects',
 		'aioseo_seo_analyzer_results',
-		'aioseo_seo_analyzer_results',
 		'aioseo_writing_assistant_keywords',
-		'aioseo_writing_assistant_posts'
+		'aioseo_writing_assistant_posts',
+		'aioseo_ai_insights_keyword_reports'
 	];
 
 	/**
@@ -94,15 +94,6 @@ class Core {
 	public $networkCache = null;
 
 	/**
-	 * CachePrune class instance.
-	 *
-	 * @since 4.2.7
-	 *
-	 * @var Utils\CachePrune
-	 */
-	public $cachePrune = null;
-
-	/**
 	 * Options Cache class instance.
 	 *
 	 * @since 4.2.7
@@ -122,7 +113,6 @@ class Core {
 		$this->db           = new Utils\Database();
 		$this->cache        = new Utils\Cache();
 		$this->networkCache = new Utils\NetworkCache();
-		$this->cachePrune   = new Utils\CachePrune();
 		$this->optionsCache = new Options\Cache();
 	}
 

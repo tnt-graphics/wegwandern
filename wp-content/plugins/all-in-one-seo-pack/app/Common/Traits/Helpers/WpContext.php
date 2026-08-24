@@ -119,22 +119,36 @@ trait WpContext {
 	/**
 	 * Checks whether the current page is the static homepage.
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.9.9 Replaced one-shot static cache with per-post-ID cache so each call respects its $post argument.
 	 *
 	 * @param  mixed $post Pass in an optional post to check if its the static home page.
 	 * @return bool        Whether the current page is the static homepage.
 	 */
 	public function isStaticHomePage( $post = null ) {
-		static $isHomePage = null;
-		if ( null !== $isHomePage ) {
-			return $isHomePage;
+		static $cache = [];
+
+		$key = null;
+		if ( is_numeric( $post ) ) {
+			$key = (int) $post;
+		} elseif ( is_object( $post ) && ! empty( $post->ID ) ) {
+			$key = (int) $post->ID;
+		}
+
+		if ( null !== $key && array_key_exists( $key, $cache ) ) {
+			return $cache[ $key ];
 		}
 
 		$post = aioseo()->helpers->getPost( $post );
+		$key  = ! empty( $post->ID ) ? (int) $post->ID : 0;
 
-		$isHomePage = ( 'page' === get_option( 'show_on_front' ) && ! empty( $post->ID ) && (int) get_option( 'page_on_front' ) === $post->ID );
+		if ( array_key_exists( $key, $cache ) ) {
+			return $cache[ $key ];
+		}
 
-		return $isHomePage;
+		$cache[ $key ] = ( 'page' === get_option( 'show_on_front' ) && ! empty( $post->ID ) && (int) get_option( 'page_on_front' ) === $post->ID );
+
+		return $cache[ $key ];
 	}
 
 	/**
@@ -151,24 +165,39 @@ trait WpContext {
 	/**
 	 * Checks whether the current page is the static posts page.
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.9.9 Replaced one-shot static cache with per-post-ID cache so each call respects its $post argument.
 	 *
-	 * @return bool Whether the current page is the static posts page.
+	 * @param  mixed $post Pass in an optional post to check if its the static posts page.
+	 * @return bool        Whether the current page is the static posts page.
 	 */
 	public function isStaticPostsPage( $post = null ) {
-		static $isStaticPostsPage = null;
-		if ( null !== $isStaticPostsPage ) {
-			return $isStaticPostsPage;
+		static $cache = [];
+
+		$key = null;
+		if ( is_numeric( $post ) ) {
+			$key = (int) $post;
+		} elseif ( is_object( $post ) && ! empty( $post->ID ) ) {
+			$key = (int) $post->ID;
+		}
+
+		if ( null !== $key && array_key_exists( $key, $cache ) ) {
+			return $cache[ $key ];
 		}
 
 		$post = aioseo()->helpers->getPost( $post );
+		$key  = ! empty( $post->ID ) ? (int) $post->ID : 0;
 
-		$isStaticPostsPage = (
+		if ( array_key_exists( $key, $cache ) ) {
+			return $cache[ $key ];
+		}
+
+		$cache[ $key ] = (
 			( is_home() && ( 0 !== (int) get_option( 'page_for_posts' ) ) ) ||
 			( ! empty( $post->ID ) && (int) get_option( 'page_for_posts' ) === $post->ID )
 		);
 
-		return $isStaticPostsPage;
+		return $cache[ $key ];
 	}
 
 	/**
@@ -275,6 +304,40 @@ trait WpContext {
 	}
 
 	/**
+	 * This is used as a fallback when WP conditionals (is_single, is_page, etc.) are unavailable, such as in page builder contexts.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param  \WP_Post|null $postObject The post object.
+	 * @return string                    The breadcrumb type ('page', 'post', 'single') or empty string.
+	 */
+	public function getBreadcrumbTypeFromPost( $postObject = null ) {
+		if ( ! $postObject instanceof \WP_Post ) {
+			global $post;
+			$postObject = $post;
+		}
+
+		if ( ! $postObject instanceof \WP_Post ) {
+			return '';
+		}
+
+		// Don't resolve a type for the front page — it's handled separately.
+		if ( 'page' === get_option( 'show_on_front' ) && (int) get_option( 'page_on_front' ) === $postObject->ID ) {
+			return '';
+		}
+
+		if ( 'page' === $postObject->post_type ) {
+			return 'page';
+		}
+
+		if ( 'post' === $postObject->post_type ) {
+			return 'post';
+		}
+
+		return 'single';
+	}
+
+	/**
 	 * Returns the post content after parsing it.
 	 *
 	 * @since 4.1.5
@@ -357,7 +420,7 @@ trait WpContext {
 		// The order of the function calls below is intentional and should NOT change.
 		$postContent = $this->doBlocks( $postContent );
 		$postContent = wpautop( $postContent );
-		$postContent = $this->doShortcodes( $postContent );
+		$postContent = @$this->doShortcodes( $postContent );
 
 		$this->restoreWpQuery();
 
@@ -661,7 +724,6 @@ trait WpContext {
 	 */
 	public function attachmentUrlToPostId( $url ) {
 		$cacheName = 'attachment_url_to_post_id_' . sha1( "aioseo_attachment_url_to_post_id_$url" );
-
 		$cachedId = aioseo()->core->cache->get( $cacheName );
 		if ( $cachedId ) {
 			return 'none' !== $cachedId && is_numeric( $cachedId ) ? (int) $cachedId : false;
@@ -975,6 +1037,44 @@ trait WpContext {
 	}
 
 	/**
+	 * Sets the given term as the queried object of the main query.
+	 *
+	 * @since 4.9.3
+	 *
+	 * @param  \WP_Term|int $wpTerm   The term object or ID.
+	 * @param  string       $taxonomy The taxonomy name. Required if $wpTerm is an ID.
+	 * @return void
+	 */
+	public function setWpQueryTerm( $wpTerm, $taxonomy = '' ) {
+		$wpTerm = is_a( $wpTerm, 'WP_Term' ) ? $wpTerm : get_term( $wpTerm, $taxonomy );
+		if ( ! is_a( $wpTerm, 'WP_Term' ) ) {
+			return;
+		}
+
+		// phpcs:disable Squiz.NamingConventions.ValidVariableName
+		global $wp_query;
+		$this->originalQuery = $this->deepClone( $wp_query );
+
+		$wp_query->queried_object    = $wpTerm;
+		$wp_query->queried_object_id = (int) $wpTerm->term_id;
+		$wp_query->is_archive        = true;
+
+		// Set the appropriate taxonomy flag.
+		switch ( $wpTerm->taxonomy ) {
+			case 'category':
+				$wp_query->is_category = true;
+				break;
+			case 'post_tag':
+				$wp_query->is_tag = true;
+				break;
+			default:
+				$wp_query->is_tax = true;
+				break;
+		}
+		// phpcs:enable Squiz.NamingConventions.ValidVariableName
+	}
+
+	/**
 	 * Restores the main query back to the original query.
 	 *
 	 * @since 4.3.0
@@ -1019,6 +1119,24 @@ trait WpContext {
 	}
 
 	/**
+	 * Gets the active theme version.
+	 *
+	 * @since 4.9.6
+	 *
+	 * @param  bool        $parent Whether to return the parent theme's version.
+	 * @return string|null         The theme version, or null if parent requested but not found.
+	 */
+	public function getThemeVersion( $parent = false ) {
+		$theme = wp_get_theme();
+
+		if ( $parent ) {
+			return ( is_child_theme() && $theme->parent() ) ? $theme->parent()->version : null;
+		}
+
+		return $theme->version;
+	}
+
+	/**
 	 * Returns whether the active theme is a block-based theme or not.
 	 *
 	 * @since 4.5.3
@@ -1044,6 +1162,17 @@ trait WpContext {
 		return aioseo()->options->searchAppearance->global->schema->websiteName
 			? aioseo()->tags->replaceTags( aioseo()->options->searchAppearance->global->schema->websiteName )
 			: aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
+	}
+
+	/**
+	 * Checks if WordPress is set to discourage search engines from indexing the site.
+	 *
+	 * @since 4.9.9
+	 *
+	 * @return boolean Whether search engines are discouraged from indexing the site.
+	 */
+	public function isSearchEnginesDiscouraged() {
+		return ! get_option( 'blog_public' );
 	}
 
 	/**

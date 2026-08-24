@@ -28,6 +28,7 @@ class FrmProDisplaysController {
 
 	/**
 	 * @param string $method
+	 *
 	 * @return bool
 	 */
 	private static function silently_handle_deprecation( $method ) {
@@ -43,6 +44,8 @@ class FrmProDisplaysController {
 
 	/**
 	 * @deprecated 4.09 This is still silently deprecated. It isn't safe to remove and should be properly deprecated.
+	 *
+	 * @param array $atts
 	 */
 	public static function get_shortcode( $atts ) {
 		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::get_shortcode', $atts );
@@ -50,6 +53,8 @@ class FrmProDisplaysController {
 
 	/**
 	 * @deprecated 4.09
+	 *
+	 * @param mixed $path
 	 */
 	public static function create_from_template( $path ) {
 		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::create_from_template', $path );
@@ -57,6 +62,8 @@ class FrmProDisplaysController {
 
 	/**
 	 * @deprecated 4.09
+	 *
+	 * @param mixed $post_id
 	 */
 	public static function before_delete_post( $post_id ) {
 		return self::deprecated_function( __METHOD__, 'FrmViewsDisplaysController::before_delete_post', $post_id );
@@ -64,6 +71,11 @@ class FrmProDisplaysController {
 
 	/**
 	 * @deprecated 6.11.1
+	 *
+	 * @param mixed $view
+	 * @param mixed $content
+	 * @param mixed $entry_id
+	 * @param mixed $extra_atts
 	 */
 	public static function get_display_data( $view, $content = '', $entry_id = false, $extra_atts = array() ) {
 		if ( ! $entry_id && ! empty( $extra_atts['return_entry_ids'] ) && is_callable( 'FrmViewsDisplaysController::get_view_entry_ids' ) ) {

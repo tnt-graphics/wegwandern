@@ -31,6 +31,31 @@ abstract class AbstractTcf extends BaseSettings
      */
     public abstract function getVendorConfigurations();
     /**
+     * Whether at least one TCF vendor configuration exists. Default hydrates GVL vendors;
+     * persistences that can answer this from configuration records should override.
+     *
+     * @return boolean
+     */
+    public function hasVendorConfigurations()
+    {
+        return \count($this->getVendorConfigurations()) > 0;
+    }
+    /**
+     * Vendor name + device-storage disclosures for the cookie-policy services table.
+     * Default hydrates full vendor configurations; persistences should override with a lean query.
+     *
+     * @return iterable<array{name: string, disclosures: array}>
+     */
+    public function getCookiePolicyVendorDisclosures()
+    {
+        $result = [];
+        foreach ($this->getVendorConfigurations() as $tcfConfig) {
+            $vendor = $tcfConfig->getVendor();
+            $result[] = ['name' => $vendor['name'] ?? '', 'disclosures' => \is_array($vendor['deviceStorageDisclosure'] ?? null) ? $vendor['deviceStorageDisclosure']['disclosures'] ?? [] : []];
+        }
+        return $result;
+    }
+    /**
      * Get GVL persistence class.
      *
      * @return AbstractGvlPersistance

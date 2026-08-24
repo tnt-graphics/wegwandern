@@ -27,11 +27,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<?php if ( $next_entry_id ) : ?>
 		<a class="frm-entry-link frm-next-entry" href="<?php echo esc_url( $base_url . $next_entry_id ); ?>">
-			<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrow_right_icon', array( 'aria-label' => __( 'Next page', 'formidable-pro' ) ) ); ?>
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrow_right_icon', array( 'aria-label' => __( 'Next page', 'formidable' ) ) ); ?>
 		</a>
 	<?php else : ?>
 		<span class="frm-entry-link frm-next-entry frm-disabled">
-			<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrow_right_icon', array( 'aria-label' => __( 'Next page', 'formidable-pro' ) ) ); ?>
+			<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrow_right_icon', array( 'aria-label' => __( 'Next page', 'formidable' ) ) ); ?>
 		</span>
 	<?php endif; ?>
 </div><!-- .frm-entry-navigation -->

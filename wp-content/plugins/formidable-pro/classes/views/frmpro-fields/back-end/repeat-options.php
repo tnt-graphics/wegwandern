@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<label class="frm-h-stack-xs">
 		<span><?php esc_html_e( 'Max Repeater Rows', 'formidable-pro' ); ?></span>
 		<?php
-        FrmProAppHelper::tooltip_icon(
+        FrmAppHelper::tooltip_icon(
             __( 'The maximum number of times the end user is allowed to duplicate this section of fields in one entry', 'formidable-pro' ),
 			array(
 				'data-placement' => 'right',

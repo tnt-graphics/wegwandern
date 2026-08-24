@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php foreach ( $sub_fields as $key => $sub_field ) { ?>
 <div id="frm_field_<?php echo esc_attr( $field['id'] . '-' . $key ); ?>_container" class="frm_form_field form-field <?php
 	echo esc_attr( $sub_field['classes'] );
+
 	if ( isset( $errors ) ) {
 		FrmProComboFieldsController::maybe_add_error_class( compact( 'field', 'key', 'errors', 'atts' ) );
 	}
@@ -20,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</label>
 	<?php if ( $sub_field['type'] === 'select' ) { ?>
 		<select name="<?php echo esc_attr( $field_name ); ?>[<?php echo esc_attr( $key ); ?>]" id="<?php echo esc_attr( $html_id . '_' . $key ); ?>" <?php FrmProComboFieldsController::add_atts_to_input( compact( 'field', 'sub_field', 'key' ) ); ?>>
-			<option value="" class="<?php echo esc_attr( empty( $field['placeholder'][ $key ] ) ? '' : 'frm-select-placeholder' ); ?>">
+			<option value="" class="<?php echo esc_attr( ! empty( $field['placeholder'][ $key ] ) ? 'frm-select-placeholder' : '' ); ?>">
 				<?php echo esc_html( FrmProComboFieldsController::get_dropdown_label( compact( 'field', 'key', 'sub_field' ) ) ); ?>
 			</option>
 			<?php
@@ -30,6 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				if ( 'address' === $field['type'] && 'country' === $key ) {
 					$code = FrmProAddressesController::get_country_code( $option );
+
 					if ( $code ) {
 						$params['data-code'] = $code;
 					}
@@ -59,6 +61,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	}
 
 	$temp_id = ! empty( $atts['field_id'] ) ? $atts['field_id'] : $field['id'];
+
 	// Don't show individual field errors when there is a combo field error
 	if ( ! empty( $errors ) && isset( $errors[ 'field' . $temp_id . '-' . $key ] ) && ! isset( $errors[ 'field' . $field['id'] ] ) ) {
 	?>

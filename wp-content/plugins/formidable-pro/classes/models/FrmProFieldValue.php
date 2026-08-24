@@ -27,9 +27,8 @@ class FrmProFieldValue extends FrmFieldValue {
 	 * @param stdClass $entry
 	 */
 	protected function init_saved_value( $entry ) {
-
 		if ( $entry->form_id != $this->field->form_id ) {
-			//If parent entry ID and child repeating field
+			// If parent entry ID and child repeating field
 
 			$where           = array(
 				'form_id'        => $this->field->form_id,
@@ -46,15 +45,11 @@ class FrmProFieldValue extends FrmFieldValue {
 					$this->saved_value[ $child_entry_id ] = $current_field_value->get_saved_value();
 				}
 			}
-		} elseif ( isset( $this->field->field_options['post_field'] ) && $this->field->field_options['post_field'] ) {
-
+		} elseif ( ! empty( $this->field->field_options['post_field'] ) ) {
 			$this->saved_value = $this->get_post_value( $entry );
 			$this->clean_saved_value();
-
 		} else {
-
 			parent::init_saved_value( $entry );
-
 		}
 	}
 
@@ -75,19 +70,19 @@ class FrmProFieldValue extends FrmFieldValue {
 
 		if ( $this->has_child_entries() ) {
 			$this->prepare_displayed_value_for_field_with_child_entries( $atts );
-		} else {
-
-			// TODO: all display value generation should be handled in one classes or subclasses
-			$this->generate_post_field_displayed_value();
-			$this->generate_displayed_value_for_field_type( $atts );
-			$this->filter_array_displayed_value();
-			$new_atts = array(
-				'plain_text'         => isset( $atts['plain_text'] ) && $atts['plain_text'],
-				'show_image_options' => isset( $atts['show_image_options'] ) && $atts['show_image_options'],
-			);
-			$this->get_option_label_for_saved_value( $new_atts );
-			$this->filter_displayed_value( $atts );
+			return;
 		}
+
+		// TODO: all display value generation should be handled in one classes or subclasses
+		$this->generate_post_field_displayed_value();
+		$this->generate_displayed_value_for_field_type( $atts );
+		$this->filter_array_displayed_value();
+		$new_atts = array(
+			'plain_text'         => ! empty( $atts['plain_text'] ),
+			'show_image_options' => ! empty( $atts['show_image_options'] ),
+		);
+		$this->get_option_label_for_saved_value( $new_atts );
+		$this->filter_displayed_value( $atts );
 	}
 
 	/**
@@ -109,6 +104,7 @@ class FrmProFieldValue extends FrmFieldValue {
 	 * Lite checks for a displayed_value before calling get_display_value, so set 1 to pass the check.
 	 *
 	 * @since 5.5.2
+	 *
 	 * @return void
 	 */
 	private function maybe_set_displayed_value_for_page_break() {
@@ -128,6 +124,7 @@ class FrmProFieldValue extends FrmFieldValue {
 		}
 
 		$atts['entry'] = false;
+
 		if ( is_object( $this->displayed_value ) ) {
 			$atts['entry'] = $this->displayed_value;
 		}
@@ -172,6 +169,7 @@ class FrmProFieldValue extends FrmFieldValue {
 	 * @since 4.02.04
 	 *
 	 * @param stdClass $field
+	 *
 	 * @return void
 	 */
 	private function set_actual_other_values( &$field ) {
@@ -235,6 +233,7 @@ class FrmProFieldValue extends FrmFieldValue {
 	 */
 	private function check_unsaved_children() {
 		$saved_post = is_array( $this->saved_value ) && isset( $this->saved_value['row_ids'] );
+
 		if ( ! $saved_post ) {
 			return;
 		}
@@ -257,50 +256,59 @@ class FrmProFieldValue extends FrmFieldValue {
 	 *
 	 * @since 2.04
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	protected function generate_post_field_displayed_value() {
-		if ( FrmField::is_option_true( $this->field, 'post_field' ) ) {
-			$entry = $this->entry;
-			if ( ! is_object( $this->entry ) || empty( $this->entry->metas ) ) {
-				$entry = FrmEntry::getOne( $this->entry_id, true );
-			}
-			$this->displayed_value = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $this->field, array( 'truncate' => true ) );
-			FrmProAppHelper::unserialize_or_decode( $this->displayed_value );
+		if ( ! FrmField::is_option_true( $this->field, 'post_field' ) ) {
+			return;
 		}
+
+		$entry = $this->entry;
+
+		if ( ! is_object( $this->entry ) || empty( $this->entry->metas ) ) {
+			$entry = FrmEntry::getOne( $this->entry_id, true );
+		}
+		$this->displayed_value = FrmProEntryMetaHelper::get_post_or_meta_value( $entry, $this->field, array( 'truncate' => true ) );
+		FrmAppHelper::unserialize_or_decode( $this->displayed_value );
 	}
 
 	/**
 	 * Filter an array displayed value
 	 *
 	 * @since 2.04
+	 *
+	 * @return void
 	 */
 	protected function filter_array_displayed_value() {
-		if ( is_array( $this->displayed_value ) ) {
-			$new_value = '';
-			foreach ( $this->displayed_value as $val ) {
-				if ( is_array( $val ) ) {
-					// This will affect checkboxes inside of repeating sections
-					$new_value .= implode( ', ', $val ) . "\n";
-				}
-			}
+		if ( ! is_array( $this->displayed_value ) ) {
+			return;
+		}
 
-			if ( $new_value != '' ) {
-				$this->displayed_value = $new_value;
-			} else {
-				$this->displayed_value = array_filter( $this->displayed_value, array( $this, 'remove_empty_values_but_leave_0' ) );
+		$new_value = '';
+
+		foreach ( $this->displayed_value as $val ) {
+			if ( is_array( $val ) ) {
+				// This will affect checkboxes inside of repeating sections
+				$new_value .= implode( ', ', $val ) . "\n";
 			}
+		}
+
+		if ( $new_value === '' ) {
+			$this->displayed_value = array_filter( $this->displayed_value, array( $this, 'remove_empty_values_but_leave_0' ) );
+		} else {
+			$this->displayed_value = $new_value;
 		}
 	}
 
 	/**
 	 * Filter function called by array_filter call in filter_array_displayed_value.
 	 *
-	 * @param mixed $value
+	 * @param string $value
+	 *
 	 * @return bool true if the value should be maintained in the array, false and it is filtered out.
 	 */
 	private function remove_empty_values_but_leave_0( $value ) {
-		return ! empty( $value ) || '0' === $value;
+		return $value || '0' === $value;
 	}
 
 	/**
@@ -309,6 +317,7 @@ class FrmProFieldValue extends FrmFieldValue {
 	 * @since 2.04
 	 *
 	 * @param array $atts
+	 *
 	 * @return void
 	 */
 	protected function get_option_label_for_saved_value( $atts = array() ) {

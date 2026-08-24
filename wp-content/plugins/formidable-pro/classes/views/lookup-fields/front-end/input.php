@@ -14,20 +14,19 @@ if ( $disabled && $field['data_type'] !== 'text' ) {
 
 // Lookup Field Dropdown
 if ( 'select' === $field['data_type'] ) {
-
 	// If there are field options, show them in a dropdown
 	if ( ! empty( $field['options'] ) ) {
 		?>
 		<select <?php echo $disabled; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> name="<?php echo esc_attr( $field_name ); ?>" id="<?php echo esc_attr( $html_id ); ?>" <?php do_action( 'frm_field_input_html', $field ); ?>>
 			<?php
 			$placeholder = FrmField::get_option( $field, 'placeholder' );
+
 			foreach ( $field['options'] as $opt ) {
-				$option_params = array();
-
-				$lookup_option_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt, $field );
+				$option_params       = array();
+                $lookup_option_label = FrmProFieldLookup::filter_lookup_displayed_value( $opt, $field );
 				$opt                 = FrmProFieldLookup::filter_lookup_saved_value( $opt, $field );
+                $is_placeholder      = $opt === $placeholder || $lookup_option_label === $placeholder;
 
-				$is_placeholder = $opt === $placeholder || $lookup_option_label === $placeholder;
 				if ( $is_placeholder && $field['autocom'] ) {
 					if ( FrmProAppHelper::use_chosen_js() ) {
 						$opt = '';
@@ -65,6 +64,7 @@ if ( 'select' === $field['data_type'] ) {
 			'class' => 'frm_opt_container',
 			'role'  => 'radiogroup',
 		);
+
 		if ( $field['required'] === '1' ) {
 			$radio_container_params['aria-required'] = 'true';
 		}
@@ -99,6 +99,7 @@ if ( 'select' === $field['data_type'] ) {
 	<?php
 } elseif ( $field['data_type'] === 'data' && ! empty( $field['watch_lookup'] ) && is_numeric( $field['get_values_field'] ) ) {
 	$displayed_value_array = array();
+
 	foreach ( $saved_value_array as $k => $v ) {
 		$saved_value_array[ $k ] = FrmProFieldLookup::filter_lookup_saved_value( $v, $field );
 		$displayed_value_array[] = FrmProFieldLookup::filter_lookup_displayed_value( $v, $field );

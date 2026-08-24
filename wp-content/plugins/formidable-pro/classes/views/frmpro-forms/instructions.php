@@ -18,6 +18,7 @@ FrmAppHelper::show_search_box(
 		<?php
 		foreach ( $tags as $tag => $label ) {
 			$title = '';
+
 			if ( is_array( $label ) ) {
 				$title = $label['title'] ?? '';
 				$label = $label['label'] ?? reset( $label );
@@ -27,7 +28,7 @@ FrmAppHelper::show_search_box(
 			<li class="search-smart-tags">
 				<a href="javascript:void(0)" data-code="<?php echo esc_attr( $tag ); ?>" class="show_dyn_default_value frm_insert_code
 					<?php
-					if ( ! empty( $title ) ) {
+					if ( $title ) {
 						echo ' frm_help" title="' . esc_attr( $title );
 					}
 					?>">

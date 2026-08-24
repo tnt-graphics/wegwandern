@@ -11,6 +11,11 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\FastHtmlTag\finder\match\AbstractMatch
 class FastHtmlTag
 {
     /**
+     * JSON key / HTML-comment stem to skip processing for named instances
+     * (e.g. `["HeadlessContentBlocker"]` or `<!--$$skipFastHtmlTag:HeadlessContentBlocker:start-->`).
+     */
+    const SKIP_KEY = '$$skipFastHtmlTag';
+    /**
      * Unique name of this instance.
      *
      * Can be useful in conjunction with `$$skipFastHtmlTag`.
@@ -101,7 +106,7 @@ class FastHtmlTag
             }
             // We have now a complete JSON array, let's walk it recursively and apply content blocker
             if ($json !== null) {
-                if (isset($json->{'$$skipFastHtmlTag'}) && \is_array($json->{'$$skipFastHtmlTag'}) && \in_array($this->name, $json->{'$$skipFastHtmlTag'}, \true)) {
+                if (isset($json->{self::SKIP_KEY}) && \is_array($json->{self::SKIP_KEY}) && \in_array($this->name, $json->{self::SKIP_KEY}, \true)) {
                     return $mixed;
                 }
                 Utils::array_and_object_walk_recursive($json, function (&$value) {
@@ -130,6 +135,7 @@ class FastHtmlTag
      */
     public function modifyHtml($html)
     {
+        list($html, $regions) = self::extractSkipRegions($html, $this->name);
         // With our complex regular expressions, `preg_replace[_callback]` can sometimes lead
         // to `PREG_BACKTRACK_LIMIT_ERROR` errors with large strings. Unfortunately, we can only
         // fix this by setting the backtrack limit to a very high value via PHP configuration (`php.ini`)
@@ -158,7 +164,110 @@ class FastHtmlTag
         }
         // Remove invisible attributes (https://regex101.com/r/QAy0R0/2)
         $html = \preg_replace(\sprintf('/\\s+%s[^\\s>\\/]+/m', AbstractMatch::HTML_ATTRIBUTE_INVISIBLE_PREFIX), '', $html);
-        return $html;
+        return self::restoreSkipRegions($html, $regions);
+    }
+    /**
+     * HTML comment that opens a skip island for `modifyHtml`.
+     *
+     * Empty `$instanceNames` skips every FastHtmlTag instance (`<!--$$skipFastHtmlTag:start-->`).
+     * Otherwise only the listed instance names skip (`<!--$$skipFastHtmlTag:HeadlessContentBlocker:start-->`).
+     *
+     * @param string[] $instanceNames
+     */
+    public static function skipRegionStartComment($instanceNames = [])
+    {
+        $inside = \count($instanceNames) === 0 ? 'start' : \implode(',', $instanceNames) . ':start';
+        return '<!--' . self::SKIP_KEY . ':' . $inside . '-->';
+    }
+    /**
+     * HTML comment that closes a skip island.
+     */
+    public static function skipRegionEndComment()
+    {
+        return '<!--' . self::SKIP_KEY . ':end-->';
+    }
+    /**
+     * Wrap HTML in skip-island comments for `modifyHtml`.
+     *
+     * @param string $html
+     * @param string|string[] $instanceNames Empty = skip every instance; a string is a single instance name
+     */
+    public static function wrapSkipRegion($html, $instanceNames = [])
+    {
+        if (\is_string($instanceNames)) {
+            $instanceNames = $instanceNames === '' ? [] : [$instanceNames];
+        }
+        return self::skipRegionStartComment($instanceNames) . $html . self::skipRegionEndComment();
+    }
+    /**
+     * Lift `$$skipFastHtmlTag` HTML comment islands out before regex scanning.
+     * Uses `strpos` (not PCRE) so multi-MB islands stay linear.
+     *
+     * @param string $html
+     * @param string $instanceName See `$this->name`
+     * @return array{0: string, 1: array<string, string>}
+     */
+    public static function extractSkipRegions($html, $instanceName)
+    {
+        $prefix = '<!--' . self::SKIP_KEY . ':';
+        if (\strpos($html, $prefix) === \false) {
+            return [$html, []];
+        }
+        $endMarker = self::skipRegionEndComment();
+        $endMarkerLength = \strlen($endMarker);
+        $prefixLength = \strlen($prefix);
+        $namedStartSuffix = ':start';
+        $regions = [];
+        $out = '';
+        $offset = 0;
+        $i = 0;
+        while (($startPos = \strpos($html, $prefix, $offset)) !== \false) {
+            $commentClose = \strpos($html, '-->', $startPos + $prefixLength);
+            if ($commentClose === \false) {
+                break;
+            }
+            $inside = \substr($html, $startPos + $prefixLength, $commentClose - ($startPos + $prefixLength));
+            if ($inside === 'start') {
+                $names = null;
+            } elseif (Utils::endsWith($inside, $namedStartSuffix)) {
+                $names = \explode(',', \substr($inside, 0, -\strlen($namedStartSuffix)));
+            } else {
+                $out .= \substr($html, $offset, $commentClose + 3 - $offset);
+                $offset = $commentClose + 3;
+                continue;
+            }
+            if ($names !== null && !\in_array($instanceName, $names, \true)) {
+                $out .= \substr($html, $offset, $commentClose + 3 - $offset);
+                $offset = $commentClose + 3;
+                continue;
+            }
+            $endPos = \strpos($html, $endMarker, $commentClose + 3);
+            if ($endPos === \false) {
+                break;
+            }
+            $endPos += $endMarkerLength;
+            $out .= \substr($html, $offset, $startPos - $offset);
+            $placeholder = $prefix . 'slot:' . $i . '-->';
+            $regions[$placeholder] = \substr($html, $startPos, $endPos - $startPos);
+            $out .= $placeholder;
+            $offset = $endPos;
+            ++$i;
+        }
+        $out .= \substr($html, $offset);
+        return [$out, $regions];
+    }
+    /**
+     * Reinsert islands previously extracted by `extractSkipRegions`.
+     *
+     * @param string $html
+     * @param array<string, string> $regions
+     */
+    public static function restoreSkipRegions($html, $regions)
+    {
+        if (empty($regions)) {
+            return $html;
+        }
+        return \str_replace(\array_keys($regions), \array_values($regions), $html);
     }
     /**
      * Get a defined selector syntax function by name.

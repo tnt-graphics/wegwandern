@@ -9,14 +9,14 @@ $has_more_icon_tabindex = isset( FrmAppHelper::add_allowed_icon_tags( array() )[
 	<label for="frm_calc_<?php echo esc_attr( $field['id'] ); ?>">
 		<?php esc_html_e( 'Exclude Fields from Summary', 'formidable-pro' ); ?>
 	</label>
-	<span class="frm-with-right-icon">
+	<span class="frm-with-right-icon frm-block">
 		<?php if ( $has_more_icon_tabindex ) { // Backwards compatibility condition "@since 6.25". ?>
 			<input type="text" value="<?php echo esc_attr( $field['exclude_fields'] ); ?>" id="frm_calc_<?php echo esc_attr( $field['id'] ); ?>" name="field_options[exclude_fields_<?php echo absint( $field['id'] ); ?>]" class="frm-calc-field" data-sep="," />
 			<?php
 		}
 
-		FrmProAppHelper::icon_by_class(
-			'frm_icon_font frm_more_horiz_solid_icon frm-show-inline-modal frm-open-calc frm-input-icon',
+		FrmAppHelper::icon_by_class(
+			'frmfont frm_more_horiz_solid_icon frm-show-inline-modal frm-open-calc frm-input-icon',
 			array(
 				'data-open' => 'frm-calc-box-' . $field['id'],
 				'tabindex'  => 0,
@@ -36,7 +36,7 @@ $has_more_icon_tabindex = isset( FrmAppHelper::add_allowed_icon_tags( array() )[
 <?php
 FrmFieldsHelper::inline_modal(
 	array(
-		'title'        => ! class_exists( 'FrmTextToggleStyleComponent' ) ? __( 'Exclude Fields', 'formidable-pro' ) : '', // Backwards compatibility "@since 6.24".
+		'title'        => class_exists( 'FrmTextToggleStyleComponent' ) ? '' : __( 'Exclude Fields', 'formidable-pro' ), // Backwards compatibility "@since 6.24".
 		'callback'     => array( 'FrmProFieldSummary', 'exclude_fields_settings' ),
 		'args'         => compact( 'field' ),
 		'id'           => 'frm-calc-box-' . $field['id'],

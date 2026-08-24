@@ -27,6 +27,11 @@ class FrmProReportsHelper {
 		add_filter( 'frm_form_stop_action_reports', '__return_true' );
 		FrmAppHelper::permission_check( 'frm_view_reports' );
 
+		if ( FrmProAddonsController::is_expired_outside_grace_period() ) {
+			self::show_expired_reports_error();
+			return;
+		}
+
 		$form = self::get_form_for_reports();
 
 		if ( ! $form ) {
@@ -45,7 +50,7 @@ class FrmProReportsHelper {
 
 		$selected_date_range = FrmAppHelper::simple_get( 'date_range' );
 
-		if ( empty( $entries ) ) {
+		if ( ! $entries ) {
 			$fields = array();
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-statistics/show.php';
 			return;
@@ -67,6 +72,26 @@ class FrmProReportsHelper {
 		}
 
 		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-statistics/show.php';
+	}
+
+	/**
+	 * Show an error modal prompting to renew when the license is expired outside the grace period.
+	 *
+	 * @since 6.32
+	 *
+	 * @return void
+	 */
+	private static function show_expired_reports_error() {
+		FrmAppController::show_error_modal(
+			array(
+				'title'         => __( 'You can\'t view reports', 'formidable-pro' ),
+				'body'          => __( 'Your license has expired. Renew your license to continue viewing reports.', 'formidable-pro' ),
+				'cancel_url'    => admin_url( 'admin.php?page=formidable' ),
+				'cancel_text'   => __( 'Go Back', 'formidable' ),
+				'continue_url'  => FrmAppHelper::admin_upgrade_link( 'expired-reports', 'account/downloads/' ),
+				'continue_text' => __( 'Renew Now', 'formidable' ),
+			)
+		);
 	}
 
 	/**
@@ -96,11 +121,7 @@ class FrmProReportsHelper {
 			)
 		);
 
-		if ( $form ) {
-			$form = FrmForm::getOne( $form );
-		}
-
-		return $form;
+		return $form ? FrmForm::getOne( $form ) : $form;
 	}
 
 	/**
@@ -110,6 +131,7 @@ class FrmProReportsHelper {
 	 * @since 6.6 Moved from FrmProGraphsController.
 	 *
 	 * @param int $form_id
+	 *
 	 * @return mixed
 	 */
 	private static function get_fields_for_reports( $form_id ) {
@@ -146,6 +168,7 @@ class FrmProReportsHelper {
 	 *
 	 * @param object $form
 	 * @param array $fields
+	 *
 	 * @return array
 	 */
 	private static function generate_graphs_for_reports( $form, $fields ) {
@@ -160,6 +183,7 @@ class FrmProReportsHelper {
 	 *
 	 * @since 2.02.05
 	 * @since 6.6 Moved from FrmProGraphsController.
+	 *
 	 * @param array $fields
 	 * @param array $data
 	 */
@@ -214,16 +238,20 @@ class FrmProReportsHelper {
 
 			$this_data = FrmProGraphsController::graph_shortcode( $atts );
 
-			if ( strpos( $this_data, 'frm_no_data_graph' ) === false ) {
-				$data[ $field->id ] = $this_data;
-
-				if ( in_array( $field->type, $add_table, true ) ) {
-					$atts['type']                  = 'table';
-					$atts['height']                = 'auto';
-					$this_data                     = FrmProGraphsController::graph_shortcode( $atts );
-					$data[ $field->id . '_table' ] = $this_data;
-				}
+			if ( str_contains( $this_data, 'frm_no_data_graph' ) ) {
+				continue;
 			}
+
+			$data[ $field->id ] = $this_data;
+
+			if ( ! in_array( $field->type, $add_table, true ) ) {
+				continue;
+			}
+
+			$atts['type']                  = 'table';
+			$atts['height']                = 'auto';
+			$this_data                     = FrmProGraphsController::graph_shortcode( $atts );
+			$data[ $field->id . '_table' ] = $this_data;
 		}
 	}
 
@@ -254,7 +282,12 @@ class FrmProReportsHelper {
 	 *
 	 * @since 5.0.02
 	 * @since 6.6 Moved from FrmProGraphsController.
+	 *
 	 * @used-by show.php
+	 *
+	 * @param array $args
+	 *
+	 * @return array
 	 */
 	public static function get_field_boxes( $args ) {
 		$filter_atts = array();
@@ -293,10 +326,12 @@ class FrmProReportsHelper {
 	 *
 	 * @param array $args
 	 * @param array $post_boxes
+	 *
 	 * @return void
 	 */
 	private static function add_average_box( $args, &$post_boxes ) {
 		$field = $args['field'];
+
 		if ( ! self::should_show_average_boxes_for_field_type( $field, $args ) ) {
 			return;
 		}
@@ -330,6 +365,7 @@ class FrmProReportsHelper {
 	 *
 	 * @param object $field
 	 * @param array  $args
+	 *
 	 * @return bool
 	 */
 	private static function should_show_average_boxes_for_field_type( $field, $args ) {
@@ -350,7 +386,9 @@ class FrmProReportsHelper {
 	 * Get the deaily and monthly graphs for the reports page.
 	 *
 	 * @since 6.6
+	 *
 	 * @param object $form
+	 *
 	 * @return array
 	 */
 	private static function get_time_span_reports( $form ) {
@@ -376,13 +414,15 @@ class FrmProReportsHelper {
 	 * Add the daily graph to the reports page.
 	 *
 	 * @since 6.6
+	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function add_daily_graph( $atts ) {
-		$date_range = self::get_start_and_end_dates();
-
+		$date_range                      = self::get_start_and_end_dates();
 		$atts['created_at_greater_than'] = '-1 month';
+
 		if ( ! empty( $date_range['start_date'] ) ) {
 			$atts['created_at_greater_than'] = $date_range['start_date'];
 			$atts['created_at_less_than']    = $date_range['end_date'];
@@ -395,7 +435,9 @@ class FrmProReportsHelper {
 	 * Add the monthly graph to the reports page.
 	 *
 	 * @since 6.6
+	 *
 	 * @param array $atts
+	 *
 	 * @return string
 	 */
 	private static function add_monthly_graph( $atts ) {
@@ -412,6 +454,7 @@ class FrmProReportsHelper {
 			// Show a minimum of 3 months.
 			$current_length = strtotime( $date_range['end_date'] ) - strtotime( $date_range['start_date'] );
 			$minimum_length = MONTH_IN_SECONDS * 3;
+
 			if ( $current_length < $minimum_length ) {
 				$atts['created_at_greater_than'] = gmdate( 'Y-m-d', strtotime( $date_range['end_date'] ) - $minimum_length );
 			}
@@ -426,6 +469,7 @@ class FrmProReportsHelper {
 	 * @since 6.6
 	 *
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_entry_statuses( $form_id ) {
@@ -433,7 +477,7 @@ class FrmProReportsHelper {
 			return array();
 		}
 
-		$entry_statuses = array( 'all' => __( 'All', 'formidable-pro' ) ) + FrmEntriesHelper::get_entry_statuses();
+		$entry_statuses = array( 'all' => __( 'All', 'formidable' ) ) + FrmEntriesHelper::get_entry_statuses();
 		self::maybe_remove_extra_statuses( $form_id, $entry_statuses );
 
 		return $entry_statuses;
@@ -446,6 +490,7 @@ class FrmProReportsHelper {
 	 *
 	 * @param int   $form_id
 	 * @param array $statuses
+	 *
 	 * @return void
 	 */
 	private static function maybe_remove_extra_statuses( $form_id, &$statuses ) {
@@ -455,6 +500,7 @@ class FrmProReportsHelper {
 		}
 
 		$form_uses_abandonment = is_callable( 'FrmAbandonmentAppHelper::is_abandonment_enabled' ) && FrmAbandonmentAppHelper::is_abandonment_enabled( $form_id );
+
 		if ( $form_uses_abandonment ) {
 			return;
 		}
@@ -471,7 +517,9 @@ class FrmProReportsHelper {
 	 * If the selected status is invalid, set it to an empty string.
 	 *
 	 * @since 6.6
+	 *
 	 * @param array $entry_statuses
+	 *
 	 * @return int|string
 	 */
 	private static function get_selected_status( $entry_statuses ) {
@@ -497,6 +545,7 @@ class FrmProReportsHelper {
 	 * Get a list of relative date options.
 	 *
 	 * @used-by show.php
+	 *
 	 * @since 6.2
 	 *
 	 * @return array
@@ -504,7 +553,7 @@ class FrmProReportsHelper {
 	public static function get_date_range_options() {
 		return array(
 			'all_time'         => __( 'All Time', 'formidable-pro' ),
-			'custom'           => __( 'Custom', 'formidable-pro' ),
+			'custom'           => __( 'Custom', 'formidable' ),
 			'today'            => __( 'Today', 'formidable-pro' ),
 			'yesterday'        => __( 'Yesterday', 'formidable-pro' ),
 			'this_week'        => __( 'This week', 'formidable-pro' ),
@@ -531,7 +580,7 @@ class FrmProReportsHelper {
 		$end_date   = '';
 		$date_range = FrmAppHelper::simple_get( 'date_range' );
 
-		if ( empty( $date_range ) ) {
+		if ( ! $date_range ) {
 			return compact( 'start_date', 'end_date' );
 		}
 
@@ -595,12 +644,13 @@ class FrmProReportsHelper {
 	 * @since 6.6
 	 *
 	 * @param object $form
+	 *
 	 * @return array
 	 */
 	private static function get_entry_count( $form ) {
-		$args = array( 'form_id' => $form->id );
-
+		$args       = array( 'form_id' => $form->id );
 		$date_range = self::get_start_and_end_dates();
+
 		if ( $date_range['start_date'] !== '' ) {
 			$args['created_at >'] = get_gmt_from_date( $date_range['start_date'] );
 		}
@@ -610,6 +660,7 @@ class FrmProReportsHelper {
 		}
 
 		self::add_status_filter( $args );
+
 		if ( is_numeric( $args['drafts'] ) ) {
 			$args['is_draft'] = $args['drafts'];
 		}
@@ -625,6 +676,7 @@ class FrmProReportsHelper {
 	 * @since 6.6
 	 *
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	private static function add_report_page_filters( &$args ) {
@@ -639,6 +691,7 @@ class FrmProReportsHelper {
 	 * @since 6.6
 	 *
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	private static function maybe_add_date_filter( &$args ) {
@@ -660,6 +713,7 @@ class FrmProReportsHelper {
 	 * @since 6.6
 	 *
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	private static function add_status_filter( &$args ) {

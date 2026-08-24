@@ -139,9 +139,20 @@ class Frontend
         $lazyLoaded = [];
         // Remove `additionalInformation`, `urls` and `deviceStorageDisclosure` from the GVL
         if (isset($output['tcf']) && !empty($output['tcf'])) {
-            $lazyLoaded['tcf'] = ['vendors' => []];
-            if (\is_array($output['tcf']['vendors'])) {
-                foreach ($output['tcf']['vendors'] as $vendorId => &$row) {
+            $vendors = $output['tcf']['vendors'] ?? null;
+            // `tcfToJson` casts maps to objects so empty JSON is `{}` rather than `[]`.
+            if (\is_object($vendors)) {
+                $vendors = (array) $vendors;
+            }
+            if (\is_array($vendors)) {
+                $extractedVendors = [];
+                foreach ($vendors as $vendorId => &$row) {
+                    if (\is_object($row)) {
+                        $row = (array) $row;
+                    }
+                    if (!\is_array($row)) {
+                        continue;
+                    }
                     foreach ([
                         // This keys are part of the main GVL model
                         'urls',
@@ -151,10 +162,15 @@ class Frontend
                         'deviceStorageDisclosure',
                     ] as $key) {
                         if (isset($row[$key])) {
-                            $lazyLoaded['tcf']['vendors'][$vendorId][$key] = $row[$key];
+                            $extractedVendors[$vendorId][$key] = $row[$key];
                             unset($row[$key]);
                         }
                     }
+                }
+                unset($row);
+                $output['tcf']['vendors'] = (object) $vendors;
+                if (\count($extractedVendors) > 0) {
+                    $lazyLoaded['tcf'] = ['vendors' => $extractedVendors];
                 }
             }
         }

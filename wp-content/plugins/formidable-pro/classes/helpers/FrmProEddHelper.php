@@ -25,10 +25,12 @@ class FrmProEddHelper {
 	 * @since 6.8
 	 *
 	 * @param string $button_classes
+	 *
 	 * @return void
 	 */
 	public static function show_connect_links( $button_classes = '' ) {
 		$buttons = self::get_action_for_license();
+
 		if ( is_callable( 'FrmDashboardHelper::show_connect_links' ) ) {
 			FrmDashboardHelper::show_connect_links( $buttons, $button_classes );
 			return;
@@ -54,6 +56,7 @@ class FrmProEddHelper {
 	 */
 	private static function get_action_for_license() {
 		$buttons = array();
+
 		if ( is_callable( 'FrmDashboardHelper::get_license_buttons' ) ) {
 			$buttons = FrmDashboardHelper::get_license_buttons();
 		} else {
@@ -66,15 +69,17 @@ class FrmProEddHelper {
 		}
 
 		$license_type = strtolower( FrmProAddonsController::get_readable_license_type() );
+
 		if ( 'lite' === $license_type ) {
 			return $buttons;
 		}
 
 		$license_status = FrmProAddonsController::get_license_status();
 		$upgrade_renew  = FrmAppHelper::admin_upgrade_link( 'settings-upgrade', 'account/downloads/' );
+
 		if ( $license_status === 'expired' ) {
 			$buttons[] = array(
-				'label'   => __( 'Renew Now', 'formidable-pro' ),
+				'label'   => __( 'Renew Now', 'formidable' ),
 				'link'    => $upgrade_renew,
 				'classes' => 'frm-button-primary',
 			);
@@ -98,7 +103,7 @@ class FrmProEddHelper {
 	 * @return string
 	 */
 	public static function get_license_type_info( $license_type = '' ) {
-		if ( empty( $license_type ) ) {
+		if ( ! $license_type ) {
 			$license_type = FrmProAddonsController::get_readable_license_type();
 		}
 
@@ -109,6 +114,7 @@ class FrmProEddHelper {
 				$license_type
 			);
 		}
+
 		return '';
 	}
 
@@ -119,6 +125,7 @@ class FrmProEddHelper {
 	 */
 	public static function show_disconnect_link() {
 		$config_license = self::get_defined_license();
+
 		if ( $config_license ) {
 			// Don't show disconnect link if license is defined in wp-config.php.
 			return;
@@ -138,6 +145,7 @@ class FrmProEddHelper {
 	 */
 	public static function show_clear_license_cache_link() {
 		$data_attr_refresh = '';
+
 		if ( is_callable( 'FrmDashboardController::is_dashboard_page' ) && FrmDashboardController::is_dashboard_page() ) {
 			$data_attr_refresh = 'data-refresh=1';
 		}
@@ -173,7 +181,7 @@ class FrmProEddHelper {
 				<input type="text" name="proplug-license" value="" placeholder="<?php echo esc_attr( $placeholder ); ?>" id="edd_<?php echo esc_attr( self::$plugin_slug ); ?>_license_key" />
 				<span class="frm-show-authorized">
 					<?php esc_html_e( 'License is active', 'formidable-pro' ); ?>
-					<?php FrmProAppHelper::icon_by_class( 'frm_icon_font frm_check1_icon' ); ?>
+					<?php FrmAppHelper::icon_by_class( 'frmfont frm_check1_icon' ); ?>
 				</span>
 			</p>
 			<p class="frm3 frm_form_field">

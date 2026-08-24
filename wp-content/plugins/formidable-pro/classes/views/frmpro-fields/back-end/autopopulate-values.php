@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php $field_obj->show_get_options( $field ); ?>
 
 		<div class="frm_form_field">
-			<p class="frm_primary_label<?php echo empty( $field['watch_lookup'] ) ? ' frm-force-hidden' : ''; ?>" id="frm_watch_lookup_label_<?php echo absint( $field['id'] ); ?>"><?php esc_html_e( 'Watch Lookup Fields', 'formidable-pro' ); ?></p>
+			<p class="frm_primary_label<?php echo ! empty( $field['watch_lookup'] ) ? '' : ' frm-force-hidden'; ?>" id="frm_watch_lookup_label_<?php echo absint( $field['id'] ); ?>"><?php esc_html_e( 'Watch Lookup Fields', 'formidable-pro' ); ?></p>
 
 			<div id="frm_watch_lookup_block_<?php echo absint( $field['id'] ); ?>" class="frm_add_remove">
 				<?php
@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					include FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/watch-row.php';
 				} elseif ( isset( $field['watch_lookup'] ) ) {
 					$field_id = $field['id'];
+
 					foreach ( $field['watch_lookup'] as $row_key => $selected_field ) {
 						include FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/watch-row.php';
 					}
@@ -27,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</div>
 
 			<a href="#" id="frm_add_watch_lookup_link_<?php echo esc_attr( $field['id'] ); ?>" class="frm_add_watch_lookup_row frm_add_watch_lookup_link frm-align-baseline">
-				<span class="frm_add_tag frm-mr-2"><?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_plus1_icon frm_svg14' ); ?></span>
+				<span class="frm_add_tag frm-mr-2"><?php FrmAppHelper::icon_by_class( 'frmfont frm_plus1_icon frm_svg14' ); ?></span>
 				<span><?php esc_html_e( 'Watch a Lookup Field', 'formidable-pro' ); ?></span>
 			</a>
 		</div>

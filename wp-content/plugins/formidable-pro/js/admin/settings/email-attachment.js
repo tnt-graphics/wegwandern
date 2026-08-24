@@ -27,7 +27,7 @@
 				multiple: false
 			});
 
-			mediaUploader.on( 'select', function() {
+			mediaUploader.on( 'select', () => {
 				var icon,
 					attachment = mediaUploader.state().get( 'selection' ).first().toJSON();
 
@@ -45,7 +45,7 @@
 				 * Add the image or file icon.
 				 */
 				icon = attachment.icon;
-				if ( typeof attachment.sizes !== 'undefined' ) {
+				if ( attachment.sizes !== undefined ) {
 					icon = attachment.sizes.thumbnail.url;
 				}
 				container.find( '.frm_email_attachment_icon' ).html( '<img src="' + icon + '" class="frm_image_preview" />' );

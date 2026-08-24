@@ -9,12 +9,13 @@ if ( 'currency' === FrmField::get_option( $field, 'format' ) && $field['use_glob
 	$global_currency = FrmProCurrencyHelper::get_global_currency( $field );
 }
 
-$currency_decimals = $global_currency['decimals'] ?? $field['custom_decimals'] ?? 2;
+$currency_decimals       = $global_currency['decimals'] ?? $field['custom_decimals'] ?? 2;
+$global_currency_checked = ! $field['custom_currency'] && $field['use_global_currency'];
 ?>
 <div class="frm_form_field frm_hidden" id="frm-field-format-global-currency-<?php echo esc_attr( $field['id'] ); ?>">
 	<label class="frm_primary_label" for="frm_use_global_currency_<?php echo esc_attr( $field['id'] ); ?>">
-		<input type="checkbox" id="frm_use_global_currency_<?php echo esc_attr( $field['id'] ); ?>" class="frm-global-currency-checkbox" value="1" <?php checked( ! $field['custom_currency'] && $field['use_global_currency'] ); ?> />
-		<input type="hidden" name="field_options[use_global_currency_<?php echo esc_attr( $field['id'] ); ?>]" value="0" />
+		<input type="checkbox" id="frm_use_global_currency_<?php echo esc_attr( $field['id'] ); ?>" class="frm-global-currency-checkbox" value="1" <?php checked( $global_currency_checked ); ?> />
+		<input type="hidden" name="field_options[use_global_currency_<?php echo esc_attr( $field['id'] ); ?>]" value="<?php echo esc_attr( $global_currency_checked ? '1' : '0' ); ?>" />
 		<?php esc_html_e( 'Use Global Currency Settings', 'formidable-pro' ); ?>
 	</label>
 </div>

@@ -12,7 +12,7 @@ _deprecated_file( __FILE__, '6.16.3' );
 <tr>
 	<td colspan="2">
 		<div class="frm_note_style" style="margin-top: 0;">
-			<?php esc_html_e( 'Page Turn Transitions setting was moved to the page break field settings in the form builder.', 'formidable' ); ?>
+			<?php esc_html_e( 'Page Turn Transitions setting was moved to the page break field settings in the form builder.', 'formidable-pro' ); ?>
 			<input type="hidden" name="options[transition]" value="<?php echo esc_attr( $values['transition'] ); ?>" />
 		</div>
 	</td>

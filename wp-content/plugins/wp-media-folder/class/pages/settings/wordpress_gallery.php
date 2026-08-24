@@ -1,7 +1,9 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
-$wp_gallery_configs = wpmfGetOption('gallery_shortcode_cf');
+use Joomunited\WPMediaFolder\WpmfHelper;
+
+$wp_gallery_configs = WpmfHelper::wpmfGetOption('gallery_shortcode_cf');
 $wp_gallery_themes = array(
     'default' => esc_html__('Default', 'wpmf'),
     'masonry' => esc_html__('Masonry', 'wpmf'),

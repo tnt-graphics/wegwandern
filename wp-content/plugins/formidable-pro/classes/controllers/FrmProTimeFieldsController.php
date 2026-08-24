@@ -70,6 +70,7 @@ class FrmProTimeFieldsController {
 		}
 
 		$unique_time_fields = array();
+
 		foreach ( $frm_vars['timepicker_loaded'] as $time_field_id => $options ) {
 			if ( ! $options ) {
 				continue;
@@ -81,7 +82,7 @@ class FrmProTimeFieldsController {
 			);
 		}
 
-		if ( ! empty( $unique_time_fields ) ) {
+		if ( $unique_time_fields ) {
 			echo '__frmUniqueTimes=' . json_encode( $unique_time_fields ) . ';';
 		}
 	}
@@ -92,6 +93,7 @@ class FrmProTimeFieldsController {
 	 * @since 6.9
 	 *
 	 * @param array $values Processed time field values.
+	 *
 	 * @return string
 	 */
 	public static function get_step_unit( $values ) {
@@ -110,6 +112,7 @@ class FrmProTimeFieldsController {
 	 * @param array $time_options The time options array.
 	 * @param array $frm_vars The frm_vars array.
 	 * @param string $default_key The default key to return if the date field is not found.
+	 *
 	 * @return string
 	 */
 	private static function get_linked_date_id( $time_options, $frm_vars, $default_key = '' ) {

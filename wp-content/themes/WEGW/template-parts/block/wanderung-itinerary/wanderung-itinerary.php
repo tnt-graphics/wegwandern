@@ -2,6 +2,14 @@
 /**
  * Wanderung Itinerary
  */
+
+if ( ! empty( $is_preview ) ) {
+	echo '<div style="padding:12px;border:1px solid #dcdcde;background:#f6f7f7;">';
+	echo esc_html__( 'Wanderbeschrieb Accordion — im Editor die Felder rechts nutzen. Die Frontend-Ansicht erscheint auf der Website.', 'wegwandern' );
+	echo '</div>';
+	return;
+}
+
 $wegw_choose_section = get_field( 'wegw_choose_section' );
 
 global $post;
@@ -50,13 +58,17 @@ if ( $wegw_choose_section ) {
 												<li>
 													<?php
 													$itinerary_link = get_sub_field( 'link' );
+													$itinerary_icon_url = ( is_array( $itinerary_icon ) && ! empty( $itinerary_icon['url'] ) ) ? $itinerary_icon['url'] : '';
+													if ( $itinerary_icon_url === '' ) {
+														continue;
+													}
 													if($itinerary_link != '') {
 														?>
-														<a href="<?php echo $itinerary_link; ?>" target="_blank"><img src="<?php echo $itinerary_icon['url']; ?>"></a>
+														<a href="<?php echo $itinerary_link; ?>" target="_blank"><img src="<?php echo esc_url( $itinerary_icon_url ); ?>"></a>
 														<?php
 													} else {
 														?>
-														<img src="<?php echo $itinerary_icon['url']; ?>">
+														<img src="<?php echo esc_url( $itinerary_icon_url ); ?>">
 														<?php
 													}
 													?>
@@ -111,8 +123,10 @@ if ( $wegw_choose_section ) {
 		);
 
 		$allwander_saison = get_terms( $wander_saison_args );
-		foreach ( $allwander_saison as $saison ) {
-			array_push( $allseason, $saison->name );
+		if ( ! is_wp_error( $allwander_saison ) && ! empty( $allwander_saison ) ) {
+			foreach ( $allwander_saison as $saison ) {
+				array_push( $allseason, $saison->name );
+			}
 		}
 		?>
 		<div class="accordion single-page-accord"><?php echo esc_html__( 'Technische Daten', 'wegwandern' ); ?></div>

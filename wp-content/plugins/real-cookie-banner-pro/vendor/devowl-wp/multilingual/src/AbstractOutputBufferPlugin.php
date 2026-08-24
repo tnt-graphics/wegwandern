@@ -35,6 +35,11 @@ abstract class AbstractOutputBufferPlugin extends AbstractLanguagePlugin
         return '';
     }
     // Documented in AbstractLanguagePlugin
+    public function getTermLanguage($termTaxonomyId, $taxonomy)
+    {
+        return '';
+    }
+    // Documented in AbstractLanguagePlugin
     public function getOriginalPostId($id, $post_type)
     {
         return $id;

@@ -13,6 +13,7 @@ class FrmProImages {
 	 * Checks if field has image options. This wraps FrmProImages:should_show_images() method.
 	 *
 	 * @param array $field Field data.
+	 *
 	 * @return bool
 	 */
 	public static function has_image_options( $field ) {
@@ -23,10 +24,11 @@ class FrmProImages {
 	 * @since 5.0.06
 	 *
 	 * @param array $field
+	 *
 	 * @return bool
 	 */
 	private static function field_type_support_image_options( $field ) {
-		if ( FrmField::is_field_type( $field, 'radio' ) || FrmField::is_field_type( $field, 'checkbox' ) ) {
+		if ( FrmField::is_field_type( $field, 'radio' ) || FrmField::is_field_type( $field, 'checkbox' ) || FrmField::is_field_type( $field, 'product' ) ) {
 			return true;
 		}
 
@@ -34,32 +36,41 @@ class FrmProImages {
 		 * @since 6.8.3
 		 *
 		 * @param bool   $supports_image_options
-		 * @return array $field
+		 *
+		 * @return array Field.
 		 */
 		return (bool) apply_filters( 'frm_field_type_support_image_options', false, $field );
 	}
 
 	/**
 	 * @param array|string $options
+	 *
 	 * @return bool
 	 */
 	public static function has_images_options_in_html( $options ) {
 		$options = is_array( $options ) ? implode( ' ', $options ) : $options;
-		return strpos( $options, 'frm_image_option' ) !== false;
+		return str_contains( $options, 'frm_image_option' );
 	}
 
 	/**
 	 * @param array|string $value
+	 *
 	 * @return bool
 	 */
 	public static function has_image_option_markup( $value ) {
-		return is_string( $value ) && strpos( $value, 'frm_image_option_container' ) !== false;
+		return is_string( $value ) && str_contains( $value, 'frm_image_option_container' );
 	}
 
+	/**
+	 * @return string
+	 */
 	public static function get_image_icon_markup() {
 		return '<div class="frm_image_placeholder_icon">' . FrmAppHelper::icon_by_class( 'frmfont frm_placeholder_image_icon', array( 'echo' => false ) ) . '</div>';
 	}
 
+	/**
+	 * @return string
+	 */
 	public static function get_default_size() {
 		return 'small';
 	}
@@ -68,18 +79,20 @@ class FrmProImages {
 	 * Load settings in builder
 	 *
 	 * @param array $args
+	 *
 	 * @return void
 	 */
 	public static function show_image_choices( $args ) {
 		$field = $args['field'];
+
 		if ( isset( $field['post_field'] ) && $field['post_field'] === 'post_category' ) {
 			return;
 		}
 
 		$columns = array(
-			'small'  => __( 'Small', 'formidable-pro' ),
-			'medium' => __( 'Medium', 'formidable-pro' ),
-			'large'  => __( 'Large', 'formidable-pro' ),
+			'small'  => __( 'Small', 'formidable' ),
+			'medium' => __( 'Medium', 'formidable' ),
+			'large'  => __( 'Large', 'formidable' ),
 			'xlarge' => __( 'Extra Large', 'formidable-pro' ),
 		);
 
@@ -91,6 +104,8 @@ class FrmProImages {
 
 	/**
 	 * Called by hook in lite.
+	 *
+	 * @param array $atts
 	 */
 	public static function admin_options( $atts ) {
 		$field = $atts['field'];
@@ -127,10 +142,15 @@ class FrmProImages {
 	 * @since 6.2 This method is public.
 	 *
 	 * @param array $field Field data.
+	 *
 	 * @return bool
 	 */
 	public static function should_show_images( $field ) {
 		$image_options = FrmField::get_option( $field, 'image_options' );
+
+		if ( 'product' === FrmField::get_field_type( $field ) && ! in_array( FrmField::get_option( $field, 'data_type' ), array( 'radio', 'checkbox', 'single' ), true ) ) {
+			$image_options = 0;
+		}
 
 		/**
 		 * Allows show or hide choice field images using custom code.
@@ -166,17 +186,12 @@ class FrmProImages {
 
 	private static function get_image_from_array( $opt, $opt_key, $field ) {
 		$opt = apply_filters( 'frm_field_image_id', $opt, $opt_key, $field );
-
 		return self::check_image( $opt, $field );
 	}
 
 	private static function check_image( $opt, $field ) {
 		if ( is_array( $opt ) ) {
-			if ( FrmField::is_option_true( $field, 'image_options' ) ) {
-				$opt = $opt['image'] ?? 0;
-			} else {
-				$opt = 0;
-			}
+			return FrmField::is_option_true( $field, 'image_options' ) ? ( $opt['image'] ?? 0 ) : 0;
 		}
 
 		return $opt;
@@ -185,7 +200,8 @@ class FrmProImages {
 	/**
 	 * Called by self::single_option_details.
 	 *
-	 * @param mixed $image_id
+	 * @param int|string $image_id
+	 *
 	 * @return string
 	 */
 	private static function get_url( $image_id ) {
@@ -194,8 +210,7 @@ class FrmProImages {
 		}
 
 		$image_id = (int) $image_id;
-		$size     = self::get_default_size();
-		$src      = wp_get_attachment_image_src( $image_id, $size );
+		$src      = wp_get_attachment_image_src( $image_id, self::get_default_size() );
 		$url      = is_array( $src ) ? $src[0] : '';
 
 		if ( ! $url ) {
@@ -208,7 +223,8 @@ class FrmProImages {
 	/**
 	 * Check if an image id isn't empty and is a number before trying to get the image.
 	 *
-	 * @param mixed $image_id
+	 * @param int|string $image_id
+	 *
 	 * @return bool true if valid.
 	 */
 	private static function validate_image_id( $image_id ) {
@@ -217,15 +233,18 @@ class FrmProImages {
 
 	/**
 	 * Called by self::single_option_details.
+	 *
+	 * @param int|string $image_id
+	 *
+	 * @return string
 	 */
 	private static function get_filename( $image_id ) {
-		if ( empty( $image_id ) ) {
+		if ( ! $image_id ) {
 			return '';
 		}
 
 		$filename = get_post_meta( (int) $image_id, '_wp_attached_file', true );
-
-		$matches = array();
+		$matches  = array();
 		preg_match( '/([A-Za-z0-9.\-_]+)$/', $filename, $matches );
 
 		return $matches[0] ?? '';
@@ -234,7 +253,9 @@ class FrmProImages {
 	/**
 	 * Called by self::single_option_details.
 	 *
-	 * @param string $image_url
+	 * @param array        $field
+	 * @param array|string $opt
+	 * @param string       $image_url
 	 */
 	private static function get_label( $field, $opt, $image_url = '' ) {
 		if ( ! self::should_show_images( $field ) ) {
@@ -244,22 +265,44 @@ class FrmProImages {
 		$show_label  = self::should_show_label( $field );
 		$label_class = $show_label ? ' frm_label_with_image' : '';
 		$text_label  = self::get_label_from_opt( $opt, $field );
-		$field_type  = FrmField::get_option( $field, 'type' );
+		$label       = '<div class="frm_image_option_container' . esc_attr( $label_class ) . '">';
 
-		$label  = '<div class="frm_image_option_container' . esc_attr( $label_class ) . '">';
-		if ( empty( $image_url ) ) {
-			$label .= '<div class="frm_empty_url">' . self::get_image_icon_markup() . '</div>';
-		} else {
+		if ( $image_url ) {
 			$label .= '<img src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $text_label ) . '" />';
+		} else {
+			$label .= '<div class="frm_empty_url">' . self::get_image_icon_markup() . '</div>';
 		}
 
 		if ( $show_label ) {
-			$label .= '<span class="frm_text_label_for_image"><span class="frm_text_label_for_image_inner">' . $text_label . '</span></span>';
+			$label .= '<span class="frm_text_label_for_image"><span class="frm_text_label_for_image_inner">' . $text_label;
+			$label .= FrmAppHelper::kses( self::get_remaining_choices_text( $field, $opt ), 'all' );
+			$label .= '</span></span>';
 		}
 
-		$label .= '</div>';
+		return $label . '</div>';
+	}
 
-		return $label;
+	/**
+	 * Returns remaining choices text.
+	 *
+	 * @since 6.28
+	 *
+	 * @param array $field
+	 * @param array $choice
+	 *
+	 * @return string
+	 */
+	private static function get_remaining_choices_text( $field, $choice ) {
+		if ( ! FrmProFieldsHelper::should_show_remaining_choices( $field ) || ! FrmField::get_option( $field, 'set_choices_limit' ) || empty( $choice['limit'] ) ) {
+			return '';
+		}
+
+		$field_id             = absint( $field['id'] );
+		$opt_key              = FrmField::get_option( $field, 'separate_value' ) ? $choice['value'] : $choice['label'];
+		$choice_entries_count = do_shortcode( '[frm-stats id="' . $field_id . '" ' . $field_id . '_contains="' . $opt_key . '" type="count"]' );
+		$choices_left         = absint( $choice['limit'] ) - absint( $choice_entries_count );
+
+		return FrmProFieldsHelper::get_remaining_qty_message( $choices_left, $field );
 	}
 
 	/**
@@ -268,6 +311,7 @@ class FrmProImages {
 	 * @since 5.0
 	 *
 	 * @param array $field Field data.
+	 *
 	 * @return bool
 	 */
 	private static function should_show_label( $field ) {
@@ -285,15 +329,11 @@ class FrmProImages {
 	/**
 	 * @param array|string $opt
 	 * @param array|object $field This is passed so it can be used as an arg for the frm_choice_field_option_label filter.
+	 *
 	 * @return string
 	 */
 	private static function get_label_from_opt( $opt, $field ) {
-		if ( is_array( $opt ) ) {
-			$label = $opt['label'] ?? '';
-		} else {
-			$label = $opt;
-		}
-
+		$label = is_array( $opt ) ? ( $opt['label'] ?? '' ) : $opt;
 		$field = (array) $field;
 
 		/**
@@ -316,27 +356,36 @@ class FrmProImages {
 
 	/**
 	 * Called by hooks.
+	 *
+	 * @param string $classes
+	 * @param array  $field
 	 */
 	public static function get_image_option_classes( $classes, $field ) {
 		return $classes . self::get_option_classes_from_field( $field );
 	}
 
+	/**
+	 * @return string
+	 */
 	private static function get_option_classes_from_field( $field ) {
 		if ( ! self::should_show_images( $field ) ) {
 			return '';
 		}
 
 		$image_size = FrmField::get_option( $field, 'image_size' );
+		$class      = ' frm_image_options ';
 
-		$class = ' frm_image_options ';
-		if ( ! empty( $image_size ) ) {
+		if ( $image_size ) {
 			$class .= 'frm_image_size_' . $image_size . ' ';
 		}
+
 		return $class;
 	}
 
 	/**
-	 * @param array $atts
+	 * @param array|object $field
+	 * @param array        $atts
+	 *
 	 * @return bool
 	 */
 	public static function showing_images( $field, $atts ) {
@@ -355,17 +404,17 @@ class FrmProImages {
 	}
 
 	/**
-	 * @param stdClass $field
-	 * @param mixed    $value
-	 * @param array    $atts
+	 * @param stdClass     $field
+	 * @param array|string $value
+	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	public static function display( $field, $value, $atts ) {
 		$multiple_values = is_array( $value );
-
-		$f_values = array();
-		$f_labels = array();
-		$f_images = array();
+		$f_values        = array();
+		$f_labels        = array();
+		$f_images        = array();
 
 		foreach ( $field->options as $opt_key => $opt ) {
 			if ( ! is_array( $opt ) ) {
@@ -385,7 +434,7 @@ class FrmProImages {
 		$has_separate_option = FrmField::is_option_true( $field, 'separate_value' );
 		$values_to_check     = $has_separate_option ? $f_values : $f_labels;
 
-		if ( empty( $values_to_check ) ) {
+		if ( ! $values_to_check ) {
 			return $value;
 		}
 
@@ -395,6 +444,7 @@ class FrmProImages {
 
 		foreach ( (array) $value as $v_key => $val ) {
 			$val = self::maybe_adjust_val( $val, $values_to_check );
+
 			if ( in_array( $val, $values_to_check ) ) {
 				$opt           = array_search( $val, $values_to_check );
 				$display_value = self::option_array( $f_labels, $f_images, $opt );
@@ -426,19 +476,21 @@ class FrmProImages {
 	 *
 	 * @param string $val
 	 * @param array  $values_to_check
+	 *
 	 * @return string
 	 */
 	private static function maybe_adjust_val( $val, $values_to_check ) {
-		if ( false === strpos( $val, '&amp;' ) || in_array( $val, $values_to_check ) ) {
+		if ( ! str_contains( $val, '&amp;' ) || in_array( $val, $values_to_check ) ) {
 			return $val;
 		}
 		return str_replace( '&amp;', '&', $val );
 	}
 
 	/**
-	 * @param array $f_labels
-	 * @param array $f_images
-	 * @param mixed $opt
+	 * @param array      $f_labels
+	 * @param array      $f_images
+	 * @param int|string $opt
+	 *
 	 * @return array
 	 */
 	private static function option_array( $f_labels, $f_images, $opt ) {
@@ -451,6 +503,7 @@ class FrmProImages {
 	/**
 	 * @param array $atts
 	 * @param array $image_values
+	 *
 	 * @return array|string
 	 */
 	private static function get_image_value( $atts, $image_values ) {
@@ -465,6 +518,7 @@ class FrmProImages {
 		}
 
 		$image_markup = array();
+
 		foreach ( $image_values['display_options'] as $single_image_values ) {
 			$image_markup[] = self::get_value_for_display( $single_image_values, $atts, $image_values );
 		}
@@ -472,13 +526,20 @@ class FrmProImages {
 		return $image_markup;
 	}
 
+	/**
+	 * @param mixed $value
+	 * @param array $atts
+	 * @param array $image_values
+	 *
+	 * @return mixed
+	 */
 	private static function get_value_for_display( $value, $atts, $image_values ) {
 		if ( ! is_array( $value ) ) {
 			return $value;
 		}
 
 		if ( isset( $atts['show'] ) && trim( $atts['show'] ) === 'id' ) {
-			return empty( $value['image'] ) ? '' : $value['image'];
+			return ! empty( $value['image'] ) ? $value['image'] : '';
 		}
 
 		$image_size = $image_values['image_size'] ? $image_values['image_size'] : self::get_default_size();
@@ -494,15 +555,14 @@ class FrmProImages {
 		}
 
 		$new_atts['size'] = $file_field_object->set_size( $atts );
-
-		$has_image = ! empty( $value['image'] ) && $new_atts['show_image'];
-
-		$display_content = '';
-		$label           = $value['label'] ?? '';
+		$has_image        = ! empty( $value['image'] ) && $new_atts['show_image'];
+		$display_content  = '';
+		$label            = $value['label'] ?? '';
 
 		if ( $has_image ) {
 			$image_id = $value['image'];
 			$alt_tag  = strip_tags( get_post_meta( $image_id, '_wp_attachment_image_alt', true ) );
+
 			if ( ! $alt_tag && $label !== '' ) {
 				// If alt tag not set for image, set the label as the alt tag for the image.
 				update_post_meta( $image_id, '_wp_attachment_image_alt', $label, $alt_tag );
@@ -512,7 +572,7 @@ class FrmProImages {
 		}
 
 		$label_class = '';
-		$show_label  = ( $label !== '' && ( $image_values['show_label'] || ! $has_image || strpos( $display_content, 'img' ) === false ) );
+		$show_label  = $label !== '' && ( $image_values['show_label'] || ! $has_image || ! str_contains( $display_content, 'img' ) );
 
 		if ( $show_label ) {
 			// using FrmAppHelper::kses over esc_html to fix Pro issue #3933
@@ -520,9 +580,7 @@ class FrmProImages {
 			$label_class      = ' frm_label_with_image';
 		}
 
-		$display_content = '<span class="frm_show_images frm_image_option_container frm_image_option_size_' . esc_attr( $image_size . $label_class ) . '">' . $display_content . '</span>';
-
-		return $display_content;
+		return '<span class="frm_show_images frm_image_option_container frm_image_option_size_' . esc_attr( $image_size . $label_class ) . '">' . $display_content . '</span>';
 	}
 
 	/**
@@ -534,6 +592,7 @@ class FrmProImages {
 	 * @since 6.8
 	 *
 	 * @param array $allowed_html
+	 *
 	 * @return array
 	 */
 	public static function allow_image_option_html( $allowed_html ) {

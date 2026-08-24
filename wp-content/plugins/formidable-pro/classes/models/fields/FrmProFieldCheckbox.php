@@ -8,12 +8,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 3.0
  */
 class FrmProFieldCheckbox extends FrmFieldCheckbox {
+	use FrmProFieldTypeTrait;
 
 	protected function field_settings_for_type() {
 		$settings = parent::field_settings_for_type();
 
 		$settings['read_only']     = true;
 		$settings['default_value'] = true;
+		$settings['choice_limit']  = true;
 
 		FrmProFieldsHelper::fill_default_field_display( $settings );
 		return $settings;
@@ -21,10 +23,12 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_extra_field_choices( $args ) {
 		$field = $args['field'];
+
 		if ( isset( $field['post_field'] ) && $field['post_field'] === 'post_category' ) {
 			return;
 		}
@@ -41,6 +45,7 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 	 */
 	public function show_priority_field_choices( $args = array() ) {
 		FrmProImages::show_image_choices( $args );
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/choices-limit.php';
 	}
 
 	/**
@@ -50,11 +55,13 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		return array_merge(
 			parent::extra_field_opts(),
 			array(
-				'limit_selections' => '',
-				'min_selections'   => '',
-				'image_options'    => 0,
-				'hide_image_text'  => 0,
-				'image_size'       => '',
+				'limit_selections'        => '',
+				'min_selections'          => '',
+				'image_options'           => 0,
+				'hide_image_text'         => 0,
+				'image_size'              => '',
+				'set_choices_limit'       => false,
+				'show_remaining_quantity' => false,
 			)
 		);
 	}
@@ -75,21 +82,39 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 
 	/**
 	 * @since 4.02
+	 *
+	 * @param array $args
 	 */
 	public function validate( $args ) {
 		if ( is_array( $args['value'] ) ) {
 			$this->trim_excess_values( $args );
 		}
-		return $this->validate_min_selections( $args );
+
+		$errors = $this->validate_min_selections( $args );
+
+		if ( $errors ) {
+			return $errors;
+		}
+
+		return FrmProEntryValidate::validate_choice_limit( $this->field, $args );
 	}
 
+	/**
+	 * @since 6.28
+	 *
+	 * @param array $args
+	 *
+	 * @return array
+	 */
 	private function validate_min_selections( $args ) {
 		$min = intval( FrmField::get_option( $this->field, 'min_selections' ) );
+
 		if ( $min < 1 ) {
 			return array();
 		}
 
 		$value = array_filter( (array) $args['value'] );
+
 		if ( ! $value ) {
 			// If no checkbox is selected, let required field validation do its job.
 			return array();
@@ -100,7 +125,7 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		}
 
 		$error_msg = sprintf(
-			self::get_error_messages()['min_selections'],
+			FrmProFieldsHelper::get_error_message( 'min_selections' ),
 			$min,
 			count( $value )
 		);
@@ -110,22 +135,27 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 
 	/**
 	 * @since 4.02
+	 *
+	 * @param array $args
 	 */
 	private function trim_excess_values( $args ) {
-
 		$original_value = $args['value'];
 
 		$this->maybe_trim_excess_values( $args['value'] );
 
-		if ( $original_value != $args['value'] ) {
-			// trimming has happened
-			$this->maybe_unset_other_values( $args, $args['value'] );
-			FrmEntriesHelper::set_posted_value( $this->field, $args['value'], $args );
+		if ( $original_value == $args['value'] ) {
+			return;
 		}
+
+		// Trimming has happened
+		$this->maybe_unset_other_values( $args, $args['value'] );
+		FrmEntriesHelper::set_posted_value( $this->field, $args['value'], $args );
 	}
 
 	/**
 	 * @since 4.02
+	 *
+	 * @param mixed $value
 	 */
 	public function maybe_trim_excess_values( &$value ) {
 		if ( ! is_array( $value ) ) {
@@ -133,16 +163,19 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		}
 
 		$selections_limit = 0;
+
 		if ( is_object( $this->field ) || is_array( $this->field ) ) {
 			$selections_limit = FrmField::get_option( $this->field, 'limit_selections' );
 		} elseif ( $this->field ) {
 			$this->field = FrmField::getOne( $this->field );
+
 			if ( $this->field ) {
 				$selections_limit = FrmField::get_option_in_object( $this->field, 'limit_selections' );
 			}
 		}
 
 		$selections_limit = absint( $selections_limit );
+
 		if ( ! $selections_limit || count( $value ) <= $selections_limit ) {
 			return;
 		}
@@ -152,9 +185,13 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 
 	/**
 	 * @since 4.02
+	 *
+	 * @param array $args
+	 * @param mixed $retained_values
 	 */
 	private function maybe_unset_other_values( $args, $retained_values ) {
 		$meta = FrmAppHelper::get_post_param( 'item_meta', array() );
+
 		if ( ! empty( $args['parent_field_id'] ) ) {
 			$meta = $meta[ $args['parent_field_id'] ][ $args['key_pointer'] ];
 		}
@@ -164,16 +201,19 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		}
 
 		$all_other_values = $meta['other'];
+
 		if ( ! isset( $all_other_values[ $this->field_id ] ) ) {
 			return;
 		}
 
-		if ( $this->unset_other_values( $all_other_values, $retained_values ) ) {
-			if ( ! empty( $args['parent_field_id'] ) ) {
-				unset( $_POST['item_meta'][ $args['parent_field_id'] ][ $args['key_pointer'] ]['other'] );
-			} else {
-				unset( $_POST['item_meta']['other'] );
-			}
+		if ( ! $this->unset_other_values( $all_other_values, $retained_values ) ) {
+			return;
+		}
+
+		if ( ! empty( $args['parent_field_id'] ) ) {
+			unset( $_POST['item_meta'][ $args['parent_field_id'] ][ $args['key_pointer'] ]['other'] );
+		} else {
+			unset( $_POST['item_meta']['other'] );
 		}
 	}
 
@@ -181,6 +221,9 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 	 * @since 4.02
 	 *
 	 * Remove 'Other' text inputs from $_POST.
+	 *
+	 * @param mixed $all_other_values
+	 * @param mixed $retained_values
 	 *
 	 * @return bool Whether to unset all 'other' values. True if all 'other' values are empty, false otherwise.
 	 */
@@ -199,7 +242,7 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 			}
 		}
 
-		// if it's now empty, obliterate it so that no traces of it.
+		// If it's now empty, obliterate it so that no traces of it.
 		if ( empty( $all_other_values[ $this->field_id ] ) ) {
 			unset( $all_other_values[ $this->field_id ] );
 		}
@@ -211,12 +254,17 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 	 * Format image options.
 	 *
 	 * @since 4.06
+	 *
+	 * @param mixed $value
+	 * @param array $atts
 	 */
 	protected function prepare_display_value( $value, $atts ) {
 		$value = parent::prepare_display_value( $value, $atts );
+
 		if ( FrmProImages::has_image_option_markup( $value ) ) {
-			$value = '<div class="frm_has_image_options">' . $value . ' </div>';
+			return '<div class="frm_has_image_options">' . $value . ' </div>';
 		}
+
 		return $value;
 	}
 
@@ -225,6 +273,7 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return string
 	 */
 	public function get_display_value( $value, $atts = array() ) {
@@ -250,35 +299,22 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	public function get_value_to_save( $value, $atts ) {
-		if ( is_array( $value ) ) {
-			$value = array_filter(
-				$value,
-				function ( $current ) {
-					return '' !== $current;
-				}
-			);
-			if ( 0 === count( $value ) ) {
-				$value = '';
-			}
+		if ( ! is_array( $value ) ) {
+			return $value;
 		}
-		return $value;
-	}
 
-	/**
-	 * Gets error messages.
-	 *
-	 * @since 6.14
-	 *
-	 * @return array
-	 */
-	public static function get_error_messages() {
-		return array(
-			// Translators: %1$d: min selections, %2$d: actual selections count.
-			'min_selections' => __( 'This field requires a minimum of %1$d selected options but only %2$d were submitted.', 'formidable-pro' ),
+		$value = array_filter(
+			$value,
+			function ( $current ) {
+				return '' !== $current;
+			}
 		);
+
+		return array() === $value ? '' : $value;
 	}
 
 	/**
@@ -294,5 +330,18 @@ class FrmProFieldCheckbox extends FrmFieldCheckbox {
 		}
 
 		return parent::get_container_class();
+	}
+
+	/**
+	 * Gets error messages.
+	 *
+	 * @since 6.14
+	 * @deprecated 6.28
+	 *
+	 * @return array
+	 */
+	public static function get_error_messages() {
+		_deprecated_function( __METHOD__, '6.28', 'FrmProFieldsHelper::get_error_messages' );
+		return FrmProFieldsHelper::get_error_messages();
 	}
 }

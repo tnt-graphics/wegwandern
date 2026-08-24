@@ -3,15 +3,13 @@
 		if ( ! document.querySelector( '#form_reports_page' ) ) {
 			return;
 		}
-		const form = document.querySelector( 'form' );
+		const form = document.querySelector( 'form.frm-report-filter' );
 		const dateRange = form.querySelector( '#frm_stats_date_range' );
 		if ( dateRange ) {
 			dateRange.addEventListener( 'change', handleDateRangeChange );
 		}
 
-		const entryStatusSelect = document.getElementById(
-			'frm_stats_entry_status'
-		);
+		const entryStatusSelect = document.getElementById( 'frm_stats_entry_status' );
 		if ( entryStatusSelect ) {
 			entryStatusSelect.addEventListener( 'change', () => {
 				form.submit();
@@ -29,16 +27,10 @@
 			const startDate = form.querySelector( '#frm_stats_start_date' );
 			const endDate = form.querySelector( '#frm_stats_end_date' );
 			const submitButton = form.querySelector( 'button' );
-			const dateFields = form.getElementsByClassName(
-				'frm_stats_date_wrapper'
-			);
+			const dateFields = form.getElementsByClassName( 'frm_stats_date_wrapper' );
 
 			for ( let i = 0; i < dateFields.length; i++ ) {
-				if ( value === 'all_time' ) {
-					dateFields[ i ].classList.add( 'frm_invisible' );
-				} else {
-					dateFields[ i ].classList.remove( 'frm_invisible' );
-				}
+				dateFields[ i ].classList.toggle( 'frm_invisible', value === 'all_time' );
 			}
 
 			if ( value !== 'custom' ) {

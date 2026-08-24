@@ -2,6 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'You are not allowed to call this page directly.' );
 }
+
 // TODO: Remove the 'else' block when the majority of active LITE version installations are above 6.14.
 if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 
@@ -9,7 +10,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		<label 
 			for="frm_slider_color"
 			class="frm-style-item-heading">
-			<?php esc_html_e( 'Color', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Color', 'formidable' ); ?>
 		</label>
 	</div>
 	<div class="frm7 frm_form_field">
@@ -21,7 +22,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 				'id'          => 'frm_slider_color',
 				'action_slug' => 'slider_color',
 			)
-		); 
+		);
 		?>
 	</div>
 
@@ -41,7 +42,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 				'id'          => 'frm_slider_bar_color',
 				'action_slug' => 'slider_bar_color',
 			)
-		); 
+		);
 		?>
 	</div>
 
@@ -49,7 +50,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 		<label 
 			for="frm_slider_font_size"
 			class="frm-style-item-heading">
-			<?php esc_html_e( 'Font Size', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Font Size', 'formidable' ); ?>
 		</label>
 	</div>
 	<div class="frm7 frm_form_field">
@@ -108,7 +109,7 @@ if ( class_exists( 'FrmStyleComponent' ) ) : ?>
 <?php else : ?>
 
 	<p class="frm6 frm_first frm_form_field">
-		<label for="frm_progress_bg_color"><?php esc_html_e( 'Color', 'formidable-pro' ); ?></label>
+		<label for="frm_progress_bg_color"><?php esc_html_e( 'Color', 'formidable' ); ?></label>
 		<input type="text" name="<?php echo esc_attr( $frm_style->get_field_name( 'slider_color' ) ); ?>" id="frm_slider_color" class="hex" value="<?php echo esc_attr( $style->post_content['slider_color'] ); ?>" size="4" <?php do_action( 'frm_style_settings_input_atts', 'slider_color' ); ?> />
 	</p>
 

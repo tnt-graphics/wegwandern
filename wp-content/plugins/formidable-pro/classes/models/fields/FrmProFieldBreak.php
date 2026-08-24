@@ -11,18 +11,21 @@ class FrmProFieldBreak extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'break';
 
 	/**
 	 * @var bool
+	 *
 	 * @since 3.0
 	 */
 	protected $has_input = false;
 
 	/**
 	 * @var bool
+	 *
 	 * @since 3.0
 	 */
 	protected $has_html = false;
@@ -47,6 +50,7 @@ class FrmProFieldBreak extends FrmFieldType {
 
 	protected function extra_field_opts() {
 		$prev_label = __( 'Previous', 'formidable-pro' );
+
 		if ( $this->field ) {
 			$prev_label = FrmProFormsHelper::get_form_option( $this->field->form_id, 'prev_value', $prev_label );
 		}
@@ -59,6 +63,7 @@ class FrmProFieldBreak extends FrmFieldType {
 
 	/**
 	 * @since 6.9
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -108,11 +113,11 @@ class FrmProFieldBreak extends FrmFieldType {
 		$post_form_id    = FrmAppHelper::get_post_param( 'form_id', 0, 'absint' );
 		$current_page    = $frm_vars['prev_page'][ $this->field['form_id'] ] ?? 0;
 		$is_current_page = $current_page == $this->field['field_order'];
+		$should_scroll   = $is_current_page || ! isset( $frm_vars['scrolled'] );
 
-		$should_scroll = $is_current_page || ! isset( $frm_vars['scrolled'] );
 		if ( $this->field['form_id'] == $post_form_id && ! defined( 'DOING_AJAX' ) && $should_scroll ) {
 			$frm_vars['scrolled'] = true;
-			//scroll to the form when we move to the next page
+			// Scroll to the form when we move to the next page
 			FrmFormsHelper::get_scroll_js( $this->field['form_id'] );
 		}
 
@@ -141,6 +146,7 @@ class FrmProFieldBreak extends FrmFieldType {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return string
 	 */
 	public function get_display_value( $value, $atts = array() ) {

@@ -11,7 +11,7 @@ class FrmProSimpleBlocksController {
 	 *
 	 * @param $script_vars
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public static function block_editor_assets() {
 		$script_vars = array(
@@ -27,6 +27,7 @@ class FrmProSimpleBlocksController {
 		);
 
 		wp_localize_script( 'formidable-calculator-block', 'formidable_block_calculator', $script_vars );
+
 		if ( function_exists( 'wp_set_script_translations' ) ) {
 			wp_set_script_translations( 'formidable-calculator-block', 'formidable-pro', FrmProAppHelper::plugin_path() . '/languages' );
 		}
@@ -39,10 +40,10 @@ class FrmProSimpleBlocksController {
 	 * For backward compatibility with older versions of Formidable Views < 5.6
 	 * The views block was moved to the Views plugin in version 5.6+
 	 *
-	 * The assets that can be later removed are: 
+	 * The assets that can be later removed are:
 	 * - js/src/view/block.js
-	 * - js/src/view/inspector.js 
-	 * - js/src/view/viewselect.js 
+	 * - js/src/view/inspector.js
+	 * - js/src/view/viewselect.js
 	 * - js/src/view/viewshortcode.js
 	 * - js/block_views.js
 	 *
@@ -71,6 +72,7 @@ class FrmProSimpleBlocksController {
 		);
 
 		wp_localize_script( 'formidable-view-selector', 'formidable_view_selector', $script_vars );
+
 		if ( function_exists( 'wp_set_script_translations' ) ) {
 			wp_set_script_translations( 'formidable-view-selector', 'formidable-pro', FrmProAppHelper::plugin_path() . '/languages' );
 		}
@@ -93,6 +95,7 @@ class FrmProSimpleBlocksController {
 	 * Get all total fields and calculated fields.
 	 *
 	 * @since 4.05
+	 *
 	 * @return array
 	 */
 	private static function get_calc_forms() {
@@ -129,12 +132,16 @@ class FrmProSimpleBlocksController {
 	 * Returns an array for a form with name as label and id as value
 	 *
 	 * @since 4.05
+	 *
+	 * @param array $forms
 	 * @param $form
+	 *
 	 * @return array
 	 */
 	private static function set_form_options( $forms ) {
 		$list   = array();
 		$parent = array();
+
 		foreach ( $forms as $form ) {
 			if ( ! empty( $form->parent_form_id ) ) {
 				$parent[] = $form->parent_form_id;
@@ -146,16 +153,16 @@ class FrmProSimpleBlocksController {
 			}
 		}
 
-		if ( ! empty( $parent ) ) {
+		if ( $parent ) {
 			$parent = array_diff( $parent, array_keys( $list ) );
-			if ( ! empty( $parent ) ) {
+
+			if ( $parent ) {
 				$parents = self::get_forms( $parent );
 				$list   += $parents;
 			}
 		}
 
-		$list = array_values( $list );
-		return $list;
+		return array_values( $list );
 	}
 
 	/**
@@ -167,7 +174,7 @@ class FrmProSimpleBlocksController {
 		}
 
 		if ( is_admin() ) {
-			// register back-end scripts
+			// Register back-end scripts
 			add_action( 'enqueue_block_editor_assets', 'FrmProSimpleBlocksController::block_editor_assets' );
 		}
 
@@ -214,6 +221,7 @@ class FrmProSimpleBlocksController {
 	 */
 	private static function maybe_process_frm_set_get_shortcode() {
 		global $post;
+
 		if ( ! is_object( $post ) || empty( $post->post_content ) ) {
 			return;
 		}
@@ -229,6 +237,7 @@ class FrmProSimpleBlocksController {
 			 * Process frm-set-get/frm_set_get shortcode.
 			 *
 			 * @param array $match
+			 *
 			 * @return void
 			 */
 			function ( $match ) {
@@ -244,9 +253,10 @@ class FrmProSimpleBlocksController {
 	 * @since 5.5.2
 	 *
 	 * @param string $post_content
+	 *
 	 * @return bool True if the value should be processed.
 	 */
 	private static function should_process_frm_set_get_shortcode( $post_content ) {
-		return false !== strpos( $post_content, '[frm-set-get' ) || false !== strpos( $post_content, '[frm_set_get' );
+		return str_contains( $post_content, '[frm-set-get' ) || str_contains( $post_content, '[frm_set_get' );
 	}
 }

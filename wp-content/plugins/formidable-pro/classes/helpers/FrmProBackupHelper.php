@@ -30,10 +30,11 @@ class FrmProBackupHelper {
 
 	/**
 	 * Lock files back after Updraft Plus has finished taking backup.
+	 *
+	 * @param bool $delete_jobdata
 	 */
 	public static function protect_files_on_backup_complete( $delete_jobdata ) {
 		self::restore_files_protection();
-
 		return $delete_jobdata;
 	}
 
@@ -44,7 +45,7 @@ class FrmProBackupHelper {
 	 * @param string $object_key
 	 * @param object $as3cf_item The item being uploaded.
 	 *
-	 * @return bool $is_private
+	 * @return bool Is private.
 	 */
 	public static function before_as3cf_upload_object( $is_private, $object_key, $as3cf_item ) {
 		self::$temporarily_unprotected_formidable_files = array();
@@ -70,13 +71,14 @@ class FrmProBackupHelper {
 		}
 
 		$formidable_uploads = glob( wp_upload_dir()['basedir'] . '/formidable/*/*.*' );
+
 		foreach ( $formidable_uploads as $upload ) {
 			self::remove_single_file_protection( $upload );
 		}
 	}
 
 	public static function restore_files_protection() {
-		if ( ! empty( self::$temporarily_unprotected_formidable_files ) ) {
+		if ( self::$temporarily_unprotected_formidable_files ) {
 			foreach ( self::$temporarily_unprotected_formidable_files as $file ) {
 				FrmProFileField::chmod( $file, 0200 );
 			}
@@ -85,6 +87,7 @@ class FrmProBackupHelper {
 
 	/**
 	 * @param string $file
+	 *
 	 * @return void
 	 */
 	private static function remove_single_file_protection( $file ) {

@@ -3,6 +3,7 @@
  * Pro Submit field
  *
  * @since 6.9
+ *
  * @package FormidablePro
  */
 
@@ -23,7 +24,7 @@ class FrmProFieldSubmit extends FrmFieldSubmit {
 	protected function extra_field_opts() {
 		$opts = parent::extra_field_opts();
 
-		$opts['edit_text']        = __( 'Update', 'formidable-pro' );
+		$opts['edit_text']        = __( 'Update', 'formidable' );
 		$opts['align']            = '';
 		$opts['start_over']       = '';
 		$opts['start_over_label'] = __( 'Start Over', 'formidable-pro' );

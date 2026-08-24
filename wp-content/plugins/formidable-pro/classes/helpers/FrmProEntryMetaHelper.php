@@ -7,16 +7,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProEntryMetaHelper {
 
 	/**
-	 * @param array $entries
-	 * @param mixed $field
-	 * @param array $atts
+	 * @param array    $entries
+	 * @param stdClass $field
+	 * @param array    $atts
+	 *
 	 * @return array
 	 */
 	public static function get_sub_meta_values( $entries, $field, $atts = array() ) {
 		$values = array();
+
 		foreach ( $entries as $entry ) {
 			$sub_val       = self::get_post_or_meta_value( $entry, $field, $atts );
 			$include_blank = ! empty( $atts['include_blank'] );
+
 			if ( $sub_val != '' || $include_blank ) {
 				$values[ $entry->id ] = $sub_val;
 			}
@@ -26,9 +29,10 @@ class FrmProEntryMetaHelper {
 	}
 
 	/**
-	 * @param mixed $entry
-	 * @param mixed $field
-	 * @param array $atts
+	 * @param int|stdClass $entry
+	 * @param stdClass    $field
+	 * @param array       $atts
+	 *
 	 * @return mixed
 	 */
 	public static function get_post_or_meta_value( $entry, $field, $atts = array() ) {
@@ -46,48 +50,45 @@ class FrmProEntryMetaHelper {
 			return '';
 		}
 
-		if ( $entry->post_id ) {
-			if ( ! isset( $field->field_options['custom_field'] ) ) {
-				$field->field_options['custom_field'] = '';
-			}
-
-			if ( ! isset( $field->field_options['post_field'] ) ) {
-				$field->field_options['post_field'] = '';
-			}
-
-			$links = $atts['links'];
-
-			if ( $field->type === 'tag' || $field->field_options['post_field'] ) {
-				$post_args = array(
-					'type'        => $field->type,
-					'form_id'     => $field->form_id,
-					'field'       => $field,
-					'links'       => $links,
-					'exclude_cat' => $field->field_options['exclude_cat'] ?? array(),
-				);
-
-				foreach ( array( 'show', 'truncate', 'sep' ) as $p ) {
-					$post_args[ $p ] = $atts[ $p ];
-					unset( $p );
-				}
-
-				$value = self::get_post_value(
-					$entry->post_id,
-					$field->field_options['post_field'],
-					$field->field_options['custom_field'],
-					$post_args
-				);
-				unset( $post_args );
-			} else {
-				$value = FrmEntryMeta::get_meta_value( $entry, $field->id );
-			}
-		} else {
+		if ( ! $entry->post_id ) {
 			$value = FrmEntryMeta::get_meta_value( $entry, $field->id );
-
 			self::convert_non_post_taxonomy_ids_to_names( $field, $atts, $value );
+			return $value;
 		}
 
-		return $value;
+		if ( ! isset( $field->field_options['custom_field'] ) ) {
+			$field->field_options['custom_field'] = '';
+		}
+
+		if ( ! isset( $field->field_options['post_field'] ) ) {
+			$field->field_options['post_field'] = '';
+		}
+
+		if ( $field->type !== 'tag' && ! $field->field_options['post_field'] ) {
+			return FrmEntryMeta::get_meta_value( $entry, $field->id );
+		}
+
+		$links = $atts['links'];
+
+		$post_args = array(
+			'type'        => $field->type,
+			'form_id'     => $field->form_id,
+			'field'       => $field,
+			'links'       => $links,
+			'exclude_cat' => $field->field_options['exclude_cat'] ?? array(),
+		);
+
+		foreach ( array( 'show', 'truncate', 'sep' ) as $p ) {
+			$post_args[ $p ] = $atts[ $p ];
+			unset( $p );
+		}
+
+		return self::get_post_value(
+			$entry->post_id,
+			$field->field_options['post_field'],
+			$field->field_options['custom_field'],
+			$post_args
+		);
 	}
 
 	/**
@@ -100,30 +101,40 @@ class FrmProEntryMetaHelper {
 	 * @param array|string $value
 	 */
 	private static function convert_non_post_taxonomy_ids_to_names( $field, $atts, &$value ) {
-		if ( isset( $field->field_options['post_field'] ) && $field->field_options['post_field'] === 'post_category' && ! empty( $value ) && $atts['truncate'] ) {
-			FrmProAppHelper::unserialize_or_decode( $value );
-
-			$new_value = array();
-			foreach ( (array) $value as $tax_id ) {
-				if ( is_numeric( $tax_id ) ) {
-					$new_value[] = FrmProPost::get_taxonomy_term_name_from_id( $tax_id, $field->field_options['taxonomy'] );
-				} else {
-					$new_value[] = $tax_id;
-				}
-			}
-
-			$value = $new_value;
+		if ( ! isset( $field->field_options['post_field'] ) || $field->field_options['post_field'] !== 'post_category' || ! $value || ! $atts['truncate'] ) {
+			return;
 		}
+
+		FrmAppHelper::unserialize_or_decode( $value );
+
+		$new_value = array();
+
+		foreach ( (array) $value as $tax_id ) {
+			if ( is_numeric( $tax_id ) ) {
+				$new_value[] = FrmProPost::get_taxonomy_term_name_from_id( $tax_id, $field->field_options['taxonomy'] );
+			} else {
+				$new_value[] = $tax_id;
+			}
+		}
+
+		$value = $new_value;
 	}
 
 	/**
-	 * @param array $atts
+	 * @param int    $post_id
+	 * @param string $post_field
+	 * @param string $custom_field
+	 * @param array  $atts
+	 *
+	 * @return string
 	 */
 	public static function get_post_value( $post_id, $post_field, $custom_field, $atts ) {
 		if ( ! $post_id ) {
 			return '';
 		}
+
 		$post = get_post( $post_id );
+
 		if ( ! $post ) {
 			return '';
 		}
@@ -137,26 +148,28 @@ class FrmProEntryMetaHelper {
 			'show'     => '',
 		);
 
-		$atts = wp_parse_args( $atts, $defaults );
-
+		$atts  = wp_parse_args( $atts, $defaults );
 		$value = '';
+
 		if ( $atts['type'] === 'tag' ) {
 			if ( isset( $atts['field']->field_options ) ) {
 				$field_options = $atts['field']->field_options;
-				FrmProAppHelper::unserialize_or_decode( $field_options );
+				FrmAppHelper::unserialize_or_decode( $field_options );
 				$tax  = $field_options['taxonomy'] ?? 'frm_tag';
 				$tags = get_the_terms( $post_id, $tax );
 
 				if ( $tags ) {
 					$names = array();
+
 					foreach ( $tags as $tag ) {
 						self::get_term_with_link( $tag, $tax, $names, $atts );
 					}
+
 					$value = implode( $atts['sep'], $names );
 				}
 			}
 		} elseif ( $post_field === 'post_custom' ) {
-			//get custom post field value
+			// Get custom post field value
 				$value = self::get_post_meta_value( $post_id, $custom_field );
 			} elseif ( $post_field === 'post_category' ) {
 			if ( $atts['form_id'] ) {
@@ -167,9 +180,9 @@ class FrmProEntryMetaHelper {
 			}
 
 			$categories = get_the_terms( $post_id, $taxonomy );
+			$names      = array();
+			$cat_ids    = array();
 
-			$names   = array();
-			$cat_ids = array();
 			if ( $categories ) {
 				foreach ( $categories as $cat ) {
 					if ( isset( $atts['exclude_cat'] ) && in_array( $cat->term_id, (array) $atts['exclude_cat'] ) ) {
@@ -193,36 +206,43 @@ class FrmProEntryMetaHelper {
 			$post  = (array) $post;
 			$value = $post[ $post_field ];
 		}
+
 		return $value;
 	}
 
 	private static function get_post_meta_value( $post_id, $key ) {
 		if ( FrmProPost::is_acf_field( $post_id, $key ) ) {
-			$value = get_field( substr( $key, 1 ), $post_id );
-		} else {
-			$value = get_post_meta( $post_id, $key, true );
+			return get_field( substr( $key, 1 ), $post_id );
 		}
-		return $value;
+		return get_post_meta( $post_id, $key, true );
 	}
 
 	/**
 	 * @param WP_Term $tag
+	 * @param string  $tax
 	 * @param array   $names
 	 * @param array   $atts
+	 *
 	 * @return void
 	 */
 	private static function get_term_with_link( $tag, $tax, &$names, $atts ) {
 		$tag_name = $tag->name;
+
 		if ( $atts['links'] ) {
 			$tag_name = '<a href="' . esc_url( get_term_link( $tag, $tax ) ) . '" title="' . esc_attr( sprintf( __( 'View all posts filed under %s', 'formidable-pro' ), $tag_name ) ) . '">' . $tag_name . '</a>';
 		}
+
 		$names[] = $tag_name;
 	}
 
+	/**
+	 * @param array $errors
+	 */
 	public static function set_post_fields( $field, $value, $errors ) {
-		// save file ids for later use
-		if ( 'file' == $field->type ) {
+		// Save file ids for later use
+		if ( 'file' === $field->type ) {
 			global $frm_vars;
+
 			if ( ! isset( $frm_vars['media_id'] ) ) {
 				$frm_vars['media_id'] = array();
 			}
@@ -230,21 +250,22 @@ class FrmProEntryMetaHelper {
 			$frm_vars['media_id'][ $field->id ] = $value;
 		}
 
-		if ( empty( $value ) || ! FrmField::is_option_true( $field, 'unique' ) ) {
+		if ( ! $value || ! FrmField::is_option_true( $field, 'unique' ) ) {
 			return $errors;
 		}
 
 		$post_form_action = FrmFormAction::get_action_for_form( $field->form_id, 'wppost', 1 );
+
 		if ( ! $post_form_action ) {
 			return $errors;
 		}
 
-		// check if this is a regular post field
+		// Check if this is a regular post field
 		$post_field   = array_search( $field->id, $post_form_action->post_content );
 		$custom_field = '';
 
 		if ( ! $post_field ) {
-			// check if this is a custom field
+			// Check if this is a custom field
 			foreach ( $post_form_action->post_content['post_custom_fields'] as $custom_field ) {
 				if ( ! empty( $custom_field['field_id'] ) && ! empty( $custom_field['meta_name'] ) && $field->id == $custom_field['field_id'] ) {
 					$post_field   = 'post_custom';
@@ -257,12 +278,12 @@ class FrmProEntryMetaHelper {
 			}
 		}
 
-		// check for unique values in post fields
+		// Check for unique values in post fields
 		$entry_id = FrmAppHelper::get_post_param( 'id', false, 'absint' );
 		$post_id  = false;
+
 		if ( $entry_id ) {
-			global $wpdb;
-			$post_id = FrmDb::get_var( $wpdb->prefix . 'frm_items', array( 'id' => $entry_id ), 'post_id' );
+			$post_id = FrmDb::get_var( 'frm_items', array( 'id' => $entry_id ), 'post_id' );
 		}
 
 		if ( self::post_value_exists( $post_field, $value, $post_id, $custom_field ) ) {
@@ -273,8 +294,12 @@ class FrmProEntryMetaHelper {
 	}
 
 	/**
-	 * @param array $metas
-	 * @param mixed $observed_field_val
+	 * @param int|string    $hide_field
+	 * @param stdClass|null $selected_field
+	 * @param array|string  $observed_field_val
+	 * @param stdClass|null $this_field
+	 * @param array         $metas
+	 *
 	 * @return void
 	 */
 	public static function meta_through_join( $hide_field, $selected_field, $observed_field_val, $this_field, &$metas ) {
@@ -282,7 +307,7 @@ class FrmProEntryMetaHelper {
 			$observed_field_val = array_filter( $observed_field_val );
 		}
 
-		if ( empty( $observed_field_val ) || ( ! is_numeric( $observed_field_val ) && ! is_array( $observed_field_val ) ) ) {
+		if ( ! $observed_field_val || ( ! is_numeric( $observed_field_val ) && ! is_array( $observed_field_val ) ) ) {
 			return;
 		}
 
@@ -294,7 +319,8 @@ class FrmProEntryMetaHelper {
 
 		$form_id     = FrmProFieldsHelper::get_parent_form_id( $selected_field );
 		$join_fields = FrmField::get_all_types_in_form( $form_id, 'data' );
-		if ( empty( $join_fields ) ) {
+
+		if ( ! $join_fields ) {
 			return;
 		}
 
@@ -311,35 +337,38 @@ class FrmProEntryMetaHelper {
 		$observed_field_val = array_filter( (array) $observed_field_val );
 		$query              = array( 'field_id' => (int) $join_field );
 		$sub_query          = array( 'it.meta_value' => $observed_field_val );
+
 		foreach ( $observed_field_val as $obs_val ) {
 			$sub_query['or']                 = 1;
 			$sub_query['it.meta_value LIKE'] = ':"' . $obs_val . '"';
 		}
+
 		$query[] = $sub_query;
 
 		if ( $this_field && ! empty( $this_field->field_options['restrict'] ) ) {
 			$query['e.user_id'] = self::get_entry_id_for_dynamic_opts( array( 'field' => $this_field ) );
 		}
 
-		// the ids of all the entries that have been selected in the linked form
+		// The ids of all the entries that have been selected in the linked form
 		$entry_ids = FrmEntryMeta::getEntryIds( $query );
 
-		if ( ! empty( $entry_ids ) ) {
-			if ( $form_id != $selected_field->form_id ) {
-				// this is a child field so we need to get the child entries
-				global $wpdb;
-				$entry_ids = FrmDb::get_col( $wpdb->prefix . 'frm_items', array( 'parent_item_id' => $entry_ids ) );
-			}
+		if ( ! $entry_ids ) {
+			return;
+		}
 
-			if ( ! empty( $entry_ids ) ) {
-				$metas = FrmEntryMeta::getAll(
-					array(
-						'item_id'  => $entry_ids,
-						'field_id' => $selected_field->id,
-					),
-					' ORDER BY meta_value' 
-				);
-			}
+		if ( $form_id != $selected_field->form_id ) {
+			// This is a child field so we need to get the child entries
+			$entry_ids = FrmDb::get_col( 'frm_items', array( 'parent_item_id' => $entry_ids ) );
+		}
+
+		if ( $entry_ids ) {
+			$metas = FrmEntryMeta::getAll(
+				array(
+					'item_id'  => $entry_ids,
+					'field_id' => $selected_field->id,
+				),
+				' ORDER BY meta_value'
+			);
 		}
 	}
 
@@ -347,25 +376,28 @@ class FrmProEntryMetaHelper {
 	 * @param array $atts
 	 */
 	private static function get_entry_id_for_dynamic_opts( $atts ) {
-		$user_id  = get_current_user_id();
 		$entry_id = 0;
+
 		if ( FrmAppHelper::is_admin() ) {
 			$entry_id = FrmAppHelper::get_param( 'id', 0, 'get', 'absint' );
 		} elseif ( FrmAppHelper::doing_ajax() ) {
 			$entry_id = FrmAppHelper::get_param( 'editing_entry', 0, 'get', 'absint' );
 		}
+
 		$atts['entry_id'] = $entry_id;
-		return self::user_for_dynamic_opts( $user_id, $atts );
+		return self::user_for_dynamic_opts( get_current_user_id(), $atts );
 	}
 
 	/**
-	 * @param array $atts
 	 * @param int   $user_id
+	 * @param array $atts
 	 */
 	public static function user_for_dynamic_opts( $user_id, $atts ) {
 		$entry_user = (array) $user_id;
+
 		if ( $atts['entry_id'] ) {
 			$entry_owner = FrmDb::get_var( 'frm_items', array( 'id' => $atts['entry_id'] ), 'user_id' );
+
 			if ( $entry_owner ) {
 				$entry_user[] = $entry_owner;
 			}
@@ -375,6 +407,7 @@ class FrmProEntryMetaHelper {
 		 * Set the user id(s) for the limited dynamic field options
 		 *
 		 * @since 2.2.8
+		 *
 		 * @return array|int
 		 */
 		return apply_filters( 'frm_dynamic_field_user', $entry_user, $atts );
@@ -387,9 +420,10 @@ class FrmProEntryMetaHelper {
 	 * @param int|object|string $field_id The target field ID being checked for uniqueness.
 	 * @param array|string      $value    The value that is being checked for uniqueness.
 	 * @param false|int|string  $entry_id Pass this to avoid conflicts with the data for the entry being validated.
+	 *
 	 * @return array|object|string|null
 	 */
-	public static function &value_exists( $field_id, $value, $entry_id = false ) {
+	public static function value_exists( $field_id, $value, $entry_id = false ) {
 		global $wpdb;
 
 		if ( is_object( $field_id ) ) {
@@ -404,27 +438,29 @@ class FrmProEntryMetaHelper {
 			'm.field_id'   => $field_id,
 			'i.is_draft'   => '0',
 		);
+
 		if ( $entry_id ) {
 			$query['m.item_id !'] = $entry_id;
 		}
 
-		$value = FrmDb::get_var(
-			$wpdb->prefix . 'frm_item_metas m JOIN ' . $wpdb->prefix . 'frm_items i ON m.item_id = i.id',
+		// Use STRAIGHT_JOIN to optimize the query. On a customer site the STRAIGHT_JOIN was ~9x faster.
+		return FrmDb::get_var(
+			$wpdb->prefix . 'frm_item_metas m STRAIGHT_JOIN ' . $wpdb->prefix . 'frm_items i ON m.item_id = i.id',
 			$query,
 			'm.id'
 		);
-
-		return $value;
 	}
 
 	public static function post_value_exists( $post_field, $value, $post_id, $custom_field = '' ) {
 		global $wpdb;
 		$query = array( 'post_status' => array( 'publish', 'draft', 'pending', 'future' ) );
+
 		if ( $post_field === 'post_custom' ) {
 			$table               = $wpdb->postmeta . ' pm LEFT JOIN ' . $wpdb->posts . ' p ON (p.ID=pm.post_id)';
 			$db_field            = 'post_id';
 			$query['meta_value'] = $value;
 			$query['meta_key']   = $custom_field;
+
 			if ( $post_id && is_numeric( $post_id ) ) {
 				$query['post_id !'] = $post_id;
 			}
@@ -432,6 +468,7 @@ class FrmProEntryMetaHelper {
 			$table                = $wpdb->posts;
 			$db_field             = 'ID';
 			$query[ $post_field ] = $value;
+
 			if ( $post_id && is_numeric( $post_id ) ) {
 				$query['ID !'] = $post_id;
 			}
@@ -440,21 +477,24 @@ class FrmProEntryMetaHelper {
 		return FrmDb::get_var( $table, $query, $db_field );
 	}
 
-	public static function &get_max( $field ) {
+	/**
+	 * @return string
+	 */
+	public static function get_max( $field ) {
 		if ( ! is_object( $field ) ) {
 			$field = FrmField::getOne( $field );
 		}
 
 		if ( ! $field ) {
-			$max = '';
-			return $max;
+			return '';
 		}
 
 		// The most recent entry ID is not necessarily the highest because of draft statuses.
 		// So try to get the highest from the most recent few meta values.
+		// Note that the STRAIGHT_JOIN optimizes this query. On a customer site the STRAIGHT_JOIN was ~60,000x faster.
 		global $wpdb;
 		$max_values = FrmDb::get_results(
-			$wpdb->prefix . 'frm_item_metas m JOIN ' . $wpdb->prefix . 'frm_items i ON i.id = m.item_id',
+			$wpdb->prefix . 'frm_item_metas m STRAIGHT_JOIN ' . $wpdb->prefix . 'frm_items i ON i.id = m.item_id',
 			array(
 				'm.field_id' => $field->id,
 				'i.is_draft' => 0,
@@ -462,28 +502,36 @@ class FrmProEntryMetaHelper {
 			'i.user_id, m.meta_value',
 			array(
 				'order_by' => 'item_id DESC',
+				'limit'    => 100,
 			)
 		);
-		if ( ! $max_values ) {
-			$max = '0';
-		} else {
+
+		if ( $max_values ) {
 			$max    = self::get_increment_from_value( $max_values[0]->meta_value, $field, $max_values[0]->user_id );
 			$length = count( $max_values );
+
 			for ( $i = 1; $i < $length; ++$i ) {
 				$max_value = self::get_increment_from_value( $max_values[ $i ]->meta_value, $field, $max_values[ $i ]->user_id );
+
 				if ( $max_value > $max ) {
 					$max = $max_value;
 				}
 			}
+		} else {
+			$max = '0';
 		}
 
-		if ( self::field_supports_post_autoid( $field ) ) {
-			$post_max = self::get_post_max_value( $field );
-			if ( $post_max ) {
-				$post_max = self::get_increment_from_value( $post_max, $field );
-				if ( (float) $post_max > (float) $max ) {
-					$max = $post_max;
-				}
+		if ( ! self::field_supports_post_autoid( $field ) ) {
+			return $max;
+		}
+
+		$post_max = self::get_post_max_value( $field );
+
+		if ( $post_max ) {
+			$post_max = self::get_increment_from_value( $post_max, $field );
+
+			if ( (float) $post_max > (float) $max ) {
+				$max = $post_max;
 			}
 		}
 
@@ -495,6 +543,7 @@ class FrmProEntryMetaHelper {
 	 * [autoid] should work for several keys, as well as for custom post meta.
 	 *
 	 * @param object $field
+	 *
 	 * @return bool
 	 */
 	private static function field_supports_post_autoid( $field ) {
@@ -503,14 +552,17 @@ class FrmProEntryMetaHelper {
 
 	/**
 	 * @param object $field
+	 *
 	 * @return string the most recently submitted meta value to increment from.
 	 */
 	private static function get_post_max_value( $field ) {
 		global $wpdb;
 		$post_field = $field->field_options['post_field'];
+
 		if ( 'post_custom' === $post_field ) {
 			return FrmDb::get_var( $wpdb->postmeta, array( 'meta_key' => $field->field_options['custom_field'] ), 'meta_value', array( 'order_by' => 'post_ID DESC' ) );
 		}
+
 		return FrmDb::get_var(
 			$wpdb->posts . ' AS t INNER JOIN ' . $wpdb->prefix . 'frm_items AS i ON i.post_id = t.ID',
 			array( 'i.form_id' => $field->form_id ),
@@ -525,6 +577,7 @@ class FrmProEntryMetaHelper {
 	 * @param string|null $max
 	 * @param stdClass    $field
 	 * @param int         $user_id
+	 *
 	 * @return string
 	 */
 	private static function get_increment_from_value( $max, $field, $user_id = 0 ) {
@@ -533,7 +586,8 @@ class FrmProEntryMetaHelper {
 		}
 
 		$default_value = $field->default_value;
-		if ( strpos( $default_value, '[auto_id' ) !== false ) {
+
+		if ( str_contains( $default_value, '[auto_id' ) ) {
 			list( $prefix, $shortcode ) = explode( '[auto_id', $default_value );
 			list( $shortcode, $suffix ) = explode( ']', $shortcode, 2 );
 
@@ -553,13 +607,11 @@ class FrmProEntryMetaHelper {
 			$max = str_replace( $suffix, '', $max );
 		}
 
-		$max = filter_var( $max, FILTER_SANITIZE_NUMBER_INT );
-
-		return $max;
+		return filter_var( $max, FILTER_SANITIZE_NUMBER_INT );
 	}
 
 	private static function maybe_replace_user_id_shortcode_in_auto_id( $pattern, $user_id ) {
-		if ( ! $user_id || false === strpos( $pattern, '[user_id]' ) ) {
+		if ( ! $user_id || ! str_contains( $pattern, '[user_id]' ) ) {
 			return $pattern;
 		}
 
@@ -572,6 +624,7 @@ class FrmProEntryMetaHelper {
 	 * @param string $max
 	 * @param string $pattern either a prefix or a suffix.
 	 * @param bool   $is_prefix
+	 *
 	 * @return array
 	 */
 	private static function maybe_remove_date_or_time_from_from_autoid( $max, $pattern, $is_prefix ) {
@@ -587,14 +640,17 @@ class FrmProEntryMetaHelper {
 	 * @param string $max
 	 * @param string $pattern either a prefix or a suffix.
 	 * @param bool   $is_prefix
+	 *
 	 * @return array
 	 */
 	private static function replace_datetime_from_autoid( $shortcode, $max, $pattern, $is_prefix ) {
 		$check = '[' . $shortcode;
 		$start = strpos( $pattern, $check );
+
 		if ( false !== $start ) {
 			$start = strpos( $pattern, 'format=', $start );
 		}
+
 		if ( false !== $start ) {
 			$start        += strlen( 'format=' );
 			$end           = strpos( $pattern, ']', $start );
@@ -603,15 +659,12 @@ class FrmProEntryMetaHelper {
 			$reverse_regex = ! $is_prefix;
 			$regex         = self::build_regex_from_datetime_format( $format, $reverse_regex );
 
-			if ( $reverse_regex ) {
-				$max = strrev( preg_replace( $regex, '', strrev( $max ), 1 ) );
-			} else {
-				$max = preg_replace( $regex, '', $max, 1 );
-			}
+			$max = $reverse_regex ? strrev( preg_replace( $regex, '', strrev( $max ), 1 ) ) : preg_replace( $regex, '', $max, 1 );
 
 			$replace_regex = '/\[' . $shortcode . '\s+format=("|\'){0,1}' . $format . '("|\'){0,1}\]/';
 			$pattern       = preg_replace( $replace_regex, '', $pattern, 1 );
 		}
+
 		return array( $max, $pattern );
 	}
 
@@ -620,6 +673,7 @@ class FrmProEntryMetaHelper {
 	 *
 	 * @param string $format
 	 * @param bool   $reverse
+	 *
 	 * @return string
 	 */
 	private static function build_regex_from_datetime_format( $format, $reverse = false ) {

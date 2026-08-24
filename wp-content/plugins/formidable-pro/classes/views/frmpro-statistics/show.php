@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div id="form_reports_page" class="frm_wrap frm_charts">
 	<?php
 	FrmAppHelper::get_admin_header( array(
-		'label' => __( 'Reports', 'formidable-pro' ),
+		'label' => __( 'Reports', 'formidable' ),
 		'form'  => $form,
 	) );
 
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	$time_data = $data['time'] ?? '';
 	?>
 	<div class="frm-inner-content wrap">
-		<h2><?php esc_html_e( 'Reports', 'formidable-pro' ); ?></h2>
+		<h2><?php esc_html_e( 'Reports', 'formidable' ); ?></h2>
 		<form method="GET" class="frm-report-filter frm-flex-justify tablenav">
 			<input type="hidden" name="page" value="formidable" />
 			<input type="hidden" name="frm_action" value="reports" />
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				?>
 			<div class="frm_form_field">
 				<label for="frm_stats_entry_status" class="frm_primary_label">
-					<?php esc_html_e( 'Status', 'formidable-pro' ); ?>
+					<?php esc_html_e( 'Status', 'formidable' ); ?>
 				</label>
 				<select id="frm_stats_entry_status" name="entry_status">
 					<?php
@@ -63,7 +63,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div>
 				<br>
 				<button class="frm-button-secondary frm-button-sm" type="submit">
-					<?php esc_html_e( 'Apply', 'formidable-pro' ); ?>
+					<?php esc_html_e( 'Apply', 'formidable' ); ?>
 				</button>
 			</div>
 		</form>
@@ -71,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="frmcenter">
 		<div class="postbox">
 			<div class="inside">
-				<h3><?php esc_html_e( 'Submissions', 'formidable-pro' ); ?></h3>
+				<h3><?php esc_html_e( 'Submissions', 'formidable' ); ?></h3>
 				<b><?php echo count( $entries ); ?></b>
 			</div>
 		</div>
@@ -101,7 +101,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<h3><?php esc_html_e( 'Responses Over Time', 'formidable-pro' ); ?></h3>
 			<?php } ?>
 
-			<a class="frm-pro-tip frm-pro-tip-end" href="https://formidableforms.com/knowledgebase/graphs/" target="_blank">
+			<?php
+			$pro_tip_utm = array(
+				// This is mapped to campaign now. That key is supported as of 6.25.1.
+				// For backward compatibility, this is using medium for now.
+				'medium'  => 'graphs',
+				'content' => 'graphs-pro-tip',
+			);
+			?>
+
+			<a class="frm-pro-tip frm-pro-tip-end" href="<?php echo esc_url( FrmAppHelper::admin_upgrade_link( $pro_tip_utm, 'knowledgebase/graphs/' ) ); ?>" target="_blank">
 				<span class="frm-pro-tip-text"><?php esc_html_e( 'Pro Tip: Add graphs like this on a page', 'formidable-pro' ); ?></span>
 				<?php FrmAppHelper::icon_by_class( 'frmfont frm_external_link_icon' ); ?>
 			</a>
@@ -127,7 +136,8 @@ if ( ! defined( 'ABSPATH' ) ) {
             }
 
 			$post_boxes = FrmProReportsHelper::get_field_boxes( compact( 'field', 'entries' ) );
-			if ( empty( $post_boxes ) ) {
+
+			if ( ! $post_boxes ) {
 				continue;
 			}
             ?>

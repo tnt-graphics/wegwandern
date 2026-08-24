@@ -110,7 +110,8 @@ class SeoPreview {
 	/**
 	 * Returns the data for Vue.
 	 *
-	 * @since 4.2.8
+	 * @since   4.2.8
+	 * @version 4.9.10 Only expose a post's keyphrases/TruSEO analysis to users who can edit it (and not when password-protected).
 	 *
 	 * @return array The data.
 	 */
@@ -127,10 +128,12 @@ class SeoPreview {
 				'home'        => home_url(),
 				'domain'      => aioseo()->helpers->getSiteDomain(),
 				'mainSiteUrl' => aioseo()->helpers->getSiteUrl(),
+				'siteFavicon' => get_site_icon_url(),
 			],
 			'mainAssetCssQueue'      => aioseo()->core->assets->getJsAssetCssQueue( $this->mainAssetRelativeFilename ),
 			'data'                   => [
 				'isDev'           => aioseo()->helpers->isDev(),
+				'isLocal'         => aioseo()->helpers->isLocalUrl( site_url() ),
 				'siteName'        => aioseo()->helpers->getWebsiteName(),
 				'usingPermalinks' => aioseo()->helpers->usingPermalinks()
 			]
@@ -158,12 +161,15 @@ class SeoPreview {
 				$wpObject = aioseo()->helpers->getPost();
 
 				if ( is_a( $wpObject, 'WP_Post' ) ) {
-					$labels                = get_post_type_labels( get_post_type_object( $wpObject->post_type ) );
+					$postTypeObject        = get_post_type_object( $wpObject->post_type );
+					$labels                = $postTypeObject->labels;
 					$data['editObjectUrl'] = get_edit_post_link( $wpObject, 'url' );
 
 					if (
 						! aioseo()->helpers->isSpecialPage( $wpObject->ID ) &&
-						'attachment' !== $templateType
+						'attachment' !== $templateType &&
+						current_user_can( 'edit_post', $wpObject->ID ) &&
+						! post_password_required( $wpObject )
 					) {
 						$aioseoPost            = Models\Post::getPost( $wpObject->ID );
 						$data['page_analysis'] = Models\Post::getPageAnalysisDefaults( $aioseoPost->page_analysis );
@@ -207,6 +213,11 @@ class SeoPreview {
 			$data['editFacebookSnippetUrl'] = $this->getEditSnippetUrl( $templateType, 'facebook' );
 			$data['editTwitterSnippetUrl']  = $this->getEditSnippetUrl( $templateType, 'twitter' );
 		}
+
+		// Pass the capabilities to the Vue component because we don't have access to user object in the standalone.
+		$data['aioseoPageGeneralSettings'] = aioseo()->access->hasCapability( 'aioseo_page_general_settings' );
+		$data['aioseoPageSocialSettings']  = aioseo()->access->hasCapability( 'aioseo_page_social_settings' );
+		$data['aioseoPageAnalysis']        = aioseo()->access->hasCapability( 'aioseo_page_analysis' );
 
 		return $data;
 	}

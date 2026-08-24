@@ -10,6 +10,7 @@ if ( ! empty( $atts['style'] ) ) {
 	if ( preg_match( '/[?]/', $action_link ) ) {
 ?><input type="hidden" name="p" value="<?php echo esc_attr( $atts['post_id'] ); ?>" /><?php
     }
+
     if ( ! empty( $atts['views'] ) ) {
 	?><input type="hidden" name="frm_search_views" value="<?php echo esc_attr( $atts['views'] ); ?>" /><?php
     }

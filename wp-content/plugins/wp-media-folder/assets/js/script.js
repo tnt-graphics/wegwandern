@@ -171,14 +171,22 @@ var wpmfFoldersModule = void 0,
                 if (wpmf.vars.hide_remote_video) {
                     if (wpmf.vars.wpmf_pagenow === 'upload.php') {
                         if (!$('.wpmf_btn_remote_video').length) {
-                            $('.page-title-action').after('<a class="wpmf_icon_remote_video">' + wpmf.l18n.remote_video + '</a>');
+                            if (wpmf.vars.use_multisite_share && parseInt(wpmf.vars.is_main_site) === 0) {
+                                $('.page-title-action').after('<a class="wpmf_icon_remote_video disabled" style="pointer-events: none; opacity: 0.5; cursor: not-allowed;">' + wpmf.l18n.remote_video + '</a>');
+                            } else {
+                                $('.page-title-action').after('<a class="wpmf_icon_remote_video">' + wpmf.l18n.remote_video + '</a>');
+                            }
                             wpmfFoldersModule.initRemoteVideo();
                         }
                     }
                 }
 
                 if (!$('.wpmf_btn_upload_folder').length) {
-                    $('.page-title-action').after('<a href="#" class="wpmf_btn_upload_folder">' + wpmf.l18n.upload_folder_label + '</a><input name="id_category" class="wpmf_id_category" type="hidden" value="0">');
+                    if (wpmf.vars.use_multisite_share && parseInt(wpmf.vars.is_main_site) === 0) {
+                        $('.page-title-action').after('<a href="#" class="wpmf_btn_upload_folder disabled" style="pointer-events: none; opacity: 0.5; cursor: not-allowed;">' + wpmf.l18n.upload_folder_label + '</a><input name="id_category" class="wpmf_id_category" type="hidden" value="0">');
+                    } else {
+                        $('.page-title-action').after('<a href="#" class="wpmf_btn_upload_folder">' + wpmf.l18n.upload_folder_label + '</a><input name="id_category" class="wpmf_id_category" type="hidden" value="0">');
+                    }
                 }
 
                 // Download file table list media
@@ -423,6 +431,20 @@ var wpmfFoldersModule = void 0,
                     }
                 }
                 // end add bulk upload to s3 button
+
+                //Create folder with selection button
+                $('.select-mode-toggle-button').on('click', function (e) {
+                    if ($current_frame.hasClass('mode-select')) {
+                        if (!$current_frame.find('.create_folder_with_selection').length) {
+                            $current_frame.find('.media-frame-content .media-toolbar-secondary .open-popup-tree-multiple').after('<button class="button media-button button-large create_folder_with_selection">' + wpmf.l18n.create_folder_with_selection + '</button>');
+                        }
+                    } else {
+                        $current_frame.find('.create_folder_with_selection').remove();
+                    }
+                    $('.create_folder_with_selection').off('click').on('click', function (e) {
+                        wpmfFoldersModule.createFolderWithSelection();
+                    });
+                });
 
                 // get last access folder
                 var lastAccessFolder = wpmfFoldersModule.getCookie('lastAccessFolder_' + wpmf.vars.host);
@@ -917,7 +939,7 @@ var wpmfFoldersModule = void 0,
                                     $('.wpmf-process-file-item[data-cid=' + file_id + '] .wpmf-fileupload-progress-bar').html('<svg class="a-s-fa-Ha-pa c-qd" width="24px" height="24px" viewBox="0 0 24 24" fill="#0F9D58"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>');
                                     $('.wpmf-process-file-item[data-cid="' + file_id + '"]').removeClass('wpmf-uploading');
                                 } else {
-                                    $('.wpmf-process-file-item[data-cid=' + file_id + '] .wpmf-fileupload-progress-bar').css({ 'background': 'radial-gradient(closest-side, white 70%, transparent 80% 100%),    conic-gradient(#0073ab ' + file_info.changed.percent + '%, #ddd 0)' });
+                                    $('.wpmf-process-file-item[data-cid=' + file_id + '] .wpmf-fileupload-progress-bar').css({ 'background': 'radial-gradient(closest-side, white 70%, transparent 80% 100%),    conic-gradient(var(--wp-admin-theme-color, #3858e9) ' + file_info.changed.percent + '%, #ddd 0)' });
                                 }
                             }
                         },
@@ -1641,7 +1663,7 @@ var wpmfFoldersModule = void 0,
                                 $('.wpmf-process-file-item[data-cid="' + _folder_name2 + '"] .wpmf-fileupload-progress-bar').html('<svg class="a-s-fa-Ha-pa c-qd" width="24px" height="24px" viewBox="0 0 24 24" fill="#0F9D58"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg>');
                                 $('.wpmf-process-file-item[data-cid="' + _folder_name2 + '"]').removeClass('wpmf-uploading');
                             } else {
-                                $('.wpmf-process-file-item[data-cid=' + _folder_name2 + '] .wpmf-fileupload-progress-bar').css({ 'background': 'radial-gradient(closest-side, white 70%, transparent 80% 100%),    conic-gradient(#0073ab ' + percent + '%, #ddd 0)' });
+                                $('.wpmf-process-file-item[data-cid=' + _folder_name2 + '] .wpmf-fileupload-progress-bar').css({ 'background': 'radial-gradient(closest-side, white 70%, transparent 80% 100%),    conic-gradient(var(--wp-admin-theme-color, #3858e9) ' + percent + '%, #ddd 0)' });
                             }
                             $('.wpmf-process-head-bar').css('width', percent + '%');
                         }
@@ -1760,6 +1782,10 @@ var wpmfFoldersModule = void 0,
                         $('.material_syncdrive').closest('li').remove();
                     }
 
+                    if ($('.material_download_drive').length) {
+                        $('.material_download_drive').closest('li').remove();
+                    }
+
                     if (typeof wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].drive_type !== "undefined" && wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].drive_type !== '') {
                         $('.wpmf-download-contextmenu, .wpmf-download-contextmenu li').hide();
                     } else {
@@ -1795,7 +1821,32 @@ var wpmfFoldersModule = void 0,
                     if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].drive_type === 'owncloud') {
                         $('.wpmf-contextmenu-folder').append('<li><div class="material_syncdrive material_sync_owncloud items_menu">' + wpmf.l18n.sync_drive + '<i class="material-icons wpmf_icon">sync</i></div></li>');
                     }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].slug === 'wpmf-google-drive') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_download_drive material_download_google_drive items_menu">' + wpmf.l18n.download_from_drive + '<i class="material-icons-outlined wpmf_icon">download</i></div></li>');
+                    }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].slug === 'wpmf-onedrive') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_download_drive material_download_onedrive items_menu">' + wpmf.l18n.download_from_drive + '<i class="material-icons-outlined wpmf_icon">download</i></div></li>');
+                    }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].slug === 'wpmf-onedrive-business') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_download_drive material_download_onedrive_business items_menu">' + wpmf.l18n.download_from_drive + '<i class="material-icons-outlined wpmf_icon">download</i></div></li>');
+                    }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].slug === 'wpmf-dropbox') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_download_drive material_download_dropbox items_menu">' + wpmf.l18n.download_from_drive + '<i class="material-icons-outlined wpmf_icon">download</i></div></li>');
+                    }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].slug === 'wpmf-nextcloud') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_download_drive material_download_nextcloud items_menu">' + wpmf.l18n.download_from_drive + '<i class="material-icons-outlined wpmf_icon">download</i></div></li>');
+                    }
+
+                    if (wpmfFoldersModule.categories[wpmfFoldersModule.editFolderId].slug === 'wpmf-owncloud') {
+                        $('.wpmf-contextmenu-folder').append('<li><div class="material_download_drive material_download_owncloud items_menu">' + wpmf.l18n.download_from_drive + '<i class="material-icons-outlined wpmf_icon">download</i></div></li>');
+                    }
                     wpmfFoldersModule.doSyncDrive();
+                    wpmfFoldersModule.doDownloadDrive();
                     // render custom color
                     wpmfFoldersModule.renderCustomColor();
                     // change color for folder
@@ -1804,7 +1855,7 @@ var wpmfFoldersModule = void 0,
                     wpmfFoldersModule.appendCheckColor();
                     $('.wpmf-contextmenu').removeClass('context_overflow');
                     if ($('.wpmf-main-tree').length && $(this).hasClass('wpmf-item')) {
-                        if (y + $('.wpmf-contextmenu-folder').outerHeight() > $('.wpmf-main-tree').offset().top + $('.wpmf-main-tree').height()) {
+                        if (y + $('.wpmf-contextmenu-folder').outerHeight() > $('.wpmf-main-tree').offset().top + $('.wpmf-main-tree').height() - 300) {
                             y = y - $('.wpmf-contextmenu-folder').outerHeight();
                         }
                     }
@@ -2010,6 +2061,32 @@ var wpmfFoldersModule = void 0,
             });
         },
 
+        doDownloadDrive: function doDownloadDrive() {
+            $('.material_download_google_drive').on('click', function () {
+                wpmfAddCloudQueue.addGoogleDownloadQueue();
+            });
+
+            $('.material_download_onedrive').on('click', function () {
+                wpmfAddCloudQueue.addOnedriveDownloadQueue();
+            });
+
+            $('.material_download_onedrive_business').on('click', function () {
+                wpmfAddCloudQueue.addOnedriveBusinessDownloadQueue();
+            });
+
+            $('.material_download_dropbox').on('click', function () {
+                wpmfAddCloudQueue.addDropboxDownloadQueue();
+            });
+
+            $('.material_download_nextcloud').on('click', function () {
+                wpmfAddCloudQueue.addNextcloudDownloadQueue();
+            });
+
+            $('.material_download_owncloud').on('click', function () {
+                wpmfAddCloudQueue.addOwncloudDownloadQueue();
+            });
+        },
+
         /**
          * render form replace
          */
@@ -2184,6 +2261,36 @@ var wpmfFoldersModule = void 0,
                 wpmfFoldersModule.houtside();
             });
 
+            // create new folder with selection
+            $('.create_folder_with_selection').off('click').on('click', function (e) {
+                var ids = wpmfFoldersModule.getSelectedAttachmentIds();
+
+                if (!ids.length) {
+                    alert('No files selected!');
+                    return;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: ajaxurl,
+                    data: {
+                        action: 'wpmf',
+                        task: 'wpmf_new_folder_with_selection',
+                        ids: ids,
+                        parent: wpmfFoldersModule.getCurrentFolderId(),
+                        wpmf_nonce: wpmf.vars.wpmf_nonce
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            alert('Folder created: ' + res.data.folder_name);
+                            location.reload();
+                        } else {
+                            alert('Error: ' + res.data.message);
+                        }
+                    }
+                });
+            });
+
             $('.material_import').off('click').on('click', function (e) {
                 wpmfImportCloudModule.showdialog(false);
                 wpmfImportCloudModule.initModule();
@@ -2194,6 +2301,51 @@ var wpmfFoldersModule = void 0,
                 wpmfFoldersModule.uploadFilesToS3(wpmfFoldersModule.editFileId);
                 wpmfFoldersModule.houtside();
             });
+
+            //Create folder with selection
+            $('.create_folder_with_selection').off('click').on('click', function (e) {
+                wpmfFoldersModule.createFolderWithSelection();
+            });
+        },
+
+        /**
+         * Get selected attachment IDs in media library
+         *
+         * @returns {Array} ids - List of selected attachment IDs
+         */
+        getSelectedAttachmentIds: function getSelectedAttachmentIds() {
+            var ids = [];
+            // Media Grid
+            if (typeof wp !== "undefined" && wp.media) {
+                if (!wp.media.frame) {
+                    wp.media.frame = wp.media({
+                        title: 'Select Media',
+                        multiple: true
+                    });
+                }
+                var selection = wp.media.frame.state().get('selection');
+
+                if (selection) {
+                    selection.each(function (attachment) {
+                        if (attachment && attachment.id) {
+                            ids.push(parseInt(attachment.id));
+                        }
+                    });
+                }
+            }
+
+            // Media List or grid in WP Media Folder
+            $('.attachments .attachment.selected').each(function () {
+                var id = $(this).data('id') || $(this).attr('data-id');
+                if (id) {
+                    ids.push(parseInt(id));
+                }
+            });
+
+            // unique
+            ids = Array.from(new Set(ids));
+
+            return ids;
         },
 
         /**
@@ -2339,7 +2491,7 @@ var wpmfFoldersModule = void 0,
         },
 
         renderFolderPermissionsWrap: function renderFolderPermissionsWrap() {
-            if (wpmf.vars.wpmf_role !== 'administrator') {
+            if (!wpmf.vars.enable_permissions_settings) {
                 return false;
             }
 
@@ -2613,7 +2765,20 @@ var wpmfFoldersModule = void 0,
             });
 
             // render context menu for folder
-            var context_folder = '\n            <ul class="wpmf-contextmenu wpmf-contextmenu-folder contextmenu z-depth-1 grey-text text-darken-2">\n                <li><div class="material_newfolder items_menu">' + wpmf.l18n.new_folder + '<span class="material-icons-outlined wpmf_icon"> create_new_folder </span></div></li>\n                <li><div class="material_refreshfolder items_menu">' + wpmf.l18n.refresh + '<span class="material-icons-outlined wpmf_icon"> refresh </span></div></li>\n                <li><div class="material_editfolder items_menu">' + wpmf.l18n.edit_folder + '<span class="material-icons-outlined wpmf_icon"> edit </span></div></li>\n                <li><div class="material_deletefolder items_menu">' + wpmf.l18n.delete + '<span class="material-icons-outlined wpmf_icon"> delete_outline </span></div></li>\n                <li><div class="wpmf-bulk-folders-btn items_menu">' + wpmf.l18n.bulk_select + '<span class="material-icons-outlined wpmf_icon"> checklist </span></div></li>\n            ';
+            var context_folder = '\n<ul class="wpmf-contextmenu wpmf-contextmenu-folder contextmenu z-depth-1 grey-text text-darken-2">';
+
+            if (!(wpmf.vars.use_multisite_share && parseInt(wpmf.vars.is_main_site) === 0)) {
+                context_folder += '<li><div class="material_newfolder items_menu 1">' 
+                    + wpmf.l18n.new_folder + 
+                    '<span class="material-icons-outlined wpmf_icon"> create_new_folder </span></div></li>';
+            }
+
+            context_folder += '\
+                <li><div class="material_refreshfolder items_menu">' + wpmf.l18n.refresh + '<span class="material-icons-outlined wpmf_icon"> refresh </span></div></li>\
+                <li><div class="material_editfolder items_menu">' + wpmf.l18n.edit_folder + '<span class="material-icons-outlined wpmf_icon"> edit </span></div></li>\
+                <li><div class="material_deletefolder items_menu">' + wpmf.l18n.delete + '<span class="material-icons-outlined wpmf_icon"> delete_outline </span></div></li>\
+                <li><div class="wpmf-bulk-folders-btn items_menu">' + wpmf.l18n.bulk_select + '<span class="material-icons-outlined wpmf_icon"> checklist </span></div></li>\
+            ';
 
             context_folder += '<li class="sub wpmf-download-contextmenu">\n                <div class="items_menu">\n                    <span class="material-icons-outlined wpmf_icon"> download </span>\n                    ' + wpmf.l18n.download + '            \n                    <div class="waves waves-effect"></div>\n                <i class="material-icons right">keyboard_arrow_right</i>\n                </div>\n                <ul class="submenu z-depth-1">\n                    <li><div class="material_downloadfolder items_menu" data-sub="0">' + wpmf.l18n.download_zip + '<span class="material-icons-outlined wpmf_icon"> download </span></div></li>\n                    <li><div class="material_downloadfolder items_menu" data-sub="1">' + wpmf.l18n.download_sub + '<span class="material-icons-outlined wpmf_icon"> download </span></div></li>\n                </ul>\n            </li>';
 
@@ -2675,6 +2840,10 @@ var wpmfFoldersModule = void 0,
 
             if (typeof wpmf.vars.batch_ai_optimization !== 'undefined' && parseInt(wpmf.vars.batch_ai_optimization) === 1) {
                 context_file += '<li><div class="ai_image_optimization_image items_menu">' + wpmf.l18n.ai_image_optimization + '<span class="ju-icon-AI wpmf_icon"></span></div></li>';
+            }
+
+            if (wpmf.vars.wpmf_pagenow === 'upload.php') {
+                context_file += '<li><div class="create_folder_with_selection items_menu">' + wpmf.l18n.create_folder_with_selection + '<span class="material-icons-outlined wpmf_icon"> snippet_folder </span></div></li>';
             }
 
             context_file += '</ul>';
@@ -2937,6 +3106,37 @@ var wpmfFoldersModule = void 0,
                         $('.wpmf-attachment[data-id="' + id + '"] .wpmf-attachment-preview').append('<div class="wpmfdeletefolderprogress"> <div class="indeterminate"></div></div>');
 
                         wpmfFoldersModule.deleteFolder(id);
+                    }
+                }
+            });
+        },
+
+        /**
+         * Create folder with selection
+         */
+        createFolderWithSelection: function createFolderWithSelection() {
+            var ids = wpmfFoldersModule.getSelectedAttachmentIds();
+            if (!ids.length) {
+                alert('No files selected!');
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf',
+                    task: 'wpmf_new_folder_with_selection',
+                    ids: ids,
+                    parent: wpmfFoldersModule.getCurrentFolderId(),
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function (res) {
+                    if (res.success) {
+                        alert('Folder created: ' + res.data.folder_name);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + res.data.message);
                     }
                 }
             });
@@ -4126,6 +4326,9 @@ var wpmfFoldersModule = void 0,
                                 case 'cloudflare_r2':
                                     aws_text = 'Cloudflare R2';
                                     break;
+                                case 'vultr':
+                                    aws_text = 'Vultr';
+                                    break;
                                 case 'bunny':
                                     aws_text = 'Bunny';
                             }
@@ -4192,6 +4395,13 @@ var wpmfFoldersModule = void 0,
                         var caption = wp.media.attachment(id_img).get('caption');
                         var filename = wp.media.attachment(id_img).get('filename');
                         var width = 0;
+                        if (parseInt(wpmf.vars.image_info) == 1){
+                            var date = wp.media.attachment(id_img).get('dateFormatted');
+                            var file_type = wp.media.attachment(id_img).get('subtype').toUpperCase();
+                            var dimensions = wp.media.attachment(id_img).get('sizes').full.width + ' x ' + wp.media.attachment(id_img).get('sizes').full.height;
+                            var file_size = wp.media.attachment(id_img).get('filesizeHumanReadable');
+                            var file_name = wp.media.attachment(id_img).get('name');
+                        }
                         if ($this.closest('.attachment-preview').hasClass('subtype-svg+xml')) {
                             var wpmfurl = $this.find('img').attr('src');
                             ext = 'svg';
@@ -4221,36 +4431,68 @@ var wpmfFoldersModule = void 0,
                             filename = "";
                         }
                         title = wpmfescapeScripts(title);
-                        wpmfFoldersModule.hover_images[id_img] = {
-                            'title': title,
-                            'is_video': is_video,
-                            'video_url': video_url,
-                            'caption': caption,
-                            'wpmfurl': wpmfurl,
-                            'filename': filename,
-                            'width': width,
-                            'ext': ext
-                        };
+                        if (parseInt(wpmf.vars.image_info) == 1){
+                            wpmfFoldersModule.hover_images[id_img] = {
+                                'title': title,
+                                'is_video': is_video,
+                                'video_url': video_url,
+                                'caption': caption,
+                                'wpmfurl': wpmfurl,
+                                'filename': filename,
+                                'width': width,
+                                'ext': ext,
+                                'date': date,
+                                'file_type': file_type,
+                                'dimensions': dimensions,
+                                'file_size': file_size,
+                                'file_name': file_name
+                            };
+                        } else {
+                            wpmfFoldersModule.hover_images[id_img] = {
+                                'title': title,
+                                'is_video': is_video,
+                                'video_url': video_url,
+                                'caption': caption,
+                                'wpmfurl': wpmfurl,
+                                'filename': filename,
+                                'width': width,
+                                'ext': ext
+                            };
+                        }
                     }
-                    var html = "<div id='wpmf_preview_image'>";
-                    html += '<div><img src="' + wpmfFoldersModule.hover_images[id_img].wpmfurl + '" width="' + wpmfFoldersModule.hover_images[id_img].width + '" /></div>';
+                    if (parseInt(wpmf.vars.image_info) == 1){
+                        var html = "<div id='wpmf_preview_image' class='wpmf_preview_image'>";
+                    } else {
+                        var html = "<div id='wpmf_preview_image'>";
+                    }
+                    html += '<div class="image"><img src="' + wpmfFoldersModule.hover_images[id_img].wpmfurl + '" width="' + wpmfFoldersModule.hover_images[id_img].width + '" /></div>';
                     html += "<span class='bottomlegend'>";
                     html += "<span class='bottomlegend_filename'>";
+
                     if (parseInt(wpmfFoldersModule.hover_images[id_img].is_video) === 1) {
                         html += wpmfFoldersModule.hover_images[id_img].title;
                     } else {
-                        html += wpmfFoldersModule.hover_images[id_img].filename;
+                        if (parseInt(wpmf.vars.image_info) == 1){
+                            html += '  <div class="label-desc"><strong>Uploaded Date:</strong> ' + wpmfFoldersModule.hover_images[id_img].date + '</div>';
+                            html += '  <div class="label-desc"><strong>File Type:</strong> ' + wpmfFoldersModule.hover_images[id_img].file_type + '</div>';
+                            html += '  <div class="label-desc"><strong>Dimensions:</strong> ' + wpmfFoldersModule.hover_images[id_img].dimensions + '</div>';
+                            html += '  <div class="label-desc"><strong>File Size:</strong> ' + wpmfFoldersModule.hover_images[id_img].file_size + '</div>';
+                            html += '  <div class="label-desc"><strong>File Name:</strong> ' + wpmfFoldersModule.hover_images[id_img].file_name + '</div>';
+                        } else {
+                            html += wpmfFoldersModule.hover_images[id_img].filename;
+                        }
                     }
 
                     html += "</span>";
-                    html += "<br>";
                     html += "<span class='bottomlegend_filetitle'>";
                     if (parseInt(wpmfFoldersModule.hover_images[id_img].is_video) === 1) {
                         if (wpmfFoldersModule.hover_images[id_img].video_url !== '') {
                             html += wpmfFoldersModule.hover_images[id_img].video_url;
                         }
                     } else {
-                        html += wpmfFoldersModule.hover_images[id_img].title;
+                        if (parseInt(wpmf.vars.image_info) !== 1){ 
+                            html += wpmfFoldersModule.hover_images[id_img].title;
+                        }
                     }
 
                     html += "</span>";
@@ -4781,7 +5023,145 @@ var wpmfFoldersModule = void 0,
                     wpmfAddCloudQueue.addOnedriveBusinessQueue();
                 }
             });
-        }
+        },
+
+        /**
+         * Download from Google Drive to Media library
+         */
+        addGoogleDownloadQueue: function addGoogleDownloadQueue(folder_id = 0) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_google_add_download_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function () {
+                    wpmfSnackbarModule.close('download_drive');
+                    wpmfSnackbarModule.show({
+                        id: 'queue_download_alert',
+                        content: wpmf.l18n.queue_download_alert,
+                        auto_close: true
+                    });
+                }
+            });
+        },
+
+        /**
+         * Download from Onedrive to Media library
+         */
+        addOnedriveDownloadQueue: function addOnedriveDownloadQueue(folder_id = 0) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_onedrive_add_download_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function () {
+                    wpmfSnackbarModule.close('download_drive');
+                    wpmfSnackbarModule.show({
+                        id: 'queue_download_alert',
+                        content: wpmf.l18n.queue_download_alert,
+                        auto_close: true
+                    });
+                }
+            });
+        },
+
+        /**
+         * Download from Onedrive Business to Media library
+         */
+        addOnedriveBusinessDownloadQueue: function addOnedriveBusinessDownloadQueue(folder_id = 0) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_onedrive_business_add_download_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function () {
+                    wpmfSnackbarModule.close('download_drive');
+                    wpmfSnackbarModule.show({
+                        id: 'queue_download_alert',
+                        content: wpmf.l18n.queue_download_alert,
+                        auto_close: true
+                    });
+                }
+            });
+        },
+
+        /**
+         * Download from Dropbox to Media library
+         */
+        addDropboxDownloadQueue: function addDropboxDownloadQueue(folder_id = 0) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_dropbox_add_download_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function () {
+                    wpmfSnackbarModule.close('download_drive');
+                    wpmfSnackbarModule.show({
+                        id: 'queue_download_alert',
+                        content: wpmf.l18n.queue_download_alert,
+                        auto_close: true
+                    });
+                }
+            });
+        },
+
+        /**
+         * Download from Nextcloud to Media library
+         */
+        addNextcloudDownloadQueue: function addNextcloudDownloadQueue(folder_id = 0) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_nextcloud_add_download_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function () {
+                    wpmfSnackbarModule.close('download_drive');
+                    wpmfSnackbarModule.show({
+                        id: 'queue_download_alert',
+                        content: wpmf.l18n.queue_download_alert,
+                        auto_close: true
+                    });
+                }
+            });
+        },
+
+        /**
+         * Download from Owncloud to Media library
+         */
+        addOwncloudDownloadQueue: function addOwncloudDownloadQueue(folder_id = 0) {
+            $.ajax({
+                method: "POST",
+                dataType: "json",
+                url: ajaxurl,
+                data: {
+                    action: 'wpmf_owncloud_add_download_queue',
+                    wpmf_nonce: wpmf.vars.wpmf_nonce
+                },
+                success: function () {
+                    wpmfSnackbarModule.close('download_drive');
+                    wpmfSnackbarModule.show({
+                        id: 'queue_download_alert',
+                        content: wpmf.l18n.queue_download_alert,
+                        auto_close: true
+                    });
+                }
+            });
+        },
     };
 
     // add filter work with Easing Slider plugin

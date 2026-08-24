@@ -44,16 +44,22 @@ class SetupWizard {
 			return;
 		}
 
-		// If we are redirecting, clear the transient so it only happens once.
+		// Only do this for single site installs.
+		if ( is_network_admin() ) {
+			return;
+		}
+
+		// If this is a bulk activation, don't redirect immediately.
+		// The activation redirect flag is preserved so the redirect happens on the next admin page load.
+		if ( isset( $_GET['activate-multi'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		// If we are redirecting, clear the flag so it only happens once.
 		aioseo()->core->cache->delete( 'activation_redirect' );
 
 		// Check option to disable welcome redirect.
 		if ( get_option( 'aioseo_activation_redirect', false ) ) {
-			return;
-		}
-
-		// Only do this for single site installs.
-		if ( isset( $_GET['activate-multi'] ) || is_network_admin() ) { // phpcs:ignore HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
@@ -207,8 +213,8 @@ class SetupWizard {
 		wp_print_scripts( 'aioseo-vendors' );
 		wp_print_scripts( 'aioseo-common' );
 		wp_print_scripts( 'aioseo-setup-wizard-script' );
-		do_action( 'admin_footer', '' );
-		do_action( 'admin_print_footer_scripts' );
+		do_action( 'admin_footer', '' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		do_action( 'admin_print_footer_scripts' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		// do_action( 'customize_controls_print_footer_scripts' );
 		?>
 		</body>

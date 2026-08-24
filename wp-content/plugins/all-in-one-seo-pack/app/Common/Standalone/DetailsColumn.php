@@ -62,11 +62,7 @@ class DetailsColumn {
 		if ( 'product' === $screen->post_type ) {
 			add_filter( 'manage_edit-product_columns', [ $this, 'addColumn' ] );
 			add_action( 'manage_posts_custom_column', [ $this, 'renderColumn' ], 10, 2 );
-
-			return;
-		}
-
-		if ( 'attachment' === $screen->post_type ) {
+		} elseif ( 'attachment' === $screen->post_type ) {
 			$enabled = apply_filters( 'aioseo_image_seo_media_columns', true );
 			if ( ! $enabled ) {
 				return;
@@ -74,12 +70,20 @@ class DetailsColumn {
 
 			add_filter( 'manage_media_columns', [ $this, 'addColumn' ] );
 			add_action( 'manage_media_custom_column', [ $this, 'renderColumn' ], 10, 2 );
-
-			return;
+		} else {
+			add_filter( "manage_edit-{$screen->post_type}_columns", [ $this, 'addColumn' ] );
+			add_action( "manage_{$screen->post_type}_posts_custom_column", [ $this, 'renderColumn' ], 10, 2 );
 		}
 
-		add_filter( "manage_edit-{$screen->post_type}_columns", [ $this, 'addColumn' ] );
-		add_action( "manage_{$screen->post_type}_posts_custom_column", [ $this, 'renderColumn' ], 10, 2 );
+		/**
+		 * Fires after the AIOSEO Details column is activated for a post type.
+		 * Use this to register features that depend on the column being present (e.g., row actions).
+		 *
+		 * @since 4.9.6
+		 *
+		 * @param string $postType The post type the column was activated for.
+		 */
+		do_action( 'aioseo_details_column_activated', $screen->post_type );
 	}
 
 	/**
@@ -112,7 +116,8 @@ class DetailsColumn {
 	/**
 	 * Enqueues the JS/CSS for the page/posts table page.
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.9.10 Strip site-global configuration for users who cannot manage AIOSEO.
 	 *
 	 * @return void
 	 */
@@ -121,7 +126,7 @@ class DetailsColumn {
 		$data['posts'] = [];
 		$data['terms'] = [];
 
-		aioseo()->core->assets->load( $this->scriptSlug, [], $data );
+		aioseo()->core->assets->load( $this->scriptSlug, [], aioseo()->helpers->filterPrivilegedVueData( $data ) );
 	}
 
 	/**
@@ -210,6 +215,17 @@ class DetailsColumn {
 
 		foreach ( $addonsColumnData as $addonColumnData ) {
 			$postData = array_merge( $postData, $addonColumnData );
+		}
+
+		// Get broken link count if Broken Link Checker is active.
+		if (
+			function_exists( 'aioseoBrokenLinkChecker' ) &&
+			class_exists( '\AIOSEO\BrokenLinkChecker\Models\LinkStatus' ) &&
+			method_exists( '\AIOSEO\BrokenLinkChecker\Models\LinkStatus', 'getBrokenCountByPostId' ) &&
+			'aioseo-details' === $columnName
+		) {
+			$brokenCount                 = \AIOSEO\BrokenLinkChecker\Models\LinkStatus::getBrokenCountByPostId( $postId );
+			$postData['brokenLinkCount'] = (int) $brokenCount ?? 0;
 		}
 
 		$posts[]       = $postData;

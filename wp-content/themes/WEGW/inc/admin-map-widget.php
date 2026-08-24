@@ -35,11 +35,7 @@ function wegwandern_admin_map_assets( $hook ) {
 		return;
 	}
 
-	wp_enqueue_style( 'wegw-admin-ol-css', get_template_directory_uri() . '/lib/ol@v7.1.0/ol.css', array(), _S_VERSION );
-	wp_enqueue_style( 'wegw-admin-ol-ext-css', get_template_directory_uri() . '/lib/ol-ext/ol-ext.css', array(), _S_VERSION );
-	wp_enqueue_script( 'wegw-admin-ol-js', get_template_directory_uri() . '/lib/ol@v7.1.0/ol.js', array(), _S_VERSION, true );
-	wp_enqueue_script( 'wegw-admin-ol-ext-js', get_template_directory_uri() . '/lib/ol-ext/ol-ext.min.js', array( 'wegw-admin-ol-js' ), _S_VERSION, true );
-	wp_enqueue_script( 'wegw-admin-ol-proj4-js', get_template_directory_uri() . '/lib/ol-ext/proj4.js', array( 'wegw-admin-ol-js' ), _S_VERSION, true );
+	// OpenLayers is loaded on demand in loadMap(). Do not enqueue ~1.4 MB on Gutenberg.
 }
 
 /**
@@ -59,30 +55,47 @@ function wegwandern_map_custom_meta_box_markup() {
 		$current_hike_activity_taxonomy = "";
 	}
 
-	$json_gpx_raw = $gpx_file ? get_field( 'json_gpx_file_data', $current_hike_id ) : null;
-	if ( empty( $json_gpx_raw ) ) {
-		$json_gpx_js = 'undefined';
-	} elseif ( is_string( $json_gpx_raw ) ) {
-		$json_gpx_decoded = json_decode( $json_gpx_raw, true );
-		$json_gpx_js      = ( JSON_ERROR_NONE === json_last_error() )
-			? wp_json_encode( $json_gpx_decoded )
-			: wp_json_encode( $json_gpx_raw );
-	} else {
-		$json_gpx_js = wp_json_encode( $json_gpx_raw );
-	}
+	// Do not dump GPX JSON into the Gutenberg page — fetch it when the map opens.
 ?>
 	<script type="text/javascript">
 		var recalculateGpx = "<?php echo esc_js( $recalculate_gpx ); ?>";
-		var json_gpx_data = <?php echo $json_gpx_js; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
+		var json_gpx_data = undefined;
+		var wegAdminGpxPostId = <?php echo (int) $current_hike_id; ?>;
+		var wegAdminGpxNonce = "<?php echo esc_js( wp_create_nonce( 'wegwandern_admin_gpx' ) ); ?>";
+		var wegAdminGpxHasFile = <?php echo $gpx_file ? 'true' : 'false'; ?>;
 		var wegAdminMap = null;
+
+		function wegwFetchGpxJson( done ) {
+			if ( json_gpx_data !== undefined || ! wegAdminGpxHasFile ) {
+				if ( typeof done === 'function' ) {
+					done();
+				}
+				return;
+			}
+			jQuery.post( ajaxurl, {
+				action: 'wegwandern_admin_gpx_json',
+				post_id: wegAdminGpxPostId,
+				nonce: wegAdminGpxNonce
+			} ).done( function( res ) {
+				if ( res && res.success && res.data ) {
+					json_gpx_data = res.data;
+				}
+			} ).always( function() {
+				if ( typeof done === 'function' ) {
+					done();
+				}
+			} );
+		}
 
 		jQuery(function() {
 			if (recalculateGpx == 1) {
-				try {
-					calculateGPX();
-				} catch (error) {
-					console.error('calculateGPX failed:', error);
-				}
+				wegwFetchGpxJson( function() {
+					try {
+						calculateGPX();
+					} catch (error) {
+						console.error('calculateGPX failed:', error);
+					}
+				} );
 			}
 
 			wegwBindDisplayMapButton();
@@ -355,6 +368,13 @@ function wegwandern_map_custom_meta_box_markup() {
 			wegwRevealKarteBox();
 
 			if (wegAdminMap) {
+				return;
+			}
+
+			if ( json_gpx_data === undefined && wegAdminGpxHasFile ) {
+				wegwFetchGpxJson( function() {
+					loadMap();
+				} );
 				return;
 			}
 
@@ -948,4 +968,26 @@ function wegw_gpx_fields_update_on_import( $post_id ) {
 			update_field( 'hochster_punkt', $hochster_punkt, $post_id );
 		}
 	}
+}
+
+add_action( 'wp_ajax_wegwandern_admin_gpx_json', 'wegwandern_admin_gpx_json' );
+function wegwandern_admin_gpx_json() {
+	check_ajax_referer( 'wegwandern_admin_gpx', 'nonce' );
+
+	$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
+	if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
+		wp_send_json_error();
+	}
+
+	$raw = get_field( 'json_gpx_file_data', $post_id );
+	if ( empty( $raw ) ) {
+		wp_send_json_success( null );
+	}
+
+	if ( is_string( $raw ) ) {
+		$decoded = json_decode( $raw, true );
+		wp_send_json_success( JSON_ERROR_NONE === json_last_error() ? $decoded : $raw );
+	}
+
+	wp_send_json_success( $raw );
 }

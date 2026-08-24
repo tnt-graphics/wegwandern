@@ -516,6 +516,10 @@ trait Options {
 	 * @return array           The modified values.
 	 */
 	protected function resetValues( $values, $defaults, $keys = [], $include = [], $exclude = [] ) {
+		if ( ! is_array( $values ) ) {
+			return $values;
+		}
+
 		$values = $this->allFiltered( $values, $include, $exclude );
 		foreach ( $values as $key => $value ) {
 			$option = $this->isAnOption( $key, $defaults, $keys );
@@ -1049,7 +1053,19 @@ trait Options {
 	public function getDbOptions( $optionsName ) {
 		$cache = aioseo()->core->optionsCache->getDb( $optionsName );
 		if ( empty( $cache ) ) {
-			$options = json_decode( get_option( $optionsName ), true );
+			// NOTE: get_option() can return a non-string (e.g. an array from a row stored
+			// unencoded), which fatals in json_decode() on PHP 8+.
+			$dbOptions = get_option( $optionsName );
+			if ( is_string( $dbOptions ) ) {
+				$options = json_decode( $dbOptions, true );
+			} else {
+				// Row holds a non-string value (typically a serialized array left by an
+				// external tool: WP-CLI `--format=json`, site migration plugin, etc.).
+				// Use the data as-is and mark the instance dirty so the shutdown save
+				// rewrites the row as JSON — self-heals the corrupted storage.
+				$options          = is_array( $dbOptions ) ? $dbOptions : [];
+				$this->shouldSave = true;
+			}
 			$options = ! empty( $options ) ? $options : [];
 
 			// Set the cache.

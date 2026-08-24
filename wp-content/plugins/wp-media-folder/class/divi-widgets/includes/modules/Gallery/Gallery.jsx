@@ -18,7 +18,7 @@ class WpmfGalleryDivi extends Component {
     }
 
     componentWillMount() {
-        if (this.props.items !== '') {
+        if (this.props.items !== '' || (this.props.gallery_folders === 'on' && parseInt(this.props.gallery_folder_id) > 0)) {
             this.loadHtml(this.props);
         }
     }
@@ -33,7 +33,7 @@ class WpmfGalleryDivi extends Component {
     }
 
     componentDidMount() {
-        if (this.props.items !== '') {
+        if (this.props.items !== '' || (this.props.gallery_folders === 'on' && parseInt(this.props.gallery_folder_id) > 0)) {
             let t = this;
             let a = setInterval(function () {
                 if (t.props.theme === 'masonry' || t.props.theme === 'portfolio') {
@@ -55,7 +55,7 @@ class WpmfGalleryDivi extends Component {
 
     componentDidUpdate(prevProps) {
         // Deselect images when deselecting the block
-        if (this.props.items !== '' && !(this.props.items === prevProps.items && this.props.aspect_ratio === prevProps.aspect_ratio && this.props.columns === prevProps.columns && this.props.theme === prevProps.theme && this.props.size === prevProps.size && this.props.orderby === prevProps.orderby && this.props.order === prevProps.order && this.props.border_radius === prevProps.border_radius && this.props.gutterwidth === prevProps.gutterwidth && this.props.border_width === prevProps.border_width && this.props.border_color === prevProps.border_color && this.props.border_style === prevProps.border_style && this.props.enable_shadow === prevProps.enable_shadow && this.props.shadow_color === prevProps.shadow_color && this.props.shadow_horizontal === prevProps.shadow_horizontal && this.props.shadow_vertical === prevProps.shadow_vertical && this.props.shadow_blur === prevProps.shadow_blur && this.props.shadow_spread === prevProps.shadow_spread && this.props.gallery_folders === prevProps.gallery_folders && this.props.gallery_folder_id === prevProps.gallery_folder_id)) {
+        if ((this.props.items !== '' || (this.props.gallery_folders === 'on' && parseInt(this.props.gallery_folder_id) > 0)) && !(this.props.items === prevProps.items && this.props.aspect_ratio === prevProps.aspect_ratio && this.props.columns === prevProps.columns && this.props.theme === prevProps.theme && this.props.size === prevProps.size && this.props.orderby === prevProps.orderby && this.props.order === prevProps.order && this.props.border_radius === prevProps.border_radius && this.props.gutterwidth === prevProps.gutterwidth && this.props.border_width === prevProps.border_width && this.props.border_color === prevProps.border_color && this.props.border_style === prevProps.border_style && this.props.enable_shadow === prevProps.enable_shadow && this.props.shadow_color === prevProps.shadow_color && this.props.shadow_horizontal === prevProps.shadow_horizontal && this.props.shadow_vertical === prevProps.shadow_vertical && this.props.shadow_blur === prevProps.shadow_blur && this.props.shadow_spread === prevProps.shadow_spread && this.props.gallery_folders === prevProps.gallery_folders && this.props.gallery_folder_id === prevProps.gallery_folder_id)) {
             let t = this;
             let a = setInterval(function () {
                 if (t.props.theme === 'masonry' || t.props.theme === 'portfolio') {
@@ -268,7 +268,7 @@ class WpmfGalleryDivi extends Component {
             </svg>
         );
 
-        if (this.props.items === '' && parseInt(this.props.gallery_folder_id) === 0) {
+        if (this.props.items === '' && !(this.props.gallery_folders === 'on' && parseInt(this.props.gallery_folder_id) > 0)) {
             return (
                 <div className="wpmf-divi-container wpmf-gallery-divi-wrap" ref={this.wrap}>
                     <div id="divi-gallery-placeholder" className="divi-gallery-placeholder">

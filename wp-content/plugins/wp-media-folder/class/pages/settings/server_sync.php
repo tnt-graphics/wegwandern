@@ -1,8 +1,9 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
-$iptcHeaderArray = getIptcHeader();
+$iptcHeaderArray = WpmfHelper::getIptcHeader();
 ?>
 <div id="server_folder_sync" class="tab-content">
     <div class="wpmf_width_100 top_bar">

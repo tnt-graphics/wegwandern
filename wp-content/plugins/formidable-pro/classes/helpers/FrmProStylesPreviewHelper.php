@@ -116,6 +116,7 @@ class FrmProStylesPreviewHelper {
 			/**
 			 * @param stdClass|null $form
 			 * @param int           $form_id
+			 *
 			 * @return stdClass|null
 			 */
 			function ( $form ) {
@@ -131,6 +132,7 @@ class FrmProStylesPreviewHelper {
 	 * Force look up fields without required data to appear in the styler preview.
 	 *
 	 * @since 6.0
+	 *
 	 * @todo What about "text" "Single Line Text" type?
 	 *
 	 * @return void
@@ -141,6 +143,7 @@ class FrmProStylesPreviewHelper {
 			/**
 			 * @param string         $html
 			 * @param array|stdClass $field
+			 *
 			 * @return string
 			 */
 			function ( $html, $field ) {
@@ -170,9 +173,8 @@ class FrmProStylesPreviewHelper {
 				ob_start();
 				FrmProLookupFieldsController::get_front_end_lookup_field_html( $field, '', '' );
 				$lookup_html = ob_get_clean();
-				$html        = str_replace( '[input]', $lookup_html, $html );
 
-				return $html;
+				return str_replace( '[input]', $lookup_html, $html );
 			},
 			10,
 			2
@@ -197,6 +199,7 @@ class FrmProStylesPreviewHelper {
 	 * @since 6.0
 	 *
 	 * @param string $target_field_type
+	 *
 	 * @return void
 	 */
 	private function hide_field_type( $target_field_type ) {
@@ -206,13 +209,11 @@ class FrmProStylesPreviewHelper {
 			 * @param bool   $show
 			 * @param string $field_type
 			 * @param string $target_field_type
+			 *
 			 * @return bool
 			 */
 			function ( $show, $field_type ) use ( $target_field_type ) {
-				if ( $target_field_type === $field_type ) {
-					$show = false;
-				}
-				return $show;
+				return $target_field_type === $field_type ? false : $show;
 			},
 			10,
 			2
@@ -236,6 +237,7 @@ class FrmProStylesPreviewHelper {
 			 *
 			 * @param string         $html
 			 * @param array|stdClass $field
+			 *
 			 * @return string
 			 */
 			function ( $html, $field ) {
@@ -262,6 +264,7 @@ class FrmProStylesPreviewHelper {
 			/**
 			 * @param stdClass|null $form
 			 * @param int           $form_id
+			 *
 			 * @return stdClass|null
 			 */
 			function ( $form ) {

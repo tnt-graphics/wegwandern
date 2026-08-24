@@ -1,6 +1,7 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Class WpmfWatermark
@@ -49,8 +50,8 @@ class WpmfWatermark
             if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
                 // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing -- No action, nonce is not required
                 $galleryid = isset($_POST['up_gallery_id']) ? (int)$_POST['up_gallery_id'] : 0;
-                $watermark_exclude_public_gallery = wpmfGetOption('watermark_exclude_public_gallery');
-                $watermark_exclude_photograph_gallery = wpmfGetOption('watermark_exclude_photograph_gallery');
+                $watermark_exclude_public_gallery = WpmfHelper::wpmfGetOption('watermark_exclude_public_gallery');
+                $watermark_exclude_photograph_gallery = WpmfHelper::wpmfGetOption('watermark_exclude_photograph_gallery');
                 $check = false;
                 if (!empty($watermark_exclude_public_gallery)) {
                     if ($isWoo) {
@@ -113,7 +114,7 @@ class WpmfWatermark
                 return $metadata;
             }
             $watermark_apply = get_option('wpmf_image_watermark_apply');
-            $exclude_folders = wpmfGetOption('watermark_exclude_folders');
+            $exclude_folders = WpmfHelper::wpmfGetOption('watermark_exclude_folders');
             $excludes = array();
             foreach (array_unique($exclude_folders) as $folder) {
                 if ($folder === 'root') {
@@ -290,7 +291,7 @@ class WpmfWatermark
         $uploads         = wp_upload_dir();
         $tax_query = array();
         $excludes = array();
-        $exclude_folders = wpmfGetOption('watermark_exclude_folders');
+        $exclude_folders = WpmfHelper::wpmfGetOption('watermark_exclude_folders');
         $watermark_apply = get_option('wpmf_image_watermark_apply');
         $option_watermark_only_woo = get_option('wpmf_watermark_only_woo');
         foreach (array_unique($exclude_folders) as $folder) {
@@ -346,8 +347,8 @@ class WpmfWatermark
                 }
                 // exclude watermark on gallery
                 if (is_plugin_active('wp-media-folder-gallery-addon/wp-media-folder-gallery-addon.php')) {
-                    $watermark_exclude_public_gallery = wpmfGetOption('watermark_exclude_public_gallery');
-                    $watermark_exclude_photograph_gallery = wpmfGetOption('watermark_exclude_photograph_gallery');
+                    $watermark_exclude_public_gallery = WpmfHelper::wpmfGetOption('watermark_exclude_public_gallery');
+                    $watermark_exclude_photograph_gallery = WpmfHelper::wpmfGetOption('watermark_exclude_photograph_gallery');
                     $check = false;
                     if (!empty($watermark_exclude_public_gallery)) {
                         $gallery_terms = get_the_terms($attachment->ID, WPMF_GALLERY_ADDON_TAXO);
@@ -572,13 +573,13 @@ class WpmfWatermark
         $wtm_position   = get_option('wpmf_watermark_position');
         $wtm_apply_on   = get_option('wpmf_image_watermark_apply');
         if ($type === 'photographer') {
-            $wtm_apply_on = wpmfGetOption('photograper_image_watermark_apply');
+            $wtm_apply_on = WpmfHelper::wpmfGetOption('photograper_image_watermark_apply');
         }
 
-        $watermark_image_scaling = wpmfGetOption('watermark_image_scaling');
-        $watermark_margin        = wpmfGetOption('watermark_margin');
-        $watermark_opacity        = wpmfGetOption('watermark_opacity');
-        $watermark_margin_unit        = wpmfGetOption('watermark_margin_unit');
+        $watermark_image_scaling = WpmfHelper::wpmfGetOption('watermark_image_scaling');
+        $watermark_margin        = WpmfHelper::wpmfGetOption('watermark_margin');
+        $watermark_opacity        = WpmfHelper::wpmfGetOption('watermark_opacity');
+        $watermark_margin_unit        = WpmfHelper::wpmfGetOption('watermark_margin_unit');
         if ((int) $watermark_opacity > 100) {
             $watermark_opacity = 100;
         }

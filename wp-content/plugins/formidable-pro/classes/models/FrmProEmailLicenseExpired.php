@@ -3,6 +3,7 @@
  * License expired email class
  *
  * @since 6.7
+ *
  * @package Formidable
  */
 
@@ -42,7 +43,7 @@ class FrmProEmailLicenseExpired extends FrmEmailSummary {
 		);
 
 		$content = str_replace(
-			__( 'Renew Now', 'formidable-pro' ),
+			__( 'Renew Now', 'formidable' ),
 			sprintf(
 				// translators: renew URL.
 				__( 'Renew now at %s', 'formidable-pro' ),
@@ -51,13 +52,11 @@ class FrmProEmailLicenseExpired extends FrmEmailSummary {
 			$content
 		);
 
-		$content = str_replace(
+		return str_replace(
 			'Co-founder and CTO of Formidable Forms',
 			"Co-founder and CTO of Formidable Forms\r\n\r\n",
 			$content
 		);
-
-		return $content;
 	}
 
 	protected function get_content_args() {

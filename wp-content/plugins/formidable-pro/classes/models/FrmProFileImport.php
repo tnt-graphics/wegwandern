@@ -7,8 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProFileImport {
 
 	/**
-	 * @param mixed    $val
-	 * @param stdClass $field
+	 * @param array|string $val
+	 * @param stdClass     $field
+	 *
 	 * @return mixed
 	 */
 	public static function import_attachment( $val, $field ) {
@@ -23,25 +24,27 @@ class FrmProFileImport {
 		// Set up global vars to track uploaded files
 		self::setup_global_media_import_vars( $field );
 
-		// set the form id for the upload path
+		// Set the form id for the upload path
 		$_POST['form_id'] = $field->form_id;
 
 		global $wpdb, $frm_vars;
 
-		$vals = self::convert_to_array( $val );
-
+		$vals    = self::convert_to_array( $val );
 		$new_val = array();
+
 		foreach ( (array) $vals as $v ) {
 			$v = trim( $v );
 
-			//check to see if the attachment already exists on this site
+			// Check to see if the attachment already exists on this site
 			$exists = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->posts . ' WHERE guid = %s', $v ) );
+
 			if ( $exists ) {
 				$new_val[] = $exists;
 			} else {
 				// Get media ID for newly uploaded image
 				$mid       = self::curl_file( $v, $field );
 				$new_val[] = $mid;
+
 				if ( is_numeric( $mid ) ) {
 					// Add newly uploaded images to the global media IDs for this field.
 					$frm_vars['media_id'][ $field->id ][] = $mid;
@@ -50,9 +53,7 @@ class FrmProFileImport {
 			unset( $v );
 		}
 
-		$val = self::convert_to_string( $new_val );
-
-		return $val;
+		return self::convert_to_string( $new_val );
 	}
 
 	/**
@@ -102,25 +103,19 @@ class FrmProFileImport {
 
 	private static function convert_to_array( $val ) {
 		if ( is_array( $val ) ) {
-			$vals = $val;
-		} else {
-			$vals = str_replace( '<br/>', ',', $val );
-			$vals = explode( ',', $vals );
+			return $val;
 		}
-		return $vals;
+		$vals = str_replace( '<br/>', ',', $val );
+		return explode( ',', $vals );
 	}
 
 	/**
 	 * @param array<string> $val
+	 *
 	 * @return string
 	 */
 	private static function convert_to_string( $val ) {
-		if ( count( $val ) == 1 ) {
-			$val = reset( $val );
-		} else {
-			$val = implode( ',', $val );
-		}
-		return $val;
+		return count( $val ) === 1 ? reset( $val ) : implode( ',', $val );
 	}
 
 	/**
@@ -128,6 +123,7 @@ class FrmProFileImport {
 	 *
 	 * @param string   $url   The URL we're downloading a file from.
 	 * @param stdClass $field The target field for the imported file.
+	 *
 	 * @return int|string     An integer Post ID is returned when a new attachment is created. Otherwise a string URL is returned.
 	 */
 	private static function curl_file( $url, $field ) {
@@ -139,8 +135,7 @@ class FrmProFileImport {
 		$uploads  = self::get_upload_dir();
 		$filename = wp_unique_filename( $uploads['path'], basename( $url ) );
 		$path     = trailingslashit( $uploads['path'] );
-
-		$fp = fopen( $path . $filename, 'wb' );
+		$fp       = fopen( $path . $filename, 'wb' );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $ch, CURLOPT_FILE, $fp );
 		curl_setopt( $ch, CURLOPT_HEADER, 0 );
@@ -170,19 +165,21 @@ class FrmProFileImport {
 	 *
 	 * @param string   $url
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	private static function validate_file_url( $url, $field ) {
 		$parsed = parse_url( $url );
+
 		if ( ! is_array( $parsed ) ) {
 			// URL is malformed.
 			return false;
 		}
 
-		$path = $parsed['path'];
-		$ext  = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
-
+		$path          = $parsed['path'];
+		$ext           = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
 		$allowed_mimes = FrmProFileField::get_allowed_mimes( $field );
+
 		if ( is_null( $allowed_mimes ) ) {
 			// File type is not restricted so allow what WordPress allows.
 			$allowed_mimes = get_allowed_mime_types();
@@ -192,8 +189,7 @@ class FrmProFileImport {
 			array_keys( $allowed_mimes ),
 			function ( $total, $current ) {
 				// Explode on | because some mime types use keys like jpg|jpeg|jpe.
-				$total = array_merge( $total, explode( '|', $current ) );
-				return $total;
+				return array_merge( $total, explode( '|', $current ) );
 			},
 			array()
 		);
@@ -208,7 +204,7 @@ class FrmProFileImport {
 	 */
 	private static function get_upload_dir() {
 		add_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
-		$uploads = wp_upload_dir();
+		$uploads = wp_upload_dir(); // phpcs:ignore Formidable.CodeAnalysis.InlineSingleUseVariable
 		remove_filter( 'upload_dir', array( 'FrmProFileField', 'upload_dir' ) );
 		return $uploads;
 	}
@@ -222,8 +218,7 @@ class FrmProFileImport {
 
 		$uploads = self::get_upload_dir();
 		$file    = $uploads['path'] . '/' . $filename;
-
-		$id = wp_insert_attachment( $attachment, $file );
+		$id      = wp_insert_attachment( $attachment, $file );
 
 		if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/image.php';
@@ -237,7 +232,9 @@ class FrmProFileImport {
 	/**
 	 * Construct the attachment array
 	 *
-	 * @param array $attachment
+	 * @param string $filename
+	 * @param array  $attachment
+	 *
 	 * @return void
 	 */
 	private static function prepare_attachment( $filename, &$attachment ) {
@@ -256,11 +253,12 @@ class FrmProFileImport {
 	/**
 	 * @param string   $file
 	 * @param string[] $attachment
+	 *
 	 * @return void
 	 */
 	private static function get_mime_type( $file, &$attachment ) {
 		if ( function_exists( 'finfo_file' ) ) {
-			$finfo = finfo_open( FILEINFO_MIME_TYPE ); // return mime type ala mimetype extension
+			$finfo = finfo_open( FILEINFO_MIME_TYPE ); // Return mime type ala mimetype extension
 			$type  = finfo_file( $finfo, $file );
 			finfo_close( $finfo );
 			unset( $finfo );
@@ -272,11 +270,12 @@ class FrmProFileImport {
 
 	/**
 	 * @param string $file
+	 * @param array  $attachment
+	 *
 	 * @return void
 	 */
 	private static function get_attachment_name( $file, &$attachment ) {
 		$name_parts               = pathinfo( $file );
-		$name                     = trim( substr( $name_parts['basename'], 0, - ( 1 + strlen( $name_parts['extension'] ) ) ) );
-		$attachment['post_title'] = $name;
+		$attachment['post_title'] = trim( substr( $name_parts['basename'], 0, - ( 1 + strlen( $name_parts['extension'] ) ) ) );
 	}
 }

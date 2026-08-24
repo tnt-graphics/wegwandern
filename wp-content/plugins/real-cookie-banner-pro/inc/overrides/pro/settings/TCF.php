@@ -192,6 +192,31 @@ trait TCF
         return \get_option(SettingsTCF::SETTING_TCF_SCOPE_OF_CONSENT);
     }
     // Documented in AbstractTcf
+    public function hasVendorConfigurations()
+    {
+        return \count(\DevOwl\RealCookieBanner\lite\settings\TcfVendorConfiguration::getInstance()->getOrdered()) > 0;
+    }
+    // Documented in AbstractTcf
+    public function getCookiePolicyVendorDisclosures()
+    {
+        $vendorConfigurations = \DevOwl\RealCookieBanner\lite\settings\TcfVendorConfiguration::getInstance()->getOrdered();
+        $vendorIds = [];
+        foreach ($vendorConfigurations as $vendorConfiguration) {
+            $vendorIds[] = $vendorConfiguration->metas['vendorId'];
+        }
+        if (\count($vendorIds) === 0) {
+            return;
+        }
+        $gvl = $this->getGvl();
+        foreach (\array_chunk($vendorIds, 25) as $chunk) {
+            $vendors = $gvl->vendors(['in' => $chunk, 'columns' => ['id', 'name', 'deviceStorageDisclosure']])['vendors'];
+            foreach ($vendors as $vendor) {
+                (yield ['name' => $vendor['name'] ?? '', 'disclosures' => \is_array($vendor['deviceStorageDisclosure'] ?? null) ? $vendor['deviceStorageDisclosure']['disclosures'] ?? [] : []]);
+            }
+            unset($vendors);
+        }
+    }
+    // Documented in AbstractTcf
     public function getVendorConfigurations()
     {
         $vendorConfigurations = \DevOwl\RealCookieBanner\lite\settings\TcfVendorConfiguration::getInstance()->getOrdered();

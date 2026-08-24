@@ -682,7 +682,23 @@ class Notices
     {
         $dismissedLegInt = $this->getStates()->get(self::DISMISSED_BANNERLESS_CONSENT_LEGINT_SERVICES, []);
         $dismissedConsentWithoutVisualContentBlocker = $this->getStates()->get(self::DISMISSED_BANNERLESS_CONSENT_SERVICES_WITHOUT_VISUAL_CONTENT_BLOCKER, []);
-        $checks = Consent::getInstance()->calculateBannerlessConsentChecks();
+        // `isEnabled()` is request-context aware and false in wp-admin, which would hide configured visual blockers here.
+        // Force-enable only for this calculation to avoid false bannerless warnings without changing frontend blocker behavior.
+        $forceEnableBlockerForNotice = !Core::getInstance()->getBlocker()->isEnabled() && General::getInstance()->isBannerActive() && General::getInstance()->isBlockerActive();
+        $forceEnabledFilter = null;
+        if ($forceEnableBlockerForNotice) {
+            $forceEnabledFilter = static function () {
+                return \true;
+            };
+            \add_filter('RCB/Blocker/Enabled', $forceEnabledFilter, \PHP_INT_MAX);
+        }
+        try {
+            $checks = Consent::getInstance()->calculateBannerlessConsentChecks();
+        } finally {
+            if ($forceEnabledFilter !== null) {
+                \remove_filter('RCB/Blocker/Enabled', $forceEnabledFilter, \PHP_INT_MAX);
+            }
+        }
         // Remove services which are dismissed
         foreach ($checks['legalBasisLegitimateInterest'] as $key => $check) {
             if (\in_array($check['id'], $dismissedLegInt, \true)) {

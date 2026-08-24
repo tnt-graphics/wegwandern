@@ -11,14 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="frm_image_data">
 				<div class="frm_image_preview_title"><?php echo esc_html( $bg_image_filename ); ?></div>
 				<div class="frm_remove_image_option" title="<?php esc_attr_e( 'Remove image', 'formidable-pro' ); ?>">
-					<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_delete_icon' ); ?>
-					<?php esc_attr_e( 'Delete', 'formidable-pro' ); ?>
+					<?php FrmAppHelper::icon_by_class( 'frmfont frm_delete_icon' ); ?>
+					<?php esc_attr_e( 'Delete', 'formidable' ); ?>
 				</div>
 			</div>
 		</div>
 	</div>
 	<button type="button" class="frm_choose_image_box frm-flex-center frm_button frm-px-0 frm_no_style_button<?php echo 0 === $bg_image_id ? '' : ' frm_hidden'; ?>">
-		<?php FrmAppHelper::icon_by_class( 'frm_icon_font frm_upload3_icon frm_svg20 frm-text-primary-500' ); ?>
-		<span class="frm-text-md"><?php esc_html_e( 'Upload Image', 'formidable-pro' ); ?></span>
+		<?php FrmAppHelper::icon_by_class( 'frmfont frm_upload3_icon frm_svg20 frm-text-primary-500' ); ?>
+		<span class="frm-text-md"><?php esc_html_e( 'Upload Image', 'formidable' ); ?></span>
 	</button>
 </div>

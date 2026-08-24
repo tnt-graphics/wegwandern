@@ -33,7 +33,7 @@ class FrmProEddController extends FrmAddon {
 	}
 
 	public static function load_hooks() {
-		// don't use the addons page
+		// Don't use the addons page
 	}
 
 	/**
@@ -55,19 +55,17 @@ class FrmProEddController extends FrmAddon {
 		}
 
 		$license = '';
+
 		if ( $creds && is_array( $creds ) && isset( $creds['license'] ) ) {
 			$license = $creds['license'];
+
 			if ( strpos( $license, '-' ) ) {
-				// this is a fix for licenses saved in the past
+				// This is a fix for licenses saved in the past
 				$license = strtoupper( $license );
 			}
 		}
 
-		if ( empty( $license ) ) {
-			$license = $this->activate_defined_license();
-		}
-
-		return $license;
+		return $license ? $license : $this->activate_defined_license();
 	}
 
 	/**
@@ -127,18 +125,15 @@ class FrmProEddController extends FrmAddon {
 	}
 
 	public function pro_is_authorized() {
-		$license = $this->get_license();
-		if ( empty( $license ) ) {
+		if ( ! $this->get_license() ) {
 			return false;
 		}
 
 		if ( is_multisite() && $this->pro_wpmu ) {
-			$authorized = get_site_option( $this->pro_auth_store );
-		} else {
-			$authorized = get_option( $this->pro_auth_store );
+			return get_site_option( $this->pro_auth_store );
 		}
 
-		return $authorized;
+		return get_option( $this->pro_auth_store );
 	}
 
 	public function pro_is_installed_and_authorized() {
@@ -172,11 +167,13 @@ class FrmProEddController extends FrmAddon {
 	$this->display_form();
 
 	FrmProEddHelper::show_disconnect_link();
+
 	if ( ! FrmProEddHelper::get_defined_license() ) {
 			?>
 		<span class="frm-show-authorized">|</span>
 			<?php
 	}
+
 	FrmProEddHelper::show_clear_license_cache_link();
 	?>
 </div>

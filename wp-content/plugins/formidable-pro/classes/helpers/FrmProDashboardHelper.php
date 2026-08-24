@@ -78,17 +78,19 @@ class FrmProDashboardHelper {
 
 		switch ( $license_status ) {
 			case 'active':
-				return __( 'Active', 'formidable-pro' );
+				return __( 'Active', 'formidable' );
 			case 'grace':
 			case 'expired':
 				return __( 'Expired', 'formidable-pro' );
 			case 'expiring':
 				$expiring_days = FrmProAddonsController::is_license_expiring();
+
 				if ( false !== $expiring_days ) {
 					$expiring_days = time() + ( $expiring_days * DAY_IN_SECONDS );
 					/* translators: %s: A period to expire. */
 					return sprintf( __( 'Expiring soon (%s)', 'formidable-pro' ), FrmAppHelper::human_time_diff( $expiring_days, '', 2 ) );
 				}
+
 				return __( 'Expiring soon', 'formidable-pro' );
 			default:
 				return '';
@@ -99,6 +101,7 @@ class FrmProDashboardHelper {
 	 * The pro dashboard widget that will show on the bottom.
 	 *
 	 * @param array $entries_template
+	 *
 	 * @return void
 	 */
 	public static function get_main_widget( $entries_template ) {
@@ -113,6 +116,7 @@ class FrmProDashboardHelper {
 	 * The pro dashboard widget that will show at the bottom of the page.
 	 *
 	 * @param array $entries_template
+	 *
 	 * @return void
 	 */
 	public static function get_bottom_widget( $entries_template ) {
@@ -125,6 +129,8 @@ class FrmProDashboardHelper {
 
 	/**
 	 * Displays entries or chart widget on top or bottom.
+	 *
+	 * @param string $entries_template
 	 *
 	 * @return void
 	 */
@@ -200,6 +206,7 @@ class FrmProDashboardHelper {
 	 */
 	private static function get_chart( $entries_template ) {
 		$template = self::view_args_chart();
+
 		if ( ! $entries_template['show-placeholder'] && 0 < $template['weekly-entries'] ) {
 			self::load_chart_template( $template );
 			return;

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<label class="frm-h-stack-xs" for="frm_min_selections_<?php echo absint( $field['id'] ); ?>">
 		<span><?php esc_html_e( 'Selection Minimum', 'formidable-pro' ); ?></span>
 		<?php
-		FrmProAppHelper::tooltip_icon(
+		FrmAppHelper::tooltip_icon(
 			__( 'The minimum number of options in this field that the end user is allowed to select', 'formidable-pro' ),
 			array(
 				'data-placement' => 'right',
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<label class="frm-h-stack-xs" for="frm_limit_selections_<?php echo absint( $field['id'] ); ?>">
 		<span><?php esc_html_e( 'Selection Maximum', 'formidable-pro' ); ?></span>
 		<?php
-		FrmProAppHelper::tooltip_icon(
+		FrmAppHelper::tooltip_icon(
 			__( 'The maximum number of options in this field that the end user is allowed to select', 'formidable-pro' ),
 			array(
 				'data-placement' => 'right',

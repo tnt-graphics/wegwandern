@@ -5,11 +5,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <div id="frm_settings_button_wrapper">
 	<div class="dropdown">
-		<a href="#" class="frm-dropdown-toggle button frm-button-secondary" data-toggle="dropdown" role="button">
-			<?php esc_html_e( 'Settings', 'formidable-pro' ); ?>
+		<a href="#" class="frm-dropdown-toggle button frm-button-secondary" data-bs-toggle="dropdown" role="button">
+			<?php esc_html_e( 'Settings', 'formidable' ); ?>
 			<?php FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown4_icon frm_svg13', array( 'aria-hidden' => 'true' ) ); ?>
 		</a>
-		<div class="frm-dropdown-menu <?php echo esc_attr( is_rtl() ? 'dropdown-menu-left' : 'dropdown-menu-right' ); ?>" role="menu" aria-labelledby="frm-previewDrop">
+		<div class="frm-dropdown-menu dropdown-menu <?php echo esc_attr( is_rtl() ? 'dropdown-menu-left' : 'dropdown-menu-right' ); ?>" role="menu" aria-labelledby="frm-previewDrop">
 			<div class="dropdown-item">
 				<div>
 					<label class="frm_primary_label"><?php esc_html_e( 'Application Name', 'formidable-pro' ); ?></label>
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				</div>
 				<div>
 					<button class="button frm-button-secondary">
-						<?php esc_html_e( 'Cancel', 'formidable-pro' ); ?>
+						<?php esc_html_e( 'Cancel', 'formidable' ); ?>
 					</button>
 					<button class="button frm-button-primary frm-save-application-settings">
 						<?php esc_html_e( 'Save Application', 'formidable-pro' ); ?>

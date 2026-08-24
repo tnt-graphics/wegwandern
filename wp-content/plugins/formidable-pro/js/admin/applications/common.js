@@ -26,7 +26,7 @@
 		validationStatus.style.marginTop = '5px';
 		validationStatus.style.fontSize = '11px';
 		validationStatus.style.height = '20px';
-		inputWrapper.appendChild( validationStatus );
+		inputWrapper.append( validationStatus );
 		inputWrapper.classList.add( 'frm-invalid-application-name' );
 
 		const input = inputWrapper.querySelector( 'input' );
@@ -219,7 +219,7 @@
 			children: [ checkboxLabel ]
 		});
 		option.addEventListener( 'click', event => event.target.classList.contains( 'frm-application-item-option' ) && option.querySelector( 'input' ).click() );
-		container.appendChild( option );
+		container.append( option );
 	}
 
 	function getSummaryItemElement( _, hookArgs ) {
@@ -277,7 +277,7 @@
 				hookName,
 				{
 					object_id: objectId,
-					type: type,
+					type,
 					name: label
 				}
 			);

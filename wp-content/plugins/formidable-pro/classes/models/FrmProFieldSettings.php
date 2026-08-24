@@ -11,24 +11,28 @@ class FrmProFieldSettings {
 
 	/**
 	 * @since 2.03.05
+	 *
 	 * @var string
 	 */
 	protected $post_field = '';
 
 	/**
 	 * @since 2.03.05
+	 *
 	 * @var bool
 	 */
 	protected $has_separate_values = false;
 
 	/**
 	 * @since 2.03.05
+	 *
 	 * @var bool
 	 */
 	protected $use_key = false;
 
 	/**
 	 * @var array
+	 *
 	 * @since 2.03.05
 	 */
 	protected $field_options = array();
@@ -56,13 +60,14 @@ class FrmProFieldSettings {
 	 * @since 2.03.05
 	 */
 	private function set_post_field() {
-		if ( isset( $this->field_options['post_field'] ) && $this->field_options['post_field'] ) {
+		if ( ! empty( $this->field_options['post_field'] ) ) {
 			$this->post_field = $this->field_options['post_field'];
 		}
 	}
 
 	/**
 	 * @since 2.03.05
+	 *
 	 * @return string
 	 */
 	public function get_post_field() {
@@ -75,7 +80,7 @@ class FrmProFieldSettings {
 	 * @since 2.03.05
 	 */
 	private function set_has_separate_values() {
-		if ( isset( $this->field_options['separate_value'] ) && $this->field_options['separate_value'] ) {
+		if ( ! empty( $this->field_options['separate_value'] ) ) {
 			$this->has_separate_values = true;
 		}
 	}
@@ -97,7 +102,7 @@ class FrmProFieldSettings {
 	 * @since 2.03.05
 	 */
 	protected function set_use_key() {
-		if ( isset( $this->field_options['use_key'] ) && $this->field_options['use_key'] ) {
+		if ( ! empty( $this->field_options['use_key'] ) ) {
 			$this->use_key = true;
 		} elseif ( $this->post_field === 'post_category' ) {
 			$this->use_key = true;

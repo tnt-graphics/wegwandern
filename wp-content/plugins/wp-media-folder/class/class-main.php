@@ -95,6 +95,7 @@ class WpMediaFolder
         add_action('init', array($this, 'includes'));
         add_action('admin_init', array($this, 'adminRedirects'));
         add_action('admin_init', array($this, 'disableTranslateTaxonomyWPML'));
+        add_action('admin_init', array($this, 'migrateAiOptions'));
 
         if (!get_option('wpmf_update_count', false)) {
             add_action('admin_init', array($this, 'updateCountTerm'));
@@ -178,6 +179,7 @@ class WpMediaFolder
         add_action('wp_ajax_wpmf_get_ai_progress', array($this, 'getAIProgress'));
         add_action('wp_ajax_wpmf_get_ai_quota', array($this, 'getAIQuota'));
         add_action('wp_ajax_wpmf_get_attachments_in_folder', array($this, 'getAttachmentsInFolder'));
+        add_action('wp_ajax_wpmf_force_check_ai_result', array($this, 'forceCheckAiResult'));
 
         if (get_option('wpmf_ai_new_ai_auto_optimization') === '1') {
             add_filter('wp_generate_attachment_metadata', array($this, 'handleAnalyzeImageWithAI'), 11, 2);
@@ -186,13 +188,17 @@ class WpMediaFolder
                 add_filter('wp_generate_attachment_metadata', array($this, 'handleRenameImageAIOnly'), 11, 2);
             }
         }
-
         add_action('admin_enqueue_scripts', array($this, 'enqueueAIAdminStyles'));
 
         $wpmf_ai_admin_bar = get_option('wpmf_ai_admin_bar', '1');
         if (is_admin() && (int) $wpmf_ai_admin_bar === 1) {
             add_action('admin_bar_menu', array($this, 'addAIQuotaAdminBarItem'), 100);
         }
+
+        add_action('pre_get_posts', array($this, 'addAttachedToFilter'), 10, 99);
+        add_action('wp_ajax_wpmf_get_posts_for_attached_filter', array($this, 'getPostsForAttachedFilter'));
+        add_action('wp_ajax_wpmf_get_post_title_for_attached_filter', array($this, 'getPostTitleForAttachedFilter'));
+        add_action('admin_head', array($this, 'disableAddMediaFileButton'));
     }
 
     /**
@@ -345,12 +351,12 @@ class WpMediaFolder
             $data = wp_get_attachment_metadata($post_id, true);
         }
 
-        $import_iptc_meta = wpmfGetOption('import_iptc_meta');
+        $import_iptc_meta = WpmfHelper::wpmfGetOption('import_iptc_meta');
 
         if ((int)$import_iptc_meta === 1) {
             $attachment = get_post($post_id);
             if (strpos($attachment->post_mime_type, 'image') !== false) {
-                $iptc_fields = wpmfGetOption('iptc_fields');
+                $iptc_fields = WpmfHelper::wpmfGetOption('iptc_fields');
                 $filepath = get_attached_file($post_id);
                 $title = '';
                 $caption = '';
@@ -466,6 +472,23 @@ class WpMediaFolder
         }
 
         update_option('wpmf_update_count', 1);
+    }
+
+    /**
+     * Migrate old AI options to shared options
+     *
+     * @return void
+     */
+    public function migrateAiOptions()
+    {
+        $shared_quota = get_option('joomunited_ai_quota_info', false);
+        if ($shared_quota === false) {
+            $old_quota = get_option('wpmf_ai_quota_info', false);
+            if ($old_quota !== false) {
+                update_option('joomunited_ai_quota_info', $old_quota);
+                delete_option('wpmf_ai_quota_info');
+            }
+        }
     }
 
     /**
@@ -712,6 +735,9 @@ class WpMediaFolder
                     break;
                 case 'save_tag_item':
                     $this->saveTagItem();
+                    break;
+                case 'wpmf_new_folder_with_selection':
+                    $this->createNewFolderWithSelection();
                     break;
             }
         }
@@ -1291,7 +1317,7 @@ class WpMediaFolder
 
             wp_enqueue_script(
                 'wpmfselect2',
-                plugins_url('/assets/select2/select2.min.js', dirname(__FILE__)),
+                plugins_url('/assets/select2/select2.full.min.js', dirname(__FILE__)),
                 array('jquery'),
                 WPMF_VERSION
             );
@@ -1674,7 +1700,12 @@ class WpMediaFolder
         $aws3_label = (isset($aws3config) && isset($aws3config['attachment_label']) && (int) $aws3config['attachment_label'] === 1) ? 1 : 0;
         $root_media_root   = get_term_by('id', $this->folderRootId, WPMF_TAXO);
         $root_media = (empty($root_media_root)) ? 0 : $root_media_root->term_id;
-        $hide_tree         = wpmfGetOption('hide_tree');
+        $hide_tree         = WpmfHelper::wpmfGetOption('hide_tree');
+        //multisite share media and folder
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+        $current_site_id = (int) get_current_blog_id();
+        $is_main_site = $main_site_id === $current_site_id ? 1 : 0;
         /**
          * Filter to set limit of the folder number loaded
          *
@@ -1683,9 +1714,11 @@ class WpMediaFolder
          * @return integer
          */
         $limit_folders_number = apply_filters('wpmf_limit_folders', 99999);
-        $enable_folders = wpmfGetOption('enable_folders');
-        $auto_generate_webp = wpmfGetOption('auto_generate_webp');
-        $remote_video = wpmfGetOption('hide_remote_video');
+        $enable_folders = WpmfHelper::wpmfGetOption('enable_folders');
+        $auto_generate_webp = WpmfHelper::wpmfGetOption('auto_generate_webp');
+        $wpmf_share_folders_multisite = WpmfHelper::wpmfGetOption('wpmf_share_folders_multisite');
+        $image_info = WpmfHelper::wpmfGetOption('image_info');
+        $remote_video = WpmfHelper::wpmfGetOption('hide_remote_video');
         $remote_video = ((int)$remote_video === 1);
         /**
          * Filter check capability of current user to load assets
@@ -1698,23 +1731,23 @@ class WpMediaFolder
          * @ignore Hook already documented
          */
         $remote_video = apply_filters('wpmf_user_can', $remote_video, 'hide_remote_video');
-        $show_folder_id = wpmfGetOption('show_folder_id');
-        $enable_download_media = wpmfGetOption('enable_download_media');
+        $show_folder_id = WpmfHelper::wpmfGetOption('show_folder_id');
+        $enable_download_media = WpmfHelper::wpmfGetOption('enable_download_media');
         // get colors folder option
-        $colors_option = wpmfGetOption('folder_color');
+        $colors_option = WpmfHelper::wpmfGetOption('folder_color');
 
         // get default gallery config
-        $gallery_configs = wpmfGetOption('gallery_settings');
+        $gallery_configs = WpmfHelper::wpmfGetOption('gallery_settings');
         // get cloud sync settings
-        $sync_method = wpmfGetOption('sync_method');
-        $sync_periodicity = wpmfGetOption('sync_periodicity');
+        $sync_method = WpmfHelper::wpmfGetOption('sync_method');
+        $sync_periodicity = WpmfHelper::wpmfGetOption('sync_periodicity');
         $cloudNameSyncing = get_option('wpmf_cloud_name_syncing');
         $cloud_endpoint = get_option('wpmf_cloud_endpoint');
         if (empty($cloud_endpoint)) {
             $cloud_endpoint = 'aws3';
         }
         $configs = get_option('_wpmfAddon_'. $cloud_endpoint .'_config');
-        $root_media_count = wpmfGetOption('root_media_count');
+        $root_media_count = WpmfHelper::wpmfGetOption('root_media_count');
         $roles = $wp_roles->roles;
         $role_in = array();
         foreach ($roles as $role_name => $r) {
@@ -1834,6 +1867,8 @@ class WpMediaFolder
             'root_media_count' => ((int) $root_media_count === 1) ? true : false,
             'hide_remote_video'     => $remote_video,
             'auto_generate_webp'    => $auto_generate_webp,
+            'wpmf_share_folders_multisite'    => $wpmf_share_folders_multisite,
+            'image_info'    => $image_info,
             'gallery_configs'       => $gallery_configs,
             'sync_method'           => $sync_method,
             'sync_periodicity'      => (int) $sync_periodicity,
@@ -1843,7 +1878,9 @@ class WpMediaFolder
             'img_url' => WPMF_PLUGIN_URL . 'assets/images/',
             'copy_files_to_bucket' => (!empty($configs['copy_files_to_bucket']) && is_plugin_active('wp-media-folder-addon/wp-media-folder-addon.php')) ? 1 : 0,
             'hide_own_media_button' => current_user_can('wpmf_hide_own_media_button') ? 1 : 0,
-            'show_all_files_button' => $show_all_files_button
+            'show_all_files_button' => $show_all_files_button,
+            'use_multisite_share' => $use_multisite_share,
+            'is_main_site' => $is_main_site
         );
 
         $vars = array_merge($vars, $wpmf_ai_options);
@@ -2060,6 +2097,7 @@ class WpMediaFolder
             'msg_upload_folder'     => __('You are uploading media to folder: ', 'wpmf'),
             'addon_ajax_button'     => __('Use ajax link', 'wpmf'),
             'sync_drive' => __('Run full synchronization', 'wpmf'),
+            'download_from_drive' => __('Download files from drive', 'wpmf'),
             'move_file_fail' => __('Sorry, Media & Folders can only be moved to the same cloud or media system (Google Drive to Google Drive, WordPress media to WordPress media...)', 'wpmf'),
             'import_cloud' => __('Import to library', 'wpmf'),
             'insert_pdfembed' => __('Insert PDF Embed', 'wpmf'),
@@ -2081,7 +2119,9 @@ class WpMediaFolder
             'uploading_files_to_s3'  => esc_html__('File(s) uploading to Storage', 'wpmf'),
             'removing_files_from_local'  => esc_html__('File(s) removing from local', 'wpmf'),
             'display_all_files'  => esc_html__('Display all files', 'wpmf'),
+            'attached_to'  => esc_html__('Attached to', 'wpmf'),
             'queue_sync_alert' => esc_html__('Media will be synchronized in background', 'wpmf'),
+            'queue_download_alert' => esc_html__('Media will be downloaded in background', 'wpmf'),
             'gallery_image_size' => esc_html__('Gallery image size', 'wpmf'),
             'columns' => esc_html__('Columns', 'wpmf'),
             'lightbox_size' => esc_html__('Lightbox size', 'wpmf'),
@@ -2158,6 +2198,7 @@ class WpMediaFolder
             'select_file_required'  => esc_html__('Please select file to do this action', 'wpmf'),
             'cannot_download'  => esc_html__('This file cannot be downloaded.', 'wpmf'),
             'ai_image_optimization' => __('AI image optimization', 'wpmf'),
+            'create_folder_with_selection' => __('New Folder with Selection', 'wpmf'),
             'tooltip_opt_single' => __('To optimize an image, click on it and then click on the "Generate with AI" button.', 'wpmf'),
             'tooltip_opt_bulk' => __('To optimize multiple images, click on the "Bulk select" button.', 'wpmf'),
             'tooltip_select_images' => __('Select the images to optimize', 'wpmf'),
@@ -2170,7 +2211,8 @@ class WpMediaFolder
             'analyzing_text' => __('Analyzing...', 'wpmf'),
             'analyzing_with_ai' => __('Analyzing images with AI...', 'wpmf'),
             'no_attachments_found' => __('No attachments found in folder.', 'wpmf'),
-            'ai_image_process_error' => __('Error processing file', 'wpmf')
+            'ai_image_process_error' => __('Error processing file', 'wpmf'),
+            'ai_timeout' => __('Timeout: AI did not respond in time.', 'wpmf'),
         );
 
         return $l18n;
@@ -2231,6 +2273,15 @@ class WpMediaFolder
          * @return array
          */
         $args = apply_filters('wpmf_get_categories_args', $args);
+
+        //multisite share media and folder
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+
+        if ($use_multisite_share) {
+            switch_to_blog($main_site_id);
+        }
+
         if ($sitepress) {
             remove_filter('get_terms_args', array($sitepress, 'get_terms_args_filter'));
             $filter_removed = remove_filter('get_term', array($sitepress, 'get_term_adjust_id'));
@@ -2243,6 +2294,17 @@ class WpMediaFolder
             add_filter('get_terms_args', array($sitepress, 'get_terms_args_filter'), 10, 2);
         } else {
             $terms = get_categories($args);
+        }
+
+        if ($use_multisite_share) {
+            // Fix multisite share: remove duplicated root folder
+            foreach ($terms as $key => $term) {
+                if ((int)$term->parent === 0 && strtolower($term->name) === 'wp media folder root') {
+                    unset($terms[$key]);
+                }
+            }
+            // reset index
+            $terms = array_values($terms);
         }
 
         if ($from === 'builder') {
@@ -2260,6 +2322,11 @@ class WpMediaFolder
         $root_folder = $this->getFolderInfos(0, $enable_count, true);
 
         $ancestors = array();
+
+        if ($use_multisite_share) {
+            $this->user_full_access = true;
+        }
+
         if ($access_type === 'user' && $current_user->ID) {
             $user_folder = get_term_by('slug', sanitize_title($current_user->data->user_login) . '-wpmf', WPMF_TAXO);
             if (!empty($user_folder)) {
@@ -2351,6 +2418,10 @@ class WpMediaFolder
         $attachment_terms_order = array_keys($attachment_terms_order);
         $attachment_terms[0] = $root_folder;
         array_unshift($attachment_terms_order, 0);
+
+        if ($use_multisite_share) {
+            restore_current_blog();
+        }
 
         $post_mime_types = get_post_mime_types();
         $useorder        = get_option('wpmf_useorder');
@@ -2509,23 +2580,47 @@ class WpMediaFolder
     {
         global $wpdb;
 
-        if (is_array($term_id)) {
-            $results = array();
-            $term_id = implode(',', $term_id);
+        // Normalize input
+        $isArray = is_array($term_id);
+        if (!$isArray) {
+            $term_id = array($term_id);
         }
-        $rows = $wpdb->get_results($wpdb->prepare(
-            'SELECT DISTINCT tm.term_id, COALESCE(
-                        (SELECT DISTINCT tm_root_type.meta_value from '. $wpdb->prefix . 'termmeta  AS tm_root_type
-                            Where tm.term_id = tm_root_type.term_id AND tm_root_type.meta_key = %s), 
-                        (SELECT DISTINCT tm_drive_type.meta_value from '. $wpdb->prefix . 'termmeta  AS tm_drive_type
-                            Where tm.term_id = tm_drive_type.term_id AND tm_drive_type.meta_key = %s)
-               ) AS meta_value
-            FROM '. $wpdb->prefix . 'termmeta AS tm WHERE tm.term_id IN ('.$term_id.')', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-            array('wpmf_drive_root_type', 'wpmf_drive_type')
-        ));
+
+        // Build placeholders
+        $placeholders = implode(',', array_fill(0, count($term_id), '%d'));
+
+        // Table name
+        $table = $wpdb->prefix . 'termmeta';
+
+        // Optimized query (same logic, no subqueries)
+        $sql = '
+            SELECT tm.term_id,
+                COALESCE(root.meta_value, drive.meta_value) AS meta_value
+            FROM '. $table.' AS tm
+            LEFT JOIN '. $table.' AS root
+                ON root.term_id = tm.term_id
+                AND root.meta_key = %s
+            LEFT JOIN '. $table.' AS drive
+                ON drive.term_id = tm.term_id
+                AND drive.meta_key = %s
+            WHERE tm.term_id IN ('. $placeholders.')
+            GROUP BY tm.term_id
+        ';
+
+        // Build full prepare params
+        $prepare_params = array_merge(
+            array('wpmf_drive_root_type', 'wpmf_drive_type'),
+            $term_id
+        );
+
+        $rows = $wpdb->get_results($wpdb->prepare($sql, $prepare_params)); // phpcs:ignore
+
+        // Format output
+        $results = array();
         foreach ($rows as $row) {
             $results[$row->term_id] = $row->meta_value;
         }
+        
         return $results;
     }
     /**
@@ -2920,7 +3015,7 @@ class WpMediaFolder
                 return $query;
             }
 
-            $search_file_include_childrent = wpmfGetOption('search_file_include_childrent');
+            $search_file_include_childrent = WpmfHelper::wpmfGetOption('search_file_include_childrent');
             $include_childrent = ($all_files || !empty($search_file_include_childrent) && isset($_GET['s']) && $_GET['s'] !== '');
             if (isset($selected) && (int) $selected !== 0) {
                 // list view , query post with term_id != 0
@@ -3048,7 +3143,7 @@ class WpMediaFolder
         }
 
         $folderSlug = isset($_REQUEST['query']['term_slug']) ? $_REQUEST['query']['term_slug'] : '';
-        $search_file_include_childrent = wpmfGetOption('search_file_include_childrent');
+        $search_file_include_childrent = WpmfHelper::wpmfGetOption('search_file_include_childrent');
         $include_childrent = ($all_files || !empty($search_file_include_childrent) && isset($_REQUEST['query']['s']) && $_REQUEST['query']['s'] !== '');
         if (isset($_REQUEST['query']['orderby']) && $_REQUEST['query']['orderby'] !== 'menu_order ID') {
             $taxonomies = apply_filters('attachment-category', get_object_taxonomies('attachment', 'objects'));
@@ -3160,7 +3255,7 @@ class WpMediaFolder
                 $query->query_vars['author'] = $id_author;
             }
         } else {
-            $all_inroot = wpmfGetOption('all_media_in_user_root');
+            $all_inroot = WpmfHelper::wpmfGetOption('all_media_in_user_root');
             if (!empty($_REQUEST['query']['term_id'])) {
                 $cloud_type = get_term_meta($_REQUEST['query']['term_id'], 'wpmf_drive_type', true);
                 if (!empty($cloud_type)) {
@@ -3659,7 +3754,7 @@ class WpMediaFolder
                         //check is cloud
                         $id_category_new = $id_category;
                         $parent = $this->getFolderParent($id_category, $id_category);
-                        $cloud_folder_type = wpmfGetCloudFolderType($parent);
+                        $cloud_folder_type = WpmfHelper::wpmfGetCloudFolderType($parent);
 
                         if ($cloud_folder_type !== 'local') {
                             $id_category = 0;
@@ -4038,7 +4133,7 @@ class WpMediaFolder
     {
         $wpmf_list_sync_media = get_option('wpmf_list_sync_media');
         $wpmf_ao_lastRun      = get_option('wpmf_ao_lastRun');
-        $colors_option        = wpmfGetOption('folder_color');
+        $colors_option        = WpmfHelper::wpmfGetOption('folder_color');
         // delete all subfolder and subfile
         $folders = explode(',', $folder_list);
         $sub_folders = array();
@@ -4105,7 +4200,7 @@ class WpMediaFolder
                     // update option 'wpmf_list_sync_media' , 'wpmf_ao_lastRun'
                     update_option('wpmf_list_sync_media', $wpmf_list_sync_media);
                     update_option('wpmf_ao_lastRun', $wpmf_ao_lastRun);
-                    wpmfSetOption('folder_color', $colors_option);
+                    WpmfHelper::wpmfSetOption('folder_color', $colors_option);
                 }
             }
         } else {
@@ -4408,7 +4503,7 @@ class WpMediaFolder
         $option_media_remove  = get_option('wpmf_option_media_remove');
         $wpmf_list_sync_media = get_option('wpmf_list_sync_media');
         $wpmf_ao_lastRun      = get_option('wpmf_ao_lastRun');
-        $colors_option        = wpmfGetOption('folder_color');
+        $colors_option        = WpmfHelper::wpmfGetOption('folder_color');
 
         if ((int) $option_media_remove === 1) {
             $return = $this->doRemoveFolders($folder_id);
@@ -4450,7 +4545,7 @@ class WpMediaFolder
             }
             update_option('wpmf_list_sync_media', $wpmf_list_sync_media);
             update_option('wpmf_ao_lastRun', $wpmf_ao_lastRun);
-            wpmfSetOption('folder_color', $colors_option);
+            WpmfHelper::wpmfSetOption('folder_color', $colors_option);
 
             // Retrieve the term before deleting it
             $term = get_term((int)$folder_id, WPMF_TAXO);
@@ -4535,7 +4630,7 @@ class WpMediaFolder
         if (!empty($_POST['ids']) && is_array($_POST['ids'])) {
             foreach (array_unique($_POST['ids']) as $id) {
                 $cloud_file_type = wpmfGetCloudFileType($id);
-                $cloud_folder_type = wpmfGetCloudFolderType($parent);
+                $cloud_folder_type = WpmfHelper::wpmfGetCloudFolderType($parent);
                 $file_s3_infos = get_post_meta((int) $id, 'wpmf_awsS3_info', true);
                 if ($cloud_file_type === 'local' && $cloud_folder_type !== 'local' && empty($file_s3_infos)) {
                     $is_local_to_cloud = true;
@@ -4615,8 +4710,8 @@ class WpMediaFolder
             wp_send_json(array('status' => false, 'msg' => esc_html__('You not have a permission to move folder!', 'wpmf')));
         }
 
-        $cloud_folder_type = wpmfGetCloudFolderType($_POST['id']);
-        $cloud_folder_target_type = wpmfGetCloudFolderType($parent);
+        $cloud_folder_type = WpmfHelper::wpmfGetCloudFolderType($_POST['id']);
+        $cloud_folder_target_type = WpmfHelper::wpmfGetCloudFolderType($parent);
         if ($cloud_folder_type !== $cloud_folder_target_type) {
             wp_send_json(array('status' => false, 'msg' => esc_html__('Sorry, Media & Folders can only be moved to the same cloud or media system (Google Drive to Google Drive, WordPress media to WordPress media...)', 'wpmf')));
         }
@@ -4836,10 +4931,12 @@ class WpMediaFolder
                         $wpmfterm['term_parent'] = $term->parent;
                         $wpmfterm['term_slug']   = $term->slug;
                     } else {
-                        $wpmfterm['term_rootId'] = $current_parrent->term_id;
-                        $wpmfterm['term_label']  = __('Media Library', 'wpmf');
-                        $wpmfterm['term_parent'] = $current_parrent->parent;
-                        $wpmfterm['term_slug']   = $current_parrent->slug;
+                        if (isset($current_parrent) && is_object($current_parrent)) {
+                            $wpmfterm['term_rootId'] = $current_parrent->term_id;
+                            $wpmfterm['term_label']  = __('Media Library', 'wpmf');
+                            $wpmfterm['term_parent'] = $current_parrent->parent;
+                            $wpmfterm['term_slug']   = $current_parrent->slug;
+                        }
                     }
                 }
             } else {
@@ -5344,7 +5441,7 @@ class WpMediaFolder
                             }
                         }
                         $cloud_file_type = wpmfGetCloudFileType($attachment_id);
-                        $cloud_folder_type = wpmfGetCloudFolderType($term_id);
+                        $cloud_folder_type = WpmfHelper::wpmfGetCloudFolderType($term_id);
                         if ($cloud_file_type === $cloud_folder_type) {
                             // compability with WPML plugin
                             WpmfHelper::moveFileWpml($attachment_id, 'no', $term_id);
@@ -5392,7 +5489,7 @@ class WpMediaFolder
     public function updateFileTitle($pid)
     {
         global $wpdb;
-        $options_format_title = wpmfGetOption('wpmf_options_format_title');
+        $options_format_title = WpmfHelper::wpmfGetOption('wpmf_options_format_title');
         $post                 = get_post($pid);
         if (!empty($post)) {
             $title = $post->post_title;
@@ -5557,7 +5654,7 @@ class WpMediaFolder
         $remote_video = get_post_meta($post->ID, 'wpmf_remote_video_link');
         $iptc = get_post_meta($post->ID, 'wpmf_iptc', true);
         if (!empty($iptc)) {
-            $iptcHeaderArray = getIptcHeader();
+            $iptcHeaderArray = WpmfHelper::getIptcHeader();
             $iptchtml = '';
             $iptchtml .= '<div class="wpmf_iptc_wrap">';
             foreach ($iptc as $code => $iptcValue) {
@@ -5659,7 +5756,7 @@ class WpMediaFolder
             die();
         }
 
-        $colors_option = wpmfGetOption('folder_color');
+        $colors_option = WpmfHelper::wpmfGetOption('folder_color');
         if (isset($_POST['folder_id']) && isset($_POST['color'])) {
             if (empty($colors_option)) {
                 $colors_option                      = array();
@@ -5667,7 +5764,7 @@ class WpMediaFolder
             } else {
                 $colors_option[$_POST['folder_id']] = $_POST['color'];
             }
-            wpmfSetOption('folder_color', $colors_option);
+            WpmfHelper::wpmfSetOption('folder_color', $colors_option);
             wp_send_json(array('status' => true));
         }
         wp_send_json(array('status' => false));
@@ -5871,9 +5968,9 @@ class WpMediaFolder
             $dropbox_config = get_option('_wpmfAddon_dropbox_config');
             $google_config = get_option('_wpmfAddon_cloud_config');
             $nextcloud_config = get_option('_wpmfAddon_nextcloud_config');
-            $connect_nextcloud = wpmfGetOption('connect_nextcloud');
+            $connect_nextcloud = WpmfHelper::wpmfGetOption('connect_nextcloud');
             $owncloud_config = get_option('_wpmfAddon_owncloud_config');
-            $connect_owncloud = wpmfGetOption('connect_owncloud');
+            $connect_owncloud = WpmfHelper::wpmfGetOption('connect_owncloud');
 
             if (empty($odv_config['connected'])) {
                 $exclude[] = 'Onedrive';
@@ -6030,7 +6127,7 @@ class WpMediaFolder
                 $parent = $this->getFolderParent($_POST['id_category'], $_POST['id_category']);
                 // check is local or cloud
                 $cloud_file_type = wpmfGetCloudFileType($attachment_id);
-                $cloud_folder_type = wpmfGetCloudFolderType($parent);
+                $cloud_folder_type = WpmfHelper::wpmfGetCloudFolderType($parent);
                 $file_s3_infos = get_post_meta((int) $attachment_id, 'wpmf_awsS3_info', true);
                 if ($cloud_file_type === 'local' && $cloud_folder_type !== 'local' && empty($file_s3_infos)) {
                     $this->moveFile();
@@ -6116,7 +6213,7 @@ class WpMediaFolder
      */
     public function removeDatabaseWhenCloudDisconnected()
     {
-        $delete_all_datas = wpmfGetOption('delete_all_datas');
+        $delete_all_datas = WpmfHelper::wpmfGetOption('delete_all_datas');
         if (empty($delete_all_datas)) {
             return;
         }
@@ -6145,13 +6242,13 @@ class WpMediaFolder
             $this->doRemoveFolders((int)$folder_one_drive_business[0]->term_id, false);
         }
         //on Next Cloud
-        $connect_nextcloud = wpmfGetOption('connect_nextcloud');
+        $connect_nextcloud = WpmfHelper::wpmfGetOption('connect_nextcloud');
         $folder_next_cloud = get_terms(array('name' => 'Nextcloud', 'parent' => 0, 'hide_empty' => false, 'taxonomy' => WPMF_TAXO));
         if (!is_wp_error($folder_next_cloud) && $folder_next_cloud && empty($connect_nextcloud)) {
             $this->doRemoveFolders((int)$folder_next_cloud[0]->term_id, false);
         }
         //on Own Cloud
-        $connect_owncloud = wpmfGetOption('connect_owncloud');
+        $connect_owncloud = WpmfHelper::wpmfGetOption('connect_owncloud');
         $folder_own_cloud = get_terms(array('name' => 'ownCloud', 'parent' => 0, 'hide_empty' => false, 'taxonomy' => WPMF_TAXO));
         if (!is_wp_error($folder_own_cloud) && $folder_own_cloud && empty($connect_owncloud)) {
             $this->doRemoveFolders((int)$folder_own_cloud[0]->term_id, false);
@@ -6170,7 +6267,7 @@ class WpMediaFolder
             die();
         }
         
-        $cloud_folder_type = wpmfGetCloudFolderType($_POST['id_category']);
+        $cloud_folder_type = WpmfHelper::wpmfGetCloudFolderType($_POST['id_category']);
         if ($cloud_folder_type !== 'local') {
             wp_send_json(array('status' => true));
         }
@@ -6615,16 +6712,28 @@ class WpMediaFolder
 
         $http_code = wp_remote_retrieve_response_code($response);
         $body      = wp_remote_retrieve_body($response);
-        $result    = json_decode($body, true);
+        $response_data = json_decode($body, true);
 
-        if ($http_code !== 200 || (isset($result['success']) && $result['success'] === false)) {
-            $message = isset($result['error']) ? $result['error'] : sprintf(__('Unexpected HTTP response: %s', 'wpmf'), $http_code);
+        if ($http_code !== 200) {
+            $message = isset($response_data['error']) ? $response_data['error'] : sprintf(__('Unexpected HTTP response: %s', 'wpmf'), $http_code);
             return $is_ajax ? array('error' => $message) : null;
+        }
+
+        if (empty($response_data) || !is_array($response_data)) {
+            return $is_ajax ? ['error' => __('Invalid API response', 'wpmf')] : null;
+        }
+
+        if (empty($response_data['file'])) {
+            return $is_ajax ? array('error' => __('AI API did not return expected data', 'wpmf')) : null;
+        }
+
+        if (!empty($response_data['file']['id'])) {
+            update_post_meta($attachment_id, 'wpmf_ai_remote_id', $response_data['file']['id']);
         }
 
         update_option('wpmf_ai_pending_' . $attachment_id, true, false);
 
-        return $is_ajax ? ['success' => $result] : null;
+        return $is_ajax ? ['success' => $response_data] : null;
     }
 
     /**
@@ -6769,6 +6878,10 @@ class WpMediaFolder
         }
 
         $file_data = $response_data['data']['file'];
+
+        if (!empty($file_data['id'])) {
+            update_post_meta($attachment_id, 'wpmf_ai_remote_id', $file_data['id']);
+        }
 
         $is_optimized = get_post_meta($attachment_id, 'wpmf_ai_optimized', true) === '1';
 
@@ -7114,6 +7227,10 @@ class WpMediaFolder
     {
         global $wpdb;
 
+        // Start time to limit execution
+        $startTime = microtime(true);
+        $timeLimit = 5; // Run for max 5 seconds
+
         $results = $wpdb->get_col(
             'SELECT option_name 
              FROM ' . $wpdb->options . " 
@@ -7123,6 +7240,44 @@ class WpMediaFolder
         $ids = array_map(function ($name) {
             return (int) str_replace('wpmf_ai_pending_', '', $name);
         }, $results);
+
+        $token = get_site_option('wpmf_license_token');
+        
+        foreach ($ids as $key => $attachment_id) {
+            // Check time limit
+            if (microtime(true) - $startTime > $timeLimit) {
+                break;
+            }
+
+            $remote_id = get_post_meta($attachment_id, 'wpmf_ai_remote_id', true);
+            if (!empty($remote_id) && !empty($token)) {
+                $api_url = rtrim(self::$aiApiUrl, '/') . '/api/files/' . $remote_id;
+                
+                $response = wp_remote_get($api_url, array(
+                    'timeout' => 10,
+                    'headers' => array(
+                        'Authorization' => $token
+                    )
+                ));
+
+                if (!is_wp_error($response)) {
+                    $body = wp_remote_retrieve_body($response);
+                    $data = json_decode($body, true);
+
+                    if (!empty($data) && isset($data['status']) && ($data['status'] === 'completed' || $data['status'] === 'done')) {
+                        // Update metadata
+                        $this->updateAttachmentMetadataFromAI($attachment_id, $data);
+                        
+                        // Remove from pending
+                        delete_option('wpmf_ai_pending_' . $attachment_id);
+                        unset($ids[$key]);
+                    }
+                }
+            }
+        }
+        
+        // Reset keys
+        $ids = array_values($ids);
 
         wp_send_json_success([
             'total' => count($ids),
@@ -7186,11 +7341,11 @@ class WpMediaFolder
 
         if ($http_code !== 200 || (isset($result['success']) && $result['success'] === false)) {
             if (is_multisite()) {
-                delete_site_option('wpmf_ai_quota_info');
+                delete_site_option('joomunited_ai_quota_info');
                 delete_site_option('wpmf_ai_plan_status');
                 delete_site_option('wpmf_ai_quota_initialized');
             } else {
-                delete_option('wpmf_ai_quota_info');
+                delete_option('joomunited_ai_quota_info');
                 delete_option('wpmf_ai_plan_status');
                 delete_option('wpmf_ai_quota_initialized');
             }
@@ -7219,7 +7374,7 @@ class WpMediaFolder
             'remaining_quota'   => $remaining
         );
 
-        update_option('wpmf_ai_quota_info', $output, false);
+        update_option('joomunited_ai_quota_info', $output, false);
 
         if ($is_ajax) {
             $percent_used = ($quota > 0) ? min(($used / $quota) * 100, 100) : 0;
@@ -7233,9 +7388,9 @@ class WpMediaFolder
             }
 
             $formatted_output = array(
-                'quota'             => wpmfCustomNumberFormat($quota),
-                'consummate_quota'  => wpmfCustomNumberFormat($used),
-                'remaining_quota'   => wpmfCustomNumberFormat($remaining),
+                'quota'             => WpmfHelper::wpmfCustomNumberFormat($quota),
+                'consummate_quota'  => WpmfHelper::wpmfCustomNumberFormat($used),
+                'remaining_quota'   => WpmfHelper::wpmfCustomNumberFormat($remaining),
                 'percent_used'      => $percent_used_display,
                 'bar_color'         => $bar_color
             );
@@ -7253,7 +7408,12 @@ class WpMediaFolder
      */
     public function addAIQuotaAdminBarItem($wp_admin_bar)
     {
-        $ai_quota_info = get_option('wpmf_ai_quota_info', array());
+        $token = get_option('wpmf_license_token', '');
+        if (empty($token)) {
+            return;
+        }
+
+        $ai_quota_info = get_option('joomunited_ai_quota_info', array());
         $html = '';
 
         if (!empty($ai_quota_info)) {
@@ -7286,7 +7446,7 @@ class WpMediaFolder
                         <div class="wpmf-ai-quota-title"><?php esc_html_e('Your plan', 'wpmf'); ?></div>
                         <div class="wpmf-ai-quota-content">
                             <div class="wpmf-ai-quota-usage">
-                                <span class="wpmf-ai-quota-used"><?php echo esc_html(wpmfCustomNumberFormat($used)); ?></span> / <?php echo esc_html(wpmfCustomNumberFormat($limit)); ?>
+                                <span class="wpmf-ai-quota-used"><?php echo esc_html(WpmfHelper::wpmfCustomNumberFormat($used)); ?></span> / <?php echo esc_html(WpmfHelper::wpmfCustomNumberFormat($limit)); ?>
                                 <?php esc_html_e('credits', 'wpmf'); ?>
                             </div>
                             <div class="wpmf-ai-quota-progress-container">
@@ -7295,7 +7455,7 @@ class WpMediaFolder
                             <div class="wpmf-ai-quota-remaining">
                                 <?php esc_html_e('Credits usage left:', 'wpmf'); ?>
                                 <span class="wpmf-ai-quota-remaining-count" style="color: <?php echo esc_attr($bar_color); ?>">
-                                    <?php echo esc_html(wpmfCustomNumberFormat($remaining)); ?>
+                                    <?php echo esc_html(WpmfHelper::wpmfCustomNumberFormat($remaining)); ?>
                                 </span>
                             </div>
                         </div>
@@ -7325,6 +7485,14 @@ class WpMediaFolder
      */
     public function enqueueAIAdminStyles()
     {
+        $plan_status       = get_option('wpmf_ai_plan_status', 'not_paid');
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- View request, no action
+        $is_settings       = isset($_GET['page']) && $_GET['page'] === 'option-folder';
+
+        if ($plan_status === 'not_paid' && !$is_settings) {
+            return;
+        }
+
         wp_enqueue_style(
             'wpmf-ai-image-optimization-style',
             plugin_dir_url(dirname(__FILE__)) . 'assets/css/ai-image-optimization.css',
@@ -7361,6 +7529,15 @@ class WpMediaFolder
         }
 
         $wpmf_ai_optimized = get_post_meta($attachment->ID, 'wpmf_ai_optimized', true);
+        $wpmf_ai_remote_id = get_post_meta($attachment->ID, 'wpmf_ai_remote_id', true);
+
+        if (!empty($wpmf_ai_remote_id)) {
+            $response['wpmf_ai_remote_id'] = $wpmf_ai_remote_id;
+            if (empty($wpmf_ai_optimized)) {
+                $response['wpmf_ai_pending'] = true;
+            }
+        }
+
         if (empty($wpmf_ai_optimized)) {
             return $response;
         }
@@ -7469,5 +7646,542 @@ class WpMediaFolder
         }
 
         return $clauses;
+    }
+
+    /**
+     * Ajax handler: Get all post for attached filter.
+     *
+     * @return void
+     */
+    public function getPostsForAttachedFilter()
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+        $post_type = isset($_POST['post_type']) && in_array($_POST['post_type'], ['post', 'page']) ? $_POST['post_type'] : ['post', 'page'];
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+        $search = isset($_POST['s']) ? sanitize_text_field($_POST['s']) : '';
+
+        $limit = 10;
+
+        $args = [
+            'post_type'      => $post_type,
+            'posts_per_page' => $limit,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+            's'              => $search,
+            'post_status'    => 'publish',
+            'no_found_rows'          => true,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
+        ];
+
+        $posts = get_posts($args);
+
+        if (empty($posts)) {
+            echo '<p>No results found.</p>';
+            wp_die();
+        }
+
+        echo '<ul class="wpmf-attached-list">';
+
+        $selected_post_id = isset($_COOKIE['wpmf_attached_to']) && !empty($_COOKIE['wpmf_attached_to']) ? intval($_COOKIE['wpmf_attached_to']) : 0;
+
+        foreach ($posts as $p) {
+            $checked = ($p->ID === $selected_post_id) ? 'checked' : '';
+            $title = !empty($p->post_title) ? $p->post_title : '(no title)';
+            echo '<li>
+                    <div class="wp-select-post">
+                        <label>
+                            <input type="radio" name="wpmf_select_post" value="'.esc_attr($p->ID).'" '.esc_attr($checked).'>
+                            ' . esc_html($title) . '                      
+                        </label>
+                        <i>(' . esc_html($p->post_type) . '-' . intval($p->ID) . ')</i>
+                    </div>
+                </li>';
+        }
+
+        echo '</ul>';
+        wp_die();
+    }
+
+    /**
+     * Ajax handler: Get post title for attached filter.
+     *
+     * @return void
+     */
+    public function getPostTitleForAttachedFilter()
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+        $post_id = intval($_POST['post_id']);
+        wp_send_json_success([
+            'title' => !empty(get_the_title($post_id)) ? get_the_title($post_id) : '(no title)'
+        ]);
+    }
+
+    /**
+     * Add attached to filter
+     *
+     * @param object $query Query params.
+     *
+     * @return array
+     */
+    public function addAttachedToFilter($query)
+    {
+        $post_type = $query->get('post_type');
+        global $pagenow;
+
+        // Skip Post Editor screen
+        if ($pagenow === 'post.php') {
+            return $query;
+        }
+
+        // Skip Media modal inside editor (Ajax)
+        if (defined('DOING_AJAX') && DOING_AJAX) {
+            // Only care query-attachments
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+            if (isset($_REQUEST['action']) && $_REQUEST['action'] === 'query-attachments') {
+                $post_id = 0;
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+                if (isset($_REQUEST['query']['post_id'])) {
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+                    $post_id = intval($_REQUEST['query']['post_id']);
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+                } elseif (isset($_REQUEST['post_id'])) {
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+                    $post_id = intval($_REQUEST['post_id']);
+                }
+            }
+        }
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+        if (isset($post_type) && $post_type === 'attachment' && ($pagenow === 'upload.php' || ($pagenow === 'admin-ajax.php' && isset($_REQUEST['action']) && $_REQUEST['action'] === 'query-attachments'))) {
+            if (isset($_COOKIE['wpmf_attached_to']) && !empty($_COOKIE['wpmf_attached_to'])) {
+                //Do not override specific attachment queries
+                if (!empty($query->get('post__in'))) {
+                    return $query;
+                }
+                //Skip gallery edit / selection context
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+                if (isset($_REQUEST['query']['post__in'])) {
+                    return $query;
+                }
+                unset($query->query_vars['post_parent']);
+                unset($query->query_vars['post__in']);
+                $post_id = intval($_COOKIE['wpmf_attached_to']);
+                if ($post_id <= 0) {
+                    return $query;
+                }
+
+                global $wpdb;
+
+                //1. Get attachment has post_parent = $post_id
+                $direct = $wpdb->get_col(
+                    'SELECT ID FROM ' . $wpdb->posts . " WHERE post_type='attachment' AND post_parent = %d",
+                    $post_id
+                );
+                //2. Get featured image
+                $thumbnail_id = get_post_thumbnail_id($post_id);
+                if (!empty($thumbnail_id)) {
+                    $direct[] = $thumbnail_id;
+                }
+                //3. (Optional) Get attachment attached in post content
+                $content_ids = [];
+                $post = get_post($post_id);
+                if ($post && !empty($post->post_content)) {
+                    $content = $post->post_content;
+                    $like_image = $wpdb->esc_like('image/') . '%';
+
+                    //Shortcode
+                    $folder_ids = array();
+                    if (preg_match_all('/folder=["\']?(\d+)/i', $content, $matches)) {
+                        $folder_ids = array_map('intval', $matches[1]);
+                    }
+                    $folder_ids = array_unique($folder_ids);
+                    foreach ($folder_ids as $folder_id) {
+                        // Get term_taxonomy_id
+                        $tt_id = $wpdb->get_var($wpdb->prepare('
+                            SELECT term_taxonomy_id
+                            FROM ' . $wpdb->prefix . 'term_taxonomy
+                            WHERE term_id = %d
+                            AND taxonomy = "wpmf-category"
+                            LIMIT 1
+                        ', $folder_id));
+
+                        if (!$tt_id) {
+                            continue;
+                        }
+
+                        // Get attachment by taxonomy relationship
+                        $attachments = $wpdb->get_col($wpdb->prepare('
+                            SELECT p.ID
+                            FROM ' .$wpdb->prefix . 'term_relationships tr
+                            JOIN ' . $wpdb->prefix . 'posts p
+                                ON p.ID = tr.object_id
+                            WHERE tr.term_taxonomy_id = %d
+                            AND p.post_type = %s
+                            AND p.post_mime_type LIKE %s
+                        ', $tt_id, 'attachment', $like_image));
+
+                        if (!empty($attachments)) {
+                            $content_ids = array_merge(
+                                $content_ids,
+                                array_map('intval', $attachments)
+                            );
+                        }
+                    }
+
+                    //wpmf folder ids
+                    $wpmf_folder_ids = array();
+                    if (preg_match_all('/wpmf_folder_id=["\']?(\d+)/i', $content, $matches)) {
+                        $wpmf_folder_ids = array_map('intval', $matches[1]);
+                    }
+                    $wpmf_folder_ids = array_unique($wpmf_folder_ids);
+                    foreach ($wpmf_folder_ids as $wpmf_folder_id) {
+                        // Get term_taxonomy_id
+                        $tt_wpmf_id = $wpdb->get_var($wpdb->prepare('
+                            SELECT term_taxonomy_id
+                            FROM ' . $wpdb->prefix . 'term_taxonomy
+                            WHERE term_id = %d
+                            AND taxonomy = "wpmf-category"
+                            LIMIT 1
+                        ', $wpmf_folder_id));
+
+                        if (!$tt_wpmf_id) {
+                            continue;
+                        }
+
+                        // Get attachment by taxonomy relationship
+                        $wpmf_attachments = $wpdb->get_col($wpdb->prepare('
+                            SELECT p.ID
+                            FROM ' .$wpdb->prefix . 'term_relationships tr
+                            JOIN ' . $wpdb->prefix . 'posts p
+                                ON p.ID = tr.object_id
+                            WHERE tr.term_taxonomy_id = %d
+                            AND p.post_type = %s
+                            AND p.post_mime_type LIKE %s
+                        ', $tt_wpmf_id, 'attachment', $like_image));
+
+                        if (!empty($wpmf_attachments)) {
+                            $content_ids = array_merge(
+                                $content_ids,
+                                array_map('intval', $wpmf_attachments)
+                            );
+                        }
+                    }
+
+                    if (preg_match_all('/wp-image-([0-9]+)/i', $content, $m1)) {
+                        foreach ($m1[1] as $id) {
+                            $content_ids[] = intval($id);
+                        }
+                    }
+
+                    //Gutenberg block JSON: "id":123 (image block stores id in JSON)
+                    if (preg_match_all('/"id"\s*:\s*([0-9]+)/i', $content, $m2)) {
+                        foreach ($m2[1] as $id) {
+                            $content_ids[] = intval($id);
+                        }
+                    }
+
+                    //Search url in block JSON or <img>: "url":"...","src":"..." or src="..."
+                    $urls = array();
+
+                    if (preg_match_all('/"url"\s*:\s*"([^"]+)"/i', $content, $m3)) {
+                        foreach ($m3[1] as $u) {
+                            $urls[] = html_entity_decode($u);
+                        }
+                    }
+                    if (preg_match_all('/"src"\s*:\s*"([^"]+)"/i', $content, $m4)) {
+                        foreach ($m4[1] as $u) {
+                            $urls[] = html_entity_decode($u);
+                        }
+                    }
+                    if (preg_match_all('/<img[^>]+src=["\']([^"\']+)["\']/i', $content, $m5)) {
+                        foreach ($m5[1] as $u) {
+                            $urls[] = $u;
+                        }
+                    }
+
+                    // normalize urls unique
+                    $urls = array_values(array_unique(array_filter($urls)));
+
+                    // helper resolve function
+                    $resolve_url_to_attachment = function ($url) use ($wpdb) {
+                        // 1. try WP helper (works for uploads/*)
+                        $id = attachment_url_to_postid($url);
+                        if ($id) {
+                            return $id;
+                        }
+
+                        // 2. try exact guid match
+                        $found = $wpdb->get_var($wpdb->prepare(
+                            'SELECT ID FROM ' . $wpdb->posts . " WHERE post_type='attachment' AND guid = %s LIMIT 1",
+                            $url
+                        ));
+                        if ($found) {
+                            return (int) $found;
+                        }
+
+                        // 3. try match by file path stored in _wp_attached_file (relative path)
+                        // strip site_url
+                        $site = trailingslashit(site_url());
+                        $rel = (strpos($url, $site) === 0) ? ltrim(substr($url, strlen($site)), '/') : $url;
+
+                        $found2 = $wpdb->get_var($wpdb->prepare(
+                            'SELECT post_id FROM ' . $wpdb->postmeta . " WHERE meta_key = '_wp_attached_file' AND meta_value LIKE %s LIMIT 1",
+                            '%' . $wpdb->esc_like($rel) . '%'
+                        ));
+                        if ($found2) {
+                            return (int) $found2;
+                        }
+
+                        // 4. fallback: try guid substring match (use cautiously)
+                        $found3 = $wpdb->get_var($wpdb->prepare(
+                            'SELECT ID FROM ' . $wpdb->posts . " WHERE post_type='attachment' AND guid LIKE %s LIMIT 1",
+                            '%' . $wpdb->esc_like($url) . '%'
+                        ));
+                        if ($found3) {
+                            return (int) $found3;
+                        }
+
+                        return 0;
+                    };
+
+                    foreach ($urls as $u) {
+                        $aid = $resolve_url_to_attachment($u);
+                        if ($aid) {
+                            $content_ids[] = $aid;
+                        }
+                    }
+
+                    // merge found ids
+                    if (!empty($content_ids)) {
+                        $content_ids = array_map('intval', $content_ids);
+                    } else {
+                        $content_ids = array();
+                    }
+                }
+
+                $attachment_ids = array_unique(array_filter(array_merge(
+                    (array)$direct,
+                    (array)$content_ids
+                )));
+
+                if (empty($attachment_ids)) {
+                    $query->set('post__in', [-1]);
+                } else {
+                    $query->set('post__in', $attachment_ids);
+                }
+
+                $query->set('post_parent', null);
+                unset($query->query_vars['post_parent']);
+            }
+        }
+    }
+    
+    /**
+     * Create folder with selection
+     *
+     * @return void
+     */
+    public function createNewFolderWithSelection()
+    {
+        if (empty($_POST['wpmf_nonce'])
+            || !wp_verify_nonce($_POST['wpmf_nonce'], 'wpmf_nonce')) {
+            die();
+        }
+        $ids    = isset($_POST['ids']) ? array_map('intval', (array) $_POST['ids']) : [];
+        $parent = isset($_POST['parent']) ? (int) $_POST['parent'] : 0;
+
+        if (empty($ids)) {
+            wp_send_json_error(['message' => 'No attachments selected']);
+        }
+
+        $base_name = 'New Folder With Items';
+        $folder_name = $base_name;
+        $i = 1;
+
+        // check name folder
+        while (term_exists($folder_name, WPMF_TAXO, $parent)) {
+            $folder_name = $base_name . ' ' . $i;
+            $i++;
+        }
+
+        // create new folder
+        $new_term = wp_insert_term(
+            $folder_name,
+            WPMF_TAXO,
+            ['parent' => $parent]
+        );
+
+        if (is_wp_error($new_term)) {
+            wp_send_json_error(['message' => $new_term->get_error_message()]);
+        }
+
+        $new_folder_id = $new_term['term_id'];
+
+        // move attachments
+        foreach ($ids as $id) {
+            wp_set_object_terms($id, (int) $new_folder_id, WPMF_TAXO, false);
+        }
+
+        wp_send_json_success([
+            'folder_id'   => $new_folder_id,
+            'folder_name' => $folder_name,
+        ]);
+    }
+
+    /**
+     * Force check AI result from remote API.
+     *
+     * @return void
+     */
+    public function forceCheckAiResult()
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required
+        $attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
+        if (!$attachment_id) {
+            wp_send_json_error(array('message' => __('Invalid attachment ID', 'wpmf')));
+        }
+
+        $remote_id = get_post_meta($attachment_id, 'wpmf_ai_remote_id', true);
+        if (empty($remote_id)) {
+            wp_send_json_error(array('message' => __('No remote AI task ID found', 'wpmf')));
+        }
+
+        $token = get_site_option('wpmf_license_token');
+        if (empty($token)) {
+            wp_send_json_error(array('message' => __('Missing license token', 'wpmf')));
+        }
+
+        $api_url = rtrim(self::$aiApiUrl, '/') . '/api/files/' . $remote_id;
+
+        $response = wp_remote_get($api_url, array(
+            'timeout' => 30,
+            'headers' => array(
+                'Authorization' => $token
+            )
+        ));
+
+        if (is_wp_error($response)) {
+            wp_send_json_error(array('message' => $response->get_error_message()));
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if (empty($data) || !isset($data['status'])) {
+            wp_send_json_error(array('message' => __('Invalid response from AI platform', 'wpmf')));
+        }
+
+        if ($data['status'] === 'completed' || $data['status'] === 'done') {
+            $result_data = $this->updateAttachmentMetadataFromAI($attachment_id, $data);
+            wp_send_json_success($result_data);
+        } else {
+            wp_send_json_error(array(
+                'message' => __('AI processing not finished yet', 'wpmf'),
+                'status' => $data['status']
+            ));
+        }
+    }
+
+    /**
+     * Update attachment metadata from AI data.
+     *
+     * @param integer $attachment_id The attachment post ID
+     * @param array   $file_data     File data
+     *
+     * @return array
+     */
+    private function updateAttachmentMetadataFromAI($attachment_id, $file_data)
+    {
+        $force_override = get_option('wpmf_ai_force_override_metadata', '0') === '1';
+        $post = get_post($attachment_id);
+        
+        $is_ajax = defined('DOING_AJAX') && DOING_AJAX;
+        $is_optimized = get_post_meta($attachment_id, 'wpmf_ai_optimized', true) === '1';
+
+        $data = array('status' => 'done');
+        $update_post = array('ID' => $attachment_id);
+
+        if (!empty($file_data['altText'])) {
+            $alt = sanitize_text_field($file_data['altText']);
+            $current_alt = get_post_meta($attachment_id, '_wp_attachment_image_alt', true);
+            if ($force_override || trim($current_alt) === '' || (!$is_optimized && !$is_ajax)) {
+                update_post_meta($attachment_id, '_wp_attachment_image_alt', $alt);
+                $data['alt'] = $alt;
+            }
+        }
+
+        if (!empty($file_data['title'])) {
+            $title = sanitize_text_field($file_data['title']);
+            if ($force_override || trim($post->post_title) === '' || (!$is_optimized && !$is_ajax)) {
+                $update_post['post_title'] = $title;
+                $data['title'] = $title;
+            }
+        }
+
+        if (!empty($file_data['caption'])) {
+            $caption = sanitize_text_field($file_data['caption']);
+            if ($force_override || trim($post->post_excerpt) === '' || (!$is_optimized && !$is_ajax)) {
+                $update_post['post_excerpt'] = $caption;
+                $data['caption'] = $caption;
+            }
+        }
+
+        if (!empty($file_data['description'])) {
+            $description = sanitize_text_field($file_data['description']);
+            if ($force_override || trim($post->post_content) === '' || (!$is_optimized && !$is_ajax)) {
+                $update_post['post_content'] = $description;
+                $data['description'] = $description;
+            }
+        }
+
+        if (count($update_post) > 1) {
+            wp_update_post($update_post);
+        }
+
+        set_transient('wpmf_ai_result_' . $attachment_id, $data, 5 * MINUTE_IN_SECONDS);
+        update_post_meta($attachment_id, 'wpmf_ai_optimized', 1);
+
+        $this->getAIQuota(false);
+
+        return $data;
+    }
+
+    /**
+     * Disable Add Media File button on multi site.
+     *
+     * @return void
+     */
+    public function disableAddMediaFileButton()
+    {
+        //multisite share media and folder
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+        $current_site_id = (int) get_current_blog_id();
+        $is_main_site = $main_site_id === $current_site_id ? 1 : 0;
+        if ($use_multisite_share && !$is_main_site) {
+            echo '<style>
+                    /* Editor - Add Media button */
+                    .wp-media-buttons .insert-media,
+                    .wp-media-buttons button {
+                        pointer-events: none;
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+
+                    /* Media modal */
+                    .media-frame .upload-ui {
+                        pointer-events: none;
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+
+                    /* Media Library page only */
+                    .upload-php .page-title-action {
+                        pointer-events: none;
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+                </style>';
+        }
     }
 }

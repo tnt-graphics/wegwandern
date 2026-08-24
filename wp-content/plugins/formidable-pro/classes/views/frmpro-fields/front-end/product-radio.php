@@ -8,11 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Show the product field as radio button or checkbox on the front-end.
  * Extra line breaks show as space on the front-end when
  * the form is double filtered and not minimized.
- *
- * @phpcs:disable Generic.WhiteSpace.ScopeIndent
  */
 
 $display_type = $field['data_type'];
+
 if ( $display_type !== 'radio' && $display_type !== 'checkbox' ) {
 	return;
 }
@@ -22,8 +21,9 @@ if ( $display_type === 'checkbox' ) {
 }
 
 $option_index = 0;
+
 foreach ( $field['options'] as $opt_key => $opt ) {
-	if ( isset( $shortcode_atts ) && isset( $shortcode_atts['opt'] ) && ( $shortcode_atts['opt'] !== $opt_key ) ) {
+	if ( isset( $shortcode_atts ) && isset( $shortcode_atts['opt'] ) && $shortcode_atts['opt'] !== $opt_key ) {
 		continue;
 	}
 
@@ -48,7 +48,9 @@ foreach ( $field['options'] as $opt_key => $opt ) {
 	?> data-frmprice="<?php echo esc_attr( $price ); ?>" <?php do_action( 'frm_field_input_html', $field ); ?> /><?php
 
 	if ( ! isset( $shortcode_atts ) || ! isset( $shortcode_atts['label'] ) || $shortcode_atts['label'] ) {
-		echo ' ' . FrmAppHelper::kses( $opt, 'all' ) . '</label>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo ' ';
+		FrmAppHelper::kses_echo( $opt, 'all' );
+		echo '</label>';
 	}
 	?></div>
 <?php

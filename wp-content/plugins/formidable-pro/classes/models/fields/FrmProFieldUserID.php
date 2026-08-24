@@ -41,6 +41,8 @@ class FrmProFieldUserID extends FrmFieldUserID {
 
 	/**
 	 * @since 4.03.06
+	 *
+	 * @param array $args
 	 */
 	public function prepare_field_html( $args ) {
 		$args = $this->fill_display_field_values( $args );
@@ -66,6 +68,11 @@ class FrmProFieldUserID extends FrmFieldUserID {
 
 	/**
 	 * @since 4.03.06
+	 *
+	 * @param array $args
+	 * @param array $shortcode_atts
+	 *
+	 * @return string
 	 */
 	public function front_field_input( $args, $shortcode_atts ) {
 		$value                = $this->get_field_value( $args );
@@ -76,17 +83,17 @@ class FrmProFieldUserID extends FrmFieldUserID {
 
 		$input = parent::front_field_input( $args, $shortcode_atts );
 		$input = str_replace( ' type="user_id"', ' type="hidden"', $input );
-		$input = '<input type="text" class="frm-user-search" value="' . esc_attr( $display ) . '" placeholder="' . esc_attr__( 'Select a User', 'formidable' ) . '" />' . $input;
 
-		return $input;
+		return '<input type="text" class="frm-user-search" value="' . esc_attr( $display ) . '" placeholder="' . esc_attr__( 'Select a User', 'formidable-pro' ) . '" />' . $input;
 	}
 
 	/**
 	 * @since 4.03.06
+	 *
+	 * @return bool
 	 */
 	private function show_admin_field() {
-		$show_admin_field = FrmAppHelper::is_admin() && current_user_can( 'frm_edit_entries' ) && ! FrmAppHelper::is_admin_page( 'formidable' );
-		return $show_admin_field;
+		return FrmAppHelper::is_admin() && current_user_can( 'frm_edit_entries' ) && ! FrmAppHelper::is_admin_page( 'formidable' );
 	}
 
 	public function get_options( $values ) {
@@ -99,9 +106,11 @@ class FrmProFieldUserID extends FrmFieldUserID {
 		);
 
 		$options = array( '' => '' );
+
 		foreach ( $users as $user ) {
-			$options[ $user->ID ] = ( ! empty( $user->display_name ) ? $user->display_name : $user->user_login );
+			$options[ $user->ID ] = ! empty( $user->display_name ) ? $user->display_name : $user->user_login;
 		}
+
 		return $options;
 	}
 }

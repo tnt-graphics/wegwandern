@@ -187,6 +187,9 @@ class Sync
         if ($found === null) {
             return;
         }
+        if ($this->compInstance()->isExternalTranslationSyncDeferredForPost($postId)) {
+            return;
+        }
         $this->currentlySyncing = \true;
         // Assign newly created term to language
         $currentLanguage = $this->compInstance()->getCurrentLanguageFallback();
@@ -242,6 +245,9 @@ class Sync
         if ($found === null) {
             return;
         }
+        if ($this->compInstance()->isExternalTranslationSyncDeferredForTerm($term_id, $taxonomy)) {
+            return;
+        }
         $this->currentlySyncing = \true;
         // Assign newly created term to language
         $currentLanguage = $this->compInstance()->getCurrentLanguageFallback();
@@ -273,6 +279,9 @@ class Sync
      */
     public function updated_term_meta($meta_id, $term_id, $meta_key, $meta_value)
     {
+        if ($this->compInstance()->isApplyingExternalSourceSync()) {
+            return;
+        }
         // Determine if update possible
         $found = null;
         $taxonomy = \false;
@@ -290,7 +299,11 @@ class Sync
         // Temporarily disable this action to avoid recursion
         \remove_action('updated_term_meta', [$this, 'updated_term_meta'], 10, 4);
         $this->compInstance()->iterateOtherLanguagesContext(function ($locale, $currentLanguage) use($term_id, $taxonomy, $meta_key, $meta_value) {
-            $toTermId = $this->compInstance()->getCurrentTermId($term_id, $taxonomy, $locale);
+            $toTermId = (int) $this->compInstance()->getCurrentTermId($term_id, $taxonomy, $locale);
+            // No linked translation yet — do not write meta onto the source term in another locale.
+            if ($toTermId <= 0 || $toTermId === (int) $term_id) {
+                return;
+            }
             \update_term_meta($toTermId, $meta_key, $this->compInstance()->filterMetaValue('term', $term_id, $toTermId, $meta_key, $meta_value, $locale));
         });
         \add_action('updated_term_meta', [$this, 'updated_term_meta'], 10, 4);
@@ -306,6 +319,9 @@ class Sync
      */
     public function updated_postmeta($meta_id, $post_id, $meta_key, $meta_value)
     {
+        if ($this->compInstance()->isApplyingExternalSourceSync()) {
+            return;
+        }
         // Determine if update possible
         $post_type = \get_post_type($post_id);
         $found = isset($this->posts[$post_type]) ? $this->posts[$post_type] : null;

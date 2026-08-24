@@ -8,7 +8,6 @@ if ( empty( $values['fields'] ) ) {
 }
 
 foreach ( $fields as $fo_key => $fo ) {
-
 	if ( isset( $post_field ) && ! in_array( $fo['type'], $post_field, true ) ) {
 		continue;
 	}
@@ -17,7 +16,7 @@ foreach ( $fields as $fo_key => $fo ) {
 		continue;
 	}
 
-	// don't include repeatable fields
+	// Don't include repeatable fields
 	if ( FrmField::is_no_save_field( $fo['type'] ) || $fo['type'] === 'form' || ( $fo['form_id'] != $values['id'] && ( ! empty( $embedded_field_ids ) && ! in_array( $fo['id'], $embedded_field_ids, true ) ) ) ) {
 		continue;
 	}

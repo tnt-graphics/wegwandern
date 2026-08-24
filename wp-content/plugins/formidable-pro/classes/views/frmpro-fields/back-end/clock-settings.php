@@ -8,7 +8,7 @@ $step_unit = FrmProTimeFieldsController::get_step_unit( $field );
 <p id="frm_linked_date_field_<?php echo absint( $field['id'] ); ?>" class="frm_form_field<?php echo esc_attr( ! empty( $field['unique'] ) ? '' : ' frm_hidden' ); ?>">
 	<label class="frm-h-stack-xs">
 		<span><?php esc_html_e( 'Linked Date Field', 'formidable-pro' ); ?></span>
-		<?php FrmProAppHelper::tooltip_icon( __( 'Link a date field to this time field. Times already chosen on the same day won\'t be available.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
+		<?php FrmAppHelper::tooltip_icon( __( 'Link a date field to this time field. Times already chosen on the same day won\'t be available.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 	</label>
 	<select class="frm-time-field-linked-date-field" name="field_options[linked_date_field_<?php echo absint( $field['id'] ); ?>]">
 		<?php foreach ( FrmProTimeOptions::get_linked_date_field_options() as $option ) : ?>
@@ -21,7 +21,7 @@ $step_unit = FrmProTimeFieldsController::get_step_unit( $field );
 <p class="frm12 frm_first frm_form_field frm-number-range">
 	<label class="frm-h-stack-xs">
 		<span><?php esc_html_e( 'Time Range', 'formidable-pro' ); ?></span>
-		<?php FrmProAppHelper::tooltip_icon( __( 'This uses 24-hour clockbase.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
+		<?php FrmAppHelper::tooltip_icon( __( 'This uses 24-hour clockbase.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 	</label>
 
 	<span class="frm_grid_container">
@@ -36,7 +36,7 @@ $step_unit = FrmProTimeFieldsController::get_step_unit( $field );
 
 <p class="frm12 frm_first frm_form_field">
 	<label for="frm_step_<?php echo esc_attr( $field['field_key'] ); ?>">
-		<?php esc_html_e( 'Step', 'formidable-pro' ); ?>
+		<?php esc_html_e( 'Step', 'formidable' ); ?>
 	</label>
 
 	<span class="frm_grid_container">

@@ -10,6 +10,7 @@ class FrmProConditionalLogicOptionData {
 
 	/**
 	 * @param int|string $form_id
+	 *
 	 * @return array
 	 */
 	public static function get_all_fields_for_form( $form_id ) {
@@ -27,6 +28,7 @@ class FrmProConditionalLogicOptionData {
 	 * @since 6.10.1
 	 *
 	 * @param int $form_id
+	 *
 	 * @return array
 	 */
 	private static function get_prefiltered_list_of_fields_for_conditional_logic_options( $form_id ) {
@@ -34,6 +36,7 @@ class FrmProConditionalLogicOptionData {
 			FrmField::get_all_for_form( $form_id ),
 			/**
 			 * @param stdClass $field
+			 *
 			 * @return bool
 			 */
 			function ( $field ) {
@@ -54,6 +57,7 @@ class FrmProConditionalLogicOptionData {
 	 * @since 6.10.1
 	 *
 	 * @param int|string $form_id
+	 *
 	 * @return bool
 	 */
 	public static function data_is_available( $form_id ) {

@@ -11,30 +11,29 @@ class FrmProFieldDivider extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'divider';
 
 	protected function get_new_field_name() {
-		$name = parent::get_new_field_name();
-
 		$posted_type = FrmAppHelper::get_param( 'field_type', '', 'post', 'sanitize_text_field' );
-		if ( ! empty( $posted_type ) && $posted_type === 'divider|repeat' ) {
-			$name = __( 'Repeater', 'formidable' );
+
+		if ( $posted_type === 'divider|repeat' ) {
+			return __( 'Repeater', 'formidable' );
 		}
 
-		return $name;
+		return parent::get_new_field_name();
 	}
 
 	public function default_html() {
-		$default_html = <<<DEFAULT_HTML
+		return <<<DEFAULT_HTML
 <div id="frm_field_[id]_container" class="frm_form_field frm_section_heading form-field[error_class]">
 <h3 class="frm_pos_[label_position][collapse_class]">[field_name]</h3>
 [if description]<div class="frm_description">[description]</div>[/if description]
 [collapse_this]
 </div>
 DEFAULT_HTML;
-		return $default_html;
 	}
 
 	protected function builder_text_field( $name = '' ) {
@@ -66,10 +65,12 @@ DEFAULT_HTML;
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
 		$field = $args['field'];
+
 		if ( FrmField::get_option( $field, 'repeat' ) ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/repeat-options-top.php';
 		}
@@ -88,11 +89,13 @@ DEFAULT_HTML;
 
 	protected function alter_builder_classes( $classes ) {
 		$classes = str_replace( ' frm_not_divider ', ' ', $classes );
+
 		if ( FrmField::get_option( $this->field, 'repeat' ) ) {
 			$classes .= ' repeat_section';
 		} else {
 			$classes .= ' no_repeat_section';
 		}
+
 		return $classes;
 	}
 
@@ -103,6 +106,7 @@ DEFAULT_HTML;
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	protected function prepare_display_value( $value, $atts ) {
@@ -110,27 +114,25 @@ DEFAULT_HTML;
 			return $value;
 		}
 
-		if ( ! is_array( $value ) && ! empty( $value ) && isset( $atts['format'] ) && $atts['format'] === 'json' ) {
-			$child_entries = explode( ',', $value );
-			$value         = array();
-
-			foreach ( $child_entries as $child_id ) {
-
-				$pass_args = array(
-					'format'        => 'array',
-					'include_blank' => true,
-					'id'            => $child_id,
-					'user_info'     => false,
-				);
-
-				$child_entry = FrmEntriesController::show_entry_shortcode( $pass_args );
-				$value[]     = $child_entry;
-			}
-
-			$value = json_encode( $value );
+		if ( is_array( $value ) || ! $value || ! isset( $atts['format'] ) || $atts['format'] !== 'json' ) {
+			return $value;
 		}
 
-		return $value;
+		$child_entries = explode( ',', $value );
+		$value         = array();
+
+		foreach ( $child_entries as $child_id ) {
+			$pass_args = array(
+				'format'        => 'array',
+				'include_blank' => true,
+				'id'            => $child_id,
+				'user_info'     => false,
+			);
+
+			$value[] = FrmEntriesController::show_entry_shortcode( $pass_args );
+		}
+
+		return json_encode( $value );
 	}
 
 	/**
@@ -138,15 +140,20 @@ DEFAULT_HTML;
 	 * can be added to either the h3 or description
 	 *
 	 * @since 3.0
+	 *
+	 * @param array  $args
+	 * @param string $html
+	 *
+	 * @return string
 	 */
 	protected function before_replace_html_shortcodes( $args, $html ) {
 		$add_class = ' frm_section_spacing';
+
 		if ( FrmField::is_option_true( $this->field, 'description' ) ) {
-			$html = str_replace( 'frm_description', 'frm_description' . $add_class, $html );
-		} else {
-			$html = str_replace( '[label_position]', '[label_position]' . $add_class, $html );
+			return str_replace( 'frm_description', 'frm_description' . $add_class, $html );
 		}
-		return $html;
+
+		return str_replace( '[label_position]', '[label_position]' . $add_class, $html );
 	}
 
 	protected function after_replace_html_shortcodes( $args, $html ) {
@@ -154,13 +161,13 @@ DEFAULT_HTML;
 
 		$html = str_replace( array( 'frm_none_container', 'frm_hidden_container', 'frm_top_container', 'frm_left_container', 'frm_right_container' ), '', $html );
 
-		if ( isset( $frm_vars['collapse_div'] ) && $frm_vars['collapse_div'] ) {
+		if ( ! empty( $frm_vars['collapse_div'] ) ) {
 			$html                     = "</div>\n" . $html;
 			$frm_vars['collapse_div'] = false;
 		}
 
-		if ( isset( $frm_vars['div'] ) && $frm_vars['div'] && $frm_vars['div'] != $this->field['id'] ) {
-			// close the div if it's from a different section
+		if ( ! empty( $frm_vars['div'] ) && $frm_vars['div'] != $this->field['id'] ) {
+			// Close the div if it's from a different section
 			$html            = "</div>\n" . $html;
 			$frm_vars['div'] = false;
 		}
@@ -178,6 +185,7 @@ DEFAULT_HTML;
 			$section_is_open = (bool) apply_filters( 'frm_section_is_open', false, $this->field );
 
 			$trigger = ' frm_trigger';
+
 			if ( $section_is_open ) {
 				$trigger .= ' active';
 			}
@@ -192,22 +200,20 @@ DEFAULT_HTML;
 		if ( FrmField::is_option_true( $this->field, 'repeat' ) ) {
 			$errors = $args['errors'] ?? array();
 			$form   = $args['form'] ?? array();
-
-			$input = $this->front_field_input( compact( 'errors', 'form' ), array() );
+			$input  = $this->front_field_input( compact( 'errors', 'form' ), array() );
 
 			if ( FrmField::is_option_true( $this->field, 'slide' ) ) {
 				$input = $collapse_div . $input . '</div>';
 			}
 
 			$html = str_replace( '[collapse_this]', $input, $html );
-
 		} else {
 			$this->remove_close_div( $html );
 
-			if ( strpos( $html, '[collapse_this]' ) !== false ) {
+			if ( str_contains( $html, '[collapse_this]' ) ) {
 				$html = str_replace( '[collapse_this]', $collapse_div, $html );
 
-				// indicate that a second div is open
+				// Indicate that a second div is open
 				if ( ! empty( $collapse_div ) ) {
 					$frm_vars['collapse_div'] = $this->field['id'];
 				}
@@ -220,7 +226,7 @@ DEFAULT_HTML;
 			array(
 				'tabindex' => '0',
 				'role'     => 'button',
-			) 
+			)
 		);
 		$this->maybe_add_collapse_icon( $trigger, $html, ! empty( $section_is_open ) );
 		$this->maybe_hide_section( $html );
@@ -230,11 +236,13 @@ DEFAULT_HTML;
 
 	/**
 	 * @param string $html
+	 *
 	 * @return void
 	 */
 	private function maybe_hide_section( &$html ) {
 		if ( ! FrmAppHelper::is_admin_page() ) {
 			$is_visible = FrmProFieldsHelper::is_field_visible_to_user( $this->field );
+
 			if ( ! $is_visible ) {
 				$html = str_replace( ' frm_section_heading ', ' frm_section_heading frm_hidden frm_invisible_section ', $html );
 			}
@@ -245,17 +253,21 @@ DEFAULT_HTML;
 	 * Remove the close div from HTML (specifically for divider field types)
 	 *
 	 * @since 3.0
+	 *
 	 * @param string $html - pass by reference
 	 */
 	private function remove_close_div( &$html ) {
 		$end_div = '/\<\/div\>(\s*)?$/';
-		if ( preg_match( $end_div, $html ) ) {
-			global $frm_vars;
-			// indicate that the div is open
-			$frm_vars['div'] = $this->field['id'];
 
-			$html = preg_replace( $end_div, '', $html );
+		if ( ! preg_match( $end_div, $html ) ) {
+			return;
 		}
+
+		global $frm_vars;
+		// Indicate that the div is open
+		$frm_vars['div'] = $this->field['id'];
+
+		$html = preg_replace( $end_div, '', $html );
 	}
 
 	/**
@@ -268,11 +280,11 @@ DEFAULT_HTML;
 	 * @param array $atts, key value pairs of html attributes.
 	 */
 	private function maybe_add_html_atts( $trigger, &$html, $atts ) {
-		if ( empty( $atts ) || ! is_array( $atts ) || ! $trigger ) {
+		if ( ! $atts || ! is_array( $atts ) || ! $trigger ) {
 			return;
 		}
 
-		// matches h2 - h6 elements, from opening to closing tags
+		// Matches h2 - h6 elements, from opening to closing tags
 		preg_match_all( "/\<h[2-6]\b(.*?)(?:(\/))?\>(.*?)(?:(\/))?\<\/h[2-6]>/su", $html, $headings, PREG_PATTERN_ORDER );
 
 		if ( empty( $headings[3] ) ) {
@@ -307,6 +319,7 @@ DEFAULT_HTML;
 	 * @param string $trigger
 	 * @param string $html, pass by reference
 	 * @param bool   $section_is_open
+	 *
 	 * @return void
 	 */
 	private function maybe_add_collapse_icon( $trigger, &$html, $section_is_open = false ) {
@@ -327,9 +340,8 @@ DEFAULT_HTML;
 		$search_header_text = '>' . $header_text . '<';
 		$old_header_html    = reset( $headings[0] );
 		$aria_expanded      = $section_is_open ? 'true' : 'false';
-
-		$collapse_icon = $style_settings['collapse_icon'] ?? 1;
-		$svg_args      = array(
+		$collapse_icon      = $style_settings['collapse_icon'] ?? 1;
+		$svg_args           = array(
 			'echo'          => false,
 			'width'         => '1em',
 			'height'        => '1em',
@@ -346,10 +358,9 @@ DEFAULT_HTML;
 
 		$icon_visible_svg_slug   = FrmStylesHelper::icon_key_to_class( $collapse_icon, $icons_order[0] );
 		$icon_invisible_svg_slug = FrmStylesHelper::icon_key_to_class( $collapse_icon, $icons_order[1] );
-
-		$icon_visible   = FrmProAppHelper::get_svg_icon( $icon_visible_svg_slug, 'frmsvg frm-svg-icon', $svg_args );
-		$icon_invisible = FrmProAppHelper::get_svg_icon( $icon_invisible_svg_slug, 'frmsvg frm-svg-icon', $svg_args );
-		$icon           = $icon_visible . $icon_invisible;
+		$icon_visible            = FrmProAppHelper::get_svg_icon( $icon_visible_svg_slug, 'frmsvg frm-svg-icon', $svg_args );
+		$icon_invisible          = FrmProAppHelper::get_svg_icon( $icon_invisible_svg_slug, 'frmsvg frm-svg-icon', $svg_args );
+		$icon                    = $icon_visible . $icon_invisible;
 
 		if ( 'before' === $style_settings['collapse_pos'] ) {
 			$replace_with = '>' . $icon . ' ' . $header_text . '<';
@@ -384,6 +395,7 @@ DEFAULT_HTML;
 	/**
 	 * @param array $args
 	 * @param array $shortcode_atts
+	 *
 	 * @return string
 	 */
 	public function front_field_input( $args, $shortcode_atts ) {
@@ -391,15 +403,13 @@ DEFAULT_HTML;
 
 		ob_start();
 		FrmProNestedFormsController::display_front_end_repeating_section( $this->field, $args['field_name'], $args['errors'] );
-		$input_html = ob_get_contents();
-		ob_end_clean();
 
-		return $input_html;
+		return ob_get_clean();
 	}
 
 	protected function prepare_import_value( $value, $atts ) {
 		if ( FrmField::is_repeating_field( $this->field ) ) {
-			$value = $this->get_new_child_ids( $value, $atts );
+			return $this->get_new_child_ids( $value, $atts );
 		}
 		return $value;
 	}

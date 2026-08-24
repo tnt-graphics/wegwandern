@@ -8,14 +8,14 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 
 	public function get_bulk_actions() {
 		$actions = array(
-			'bulk_delete' => __( 'Delete', 'formidable-pro' ),
+			'bulk_delete' => __( 'Delete', 'formidable' ),
 		);
 
 		if ( ! current_user_can( 'frm_delete_entries' ) ) {
 			unset( $actions['bulk_delete'] );
 		}
 
-		//$actions['bulk_export'] = __( 'Export to XML', 'formidable-pro' );
+		// $actions['bulk_export'] = __( 'Export to XML', 'formidable-pro' );
 		if ( $this->params['form'] ) {
 			$actions['bulk_csv'] = __( 'Export to CSV', 'formidable-pro' );
 		}
@@ -25,7 +25,7 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 
 	protected function extra_tablenav( $which ) {
 		parent::extra_tablenav( $which );
-		$is_footer    = ( $which !== 'top' );
+		$is_footer    = $which !== 'top';
 		$entries_args = array(
 			'entries_count'                    => $this->total_items,
 			'bulk_delete_confirmation_message' => $this->confirm_bulk_delete(),
@@ -53,7 +53,7 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 				'fi.form_id'  => $form->id,
 				'fi.type not' => FrmField::no_save_fields(),
 			),
-			'field_order' 
+			'field_order'
 		);
 
 		$fid        = FrmAppHelper::get_param( 'fid', '', 'request', 'sanitize_title' );
@@ -62,6 +62,7 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 
 		foreach ( array( 'orderby', 'order' ) as $get_var ) {
 			$var_value = FrmAppHelper::get_param( $get_var, '', 'request', 'sanitize_text_field' );
+
 			if ( $var_value ) {
 				echo '<input type="hidden" name="' . esc_attr( $get_var ) . '" value="' . esc_attr( $var_value ) . '" />';
 			}
@@ -71,10 +72,10 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 ?>
 <div class="frm-search">
 	<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo esc_html( $text ); ?>:</label>
-	<?php FrmProAppHelper::icon_by_class( 'frm_icon_font frm_search_icon' ); ?>
+	<?php FrmAppHelper::icon_by_class( 'frmfont frm_search_icon' ); ?>
 	<input type="text" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php echo esc_attr( $search_str ); ?>" class="frm-search-input" />
 	<?php
-	if ( empty( $field_list ) ) {
+	if ( ! $field_list ) {
 			submit_button( $text, 'button', false, false, array( 'id' => 'search-submit' ) );
 			echo '</div>';
 			return;
@@ -94,7 +95,7 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 
 	<div class="button dropdown hide-if-no-js" id="search-submit">
 		<a href="#" id="frm-fid-search" class="frm-dropdown-toggle" data-toggle="dropdown">
-			<?php esc_html_e( 'Search', 'formidable-pro' ); ?>
+			<?php esc_html_e( 'Search', 'formidable' ); ?>
 			<b class="caret"></b>
 		</a>
 		<ul class="frm-dropdown-menu <?php echo esc_attr( is_rtl() ? 'dropdown-menu-left' : 'dropdown-menu-right' ); ?>" id="frm-fid-search-menu" role="menu" aria-labelledby="frm-fid-search">
@@ -121,12 +122,14 @@ class FrmProEntriesListHelper extends FrmEntriesListHelper {
 
 	/**
 	 * @since 4.04.02
+	 *
+	 * @param array $field_list
 	 */
 	private static function get_entry_search_options( $field_list ) {
 		$options = array(
 			''            => '&mdash; ' . __( 'All Fields', 'formidable-pro' ) . ' &mdash;',
-			'created_at'  => __( 'Entry creation date', 'formidable-pro' ),
-			'id'          => __( 'Entry ID', 'formidable-pro' ),
+			'created_at'  => __( 'Entry creation date', 'formidable' ),
+			'id'          => __( 'Entry ID', 'formidable' ),
 			'description' => __( 'Entry description', 'formidable-pro' ),
 		);
 

@@ -26,18 +26,18 @@ class FrmProDashboardController {
 
 		return array(
 			FrmDashboardController::view_args_build_counter(
-				__( 'All Views', 'formidable-pro' ),
+				__( 'All Views', 'formidable' ),
 				FrmDashboardController::view_args_build_cta(
-					__( 'Learn More', 'formidable-pro' ),
+					__( 'Learn More', 'formidable' ),
 					$cta_views_link,
 					FrmDashboardController::display_counter_cta( 'views', $counters_value['views'] )
 				),
 				self::get_views_count()
 			),
 			FrmDashboardController::view_args_build_counter(
-				__( 'Installed Apps', 'formidable-pro' ),
+				__( 'Installed Apps', 'formidable' ),
 				FrmDashboardController::view_args_build_cta(
-					__( 'Learn More', 'formidable-pro' ),
+					__( 'Learn More', 'formidable' ),
 					admin_url( 'admin.php?page=formidable-applications' ),
 					FrmDashboardController::display_counter_cta( 'applications', $counters_value['apps'] )
 				),
@@ -55,10 +55,13 @@ class FrmProDashboardController {
 		if ( is_callable( 'FrmViewsDisplay::get_views_count' ) ) {
 			return FrmViewsDisplay::get_views_count();
 		}
+
 		$views_count = wp_count_posts( 'frm_display' );
+
 		if ( ! isset( $views_count->private ) || ! isset( $views_count->publish ) ) {
 			return 0;
 		}
+
 		return $views_count->private + $views_count->publish;
 	}
 
@@ -106,6 +109,7 @@ class FrmProDashboardController {
 	 */
 	private static function enqueue_assets() {
 		$is_dashboard_page = is_callable( 'FrmDashboardController::is_dashboard_page' ) && FrmDashboardController::is_dashboard_page();
+
 		if ( ! $is_dashboard_page ) {
 			return;
 		}

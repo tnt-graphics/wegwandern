@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class FrmProFieldSummaryValue extends FrmProFieldValue {
 
 	/**
-	 * @var stdClass
+	 * @var stdClass|null
 	 */
 	protected $field;
 
@@ -31,6 +31,7 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 	 *
 	 * @param stdClass $field
 	 * @param array    $atts
+	 * @param array    $child_form_args
 	 */
 	public function __construct( $field, $atts, $child_form_args = array() ) {
 		if ( ! is_object( $field ) ) {
@@ -45,6 +46,8 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 
 	/**
 	 * TODO: Remove this after 4.04 since it was added to parent.
+	 *
+	 * @param string $option
 	 */
 	public function get_field_attr( $option ) {
 		return $this->field->{$option};
@@ -71,14 +74,14 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 			return;
 		}
 
-		if ( empty( $this->child_form_args ) ) {
-			FrmEntriesHelper::get_posted_value( $this->field, $this->posted_value, array() );
-		} else {
+		if ( $this->child_form_args ) {
 			$args = array(
 				'parent_field_id' => $this->child_form_args['parent'],
 				'key_pointer'     => $this->child_form_args['row_id'],
 			);
 			FrmEntriesHelper::get_posted_value( $this->field, $this->posted_value, $args );
+		} else {
+			FrmEntriesHelper::get_posted_value( $this->field, $this->posted_value, array() );
 		}
 
 		$this->maybe_add_other();
@@ -91,7 +94,7 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 	 * @since 4.02.04
 	 */
 	private function maybe_add_other() {
-		if ( empty( $this->posted_value ) || ! isset( $_POST['item_meta'] ) || ! isset( $_POST['item_meta']['other'] ) ) {
+		if ( ! $this->posted_value || ! isset( $_POST['item_meta'] ) || ! isset( $_POST['item_meta']['other'] ) ) {
 			return;
 		}
 
@@ -137,8 +140,7 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 	protected function generate_displayed_value_for_field_type( $atts ) {
 		if ( ! FrmAppHelper::is_empty_value( $this->displayed_value, '' ) ) {
 			$field_obj = FrmFieldFactory::get_field_object( $this->field );
-
-			$atts = $this->prepare_display_atts();
+			$atts      = $this->prepare_display_atts();
 
 			$this->displayed_value = $field_obj->get_display_value( $this->displayed_value, $atts );
 		}
@@ -146,6 +148,7 @@ class FrmProFieldSummaryValue extends FrmProFieldValue {
 
 	protected function prepare_display_atts() {
 		$atts = array();
+
 		// May use switch later if there are more to check
 		if ( 'file' === $this->field->type ) {
 			$atts['show_image'] = true;

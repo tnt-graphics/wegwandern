@@ -1,6 +1,8 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
+
 if (fusion_is_element_enabled('wpmf_fusion_gallery')) {
     if (!class_exists('WpmfAvadaGalleryClass')) {
         /**
@@ -146,7 +148,7 @@ if (fusion_is_element_enabled('wpmf_fusion_gallery')) {
              */
             public static function get_element_defaults() // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps -- Method extends from Fusion_Element class
             {
-                $settings = wpmfGetOption('gallery_settings');
+                $settings = WpmfHelper::wpmfGetOption('gallery_settings');
                 $masonry_settings = $settings['theme']['masonry_theme'];
                 $defaults = array(
                     'theme' => 'masonry',
@@ -192,9 +194,9 @@ function wpmfFusionElementGallery()
     if (!function_exists('fusion_builder_frontend_data')) {
         return;
     }
-    $settings = wpmfGetOption('gallery_settings');
+    $settings = WpmfHelper::wpmfGetOption('gallery_settings');
     $defaults = $settings['theme']['masonry_theme'];
-    $main_class = wpmfGetMainClass();
+    $main_class = WpmfHelper::wpmfGetMainClass();
     $getFolders = $main_class->getAttachmentTerms('builder');
     $folders = $getFolders['attachment_terms'];
     $folders_order = $getFolders['attachment_terms_order'];
@@ -540,33 +542,35 @@ function wpmfFusionElementGallery()
         )
     );
 
-    wp_enqueue_style(
-        'wpmf-avada-style',
-        WPMF_PLUGIN_URL . 'assets/css/avada_style.css',
-        array(),
-        WPMF_VERSION
-    );
+    if (is_admin() || (function_exists('fusion_is_preview_frame') && fusion_is_preview_frame()) || (function_exists('fusion_is_builder_frame') && fusion_is_builder_frame())) {
+        wp_enqueue_style(
+            'wpmf-avada-style',
+            WPMF_PLUGIN_URL . 'assets/css/avada_style.css',
+            array(),
+            WPMF_VERSION
+        );
 
-    wp_enqueue_style(
-        'wpmf-slick-style',
-        WPMF_PLUGIN_URL . 'assets/js/slick/slick.css',
-        array(),
-        WPMF_VERSION
-    );
+        wp_enqueue_style(
+            'wpmf-slick-style',
+            WPMF_PLUGIN_URL . 'assets/js/slick/slick.css',
+            array(),
+            WPMF_VERSION
+        );
 
-    wp_enqueue_style(
-        'wpmf-slick-theme-style',
-        WPMF_PLUGIN_URL . 'assets/js/slick/slick-theme.css',
-        array(),
-        WPMF_VERSION
-    );
+        wp_enqueue_style(
+            'wpmf-slick-theme-style',
+            WPMF_PLUGIN_URL . 'assets/js/slick/slick-theme.css',
+            array(),
+            WPMF_VERSION
+        );
 
-    wp_enqueue_style(
-        'wpmf-avada-gallery-style',
-        WPMF_PLUGIN_URL . 'assets/css/display-gallery/style-display-gallery.css',
-        array(),
-        WPMF_VERSION
-    );
+        wp_enqueue_style(
+            'wpmf-avada-gallery-style',
+            WPMF_PLUGIN_URL . 'assets/css/display-gallery/style-display-gallery.css',
+            array(),
+            WPMF_VERSION
+        );
+    }
 }
 
 wpmfFusionElementGallery();

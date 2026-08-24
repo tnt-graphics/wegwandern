@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="frm-star-group">
 <?php
 for ( $i = 1; $i <= $max; $i++ ) {
-
 	$star_icon_svg_slug = null;
 
 	if ( $i <= $numbers['value'] ) {

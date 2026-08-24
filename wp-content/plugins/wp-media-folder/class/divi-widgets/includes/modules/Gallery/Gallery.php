@@ -1,6 +1,7 @@
 <?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Class WpmfGalleryDivi
@@ -63,7 +64,9 @@ class WpmfGalleryDivi extends ET_Builder_Module
      */
     public function get_fields() // phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps -- Method extends from ET_Builder_Module class
     {
-        $settings = wpmfGetOption('gallery_settings');
+        $settings = WpmfHelper::wpmfGetOption('gallery_settings');
+        $aspect_ratio_default = apply_filters('keep_divi_aspect_ratio_default', false);
+        $aspect_ratio_default_value = $aspect_ratio_default ? 'default' : '1_1';
         return array(
             'theme' => array(
                 'label' => esc_html__('Theme', 'wpmf'),
@@ -105,8 +108,8 @@ class WpmfGalleryDivi extends ET_Builder_Module
                     '21_9' => '21:9',
                     '9_21' => '9:21'
                 ),
-                'default' => '1_1',
-                'default_on_front' => '1_1'
+                'default' => $aspect_ratio_default_value,
+                'default_on_front' => $aspect_ratio_default_value,
             ),
             'columns' => array(
                 'label' => esc_html__('Columns', 'wpmf'),

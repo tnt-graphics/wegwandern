@@ -8,10 +8,10 @@ class FrmProField {
 
 	/**
 	 * @param array $field_data
+	 *
 	 * @return array
 	 */
 	public static function create( $field_data ) {
-
 		if ( $field_data['field_options']['label'] !== 'none' ) {
 			$field_data['field_options']['label'] = '';
 		}
@@ -37,6 +37,7 @@ class FrmProField {
 				break;
 			case 'file':
 				$field_data['field_options']['restrict'] = 1;
+
 				if ( ! $field_data['field_options']['ftypes'] ) {
 					$field_data['field_options']['ftypes'] = array(
 						'jpg|jpeg|jpe' => 'image/jpeg',
@@ -46,6 +47,7 @@ class FrmProField {
 				}
 				break;
 		}
+
 		return $field_data;
 	}
 
@@ -55,6 +57,7 @@ class FrmProField {
 	 * @since 2.0.24
 	 *
 	 * @param array $field_data
+	 *
 	 * @return void
 	 */
 	private static function switch_in_section_field_option( &$field_data ) {
@@ -69,10 +72,13 @@ class FrmProField {
 		}
 
 		$ajax_action = FrmAppHelper::get_post_param( 'action', '', 'sanitize_title' );
-		if ( 'frm_insert_field' === $ajax_action ) {
-			$section_id                                = FrmAppHelper::get_post_param( 'section_id', 0, 'absint' );
-			$field_data['field_options']['in_section'] = $section_id;
+
+		if ( 'frm_insert_field' !== $ajax_action ) {
+			return;
 		}
+
+		$section_id                                = FrmAppHelper::get_post_param( 'section_id', 0, 'absint' );
+		$field_data['field_options']['in_section'] = $section_id;
 	}
 
 	/**
@@ -82,6 +88,7 @@ class FrmProField {
 	 * @since 6.24
 	 *
 	 * @param array $field_data
+	 *
 	 * @return bool True if the section logic has already been handled. When this is true, we exit switch_in_section_field_option early.
 	 */
 	private static function maybe_use_repeater_form_id( &$field_data ) {
@@ -90,6 +97,7 @@ class FrmProField {
 		}
 
 		$section_field = FrmField::getOne( $field_data['field_options']['in_section'] );
+
 		if ( $section_field && ! empty( $section_field->field_options['repeat'] ) ) {
 			$field_data['form_id'] = $section_field->field_options['form_select'];
 		}
@@ -101,6 +109,7 @@ class FrmProField {
 	 * @since 3.0
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public static function skip_update_field_setting( $settings ) {
@@ -113,12 +122,14 @@ class FrmProField {
 	 * @param array    $field_options
 	 * @param stdClass $field
 	 * @param array    $values
+	 *
 	 * @return array
 	 */
 	public static function update( $field_options, $field, $values ) {
 		foreach ( $field_options['hide_field'] as $i => $f ) {
-			if ( empty( $f ) ) {
+			if ( ! $f ) {
 				unset( $field_options['hide_field'][ $i ], $field_options['hide_field_cond'][ $i ] );
+
 				if ( isset( $field_options['hide_opt'] ) && is_array( $field_options['hide_opt'] ) ) {
 					unset( $field_options['hide_opt'][ $i ] );
 				}
@@ -145,9 +156,8 @@ class FrmProField {
 
 		$field_options = self::sanitize_custom_thousand_separator( $field_options );
 		$field_options = self::update_show_slider_range_value( $field->type, $field_options );
-		$field_options = self::reset_conditional_logic_settings( $field->id, $field_options );
 
-		return $field_options;
+		return self::reset_conditional_logic_settings( $field->id, $field_options );
 	}
 
 	/**
@@ -167,51 +177,77 @@ class FrmProField {
 	}
 
 	/**
+	 * Return true if the conditional logic settings should be reset.
+	 *
+	 * @since 6.32
+	 *
+	 * @param array $field_options
+	 *
+	 * @return bool
+	 */
+	private static function should_reset_conditional_logic_settings( $field_options ) {
+		if ( empty( $field_options['hide_field'] ) ) {
+			return true;
+		}
+
+		return isset( $field_options['enable_conditional_logic'] ) && '0' === $field_options['enable_conditional_logic'];
+	}
+
+	/**
 	 * If the conditional logic is disabled, reset its settings.
 	 *
 	 * @since 6.24
 	 *
 	 * @param int   $field_id The field ID.
 	 * @param array $field_options The field options.
+	 *
 	 * @return array
 	 */
 	private static function reset_conditional_logic_settings( $field_id, $field_options ) {
-		if ( isset( $field_options['enable_conditional_logic'] ) && '0' === $field_options['enable_conditional_logic'] ) {
-			$defaults = array(
-				'enable_conditional_logic' => '0',
-				'show_hide'                => 'show',
-				'any_all'                  => 'any',
-				'hide_field'               => array(),
-				'hide_field_cond'          => array( '==' ),
-				'hide_opt'                 => array(),
-			);
+		if ( ! self::should_reset_conditional_logic_settings( $field_options ) ) {
+			return $field_options;
+		}
 
-			foreach ( $defaults as $key => $value ) {
-				$field_options[ $key ] = $value;
-				// Update POST data to reset the conditional logic settings after the Form Builder is updated and the page reloads.
-				$_POST['field_options'][ $key . '_' . $field_id ] = $value;
-			}
+		$defaults = array(
+			'enable_conditional_logic' => '0',
+			'show_hide'                => 'show',
+			'any_all'                  => 'any',
+			'hide_field'               => array(),
+			'hide_field_cond'          => array( '==' ),
+			'hide_opt'                 => array(),
+		);
+
+		foreach ( $defaults as $key => $value ) {
+			$field_options[ $key ] = $value;
+			// Update POST data to reset the conditional logic settings after the Form Builder is updated and the page reloads.
+			$_POST['field_options'][ $key . '_' . $field_id ] = $value;
 		}
 
 		return $field_options;
 	}
 
 	/**
-	 * @param array $options
+	 * @param array      $options
+	 * @param int|string $field_id
+	 *
 	 * @return void
 	 */
 	private static function format_mime_types( &$options, $field_id ) {
 		$file_options = $options['ftypes'] ?? array();
-		if ( ! empty( $file_options ) ) {
-			$mime_array = array();
 
-			foreach ( $file_options as $file_option ) {
-				$values                   = explode( '|||', $file_option );
-				$mime_array[ $values[0] ] = $values[1];
-			}
-			$options['ftypes']                               = $mime_array;
-			$_POST['field_options'][ 'ftypes_' . $field_id ] = $mime_array;
+		if ( ! $file_options ) {
+			return;
 		}
+
+		$mime_array = array();
+
+		foreach ( $file_options as $file_option ) {
+			$values                   = explode( '|||', $file_option );
+			$mime_array[ $values[0] ] = $values[1];
+		}
+
+		$options['ftypes']                               = $mime_array;
+		$_POST['field_options'][ 'ftypes_' . $field_id ] = $mime_array;
 	}
 
 	/**
@@ -221,6 +257,7 @@ class FrmProField {
 	 * @since 5.5.6
 	 *
 	 * @param array $field_options
+	 *
 	 * @return array
 	 */
 	private static function sanitize_custom_thousand_separator( $field_options ) {
@@ -244,6 +281,7 @@ class FrmProField {
 			return;
 		}
 		global $frm_duplicate_ids;
+
 		foreach ( $values['field_options']['product_field'] as $index => $field_id ) {
 			if ( ! empty( $frm_duplicate_ids[ $field_id ] ) ) {
 				$values['field_options']['product_field'][ $index ] = (string) $frm_duplicate_ids[ $field_id ];
@@ -254,8 +292,10 @@ class FrmProField {
 	/**
 	 * @param array $values
 	 * @param array $atts {
+	 *
 	 *     @type bool $after True on the second run.
 	 * }
+	 *
 	 * @return array
 	 */
 	public static function duplicate( $values, $atts = array() ) {
@@ -263,26 +303,30 @@ class FrmProField {
 
 		$is_second_run = $atts['after'] ?? false;
 
-		if ( empty( $frm_duplicate_ids ) || empty( $values['field_options'] ) ) {
+		if ( ! $frm_duplicate_ids || empty( $values['field_options'] ) ) {
 			if ( ! $is_second_run ) {
 				self::mark_field_key_as_unprocessed( $values['field_key'] );
 			}
+
 			return $values;
 		}
 
-		// switch out fields from calculation or default values
+		// Switch out fields from calculation or default values
 		$switch_string = array( 'default_value', 'calc' );
+
 		foreach ( $switch_string as $opt ) {
 			if ( empty( $values['field_options'][ $opt ] ) && empty( $values[ $opt ] ) ) {
 				continue;
 			}
 
 			$this_val = $values[ $opt ] ?? $values['field_options'][ $opt ];
+
 			if ( is_array( $this_val ) ) {
 				continue;
 			}
 
 			$ids = FrmProFieldsHelper::filter_keys_for_regex( $this_val, array_keys( $frm_duplicate_ids ) );
+
 			if ( ! $ids ) {
 				continue;
 			}
@@ -316,17 +360,18 @@ class FrmProField {
 			unset( $this_val, $matches );
 		}
 
-		// switch out field ids in conditional logic
+		// Switch out field ids in conditional logic
 		if ( ! empty( $values['field_options']['hide_field'] ) ) {
 			foreach ( array( 'hide_field_cond', 'hide_opt', 'hide_field' ) as $logic ) {
 				if ( isset( $values['field_options'][ $logic ] ) ) {
-					FrmProAppHelper::unserialize_or_decode( $values['field_options'][ $logic ] );
+					FrmAppHelper::unserialize_or_decode( $values['field_options'][ $logic ] );
 				} else {
 					$values['field_options'][ $logic ] = array();
 				}
 			}
 
 			$processed = false;
+
 			foreach ( $values['field_options']['hide_field'] as $k => $f ) {
 				if ( $is_second_run && in_array( $f, $frm_duplicate_ids ) ) {
 					// The field id may have already been replaced.
@@ -362,9 +407,11 @@ class FrmProField {
 	 */
 	private static function mark_field_key_as_unprocessed( $field_key ) {
 		global $frm_unprocessed_duplicate_field_keys;
+
 		if ( ! is_array( $frm_unprocessed_duplicate_field_keys ) ) {
 			$frm_unprocessed_duplicate_field_keys = array();
 		}
+
 		$frm_unprocessed_duplicate_field_keys[] = $field_key;
 	}
 
@@ -372,11 +419,12 @@ class FrmProField {
 	 * Switch out field ids if selected in a Dynamic Field
 	 *
 	 * @since 2.0.25
+	 *
 	 * @param array $frm_duplicate_ids
 	 * @param array $values
 	 */
 	private static function switch_out_form_select( $frm_duplicate_ids, &$values ) {
-		if ( 'data' == $values['type'] && FrmField::is_option_true_in_array( $values['field_options'], 'form_select' ) ) {
+		if ( 'data' === $values['type'] && FrmField::is_option_true_in_array( $values['field_options'], 'form_select' ) ) {
 			self::maybe_switch_field_id_in_setting( $frm_duplicate_ids, 'form_select', $values['field_options'] );
 		}
 	}
@@ -385,6 +433,7 @@ class FrmProField {
 	 * Switch the in_section ID when a field is duplicated
 	 *
 	 * @since 2.0.25
+	 *
 	 * @param array $frm_duplicate_ids
 	 * @param array $values
 	 */
@@ -400,6 +449,7 @@ class FrmProField {
 	 * Switch the get_values_form, get_values_field, and watch_lookup IDs when a field is imported
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $frm_duplicate_ids
 	 * @param array $values
 	 */
@@ -414,6 +464,7 @@ class FrmProField {
 	 * Switch the field ID for a given setting if a new field ID exists
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $frm_duplicate_ids
 	 * @param string $setting
 	 * @param array $field_options
@@ -429,11 +480,7 @@ class FrmProField {
 			$field_options[ $setting ] = array();
 
 			foreach ( $old_field_id as $old_id ) {
-				if ( isset( $frm_duplicate_ids[ $old_id ] ) ) {
-					$field_options[ $setting ][] = $frm_duplicate_ids[ $old_id ];
-				} else {
-					$field_options[ $setting ][] = $old_id;
-				}
+				$field_options[ $setting ][] = $frm_duplicate_ids[ $old_id ] ?? $old_id;
 			}
 		} elseif ( isset( $frm_duplicate_ids[ $old_field_id ] ) ) {
 			$field_options[ $setting ] = $frm_duplicate_ids[ $old_field_id ];
@@ -442,15 +489,16 @@ class FrmProField {
 
 	public static function delete( $id ) {
 		$field = FrmField::getOne( $id );
-		if ( empty( $field ) ) {
+
+		if ( ! $field ) {
 			return;
 		}
 
-		// delete the form this repeating field created
+		// Delete the form this repeating field created
 		self::delete_repeat_field( $field );
 		self::reset_form_transition_if_no_break_field( $field );
 
-		//TODO: before delete do something with entries with data field meta_value = field_id
+		// TODO: before delete do something with entries with data field meta_value = field_id
 	}
 
 	public static function delete_repeat_field( $field ) {
@@ -489,6 +537,7 @@ class FrmProField {
 		}
 
 		$form = FrmForm::getOne( $field->form_id );
+
 		if ( ! $form ) {
 			return;
 		}
@@ -508,6 +557,7 @@ class FrmProField {
 
 	/**
 	 * @param stdClass $field
+	 *
 	 * @return bool
 	 */
 	public static function is_list_field( $field ) {
@@ -521,7 +571,8 @@ class FrmProField {
 	 *
 	 * @param int $form_id
 	 * @param array $atts
-	 * @return int $form_id
+	 *
+	 * @return int Form ID.
 	 */
 	public static function create_repeat_form( $form_id, $atts ) {
 		$form_values = array(
@@ -531,39 +582,37 @@ class FrmProField {
 		);
 		$form_values = FrmFormsHelper::setup_new_vars( $form_values );
 
-		$form_id = (int) FrmForm::create( $form_values );
-
-		return $form_id;
+		return (int) FrmForm::create( $form_values );
 	}
 
 	/**
 	 * Return all the field IDs for the fields inside of a section (not necessarily repeating) or an embedded form
 	 *
 	 * @since 2.0.13
+	 *
 	 * @param array $field
-	 * @return array $children
+	 *
+	 * @return array Children.
 	 */
 	public static function get_children( $field ) {
 		if ( FrmField::is_repeating_field( $field ) || $field['type'] === 'form' ) {
 			// If repeating field or embedded form
 
 			$repeat_id = $field['form_select'] ?? $field['field_options']['form_select'];
-			$children  = FrmDb::get_col( 'frm_fields', array( 'form_id' => $repeat_id ) );
-
-		} else {
-			// If regular section
-
-			$children = self::get_children_from_standard_section( $field );
+			return FrmDb::get_col( 'frm_fields', array( 'form_id' => $repeat_id ) );
 		}
 
-		return $children;
+		// If regular section
+		return self::get_children_from_standard_section( $field );
 	}
 
 	/**
 	 * Get the field IDs within a regular section
 	 *
 	 * @since 2.0.25
+	 *
 	 * @param array $field
+	 *
 	 * @return array|null
 	 */
 	private static function get_children_from_standard_section( $field ) {
@@ -580,9 +629,9 @@ class FrmProField {
 			'field_order>' => $min_field_order,
 		);
 		$end_divider_order = FrmDb::get_var( 'frm_fields', $where, 'field_order', array( 'order_by' => 'field_order ASC' ), 1 );
+
 		if ( $end_divider_order ) {
-			$max_field_order             = $end_divider_order - 1;
-			$child_where['field_order<'] = $max_field_order;
+			$child_where['field_order<'] = $end_divider_order - 1;
 		}
 
 		return FrmDb::get_col( 'frm_fields', $child_where );
@@ -592,55 +641,56 @@ class FrmProField {
 	 * Get the entry ID from a linked field
 	 *
 	 * @since 2.0.15
+	 *
 	 * @param int $linked_field_id
 	 * @param string $where_val
 	 * @param string $where_is
-	 * @return int $linked_id
+	 *
+	 * @return int Linked ID.
 	 */
 	public static function get_dynamic_field_entry_id( $linked_field_id, $where_val, $where_is ) {
-		$query     = array(
+		$query = array(
 			'field_id' => $linked_field_id,
 			'meta_value' . FrmDb::append_where_is( $where_is ) => $where_val,
 		);
-		$linked_id = FrmDb::get_col( 'frm_item_metas', $query, 'item_id' );
-		return $linked_id;
+		return FrmDb::get_col( 'frm_item_metas', $query, 'item_id' );
 	}
 
 	/**
 	 * Get the category ID from the category name
 	 *
 	 * @since 2.0.15
+	 *
 	 * @param string $cat_name
+	 *
 	 * @return int
 	 */
 	public static function get_cat_id_from_text( $cat_name ) {
 		return get_cat_ID( $cat_name );
 	}
 
-
 	/**
 	 * Check if the format option isset and true without a regular expression
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array|object $field
+	 *
 	 * @return bool
 	 */
 	public static function is_format_option_true_with_no_regex( $field ) {
-		$has_non_regex_format = false;
-
 		if ( is_array( $field ) ) {
-			$has_non_regex_format = FrmField::is_option_true_in_array( $field, 'format' ) && strpos( $field['format'], '^' ) !== 0;
-		} else {
-			FrmField::is_option_true_in_object( $field, 'format' ) && strpos( $field->field_options['format'], '^' ) !== 0;
+			return FrmField::is_option_true_in_array( $field, 'format' ) && ! str_starts_with( $field['format'], '^' );
 		}
 
-		return $has_non_regex_format;
+		return FrmField::is_option_true_in_object( $field, 'format' ) && ! str_starts_with( $field->field_options['format'], '^' );
 	}
 
 	/**
 	 * Get a list of field types that cannot be used in calculations.
 	 *
 	 * @since 4.0
+	 *
 	 * @return array
 	 */
 	public static function exclude_from_calcs() {
@@ -649,6 +699,7 @@ class FrmProField {
 		$exclude[] = 'data|select';
 		$exclude[] = 'data|radio';
 		$exclude[] = 'data|checkbox';
+		$exclude[] = 'virtual';
 		return $exclude;
 	}
 }

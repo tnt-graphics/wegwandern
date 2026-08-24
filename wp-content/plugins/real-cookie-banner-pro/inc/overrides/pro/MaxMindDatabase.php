@@ -98,7 +98,7 @@ class MaxMindDatabase
             $content = $phar[$fileInArchive]->getContent();
             \file_put_contents($this->getPath(), $content);
         } catch (Exception $e) {
-            return new WP_Error('rcb_maxmind_geoip_database_unarchive', $exception->getMessage());
+            return new WP_Error('rcb_maxmind_geoip_database_unarchive', $e->getMessage());
         } finally {
             \unlink($tmp_archive_path);
             // Archive no longer needed

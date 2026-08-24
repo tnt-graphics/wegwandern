@@ -45,7 +45,7 @@ class FrmProSettings extends FrmSettings {
 	public function default_options() {
 		return array(
 			'edit_msg'                         => __( 'Your submission was successfully saved.', 'formidable-pro' ),
-			'update_value'                     => __( 'Update', 'formidable-pro' ),
+			'update_value'                     => __( 'Update', 'formidable' ),
 			'already_submitted'                => __( 'You have already submitted that form', 'formidable-pro' ),
 			'date_format'                      => 'm/d/Y',
 			'datepicker_library'               => 'default',
@@ -85,6 +85,8 @@ class FrmProSettings extends FrmSettings {
 
 	/**
 	 * @since 4.06.01
+	 *
+	 * @param array $params
 	 */
 	public function fill_with_defaults( $params = array() ) {
 		$params['additional_filter_keys'] = array(
@@ -113,6 +115,7 @@ class FrmProSettings extends FrmSettings {
 		$added = array(
 			'feedback' => '4.06.01',
 		);
+
 		foreach ( $added as $type => $v ) {
 			if ( ! isset( $this->inbox[ $type ] ) && version_compare( $this->inbox['set'], $v, '<' ) ) {
 				$this->inbox[ $type ] = 1;
@@ -124,6 +127,7 @@ class FrmProSettings extends FrmSettings {
 		if ( isset( $params['frm_date_format'] ) ) {
 			$this->date_format = $params['frm_date_format'];
 		}
+
 		if ( isset( $params['frm_datepicker_library'] ) && $this->datepicker_library !== $params['frm_datepicker_library'] ) {
 			$this->datepicker_library = sanitize_key( $params['frm_datepicker_library'] );
 			$this->on_datepicker_library_change();
@@ -185,10 +189,11 @@ class FrmProSettings extends FrmSettings {
 	 */
 	private function update_checkbox_settings( $params ) {
 		$checkboxes = array( 'hide_dashboard_videos', 'use_custom_currency_format' );
+
 		foreach ( $checkboxes as $set ) {
 			$this->$set = isset( $params[ 'frm_' . $set ] ) ? absint( $params[ 'frm_' . $set ] ) : 0;
 		}
-		$this->menu_icon = empty( $params['frm_menu_icon'] ) ? '' : 'frm_white_label_icon';
+		$this->menu_icon = ! empty( $params['frm_menu_icon'] ) ? 'frm_white_label_icon' : '';
 	}
 
 	/**
@@ -199,10 +204,11 @@ class FrmProSettings extends FrmSettings {
 	 */
 	public function get_cal_date() {
 		$formats = FrmProAppHelper::display_to_datepicker_format();
-		if ( isset( $formats[ $this->date_format ] ) ) {
+
+		$this->cal_date_format = 'mm/dd/yy';
+
+		if ( isset( $this->date_format, $formats[ $this->date_format ] ) ) {
 			$this->cal_date_format = $formats[ $this->date_format ];
-		} else {
-			$this->cal_date_format = 'mm/dd/yy';
 		}
 	}
 
@@ -220,7 +226,7 @@ class FrmProSettings extends FrmSettings {
 
 	public function store() {
 		// Save the posted value in the database
-		update_option( $this->option_name, $this, 'no' );
+		update_option( $this->option_name, $this, false );
 
 		delete_transient( $this->option_name );
 		set_transient( $this->option_name, $this );

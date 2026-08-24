@@ -16,21 +16,30 @@ use stdClass;
 abstract class TranslationsMiddleware extends AbstractTemplateMiddleware
 {
     /**
-     * Fetch available translations with the following array scheme:
+     * Prefetched translations by identifier.
+     *
+     * @var array[][]
+     */
+    private $prefetchedTranslations = [];
+    /**
+     * Fetch available translations for templates with the following array scheme:
      *
      * ```
      * [
+     *   'identifier' => [
      *      ['isUntranslated' => false, 'machineTranslationStatus' => 'no-translation' | 'full' | 'partly', 'language' => 'de_DE', 'name' => 'German', 'flag' => false],
      *      ...
+     *   ],
+     *   ...
      * ]
      * ```
      *
      * `name` can be optional.
      *
-     * @param AbstractTemplate $template
-     * @return array[]
+     * @param AbstractTemplate[] $templates
+     * @return array[][] Map of identifier => translations
      */
-    public abstract function fetchTranslations($template);
+    public abstract function fetchTranslations($templates);
     // Documented in AbstractTemplateMiddleware
     public function beforePersistTemplate($template, &$allTemplates)
     {
@@ -40,11 +49,18 @@ abstract class TranslationsMiddleware extends AbstractTemplateMiddleware
     public function beforeUsingTemplate($template)
     {
         $result = [];
-        foreach ($this->fetchTranslations($template) as $translation) {
+        $translations = $this->prefetchedTranslations[$template->identifier] ?? [];
+        foreach ($translations as $translation) {
             $result[$translation['language']] = $translation;
         }
         if (\count($result) > 0) {
             $template->consumerData['translations'] = $result;
         }
+    }
+    // Documented in AbstractTemplateMiddleware
+    public function beforeUsingTemplates(&$templates)
+    {
+        $this->prefetchedTranslations = $this->fetchTranslations($templates);
+        parent::beforeUsingTemplates($templates);
     }
 }

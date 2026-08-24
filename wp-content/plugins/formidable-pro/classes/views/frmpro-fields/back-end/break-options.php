@@ -31,7 +31,7 @@ $html_id    = 'frm_prev_label_' . absint( $field['id'] );
 <p>
 	<label class="frm-h-stack-xs" for="<?php echo esc_attr( $html_id ); ?>">
 		<span><?php esc_html_e( 'Page Turn Transitions', 'formidable-pro' ); ?></span>
-		<?php FrmProAppHelper::tooltip_icon( __( 'This setting applies to all page break fields in this form.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
+		<?php FrmAppHelper::tooltip_icon( __( 'This setting applies to all page break fields in this form.', 'formidable-pro' ), array( 'class' => 'frm-flex' ) ); ?>
 	</label>
 
 	<select
@@ -39,7 +39,7 @@ $html_id    = 'frm_prev_label_' . absint( $field['id'] );
 		name="field_options[transition_<?php echo absint( $field['id'] ); ?>]"
 		class="frm_page_transition_setting"
 	>
-		<option value=""><?php esc_html_e( 'None', 'formidable-pro' ); ?></option>
+		<option value=""><?php esc_html_e( 'None', 'formidable' ); ?></option>
 		<option value="slidein" <?php selected( $transition, 'slidein' ); ?>>
 			<?php esc_html_e( 'Slide horizontally', 'formidable-pro' ); ?>
 		</option>

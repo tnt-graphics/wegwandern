@@ -8,21 +8,27 @@ if ( ! class_exists( 'FrmTextToggleStyleComponent' ) ) {
 	return;
 }
 
-$class_attr = 'frm-calc-for-' . $field['id'] . ' default-value-section-' . $field['id'] . ( isset( $default_value_types['calc']['current'] ) ? '' : ' frm_hidden' );
-$calc       = $field['field_options']['calc'] ?? $field['calc'];
+$calc              = $field['field_options']['calc'] ?? $field['calc'];
+$calc_type         = $field['calc_type'];
+$class_attr        = 'frm-calc-for-' . $field['id'] . ' default-value-section-' . $field['id'] . ( isset( $default_value_types['calc']['current'] ) ? '' : ' frm_hidden' );
+$math_button_class = 'frm-field-formula-button frm-math-button';
+
+if ( 'text' === $calc_type ) {
+	$math_button_class .= ' frm_disabled';
+}
 ?>
 <div class="<?php echo esc_attr( $class_attr ); ?>">
 	<div class="frm_form_field">
 		<?php
 		new FrmTextToggleStyleComponent(
 			'field_options[calc_type_' . esc_attr( $field['id'] ) . ']',
-			$field['calc_type'],
+			$calc_type,
 			array(
 				'id'            => 'calc_type_' . $field['id'],
 				'default_value' => '',
 				'options'       => array(
 					array(
-						'label' => __( 'Text', 'formidable-pro' ),
+						'label' => __( 'Text', 'formidable' ),
 						'value' => 'text',
 					),
 					array(
@@ -42,8 +48,6 @@ $calc       = $field['field_options']['calc'] ?? $field['calc'];
 		</label>
 
 		<div class="frm-field-formula" data-field-id="<?php echo absint( $field['id'] ); ?>">
-			<div class="frm-field-formula-height"></div>
-
 			<textarea
 				id="frm_calc_<?php echo absint( $field['id'] ); ?>"
 				name="field_options[calc_<?php echo absint( $field['id'] ); ?>]"
@@ -52,43 +56,13 @@ $calc       = $field['field_options']['calc'] ?? $field['calc'];
 				rows="3"
 				cols="30"
 			><?php echo esc_html( $calc ); ?></textarea>
-
-			<ul class="frm-field-formula-buttons">
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text -frm-mt-2xs">.</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text">%</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text">)</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text">(</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text">/</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text frm-mt-2xs">*</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text">-</span>
-				</li>
-				<li class="frm-field-formula-button frm-math-button" role="button">
-					<span class="frm-math-button-text">+</span>
-				</li>
-
-				<li class="frm-field-formula-button frm-field-formula-insert-field frm-show-inline-modal frm-open-calc frm-force-mr-auto" role="button" data-open="frm-calc-box-<?php echo esc_attr( $field['id'] ); ?>">
-					<span><?php FrmProAppHelper::icon_by_class( 'frm_icon_font frm_more_horiz_icon frm_svg12' ); ?></span>
-					<span><?php esc_html_e( 'Insert Field', 'formidable-pro' ); ?></span>
-				</li>
-			</ul>
-
+			<div class="frm-field-formula-height"></div>
 			<?php
+			// Formula buttons are added here dynamically with JavaScript when the settings are displayed.
+
 			FrmFieldsHelper::inline_modal(
 				array(
-					'title'        => ! class_exists( 'FrmTextToggleStyleComponent' ) ? __( 'Calculate Default Value', 'formidable-pro' ) : '', // Backwards compatibility "@since 6.24".
+					'title'        => class_exists( 'FrmTextToggleStyleComponent' ) ? '' : __( 'Calculate Default Value', 'formidable-pro' ), // Backwards compatibility "@since 6.24".
 					'callback'     => array( 'FrmProFieldsController', 'calculation_settings' ),
 					'args'         => compact( 'field' ),
 					'id'           => 'frm-calc-box-' . $field['id'],

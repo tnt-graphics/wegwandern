@@ -7,11 +7,6 @@ $cloud_services = array(
         'name' => 'Google Drive',
         'img' => WPMF_PLUGIN_URL . 'assets/images/googledrive.svg',
     ),
-    'google_photo' => array(
-        'key' => 'google_photo',
-        'name' => 'Google Photos',
-        'img' => WPMF_PLUGIN_URL . 'assets/images/googlephotos.svg',
-    ),
     'dropbox' => array(
         'key' => 'dropbox_box',
         'name' => 'Dropbox',
@@ -442,7 +437,12 @@ $cloud_services = array(
                     'key' => 'bunny',
                     'name' => 'Bunny Storage',
                     'img' => WPMFAD_PLUGIN_URL . 'assets/images/bunny.png',
-                )
+                ),
+                'vultr' => array(
+                    'key' => 'vultr',
+                    'name' => 'Vultr',
+                    'img' => WPMFAD_PLUGIN_URL . 'assets/images/vultr.png',
+                ),
             );
 
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- No action, nonce is not required

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php echo esc_html( $previous ); ?>
 	</button>
 	<button class="frm_button_submit" disabled="disabled">
-		<?php echo FrmAppHelper::kses( force_balance_tags( $field['name'] ), 'all' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		<?php FrmAppHelper::kses_echo( force_balance_tags( $field['name'] ), 'all' ); ?>
 	</button>
 </div>
 
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="frm-collapse-page button frm-button-secondary frm-button-sm">
 		<?php
 		/* translators: %s: The page number */
-		printf( esc_html__( 'Page %s', 'formidable-pro' ), '<span class="frm-page-num">2</span>' );
+		printf( esc_html__( 'Page %s', 'formidable' ), '<span class="frm-page-num">2</span>' );
 		FrmAppHelper::icon_by_class( 'frmfont frm_arrowdown6_icon', array( 'aria-hidden' => 'true' ) );
 		?>
 	</div>

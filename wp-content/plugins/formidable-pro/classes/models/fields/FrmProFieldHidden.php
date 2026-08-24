@@ -30,9 +30,8 @@ class FrmProFieldHidden extends FrmFieldHidden {
 
 		ob_start();
 		FrmProFieldsHelper::insert_hidden_fields( $this->field, $args['field_name'], $this->field['value'] );
-		$html = ob_get_clean();
 
-		return $html;
+		return ob_get_clean();
 	}
 
 	/**
@@ -42,7 +41,7 @@ class FrmProFieldHidden extends FrmFieldHidden {
 	 */
 	public function set_value_before_save( $value ) {
 		if ( FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $this->field, 'format' ) ) ) {
-			$value = FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
+			return FrmProCurrencyHelper::normalize_formatted_numbers( $this->field, $value );
 		}
 
 		return $value;

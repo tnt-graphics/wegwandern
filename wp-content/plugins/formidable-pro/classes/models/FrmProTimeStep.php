@@ -3,6 +3,7 @@
  * Handle step of options in time dropdowns
  *
  * @package FormidablePro
+ *
  * @since 6.9
  */
 
@@ -70,7 +71,6 @@ class FrmProTimeStep {
 		return ! $this->m && ! $this->s && ! $this->ms;
 	}
 
-
 	/**
 	 * Checks if step is full minute.
 	 *
@@ -107,6 +107,7 @@ class FrmProTimeStep {
 	 *
 	 * @param int $value The value.
 	 * @param int $max   Maximum value (1000 for millisecond, 60 for second).
+	 *
 	 * @return int Return the value to divide, or `0` if don't need to divide to find the step.
 	 */
 	private function get_value_to_divide( $value, $max ) {
@@ -118,11 +119,7 @@ class FrmProTimeStep {
 			return $value % $max;
 		}
 
-		if ( $value > $max / 2 ) {
-			return $max - $value;
-		}
-
-		return $value;
+		return $value > $max / 2 ? $max - $value : $value;
 	}
 
 	/**
@@ -140,11 +137,13 @@ class FrmProTimeStep {
 		}
 
 		$value_to_divide = $this->get_value_to_divide( $this->m, 60 );
+
 		if ( ! $value_to_divide ) {
 			return 0;
 		}
 
 		$remainder = 60 % $value_to_divide;
+
 		if ( ! $remainder ) { // 1, 2, 3, 12, 15,...
 			return $value_to_divide;
 		}
@@ -168,11 +167,7 @@ class FrmProTimeStep {
 
 		$value_to_divide = $this->get_value_to_divide( $this->s, 60 );
 		$remainder       = 60 % $value_to_divide;
-		if ( ! $remainder ) {
-			return $value_to_divide;
-		}
-
-		return 1;
+		return $remainder ? 1 : $value_to_divide;
 	}
 
 	/**
@@ -187,10 +182,6 @@ class FrmProTimeStep {
 
 		$value_to_divide = $this->get_value_to_divide( $this->ms, 1000 );
 		$remainder       = 1000 % $value_to_divide;
-		if ( ! $remainder ) {
-			return $value_to_divide;
-		}
-
-		return 1;
+		return $remainder ? 1 : $value_to_divide;
 	}
 }

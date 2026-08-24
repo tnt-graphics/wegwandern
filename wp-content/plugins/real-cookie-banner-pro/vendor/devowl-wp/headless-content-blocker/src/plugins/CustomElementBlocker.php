@@ -18,7 +18,8 @@ use DevOwl\RealCookieBanner\Vendor\DevOwl\HeadlessContentBlocker\matcher\Abstrac
  */
 class CustomElementBlocker extends AbstractPlugin
 {
-    const HTML_TAG_EXCLUDE = ['font-face'];
+    // `media-player` stays unprefixed: Fluent Player looks the node up by tag name.
+    const HTML_TAG_EXCLUDE = ['font-face', 'media-player'];
     private $customElements = [];
     /**
      * See `AbstractPlugin`.

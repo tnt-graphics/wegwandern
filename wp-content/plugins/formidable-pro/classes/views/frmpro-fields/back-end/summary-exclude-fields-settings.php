@@ -5,10 +5,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <p class="howto frm-my-sm">
 	<?php
+		$docs_link = FrmAppHelper::admin_upgrade_link(
+			array(
+				'medium'  => 'summary-field-settings',
+				'content' => 'summary-field-exclude-fields-docs',
+				'anchor'  => 'kb-exclude-fields-from-summary',
+			),
+			'knowledgebase/summary-review-before-submit/'
+		);
+
 		printf(
 			/* translators: %1$s: HTML open link, %2$s: HTML close link */
 			esc_html__( 'Select a field from the list below to exclude it from the summary OR %1$sLearn which fields are automatically included%2$s.', 'formidable-pro' ),
-			'<a href="https://formidableforms.com/knowledgebase/" target="_blank" class="frm-summary-learn-more frm-force-inline">',
+			'<a href="' . esc_url( $docs_link ) . '" target="_blank" class="frm-summary-learn-more frm-force-inline">',
 			'</a>'
 		);
 	?>
@@ -18,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 FrmAppHelper::show_search_box(
 	array(
 		'input_id'    => 'frm_calc_' . $field['id'],
-		'placeholder' => __( 'Search Fields', 'formidable-pro' ),
+		'placeholder' => __( 'Search Fields', 'formidable' ),
 		'tosearch'    => 'frm-field-list-' . $field['id'],
 	)
 );

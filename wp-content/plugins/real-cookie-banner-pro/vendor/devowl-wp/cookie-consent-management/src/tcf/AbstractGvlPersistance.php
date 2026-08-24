@@ -59,6 +59,7 @@ abstract class AbstractGvlPersistance
      * - [`tcfPolicyVersion`]: (int) Default to latest
      * - [`vendorListVersion`]: (int) Default to latest
      * - [`language`]: (string) Default to current
+     * - [`columns`]: (string[]) Optional column allowlist for `SELECT` (e.g. cookie-policy table).
      *
      * @see https://vendor-list.consensu.org/v3/vendor-list.json
      * @param array $args

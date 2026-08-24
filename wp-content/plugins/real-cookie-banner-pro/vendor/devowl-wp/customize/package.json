@@ -1,6 +1,6 @@
 {
     "name": "@devowl-wp/customize",
-    "version": "1.13.22",
+    "version": "1.13.31",
     "private": true,
     "description": "Abstract utility for live preview (customize)",
     "homepage": "https://devowl.io",
@@ -273,7 +273,6 @@
     },
     "swc": {
         "jsc": {
-            "loose": true,
             "parser": {
                 "syntax": "typescript",
                 "tsx": true,

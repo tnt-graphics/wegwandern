@@ -11,6 +11,7 @@ class FrmProFieldLookup extends FrmFieldType {
 
 	/**
 	 * @var string
+	 *
 	 * @since 3.0
 	 */
 	protected $type = 'lookup';
@@ -39,6 +40,7 @@ class FrmProFieldLookup extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_primary_options( $args ) {
@@ -51,6 +53,7 @@ class FrmProFieldLookup extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display', and 'values'
 	 */
 	public function show_extra_field_choices( $args ) {
@@ -85,10 +88,12 @@ class FrmProFieldLookup extends FrmFieldType {
 			require FrmProAppHelper::plugin_path() . '/classes/views/lookup-fields/back-end/label-setting.php';
 		}
 
-		if ( $data_type === 'select' ) {
-			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php';
-			$this->auto_width_setting( $args );
+		if ( $data_type !== 'select' ) {
+			return;
 		}
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/multi-select.php';
+		$this->auto_width_setting( $args );
 	}
 
 	/**
@@ -98,6 +103,7 @@ class FrmProFieldLookup extends FrmFieldType {
 	 * @since 6.21
 	 *
 	 * @param array $field
+	 *
 	 * @return bool
 	 */
 	private function should_include_label_settings( $field ) {
@@ -106,6 +112,7 @@ class FrmProFieldLookup extends FrmFieldType {
 		}
 
 		$get_values_field = FrmField::getOne( $field['get_values_field'] );
+
 		if ( ! $get_values_field ) {
 			return false;
 		}
@@ -120,10 +127,12 @@ class FrmProFieldLookup extends FrmFieldType {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - Includes 'field', 'display'.
 	 */
 	public function show_after_default( $args ) {
 		$field = $args['field'];
+
 		if ( $field['data_type'] !== 'text' ) {
 			return;
 		}
@@ -139,10 +148,12 @@ class FrmProFieldLookup extends FrmFieldType {
 	 * Show the 'Get options from' settings above a lookup field's Field Options
 	 *
 	 * @since 4.0
+	 *
 	 * @param array $field
 	 */
 	public function show_get_options( $field ) {
 		$lookup_args = $this->get_args_for_get_options_setting( $field );
+
 		if ( $field['data_type'] === 'text' ) {
 			$opt_label = __( 'Search In', 'formidable-pro' );
 		} else {
@@ -156,8 +167,10 @@ class FrmProFieldLookup extends FrmFieldType {
 	 * Get the form_list and form_fields for the Get Values From/Get Options From option
 	 *
 	 * @since 4.0
+	 *
 	 * @param array $field
-	 * @return array $lookup_args
+	 *
+	 * @return array Lookup args.
 	 */
 	private function get_args_for_get_options_setting( $field ) {
 		$lookup_args = array();
@@ -167,7 +180,6 @@ class FrmProFieldLookup extends FrmFieldType {
 
 		if ( isset( $field['get_values_form'] ) && is_numeric( $field['get_values_form'] ) ) {
 			$lookup_args['form_fields'] = $this->get_fields_for_get_values_field_dropdown( $field['get_values_form'], $field['type'] );
-
 		} else {
 			$lookup_args['form_fields'] = array();
 		}
@@ -197,10 +209,11 @@ class FrmProFieldLookup extends FrmFieldType {
 	 *
 	 * @param int $form_id
 	 * @param string $field_type
-	 * @return array $form_fields
+	 *
+	 * @return array Form fields.
 	 */
 	public function get_fields_for_get_values_field_dropdown( $form_id, $field_type ) {
-		if ( in_array( $field_type, array( 'lookup', 'text', 'hidden' ), true ) ) {
+		if ( in_array( $field_type, array( 'lookup', 'text', 'hidden', 'virtual' ), true ) ) {
 			$form_fields = FrmField::get_all_for_form( $form_id, '', 'include' );
 		} else {
 			$where   = array( 'type' => $field_type );
@@ -221,9 +234,7 @@ class FrmProFieldLookup extends FrmFieldType {
 		 * @param array $fields The fields.
 		 * @param array $args   Includes `form_id`, `field_type`.
 		 */
-		$form_fields = apply_filters( 'frm_pro_fields_in_lookup_selection', $form_fields, compact( 'form_id', 'field_type' ) );
-
-		return $form_fields;
+		return apply_filters( 'frm_pro_fields_in_lookup_selection', $form_fields, compact( 'form_id', 'field_type' ) );
 	}
 
 	public function prepare_front_field( $values, $atts ) {
@@ -235,33 +246,35 @@ class FrmProFieldLookup extends FrmFieldType {
 		ob_start();
 
 		FrmProLookupFieldsController::get_front_end_lookup_field_html( $this->field, $args['field_name'], $args['html_id'] );
-		$input_html = ob_get_contents();
-		ob_end_clean();
 
-		return $input_html;
+		return ob_get_clean();
 	}
 
 	/**
 	 * Make sure a lookup field has options before marking it required.
 	 *
 	 * @since 4.01
+	 *
+	 * @param array $args
 	 */
 	public function validate( $args ) {
-		$errors = array();
-
+		$errors      = array();
 		$is_required = FrmField::is_required( (array) $this->field );
-		$is_empty    = ! is_array( $args['value'] ) && trim( $args['value'] ) == '';
+		$is_empty    = ! is_array( $args['value'] ) && trim( $args['value'] ) === '';
+
 		if ( ! $is_required || ! $is_empty ) {
 			return $errors;
 		}
 
 		$type  = FrmField::get_option( $this->field, 'data_type' );
 		$watch = FrmField::get_option( $this->field, 'watch_lookup' );
-		if ( $type === 'text' || $type === 'data' || empty( $watch ) ) {
+
+		if ( $type === 'text' || $type === 'data' || ! $watch ) {
 			return $errors;
 		}
 
 		$required_msg = FrmFieldsHelper::get_error_msg( $this->field, 'blank' );
+
 		if ( ! isset( $args['errors'][ 'field' . $args['id'] ] ) || $args['errors'][ 'field' . $args['id'] ] !== $required_msg ) {
 			return $errors;
 		}
@@ -285,6 +298,7 @@ class FrmProFieldLookup extends FrmFieldType {
 		remove_filter( 'frm_validate_lookup_field_entry', array( $this, 'maybe_remove_error' ), 20 );
 
 		$error_key = 'field' . $args['id'];
+
 		if ( isset( $errors[ $error_key ] ) && ! $this->get_dependent_options( $args ) ) {
 			unset( $errors[ $error_key ] );
 		}
@@ -299,6 +313,7 @@ class FrmProFieldLookup extends FrmFieldType {
 	 * @since 4.01
 	 *
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	private function get_dependent_options( $args ) {
@@ -324,7 +339,7 @@ class FrmProFieldLookup extends FrmFieldType {
 
 	protected function prepare_import_value( $value, $atts ) {
 		if ( FrmField::get_option( $this->field, 'data_type' ) === 'checkbox' ) {
-			$value = FrmProXMLHelper::convert_imported_value_to_array( $value );
+			return FrmProXMLHelper::convert_imported_value_to_array( $value );
 		}
 		return $value;
 	}
@@ -347,13 +362,14 @@ class FrmProFieldLookup extends FrmFieldType {
 	 *
 	 * @param array|string $value
 	 * @param array        $atts
+	 *
 	 * @return array|string
 	 */
 	protected function prepare_display_value( $value, $atts = array() ) {
-		$display_value_type = $this->get_display_value_type( $atts );
-		if ( 'label' === $display_value_type && 'label' !== FrmField::get_option( $this->field, 'lookup_saved_value' ) ) {
+		if ( 'label' === $this->get_display_value_type( $atts ) && 'label' !== FrmField::get_option( $this->field, 'lookup_saved_value' ) ) {
 			return $this->display_option_label( $value );
 		}
+
 		return $value;
 	}
 
@@ -364,6 +380,7 @@ class FrmProFieldLookup extends FrmFieldType {
 	 * @since 6.21
 	 *
 	 * @param array $atts
+	 *
 	 * @return string 'label' or 'value'.
 	 */
 	private function get_display_value_type( $atts ) {
@@ -377,21 +394,25 @@ class FrmProFieldLookup extends FrmFieldType {
 	 * @since 6.21
 	 *
 	 * @param array|string $value
+	 *
 	 * @return array|string
 	 */
 	private function display_option_label( $value ) {
 		$linked_field = FrmField::getOne( FrmField::get_option( $this->field, 'get_values_field' ) );
+
 		if ( ! $linked_field || empty( $linked_field->options ) || ! is_array( $linked_field->options ) ) {
 			return $value;
 		}
 
 		$first_option = reset( $linked_field->options );
+
 		if ( ! is_array( $first_option ) ) {
 			return $value;
 		}
 
 		if ( is_array( $value ) ) {
 			$display_value = array();
+
 			foreach ( $linked_field->options as $option ) {
 				foreach ( $value as $check_value ) {
 					if ( $option['value'] === $check_value ) {
@@ -400,6 +421,7 @@ class FrmProFieldLookup extends FrmFieldType {
 					}
 				}
 			}
+
 			return implode( ', ', $display_value );
 		}
 
@@ -418,14 +440,12 @@ class FrmProFieldLookup extends FrmFieldType {
 	 *
 	 * @param string $value
 	 * @param array  $field
+	 *
 	 * @return string
 	 */
 	public static function filter_lookup_saved_value( $value, $field ) {
 		$filtered_value = apply_filters( 'frm_lookup_option_value', $value, $field );
-		if ( ! is_string( $filtered_value ) ) {
-			return $value;
-		}
-		return $filtered_value;
+		return is_string( $filtered_value ) ? $filtered_value : $value;
 	}
 
 	/**
@@ -433,13 +453,11 @@ class FrmProFieldLookup extends FrmFieldType {
 	 *
 	 * @param string $value
 	 * @param array  $field
+	 *
 	 * @return string
 	 */
 	public static function filter_lookup_displayed_value( $value, $field ) {
 		$filtered_value = apply_filters( 'frm_lookup_option_label', $value, $field );
-		if ( ! is_string( $filtered_value ) ) {
-			return $value;
-		}
-		return $filtered_value;
+		return is_string( $filtered_value ) ? $filtered_value : $value;
 	}
 }

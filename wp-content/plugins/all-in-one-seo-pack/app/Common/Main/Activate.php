@@ -27,7 +27,7 @@ class Activate {
 		}
 
 		// This needs to run on at least 1000 because we load the roles in the Access class on 999.
-		add_action( 'init', [ $this, 'init' ], 1000 );
+		add_action( 'admin_init', [ $this, 'init' ], 1000 );
 	}
 
 	/**
@@ -74,6 +74,7 @@ class Activate {
 		}
 
 		aioseo()->core->cache->clear();
+		wp_cache_flush();
 
 		$this->maybeRunSetupWizard();
 	}
@@ -87,6 +88,12 @@ class Activate {
 	 */
 	public function deactivate() {
 		aioseo()->access->removeCapabilities();
+
+		// Added cache clear because we changed the cache structure on version 4.9.1
+		// now we store as string and have a is_object column to differentiate between array and objects.
+		// This will prevent errors when deactivating the PRO plugin but keeping an old version of the LITE plugin.
+		aioseo()->core->cache->clear();
+		wp_cache_flush();
 	}
 
 	/**
@@ -110,12 +117,10 @@ class Activate {
 			return;
 		}
 
-		if ( isset( $_GET['activate-multi'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Recommended
-			return;
-		}
-
-		// Sets 30 second transient for welcome screen redirect on activation.
-		aioseo()->core->cache->update( 'activation_redirect', true, 30 );
+		// Sets activation redirect flag.
+		// We use HOUR_IN_SECONDS to ensure the redirect still works after bulk activation,
+		// where the redirect is deferred to the next admin page load.
+		aioseo()->core->cache->update( 'activation_redirect', true, HOUR_IN_SECONDS );
 	}
 
 	/**

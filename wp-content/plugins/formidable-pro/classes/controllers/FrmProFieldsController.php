@@ -25,9 +25,22 @@ class FrmProFieldsController {
 	 */
 	private static $is_expired_outside_of_grace_period;
 
-	public static function &change_type( $type, $field ) {
-		global $frm_vars;
+	/**
+	 * Store and re-use the choices limit reached statuses for fields.
+	 *
+	 * @since 6.28
+	 *
+	 * @var array
+	 */
+	private static $choices_limit_reached_statuses = array();
 
+	/**
+	 * @param string $type
+	 * @param array $field
+	 *
+	 * @return string
+	 */
+	public static function change_type( $type, $field ) {
 		remove_filter( 'frm_field_type', 'FrmFieldsController::change_type' );
 
 		// Don't change user ID fields or repeating sections to hidden
@@ -40,19 +53,22 @@ class FrmProFieldsController {
 		}
 
 		if ( ! FrmAppHelper::is_admin() && $type !== 'hidden' && $type !== 'divider' && ! FrmProFieldsHelper::is_field_visible_to_user( $field ) ) {
-			$type = 'hidden';
+			return 'hidden';
 		}
 
 		return $type;
 	}
 
+	/**
+	 * @param array $field
+	 */
 	public static function use_field_key_value( $opt, $opt_key, $field ) {
-		//if(in_array($field['post_field'], array( 'post_category', 'post_status')) or ($field['type'] === 'user_id' and is_admin() and current_user_can('administrator')))
+		// if(in_array($field['post_field'], array( 'post_category', 'post_status')) or ($field['type'] === 'user_id' and is_admin() and current_user_can('administrator')))
 		if ( FrmField::is_option_true( $field, 'use_key' ) ||
 			( isset( $field['type'] ) && $field['type'] === 'data' ) ||
 			( isset( $field['post_field'] ) && $field['post_field'] === 'post_status' )
 		) {
-			$opt = $opt_key;
+			return $opt_key;
 		}
 
 		return $opt;
@@ -62,9 +78,14 @@ class FrmProFieldsController {
 	 * @param array    $field
 	 * @param stdClass $form
 	 * @param int      $parent_form_id
+	 *
 	 * @return void
 	 */
 	public static function show_field( $field, $form, $parent_form_id ) {
+		if ( 'virtual' === $field['type'] ) {
+			return;
+		}
+
 		global $frm_vars;
 
 		$is_currency          = ! empty( $field['is_currency'] ) || FrmProCurrencyHelper::is_currency_format( FrmField::get_option( $field, 'format' ) );
@@ -105,6 +126,167 @@ class FrmProFieldsController {
 		$frm_vars['calc_fields'][ $field['field_key'] ] = FrmProFormsHelper::get_calc_rule_for_field( $attributes );
 	}
 
+	/**
+	 * @since 6.28
+	 *
+	 * @param array $args
+	 *
+	 * @return void
+	 */
+	public static function admin_single_opt( $args ) {
+		$field             = $args['field'];
+		$opt_key           = $args['opt_key'];
+		$choice_limit      = $field['options'][ $opt_key ]['limit'] ?? '';
+		$set_choices_limit = (bool) FrmField::get_option( $field, 'set_choices_limit' );
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/choice-limit.php';
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param bool  $default
+	 * @param bool  $choice_key
+	 * @param bool  $is_selected_choice
+	 * @param array $field
+	 *
+	 * @return bool
+	 */
+	public static function should_disable_choice( $default, $choice_key, $is_selected_choice, $field ) {
+		$choice_limit_reached = self::choices_limit_reached_statuses( $field )[ $choice_key ] ?? false;
+
+		if ( ! $choice_limit_reached ) {
+			return false;
+		}
+
+		if ( ! $is_selected_choice ) {
+			return true;
+		}
+
+		global $frm_vars;
+
+		return empty( $frm_vars['editing_entry'] );
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param bool   $default
+	 * @param string $choice_key
+	 * @param array  $field
+	 *
+	 * @return bool
+	 */
+	public static function should_hide_field_choice( $default, $choice_key, $field ) {
+		$choice_limit_reached = self::choices_limit_reached_statuses( $field )[ $choice_key ] ?? false;
+
+		if ( ! $choice_limit_reached ) {
+			return false;
+		}
+
+		return FrmProFieldsHelper::should_hide_maxed_out_field_choices( $field['form_id'], $field, $choice_key );
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param bool  $default
+	 * @param array $field
+	 *
+	 * @return bool
+	 */
+	public static function should_skip_rendering_choices_for_field( $default, $field ) {
+		if ( ! FrmProFieldsHelper::should_show_choices_limit_message( self::choices_limit_reached_statuses( $field ), $field ) ) {
+			return false;
+		}
+
+		echo esc_html( FrmFieldsHelper::get_error_msg( $field, 'choice_limit_msg' ) );
+		return true;
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param array $field
+	 *
+	 * @return array
+	 */
+	public static function choices_limit_reached_statuses( $field ) {
+		if ( ! empty( self::$choices_limit_reached_statuses[ $field['id'] ] ) ) {
+			return self::$choices_limit_reached_statuses[ $field['id'] ];
+		}
+
+		$choices_limit_reached_statuses = array();
+
+		foreach ( $field['options'] as $opt_key => $opt ) {
+			$choices_limit_reached_statuses[ $opt_key ] = FrmProFieldsHelper::choice_limit_reached( $field, $opt_key );
+		}
+
+		self::$choices_limit_reached_statuses[ $field['id'] ] = $choices_limit_reached_statuses;
+
+		return $choices_limit_reached_statuses;
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param array  $field
+	 * @param string $opt_key
+	 *
+	 * @return void
+	 */
+	public static function after_choice_input( $field, $opt_key ) {
+		if ( ! FrmProFieldsHelper::should_show_remaining_choices( $field ) || FrmField::get_option( $field, 'image_options' ) ) {
+			return;
+		}
+
+		$choice_entry_data = FrmProFieldsHelper::get_choice_entry_data( $field['id'], $opt_key );
+
+		if ( ! $choice_entry_data ) {
+			return;
+		}
+
+		$choices_left = $choice_entry_data['limit'] - $choice_entry_data['count'];
+		FrmAppHelper::kses_echo( FrmProFieldsHelper::get_remaining_qty_message( $choices_left, $field ), 'all' );
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @param array $default_field_validation_messages
+	 *
+	 * @return array
+	 */
+	public static function default_field_validation_messages( $default_field_validation_messages ) {
+		$choice_limit_msg = __( 'All choices have reached their entry limit', 'formidable-pro' );
+
+		$default_field_validation_messages['choice_limit_msg'] = array(
+			'full' => $choice_limit_msg,
+			'part' => $choice_limit_msg,
+		);
+		return $default_field_validation_messages;
+	}
+
+	/**
+	 * Runs after the last validation message is added.
+	 *
+	 * @since 6.28
+	 *
+	 * @param array $display
+	 * @param array $field
+	 *
+	 * @return void
+	 */
+	public static function field_validation_messages( $display, $field ) {
+		if ( empty( $display['choice_limit'] ) ) {
+			return;
+		}
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/choices-maxed-out-message.php';
+	}
+
+	/**
+	 * @param array $field
+	 */
 	public static function build_field_class( $classes, $field ) {
 		if ( 'inline' === $field['conf_field'] ) {
 			$classes .= ' frm_conf_inline';
@@ -113,17 +295,12 @@ class FrmProFieldsController {
 		}
 
 		$columns = '';
-		if ( FrmField::is_field_type( $field, 'checkbox' ) || FrmField::is_field_type( $field, 'radio' ) ) {
-			if ( isset( $field['align'] ) ) {
-				$columns = $field['align'];
-			}
 
-			if ( ! empty( $columns ) ) {
-				$field_obj = FrmFieldFactory::get_field_type( $field['type'] );
-				if ( is_callable( array( $field_obj, 'prepare_align_class' ) ) ) {
-					$field_obj->prepare_align_class( $columns );
-				}
-			}
+		if ( FrmField::is_field_type( $field, 'checkbox' ) || FrmField::is_field_type( $field, 'radio' ) ) {
+			$columns   = $field['align'] ?? '';
+			$field_obj = FrmFieldFactory::get_field_type( $field['type'], $field );
+
+			$field_obj->prepare_align_class( $columns );
 		}
 
 		$classes = str_replace( ' frmstart ', ' frmstart ' . $columns . ' ', $classes );
@@ -131,6 +308,52 @@ class FrmProFieldsController {
 		self::add_pro_field_class( $field, $classes );
 
 		return $classes;
+	}
+
+	/**
+	 * @since 6.28
+	 *
+	 * @return void
+	 */
+	public static function include_remaining_qty_modal() {
+		if ( ! FrmAppHelper::is_form_builder_page( false ) ) {
+			return;
+		}
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/choices-remaining-qty-modal.php';
+	}
+
+	public static function update_choice_limit_settings() {
+		FrmAppHelper::permission_check( 'frm_edit_forms' );
+		check_ajax_referer( 'frm_ajax', 'nonce' );
+
+		$field_id = FrmAppHelper::get_post_param( 'field_id', 0, 'absint' );
+
+		if ( ! $field_id ) {
+			wp_send_json_error( __( 'Field ID is required', 'formidable-pro' ) );
+		}
+
+		$remaining_qty_label = FrmAppHelper::get_post_param( 'remaining_qty_label', '', 'sanitize_text_field' );
+		$exhausted_message   = FrmAppHelper::get_post_param( 'exhausted_message', '', 'sanitize_text_field' );
+		$field_options       = FrmDb::get_var( 'frm_fields', array( 'id' => $field_id ), 'field_options' );
+
+		if ( ! $field_options ) {
+			wp_send_json_error( __( 'Field options are required', 'formidable-pro' ) );
+		}
+
+		FrmAppHelper::unserialize_or_decode( $field_options );
+
+		$field_options['remaining_qty_label'] = $remaining_qty_label;
+		$field_options['exhausted_message']   = $exhausted_message;
+
+		FrmField::update(
+			$field_id,
+			array(
+				'field_options' => $field_options,
+			)
+		);
+
+		wp_send_json_success();
 	}
 
 	/**
@@ -147,6 +370,7 @@ class FrmProFieldsController {
 		}
 
 		$pro_fields = self::get_pro_field_selection();
+
 		if ( isset( $pro_fields[ $field['type'] ] ) ) {
 			$classes .= ' frm_noallow frm_show_upgrade frm_show_expired_modal';
 		}
@@ -156,6 +380,7 @@ class FrmProFieldsController {
 	 * @since 6.18
 	 *
 	 * @param string $options_view_path The path to the options view file.
+	 *
 	 * @return string
 	 */
 	public static function get_format_options_path( $options_view_path ) {
@@ -189,6 +414,7 @@ class FrmProFieldsController {
 	/**
 	 * @param array $field
 	 * @param bool  $echo
+	 *
 	 * @return string
 	 */
 	public static function input_html( $field, $echo = true ) {
@@ -207,7 +433,7 @@ class FrmProFieldsController {
 				echo $add_html;
 			}
 
-			//don't continue if we are on the form builder page
+			// Don't continue if we are on the form builder page
 			return $add_html;
 		}
 
@@ -237,6 +463,7 @@ class FrmProFieldsController {
 	 *
 	 * @param string $class Existing input classes.
 	 * @param array  $field The field data.
+	 *
 	 * @return string
 	 */
 	public static function add_input_classes( $class, $field ) {
@@ -254,6 +481,7 @@ class FrmProFieldsController {
 	 *
 	 * @param array  $field The field properties.
 	 * @param string $add_html The field html.
+	 *
 	 * @return void
 	 */
 	private static function add_html_autocomplete( $field, &$add_html ) {
@@ -262,22 +490,28 @@ class FrmProFieldsController {
 		}
 	}
 
+	/**
+	 * @param array $field
+	 *
+	 * @return string
+	 */
 	public static function setup_input_masks( $field ) {
-		$html                = '';
 		$text_lookup         = $field['type'] === 'lookup' && $field['data_type'] === 'text';
 		$is_format_field     = in_array( $field['type'], array( 'phone', 'text' ), true ) || $text_lookup;
 		$international_phone = 'phone' === $field['type'] && 'international' === $field['format'];
+
 		if ( FrmProField::is_format_option_true_with_no_regex( $field ) && $is_format_field && ! $international_phone ) {
-			$html = self::setup_input_mask( $field['format'] );
+			return self::setup_input_mask( $field['format'] );
 		}
 
-		return $html;
+		return '';
 	}
 
 	/**
 	 * Setup the input mask for the field.
 	 *
 	 * @param string $format
+	 *
 	 * @return string
 	 */
 	public static function setup_input_mask( $format ) {
@@ -285,10 +519,32 @@ class FrmProFieldsController {
 			return '';
 		}
 
-		global $frm_input_masks;
-		$frm_input_masks[] = true;
+		self::setup_input_mask_global_for_currency_field();
 
 		return ' data-frmmask="' . esc_attr( self::convert_format_for_imask( $format ) ) . '"';
+	}
+
+	/**
+	 * Setup the input mask global variable for a currency field.
+	 * This just makes sure that the global is not empty.
+	 *
+	 * @since 6.32
+	 *
+	 * @return void
+	 */
+	private static function setup_input_mask_global_for_currency_field() {
+		global $frm_input_masks;
+
+		if ( $frm_input_masks ) {
+			// No need to set up the global variable if it's already set.
+			return;
+		}
+
+		if ( ! is_array( $frm_input_masks ) ) {
+			$frm_input_masks = array();
+		}
+
+		$frm_input_masks[] = true;
 	}
 
 	/**
@@ -297,6 +553,7 @@ class FrmProFieldsController {
 	 * @since 6.23
 	 *
 	 * @param string $format
+	 *
 	 * @return string
 	 */
 	private static function convert_format_for_imask( $format ) {
@@ -315,25 +572,25 @@ class FrmProFieldsController {
 	 *
 	 * @since 4.04
 	 *
-	 * @param string $add_html
-	 * @param array  $field
+	 * @param array      $field
+	 * @param string     $add_html
+	 * @param mixed|null $parent
+	 *
 	 * @return void
 	 */
 	public static function add_currency_field_attributes( $field, &$add_html, $parent = null ) {
-
 		$type             = $field['original_type'] ?? $field['type'];
-		$is_product_field = in_array( $type, array( 'total', 'quantity', 'product' ) );
+		$is_product_field = in_array( $type, array( 'total', 'quantity', 'product' ), true );
+
 		if ( ! $is_product_field ) {
 			return;
 		}
 
 		if ( $type === 'total' ) {
 			$add_html .= ' data-frmtotal ';
-
 		} elseif ( $type === 'quantity' ) {
 			$product_field = FrmField::get_option( $field, 'product_field' );
 			$add_html     .= ' data-frmproduct="' . esc_attr( json_encode( $product_field ) ) . '" ';
-
 		} elseif ( $type === 'product' && 'hidden' === $field['type'] ) {
 			// We want to do this only for fields that are hidden because it's
 			// not their page, hence the check : 'hidden' === $field['type'].
@@ -356,6 +613,9 @@ class FrmProFieldsController {
 		}
 	}
 
+	/**
+	 * @param array $field
+	 */
 	private static function get_product_price( $field ) {
 		if ( is_array( $field['value'] ) ) {
 			// '' is unlikely though, let's just do it to prevent warnings
@@ -366,29 +626,32 @@ class FrmProFieldsController {
 		}
 
 		$field_obj = FrmFieldFactory::get_field_object( $field['id'] );
-		$price     = $field_obj->get_posted_price( $value );
-		unset( $field_obj ); // lighten up on memory
-		return $price;
+		return $field_obj->get_posted_price( $value );
 	}
 
 	/**
 	 * Add readonly/disabled input attributes
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $field
 	 * @param string $add_html
+	 *
+	 * @return void
 	 */
 	private static function add_readonly_input_attributes( $field, &$add_html ) {
-		if ( FrmField::is_option_true( $field, 'read_only' ) && $field['type'] !== 'hidden' && $field['type'] !== 'lookup' ) {
-			global $frm_vars;
+		if ( ! FrmField::is_option_true( $field, 'read_only' ) || $field['type'] === 'hidden' || $field['type'] === 'lookup' ) {
+			return;
+		}
 
-			if ( ( isset( $frm_vars['readonly'] ) && $frm_vars['readonly'] === 'disabled' ) || ( current_user_can( 'frm_edit_entries' ) && FrmAppHelper::is_admin() ) ) {
-				//not read only
-			} elseif ( in_array( $field['type'], array( 'select', 'radio', 'checkbox', 'time' ), true ) ) {
-				$add_html .= ' disabled="disabled" ';
-			} else {
-				$add_html .= ' readonly="readonly" ';
-			}
+		global $frm_vars;
+
+		if ( ( isset( $frm_vars['readonly'] ) && $frm_vars['readonly'] === 'disabled' ) || ( current_user_can( 'frm_edit_entries' ) && FrmAppHelper::is_admin() ) ) {
+			// Not read only
+		} elseif ( in_array( $field['type'], array( 'select', 'radio', 'checkbox', 'time' ), true ) ) {
+			$add_html .= ' disabled="disabled" ';
+		} else {
+			$add_html .= ' readonly="readonly" ';
 		}
 	}
 
@@ -396,6 +659,7 @@ class FrmProFieldsController {
 	 * Add multiple select attribute
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $field
 	 * @param string $add_html
 	 */
@@ -408,7 +672,9 @@ class FrmProFieldsController {
 	/**
 	 * @since 4.0
 	 *
-	 * @param string $add_html
+	 * @param array|object $field
+	 * @param string       $add_html
+	 *
 	 * @return void
 	 */
 	private static function add_select_placeholder( $field, &$add_html ) {
@@ -418,7 +684,8 @@ class FrmProFieldsController {
 
 		$placeholder  = FrmField::get_option( $field, 'placeholder' );
 		$autocomplete = FrmField::get_option( $field, 'autocom' );
-		if ( $placeholder === '' && empty( $autocomplete ) ) {
+
+		if ( $placeholder === '' && ! $autocomplete ) {
 			// The field doesn't need a placeholder.
 			return;
 		}
@@ -426,7 +693,7 @@ class FrmProFieldsController {
 		if ( $placeholder ) {
 			$use_placeholder = $placeholder;
 		} else {
-			$default         = FrmField::is_multiple_select( $field ) ? __( 'Select options', 'formidable-pro' ) : __( 'Select an option', 'formidable-pro' );
+			$default         = FrmField::is_multiple_select( $field ) ? __( 'Select options', 'formidable-pro' ) : __( 'Select an option', 'formidable' );
 			$use_placeholder = $default;
 		}
 
@@ -437,23 +704,21 @@ class FrmProFieldsController {
 	 * Add a few HTML5 input attributes
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $field
 	 * @param string $add_html
 	 */
 	private static function add_html5_input_attributes( $field, &$add_html ) {
 		global $frm_vars;
-		$frm_settings = FrmAppHelper::get_settings();
 
 		if ( FrmField::is_option_true( $field, 'autocom' ) && $field['type'] !== 'hidden' && FrmField::is_field_type( $field, 'select' ) && FrmProAppHelper::use_chosen_js() ) {
-			//add label for autocomplete fields
+			// Add label for autocomplete fields
 			$add_html .= ' data-placeholder=" "';
 		}
 
-		if ( in_array( $field['type'], array( 'url', 'email' ), true ) ) {
-			if ( empty( $frm_vars['novalidate'] ) && ( $field['type'] !== 'email' || ( isset( $field['value'] ) && $field['default_value'] == $field['value'] ) ) ) {
-				// add novalidate for drafts
-				$frm_vars['novalidate'] = true;
-			}
+		if ( in_array( $field['type'], array( 'url', 'email' ), true ) && empty( $frm_vars['novalidate'] ) && ( $field['type'] !== 'email' || ( isset( $field['value'] ) && $field['default_value'] == $field['value'] ) ) ) {
+			// Add novalidate for drafts
+			$frm_vars['novalidate'] = true;
 		}
 	}
 
@@ -462,7 +727,9 @@ class FrmProFieldsController {
 	 *
 	 * @since 4.02
 	 *
-	 * @param string $add_html
+	 * @param array|object $field
+	 * @param string       $add_html
+	 *
 	 * @return void
 	 */
 	private static function add_checkbox_limit( $field, &$add_html ) {
@@ -473,6 +740,7 @@ class FrmProFieldsController {
 		}
 
 		$min_selections = FrmField::get_option( $field, 'min_selections' );
+
 		if ( $min_selections ) {
 			$add_html .= ' data-frmmin="' . esc_attr( $min_selections ) . '" ';
 		}
@@ -482,6 +750,7 @@ class FrmProFieldsController {
 	 * Add data-sectionid attribute for fields in section
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param array $field
 	 * @param string $add_html
 	 */
@@ -500,13 +769,16 @@ class FrmProFieldsController {
 	 *
 	 * @param string $class
 	 * @param array  $field
+	 *
 	 * @return string
 	 */
 	public static function update_field_classes( $class, $field ) {
 		$class = self::add_field_class( $class, $field );
+
 		if ( self::is_password_field_with_show_password( $field ) ) {
 			return str_replace( 'auto_width', '', $class );
 		}
+
 		return $class;
 	}
 
@@ -516,6 +788,7 @@ class FrmProFieldsController {
 	 * @since 6.18
 	 *
 	 * @param array|object $field
+	 *
 	 * @return bool
 	 */
 	private static function is_password_field_with_show_password( $field ) {
@@ -546,6 +819,7 @@ class FrmProFieldsController {
 	/**
 	 * @param string $class
 	 * @param array  $field
+	 *
 	 * @return string
 	 */
 	public static function add_field_class( $class, $field ) {
@@ -554,6 +828,7 @@ class FrmProFieldsController {
 		}
 
 		$is_hidden = FrmField::get_field_type( $field ) === 'hidden';
+
 		if ( ! $is_hidden && FrmField::is_option_true( $field, 'autocom' ) && FrmField::is_field_type( $field, 'select' ) && ! empty( $field['options'] ) ) {
 			self::add_autocomplete_classes( $field, $class );
 		}
@@ -572,6 +847,7 @@ class FrmProFieldsController {
 	 *
 	 * @param array  $field
 	 * @param string $class
+	 *
 	 * @return void
 	 */
 	public static function add_autocomplete_classes( $field, &$class ) {
@@ -589,12 +865,15 @@ class FrmProFieldsController {
 		}
 
 		$style = FrmStylesController::get_form_style( $field['form_id'] );
-		if ( $style && 'rtl' == $style->post_content['direction'] ) {
-			if ( $use_slim_select ) {
-				$class .= ' frm_slimselect_rtl';
-			} else {
-				$class .= ' chosen-rtl';
-			}
+
+		if ( ! $style || 'rtl' !== $style->post_content['direction'] ) {
+			return;
+		}
+
+		if ( $use_slim_select ) {
+			$class .= ' frm_slimselect_rtl';
+		} else {
+			$class .= ' chosen-rtl';
 		}
 	}
 
@@ -618,7 +897,7 @@ class FrmProFieldsController {
 		unset( $field_data );
 
 		$field['html_name'] = 'item_meta[' . $field['id'] . ']';
-		$field['options']   = array( 'other_' . $opt_key => __( 'Other', 'formidable-pro' ) );
+		$field['options']   = array( 'other_' . $opt_key => __( 'Other', 'formidable' ) );
 		FrmFieldsHelper::show_single_option( $field );
 
 		wp_die();
@@ -634,6 +913,7 @@ class FrmProFieldsController {
 	 * @since 6.18
 	 *
 	 * @param array $field Field data.
+	 *
 	 * @return void
 	 */
 	public static function add_currency_format( $field ) {
@@ -642,6 +922,10 @@ class FrmProFieldsController {
 		}
 	}
 
+	/**
+	 * @param array $field
+	 * @param array $display
+	 */
 	public static function options_form_top( $field, $display, $values ) {
 		$frmpro_settings         = FrmProAppHelper::get_settings();
 		$show_jquery_placeholder = FrmProAppHelper::use_jquery_datepicker() && 'date' === $field['type'];
@@ -649,13 +933,11 @@ class FrmProFieldsController {
 		/* translators: %1$s: Field type. %2$s: Field type. %3$s: Field type */
 		$range_option_tooltip = sprintf( __( '%1$s Range: Enables the %2$s range option for %3$s fields', 'formidable-pro' ), ucfirst( $field['type'] ), $field['type'], $field['type'] );
 
-		if ( $display['conf_field'] && ! in_array( $field['type'], array( 'email', 'password' ) ) ) {
-			_deprecated_function( __FUNCTION__, '4.0', 'FrmFieldType->show_primary_options' );
-			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/confirmation.php';
-		}
-
 		if ( ! empty( $display['range_field'] ) ) {
 			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/range-option.php';
+		} elseif ( 'date' === $field['type'] && ! function_exists( 'frm_dates_autoloader' ) ) {
+			// In-product education for the Date Range option when the Dates add-on is not active.
+			include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/range-option-education.php';
 		}
 	}
 
@@ -663,17 +945,19 @@ class FrmProFieldsController {
 	 * @since 4.0
 	 *
 	 * @param array $args {
+	 *
 	 *     @type array $display
 	 *     @type array $field
 	 * }
+	 *
 	 * @return void
 	 */
 	public static function advanced_field_options( $args ) {
-		$display = $args['display'];
-		$field   = $args['field'];
-
+		$display     = $args['display'];
+		$field       = $args['field'];
 		$is_checkbox = FrmField::is_field_type( $field, 'checkbox' );
 		$is_radio    = FrmField::is_field_type( $field, 'radio' );
+
 		if ( $display['type'] === 'radio' || $display['type'] === 'checkbox' || $is_radio || $is_checkbox ) {
 			self::alignment_setting( $args );
 		}
@@ -702,25 +986,59 @@ class FrmProFieldsController {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - includes 'field'
+	 *
+	 * @return void
 	 */
 	public static function alignment_setting( $args ) {
-		$field   = $args['field'];
-		$columns = array(
+		$field                      = $args['field'];
+		$active_style_align_setting = '';
+
+		// The alignment helpers live in Lite. Guard against an older Lite version that predates them.
+		if ( is_callable( 'FrmStylesController::get_active_style' ) && is_callable( 'FrmStylesController::get_align_key_for_style_settings' ) ) {
+			$active_style               = FrmStylesController::get_active_style( $field );
+			$field_type                 = FrmField::is_checkbox( $field ) ? 'checkbox' : 'radio';
+			$key                        = FrmStylesController::get_align_key_for_style_settings( $field_type );
+			$active_style_align_setting = $active_style->post_content[ $key ] ?? '';
+		}
+
+		$align_options = self::get_align_setting_options();
+
+		if ( $active_style_align_setting && ! empty( $align_options[ $active_style_align_setting ] ) ) {
+			$columns = array(
+				/* translators: %s: Alignment option label */
+				'' => sprintf( __( 'Use Style (%s)', 'formidable-pro' ), $align_options[ $active_style_align_setting ] ),
+			);
+		} else {
+			$columns = array();
+		}
+
+		$columns += $align_options;
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/alignment.php';
+	}
+
+	/**
+	 * @since 6.32
+	 *
+	 * @return array
+	 */
+	private static function get_align_setting_options() {
+		return array(
 			'block'         => __( 'One Column', 'formidable-pro' ),
 			'frm_two_col'   => __( 'Two Columns', 'formidable-pro' ),
 			'frm_three_col' => __( 'Three Columns', 'formidable-pro' ),
 			'frm_four_col'  => __( 'Four Columns', 'formidable-pro' ),
 			'inline'        => __( 'Inline Options', 'formidable-pro' ),
 		);
-
-		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/alignment.php';
 	}
 
 	/**
 	 * @since 4.0
 	 *
 	 * @param array $args Includes 'field', 'display', and 'values'.
+	 *
 	 * @return void
 	 */
 	public static function options_form_after( $args ) {
@@ -733,6 +1051,7 @@ class FrmProFieldsController {
 	 * Add calc details.
 	 *
 	 * @since 4.0
+	 *
 	 * @param array $types
 	 * @param array $atts Includes 'display'
 	 */
@@ -777,8 +1096,8 @@ class FrmProFieldsController {
 		if ( ! function_exists( 'frm_dates_autoloader' ) && isset( $atts['display']['type'] ) && 'date' === $atts['display']['type'] ) {
 			$types['date_calc'] = array(
 				'class' => 'frm_noallow',
-				'title' => __( 'Default Value', 'formidable-pro' ),
-				'icon'  => 'frm_icon_font frm_calculator_icon',
+				'title' => __( 'Default Value', 'formidable' ),
+				'icon'  => 'frmfont frm_calculator_icon',
 				'data'  => FrmProFieldDate::get_dates_add_on_upgrade_link_data(),
 			);
 		}
@@ -788,6 +1107,7 @@ class FrmProFieldsController {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - includes 'field', 'display', 'default_value_types'.
 	 */
 	public static function more_default_values( $args ) {
@@ -823,7 +1143,7 @@ class FrmProFieldsController {
 
 		FrmFieldsHelper::inline_modal(
 			array(
-				'title'        => ! class_exists( 'FrmTextToggleStyleComponent' ) ? __( 'Default Value', 'formidable' ) : '', // Backwards compatibility "@since 6.24".
+				'title'        => class_exists( 'FrmTextToggleStyleComponent' ) ? '' : __( 'Default Value', 'formidable' ), // Backwards compatibility "@since 6.24".
 				'callback'     => array( 'FrmProFieldsController', 'default_dynamic_options' ),
 				'args'         => $field,
 				'id'           => 'frm-tax-box-' . $field['id'],
@@ -848,6 +1168,7 @@ class FrmProFieldsController {
 
 	/**
 	 * @since 4.0
+	 *
 	 * @param array $args - includes 'field'
 	 */
 	public static function calculation_settings( $args ) {
@@ -865,6 +1186,7 @@ class FrmProFieldsController {
 	 * Display the visibility option
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $field
 	 */
 	public static function show_visibility_option( $field ) {
@@ -877,6 +1199,7 @@ class FrmProFieldsController {
 	 * @since 5.4.1
 	 *
 	 * @param array $field
+	 *
 	 * @return void
 	 */
 	public static function show_autocomplete_option( $field ) {
@@ -887,6 +1210,7 @@ class FrmProFieldsController {
 	 * Display the conditional logic option
 	 *
 	 * @since 2.02.06
+	 *
 	 * @param array $field
 	 */
 	public static function show_conditional_logic_option( $field ) {
@@ -895,6 +1219,7 @@ class FrmProFieldsController {
 		// Migrate submit button conditional logic to submit field.
 		if ( 'submit' === $field['type'] ) {
 			$form = FrmForm::getOne( $field['form_id'] );
+
 			if ( $form && ! empty( $form->options['submit_conditions'] ) ) {
 				$keys_to_copy_over = array(
 					'show_hide',
@@ -903,6 +1228,7 @@ class FrmProFieldsController {
 					'hide_field_cond',
 					'hide_opt',
 				);
+
 				foreach ( $keys_to_copy_over as $key ) {
 					if ( isset( $form->options['submit_conditions'][ $key ] ) ) {
 						$field[ $key ] = $form->options['submit_conditions'][ $key ];
@@ -929,6 +1255,7 @@ class FrmProFieldsController {
 		if ( is_numeric( $form_id ) ) {
 			$selected_field = '';
 			$fields         = self::get_field_selection_fields( $form_id );
+
 			if ( $fields ) {
 				require FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/field-selection.php';
 			}
@@ -950,10 +1277,12 @@ class FrmProFieldsController {
 	 * @since 5.0.04
 	 *
 	 * @param int $form_id Form ID.
+	 *
 	 * @return object[]
 	 */
 	public static function get_field_selection_fields( $form_id ) {
 		$fields = FrmField::get_all_for_form( $form_id, '', 'include' );
+
 		if ( $fields ) {
 			/**
 			 * Allows modifying fields in Field selection of Dynamic field.
@@ -963,7 +1292,7 @@ class FrmProFieldsController {
 			 * @param array $fields The fields.
 			 * @param array $args   Includes `form_id`.
 			 */
-			$fields = apply_filters( 'frm_pro_fields_in_dynamic_selection', $fields, compact( 'form_id' ) );
+			return apply_filters( 'frm_pro_fields_in_dynamic_selection', $fields, compact( 'form_id' ) );
 		}
 
 		return $fields;
@@ -981,6 +1310,7 @@ class FrmProFieldsController {
 		);
 
 		$selector_args['html_name'] = FrmAppHelper::get_post_param( 'name', '', 'sanitize_text_field' );
+
 		if ( empty( $selector_args['html_name'] ) || $selector_args['html_name'] === 'undefined' ) {
 			$selector_args['html_name'] = 'field_options[hide_opt_' . FrmAppHelper::get_post_param( 'current_field', 0, 'absint' ) . '][]';
 		}
@@ -989,7 +1319,7 @@ class FrmProFieldsController {
 			$selector_args['source'] = 'form_actions';
 		} else {
 			$field_type              = FrmAppHelper::get_post_param( 't', '', 'sanitize_text_field' );
-			$selector_args['source'] = ! empty( $field_type ) ? $field_type : 'unknown';
+			$selector_args['source'] = $field_type ? $field_type : 'unknown';
 		}
 
 		FrmFieldsHelper::display_field_value_selector( FrmAppHelper::get_post_param( 'field_id', 0, 'absint' ), $selector_args );
@@ -1001,11 +1331,13 @@ class FrmProFieldsController {
 		check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$display_id = FrmAppHelper::get_post_param( 'display_id', 0, 'absint' );
+
 		if ( ! $display_id ) {
 			wp_die();
 		}
 
 		$form_id = get_post_meta( $display_id, 'frm_form_id', true );
+
 		if ( ! $form_id ) {
 			wp_die();
 		}
@@ -1025,6 +1357,7 @@ class FrmProFieldsController {
 
 		foreach ( $fields as $field ) {
 			$options['titleValues'][ $field->id ] = $field->name;
+
 			if ( $field->type === 'select' || $field->type === 'radio' ) {
 				$options['catValues'][ $field->id ] = $field->name;
 			}
@@ -1039,6 +1372,7 @@ class FrmProFieldsController {
 	/**
 	 * @param string $field_id
 	 * @param array  $options
+	 *
 	 * @return void
 	 */
 	public static function date_field_js( $field_id, $options ) {
@@ -1063,6 +1397,7 @@ class FrmProFieldsController {
 
 		if ( isset( $field->field_options['post_field'] ) && $field->field_options['post_field'] != '' ) {
 			$query = array( 'post_status' => array( 'publish', 'draft', 'pending', 'future', 'private' ) );
+
 			if ( $field->field_options['post_field'] === 'post_custom' ) {
 				$get_field             = 'meta_value';
 				$get_table             = $wpdb->postmeta . ' pm LEFT JOIN ' . $wpdb->posts . ' p ON (p.ID=pm.post_id)';
@@ -1080,9 +1415,9 @@ class FrmProFieldsController {
 			$disabled = wp_cache_get( $options['field_id'], 'frm_used_dates' );
 		}
 
-		if ( ! isset( $disabled ) || ! $disabled ) {
+		if ( empty( $disabled ) ) {
 			$disabled = FrmDb::get_col(
-				$wpdb->prefix . 'frm_item_metas',
+				'frm_item_metas',
 				array(
 					'field_id'  => $options['field_id'],
 					'item_id !' => $options['entry_id'],
@@ -1091,7 +1426,7 @@ class FrmProFieldsController {
 			);
 		}
 
-		if ( isset( $post_dates ) && $post_dates ) {
+		if ( ! empty( $post_dates ) ) {
 			$disabled = array_unique( array_merge( (array) $post_dates, (array) $disabled ) );
 		}
 
@@ -1105,21 +1440,20 @@ class FrmProFieldsController {
 
 		$disabled = apply_filters( 'frm_used_dates', $disabled, $field, $options );
 
-		if ( ! empty( $options['field_id'] ) && ! empty( $disabled ) ) {
+		if ( ! empty( $options['field_id'] ) && $disabled ) {
 			wp_cache_set( $options['field_id'], $disabled, 'frm_used_dates' );
 		}
 
 		// This function is added in v1.04 of the Dates add on. Before that version, these filters are not supported.
 		if ( is_callable( 'FrmDatesAppHelper::plugin_version' ) ) {
-
 			add_filter(
 				'frm_dates_selectable_response',
 				function ( $is_enabled, $filter_field ) use ( $selectable_response, $field ) {
-
 					if ( ! $field->field_options['unique'] ) {
 						return $is_enabled;
 					}
-					return $filter_field->field_key !== $field->field_key ? $is_enabled : $selectable_response;
+
+					return $filter_field->field_key === $field->field_key ? $selectable_response : $is_enabled;
 				},
 				10,
 				2
@@ -1156,6 +1490,7 @@ class FrmProFieldsController {
 	 *
 	 * @param array  $disabled
 	 * @param string $selectable_response
+	 *
 	 * @return void
 	 */
 	private static function legacy_datepicker_compatibility_handler( $disabled, $selectable_response ) {
@@ -1164,7 +1499,8 @@ class FrmProFieldsController {
 		}
 
 		$js_vars = 'var m=(date.getMonth()+1),d=date.getDate(),y=date.getFullYear(),day=date.getDay();';
-		if ( empty( $disabled ) ) {
+
+		if ( ! $disabled ) {
 			if ( $selectable_response !== 'true' ) {
 				// If the filter has been used, include it
 				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1175,8 +1511,9 @@ class FrmProFieldsController {
 		}
 
 		$formatted = array();
+
 		foreach ( $disabled as $dis ) {
-			// format to match javascript dates
+			// Format to match javascript dates
 			$formatted[] = gmdate( 'Y-n-j', strtotime( $dis ) );
 		}
 
@@ -1189,21 +1526,34 @@ class FrmProFieldsController {
 
 	/**
 	 * @since 2.0.23
+	 *
+	 * @param bool  $required
+	 * @param array $field
+	 *
+	 * @return bool
 	 */
 	public static function maybe_make_field_optional( $required, $field ) {
-		if ( $required && ! FrmAppHelper::is_admin_page( 'formidable' ) ) {
-			global $frm_vars;
-			$is_editing = ! empty( $frm_vars['editing_entry'] ) && is_numeric( $frm_vars['editing_entry'] );
-			if ( $is_editing ) {
-				$optional_on_edit = apply_filters( 'frm_optional_fields_on_edit', array( 'password', 'credit_card' ) );
-				if ( in_array( $field['type'], (array) $optional_on_edit ) ) {
-					$entry = FrmEntry::getOne( $frm_vars['editing_entry'] );
-					if ( $entry && $entry->form_id === $field['form_id'] && ! $entry->is_draft ) {
-						$required = false;
-					}
-				}
+		if ( ! $required || FrmAppHelper::is_admin_page( 'formidable' ) ) {
+			return $required;
+		}
+
+		global $frm_vars;
+		$is_editing = ! empty( $frm_vars['editing_entry'] ) && is_numeric( $frm_vars['editing_entry'] );
+
+		if ( ! $is_editing ) {
+			return $required;
+		}
+
+		$optional_on_edit = apply_filters( 'frm_optional_fields_on_edit', array( 'password', 'credit_card' ) );
+
+		if ( in_array( $field['type'], (array) $optional_on_edit ) ) {
+			$entry = FrmEntry::getOne( $frm_vars['editing_entry'] );
+
+			if ( $entry && $entry->form_id === $field['form_id'] && ! $entry->is_draft ) {
+				$required = false;
 			}
 		}
+
 		return $required;
 	}
 
@@ -1244,6 +1594,7 @@ class FrmProFieldsController {
 			);
 
 			$value = FrmFieldsHelper::get_display_value( $meta_value, $data_field, $data_display_opts );
+
 			if ( is_array( $value ) ) {
 				$value = implode( ', ', $value );
 			}
@@ -1253,6 +1604,7 @@ class FrmProFieldsController {
 			}
 
 			$current_field = (array) $current;
+
 			foreach ( $current->field_options as $o => $v ) {
 				if ( ! isset( $current_field[ $o ] ) ) {
 					$current_field[ $o ] = $v;
@@ -1282,6 +1634,7 @@ class FrmProFieldsController {
 						)
 					);
 				}
+
 				$result_str .= '<input type="hidden" id="' . esc_attr( $html_id ) . '" name="' . esc_attr( $field_name ) . '" value="' . esc_attr( $value ) . '" ';
 				$result_str .= FrmAppHelper::clip(
 					function () use ( $current_field ) {
@@ -1307,27 +1660,29 @@ class FrmProFieldsController {
 	 *
 	 * @param array|int $entry_id   Entry ID or array of entry IDs.
 	 * @param object    $data_field The data field.
+	 *
 	 * @return array|string
 	 */
 	private static function get_meta_value_for_ajax_handler( $entry_id, $data_field ) {
-		if ( is_array( $entry_id ) ) {
-			$meta_value = array();
-			foreach ( $entry_id as $eid ) {
-				$new_meta = FrmProEntryMetaHelper::get_post_or_meta_value( $eid, $data_field );
-				if ( $new_meta ) {
-					foreach ( (array) $new_meta as $nm ) {
-						array_push( $meta_value, $nm );
-						unset( $nm );
-					}
-				}
-				unset( $new_meta, $eid );
-			}
-			$meta_value = array_unique( $meta_value );
-		} else {
-			$meta_value = FrmProEntryMetaHelper::get_post_or_meta_value( $entry_id, $data_field );
+		if ( ! is_array( $entry_id ) ) {
+			return FrmProEntryMetaHelper::get_post_or_meta_value( $entry_id, $data_field );
 		}
 
-		return $meta_value;
+		$meta_value = array();
+
+		foreach ( $entry_id as $eid ) {
+			$new_meta = FrmProEntryMetaHelper::get_post_or_meta_value( $eid, $data_field );
+
+			if ( $new_meta ) {
+				foreach ( (array) $new_meta as $nm ) {
+					array_push( $meta_value, $nm );
+					unset( $nm );
+				}
+			}
+			unset( $new_meta, $eid );
+		}
+
+		return array_unique( $meta_value );
 	}
 
 	/**
@@ -1337,9 +1692,11 @@ class FrmProFieldsController {
 	 */
 	private static function get_posted_entry_ids() {
 		$entry_id = FrmAppHelper::get_param( 'entry_id', '', 'get', 'sanitize_text_field' );
+
 		if ( is_array( $entry_id ) ) {
 			$entry_id = implode( ',', $entry_id );
 		}
+
 		return trim( $entry_id, ',' );
 	}
 
@@ -1347,7 +1704,7 @@ class FrmProFieldsController {
 	 * Get the HTML for a dependent Dynamic field when the parent changes
 	 */
 	public static function ajax_data_options() {
-		//check_ajax_referer( 'frm_ajax', 'nonce' );
+		// check_ajax_referer( 'frm_ajax', 'nonce' );
 
 		$args = array(
 			'trigger_field_id' => FrmAppHelper::get_param( 'trigger_field_id', '', 'post', 'absint' ),
@@ -1367,17 +1724,14 @@ class FrmProFieldsController {
 		}
 
 		$args['field_data'] = FrmField::getOne( $args['field_id'] );
-
-		$field = self::initialize_dependent_dynamic_field( $args );
+		$field              = self::initialize_dependent_dynamic_field( $args );
 
 		if ( is_numeric( $args['field_data']->field_options['form_select'] ) ) {
 			// If Dynamic field is pulling options from a regular field
 			self::get_dependent_dynamic_field_options( $args, $field );
-
 		} elseif ( $args['field_data']->field_options['form_select'] === 'taxonomy' ) {
 			// If Dynamic field is pulling options from a taxonomy
 			self::get_dependent_category_field_options( $args, $field );
-
 		}
 
 		self::get_dependent_dynamic_field_value( $args['prev_val'], $field );
@@ -1407,26 +1761,25 @@ class FrmProFieldsController {
 	 * Initialize the field array for a dependent dynamic field
 	 *
 	 * @param array $args
-	 * @return array $field
+	 *
+	 * @return array Field.
 	 */
 	private static function initialize_dependent_dynamic_field( $args ) {
-		$field = FrmProFieldsHelper::initialize_array_field( $args['field_data'], $args );
-		return $field;
+		return FrmProFieldsHelper::initialize_array_field( $args['field_data'], $args );
 	}
 
 	/**
 	 * Get the options for a dependent Dynamic field
 	 *
 	 * @since 2.0.16
+	 *
 	 * @param array $args
 	 * @param array $field
 	 */
 	private static function get_dependent_dynamic_field_options( $args, &$field ) {
-		$linked_field = FrmField::getOne( $args['field_data']->field_options['form_select'] );
-
+		$linked_field     = FrmField::getOne( $args['field_data']->field_options['form_select'] );
 		$field['options'] = array();
-
-		$metas = array();
+		$metas            = array();
 		FrmProEntryMetaHelper::meta_through_join( $args['trigger_field_id'], $linked_field, $args['entry_id'], $args['field_data'], $metas );
 		$metas = wp_unslash( $metas );
 
@@ -1447,7 +1800,7 @@ class FrmProFieldsController {
 			unset( $meta );
 		}
 
-		// change the form_select value so the filter doesn't override the values
+		// Change the form_select value so the filter doesn't override the values
 		$args['field_data']->field_options['form_select'] = 'filtered_' . $args['field_data']->field_options['form_select'];
 
 		FrmFieldsHelper::prepare_new_front_field( $field, $args['field_data'] );
@@ -1465,6 +1818,7 @@ class FrmProFieldsController {
 	 * Get the options for a dependent Dynamic category field
 	 *
 	 * @since 2.0.16
+	 *
 	 * @param array $args
 	 * @param array $field
 	 */
@@ -1475,9 +1829,11 @@ class FrmProFieldsController {
 
 		if ( is_array( $args['entry_id'] ) ) {
 			$zero = array_search( 0, $args['entry_id'] );
+
 			if ( $zero !== false ) {
 				unset( $args['entry_id'][ $zero ] );
 			}
+
 			if ( empty( $args['entry_id'] ) ) {
 				wp_die();
 			}
@@ -1494,18 +1850,20 @@ class FrmProFieldsController {
 
 		$post_type            = FrmProFormsHelper::post_type( $args['field_data']->form_id );
 		$cat_args['taxonomy'] = FrmProAppHelper::get_custom_taxonomy( $post_type, $args['field_data'] );
+
 		if ( ! $cat_args['taxonomy'] ) {
 			wp_die();
 		}
 
 		$cats = get_categories( $cat_args );
+
 		foreach ( $cats as $cat ) {
 			if ( ! in_array( $cat->parent, (array) $args['entry_id'] ) ) {
 				unset( $field['options'][ $cat->term_id ] );
 			}
 		}
 
-		if ( count( $field['options'] ) == 1 && reset( $field['options'] ) == '' ) {
+		if ( count( $field['options'] ) === 1 && reset( $field['options'] ) == '' ) {
 			wp_die();
 		}
 
@@ -1517,11 +1875,11 @@ class FrmProFieldsController {
 	 * Get the field value for a dependent dynamic field
 	 *
 	 * @since 2.0.16
+	 *
 	 * @param array $prev_val
 	 * @param array $field
 	 */
 	private static function get_dependent_dynamic_field_value( $prev_val, &$field ) {
-
 		// Set the value to the previous value if it was set. Otherwise, set to default value.
 		if ( $prev_val ) {
 			$prev_val       = array_unique( $prev_val );
@@ -1533,6 +1891,7 @@ class FrmProFieldsController {
 		// Unset the field value if it isn't an option
 		if ( $field['value'] ) {
 			$field['value'] = (array) $field['value'];
+
 			foreach ( $field['value'] as $key => $field_val ) {
 				if ( ! array_key_exists( $field_val, $field['options'] ) ) {
 					unset( $field['value'][ $key ] );
@@ -1557,6 +1916,7 @@ class FrmProFieldsController {
 	 *
 	 * @param array $options The field options (choices)
 	 * @param array $args
+	 *
 	 * @return array
 	 */
 	public static function order_values( $options, $args = array() ) {
@@ -1565,18 +1925,20 @@ class FrmProFieldsController {
 		}
 
 		$order = $args['dynamic_field']['option_order'];
-		if ( $order === 'ascending' || $order === 'descending' ) {
-			if ( class_exists( 'Collator' ) ) {
-				$locale   = get_locale();
-				$collator = new Collator( $locale );
-				$collator->asort( $options );
-			} else {
-				natcasesort( $options );
-			}
 
-			if ( $order === 'descending' ) {
-				$options = array_reverse( $options, true );
-			}
+		if ( $order !== 'ascending' && $order !== 'descending' ) {
+			return $options;
+		}
+
+		if ( class_exists( 'Collator' ) ) {
+			$collator = new Collator( get_locale() );
+			$collator->asort( $options );
+		} else {
+			natcasesort( $options );
+		}
+
+		if ( $order === 'descending' ) {
+			return array_reverse( $options, true );
 		}
 
 		return $options;
@@ -1590,17 +1952,20 @@ class FrmProFieldsController {
 	 */
 	public static function filter_media_library_link() {
 		global $current_screen;
-		if ( $current_screen && 'upload' == $current_screen->base && current_user_can( 'frm_edit_entries' ) ) {
-			echo '<label for="frm-attachment-filter" class="screen-reader-text">';
-			echo esc_html__( 'Show form uploads', 'formidable-pro' );
-			echo '</label>';
 
-			$filtered = FrmAppHelper::get_param( 'frm-attachment-filter', '', 'get', 'absint' );
-			echo '<select name="frm-attachment-filter" id="frm-attachment-filter">';
-			echo '<option value="">' . esc_html__( 'Hide form uploads', 'formidable-pro' ) . '</option>';
-			echo '<option value="1" ' . selected( $filtered, 1 ) . '>' . esc_html__( 'Show form uploads', 'formidable-pro' ) . '</option>';
-			echo '</select>';
+		if ( ! $current_screen || 'upload' !== $current_screen->base || ! current_user_can( 'frm_edit_entries' ) ) {
+			return;
 		}
+
+		echo '<label for="frm-attachment-filter" class="screen-reader-text">';
+		esc_html_e( 'Show form uploads', 'formidable-pro' );
+		echo '</label>';
+
+		$filtered = FrmAppHelper::get_param( 'frm-attachment-filter', '', 'get', 'absint' );
+		echo '<select name="frm-attachment-filter" id="frm-attachment-filter">';
+		echo '<option value="">' . esc_html__( 'Hide form uploads', 'formidable-pro' ) . '</option>';
+		echo '<option value="1" ' . selected( $filtered, 1 ) . '>' . esc_html__( 'Show form uploads', 'formidable-pro' ) . '</option>';
+		echo '</select>';
 	}
 
 	/**
@@ -1654,7 +2019,7 @@ class FrmProFieldsController {
 		);
 
 		foreach ( $attachment_ids_to_delete as $file_id ) {
-			// double check in case other plugins have changed the query
+			// Double check in case other plugins have changed the query
 			if ( FrmProFileField::file_is_temporary( $file_id ) ) {
 				wp_delete_attachment( $file_id, true );
 			}
@@ -1684,10 +2049,13 @@ class FrmProFieldsController {
 	 *
 	 * @since 4.05
 	 *
+	 * @param array $fields
+	 *
 	 * @return array
 	 */
 	public static function single_input_fields( $fields ) {
 		$fields[] = 'range';
+		$fields[] = 'virtual';
 		return $fields;
 	}
 
@@ -1721,15 +2089,21 @@ class FrmProFieldsController {
 	 * Merge fields from DB with live field list.
 	 *
 	 * @since 4.0
+	 *
+	 * @param int|string $form_id
+	 *
+	 * @return array
 	 */
 	private static function get_live_fields( $form_id ) {
 		$form_fields = FrmField::get_all_for_form( $form_id );
 		$field_names = FrmAppHelper::get_param( 'fields', '', 'post', 'sanitize_text_field' );
-		if ( empty( $field_names ) ) {
+
+		if ( ! $field_names ) {
 			return $form_fields;
 		}
 
 		$fields = array();
+
 		foreach ( $field_names as $field ) {
 			if ( ! empty( $field->type ) ) {
 				$fields[ $field['fieldId'] ] = $field;
@@ -1748,12 +2122,14 @@ class FrmProFieldsController {
 	}
 
 	/**
-	 * @param array $new_field
+	 * @param array      $new_field
+	 * @param int|string $form_id
+	 *
 	 * @return void
 	 */
 	public static function create_multiple_fields( $new_field, $form_id ) {
 		// $args = compact('field_data', 'form_id', 'field');
-		if ( empty( $new_field ) || $new_field['type'] !== 'divider' ) {
+		if ( ! $new_field || $new_field['type'] !== 'divider' ) {
 			return;
 		}
 
@@ -1780,9 +2156,8 @@ class FrmProFieldsController {
 		}
 
 		$update_values = array();
-
 		$field_options = FrmDb::get_var( 'frm_fields', array( 'id' => $field_id ), 'field_options' );
-		FrmProAppHelper::unserialize_or_decode( $field_options );
+		FrmAppHelper::unserialize_or_decode( $field_options );
 
 		// Update the in_section value
 		if ( ! isset( $field_options['in_section'] ) || $field_options['in_section'] != $section_id ) {
@@ -1860,11 +2235,10 @@ class FrmProFieldsController {
 		);
 		$end_section_order = FrmDb::get_var( 'frm_fields', $order_query, 'field_order', array( 'order_by' => 'field_order ASC' ) );
 		$field_order       = max( $section_field->field_order, $end_section_order );
-
-		$ended = false;
+		$ended             = false;
 
 		if ( ! empty( $section_field->field_options['repeat'] ) ) {
-			// create the repeatable form
+			// Create the repeatable form
 			$new_form_id = FrmProField::create_repeat_form(
 				0,
 				array(
@@ -1879,11 +2253,12 @@ class FrmProFieldsController {
 		$grid_helper = class_exists( 'FrmFieldGridHelper' ) ? new FrmFieldGridHelper() : false;
 
 		foreach ( $fields as $field ) {
-			// keep the current form id or give it the id of the newly created form
+			// Keep the current form id or give it the id of the newly created form
 			$this_form_id = $field->form_id == $form_id ? $form_id : $new_form_id;
 
 			$values = array();
 			FrmFieldsHelper::fill_field( $values, $field, $this_form_id );
+
 			if ( FrmField::is_repeating_field( $field ) ) {
 				$values['field_options']['form_select'] = $new_form_id;
 			}
@@ -1891,9 +2266,8 @@ class FrmProFieldsController {
 			$values['field_order'] = $field_order;
 			++$field_order;
 
-			$values   = apply_filters( 'frm_duplicated_field', $values );
-			$field_id = FrmField::create( $values );
-
+			$values     = apply_filters( 'frm_duplicated_field', $values );
+			$field_id   = FrmField::create( $values );
 			$copy_field = $field;
 			do_action( 'frm_after_duplicate_field', compact( 'field_id', 'values', 'copy_field', 'form_id' ) );
 
@@ -1926,7 +2300,7 @@ class FrmProFieldsController {
 		}
 
 		if ( ! $ended ) {
-			//make sure the section is ended
+			// Make sure the section is ended
 			self::create_multiple_fields( (array) $section_field, $form_id );
 		}
 
@@ -1940,10 +2314,11 @@ class FrmProFieldsController {
 	 * @since 3.0.03
 	 *
 	 * @param array $values
-	 * @return array $values
+	 *
+	 * @return array Values.
 	 */
 	public static function update_repeater_form_name( $values ) {
-		if ( isset( $values['field_options']['repeat'] ) && $values['field_options']['repeat'] ) {
+		if ( ! empty( $values['field_options']['repeat'] ) ) {
 			FrmForm::update( $values['field_options']['form_select'], array( 'name' => $values['name'] ) );
 		}
 
@@ -1961,6 +2336,7 @@ class FrmProFieldsController {
 	 * @param array $args (always contains 'parent_form_id')
 	 * If field is repeating, $args includes 'repeating', 'parent_field_id' and 'key_pointer'
 	 * If field is embedded, $args includes 'in_embed_form'
+	 *
 	 * @return array
 	 */
 	public static function setup_field_data_for_editing_entry( $entry, $fields, $args ) {
@@ -1968,8 +2344,7 @@ class FrmProFieldsController {
 
 		foreach ( $fields as $field ) {
 			$default_value = apply_filters( 'frm_get_default_value', $field->default_value, $field, true );
-
-			$field_value = self::get_posted_or_saved_value( $entry, $field, $args );
+			$field_value   = self::get_posted_or_saved_value( $entry, $field, $args );
 
 			$field_array = array(
 				'id'             => $field->id,
@@ -1989,7 +2364,7 @@ class FrmProFieldsController {
 
 			FrmFieldsHelper::prepare_edit_front_field( $field_array, $field, $entry->id, $args );
 
-			if ( ! isset( $field_array['unique'] ) || ! $field_array['unique'] ) {
+			if ( empty( $field_array['unique'] ) ) {
 				$field_array['unique_msg'] = '';
 			}
 
@@ -2007,20 +2382,20 @@ class FrmProFieldsController {
 	 * If the field has a posted value, get it. Otherwise, get the saved field value
 	 *
 	 * @since 2.01.0
+	 *
 	 * @param object $entry
 	 * @param object $field
 	 * @param array $args (if repeating, this includes 'repeating', 'parent_field_id', and 'key_pointer')
-	 * @return array|string $field_value
+	 *
+	 * @return array|string Field value.
 	 */
 	private static function get_posted_or_saved_value( $entry, $field, $args ) {
-		if ( isset( $args['save_draft_click'] ) && $args['save_draft_click'] && FrmField::is_repeating_field( $field ) ) {
+		if ( ! empty( $args['save_draft_click'] ) && FrmField::is_repeating_field( $field ) ) {
 			// If save draft was just clicked, and this is a repeating section, get the saved value
 			$field_value = self::get_saved_value( $entry, $field );
-
 		} elseif ( FrmEntriesHelper::value_is_posted( $field, $args ) ) {
 			$field_value = '';
 			FrmEntriesHelper::get_posted_value( $field, $field_value, $args );
-
 		} else {
 			$field_value = self::get_saved_value( $entry, $field );
 		}
@@ -2032,8 +2407,10 @@ class FrmProFieldsController {
 	 * Get the saved value for a field
 	 *
 	 * @since 2.02.05
+	 *
 	 * @param object $entry
 	 * @param object $field
+	 *
 	 * @return array|bool|mixed|string
 	 */
 	private static function get_saved_value( $entry, $field ) {
@@ -2063,7 +2440,7 @@ class FrmProFieldsController {
 		$field = FrmFieldsHelper::setup_edit_vars( $field );
 
 		$separate                = FrmAppHelper::get_param( 'separate', '', 'post', 'sanitize_text_field' );
-		$field['separate_value'] = ( $separate === 'true' );
+		$field['separate_value'] = $separate === 'true';
 
 		$field['options'] = self::product_strings_to_array();
 
@@ -2083,12 +2460,12 @@ class FrmProFieldsController {
 		$opts = array_map( 'trim', $opts );
 
 		foreach ( $opts as $opt_key => $opt ) {
-			if ( empty( $opt ) ) {
+			if ( ! $opt ) {
 				unset( $opts[ $opt_key ] );
 				continue;
 			}
 
-			if ( strpos( $opt, '|' ) === false ) {
+			if ( ! str_contains( $opt, '|' ) ) {
 				continue;
 			}
 
@@ -2096,7 +2473,7 @@ class FrmProFieldsController {
 			$count = count( $vals );
 			$label = isset( $vals[0] ) ? trim( $vals[0] ) : '';
 
-			// only product name is available
+			// Only product name is available
 			$opts[ $opt_key ] = array(
 				'label' => $label,
 				'value' => $label,
@@ -2104,17 +2481,17 @@ class FrmProFieldsController {
 			);
 
 			if ( 2 === $count ) {
-				// product name & price
+				// Product name & price
 				$opts[ $opt_key ]['price'] = trim( $vals[1] );
 			} elseif ( 3 === $count ) {
-				// product name, separate value & price
+				// Product name, separate value & price
 				$opts[ $opt_key ]['value'] = trim( $vals[1] );
 				$opts[ $opt_key ]['price'] = trim( $vals[2] );
 			}
 			unset( $vals, $opt_key, $opt );
 		}
 
-		// just to renumber indices from 0.
+		// Just to renumber indices from 0.
 		return array_values( $opts );
 	}
 
@@ -2130,13 +2507,8 @@ class FrmProFieldsController {
 		global $wpdb;
 
 		$term = FrmAppHelper::get_param( 'term', '', 'get', 'sanitize_text_field' );
-		if ( empty( $term ) ) {
-			$args  = array(
-				'limit'    => 20,
-				'order_by' => 'display_name',
-			);
-			$items = FrmDb::get_results( $wpdb->users, array(), 'ID, display_name', $args );
-		} else {
+
+		if ( $term ) {
 			$items = $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT ID, display_name FROM {$wpdb->users}
@@ -2147,9 +2519,16 @@ class FrmProFieldsController {
 					'%' . $wpdb->esc_like( $term ) . '%'
 				)
 			);
+		} else {
+			$args  = array(
+				'limit'    => 20,
+				'order_by' => 'display_name',
+			);
+			$items = FrmDb::get_results( $wpdb->users, array(), 'ID, display_name', $args );
 		}
 
 		$results = array();
+
 		foreach ( $items as $item ) {
 			$results[] = array(
 				'value' => $item->ID,
@@ -2166,6 +2545,7 @@ class FrmProFieldsController {
 	 * @since 6.3.3
 	 *
 	 * @param array $options The options.
+	 *
 	 * @return array
 	 */
 	public static function change_field_display_format_options( $options ) {
@@ -2183,6 +2563,7 @@ class FrmProFieldsController {
 	 *
 	 * @param array $args        The arguments.
 	 * @param array $method_args The arguments from the method. Contains `field`, `options`.
+	 *
 	 * @return array
 	 */
 	public static function change_radio_display_format_args( $args, array $method_args ) {
@@ -2196,6 +2577,7 @@ class FrmProFieldsController {
 	 *
 	 * @param array $args        The arguments.
 	 * @param array $method_args The arguments from the method. Contains `field`, `options`.
+	 *
 	 * @return array
 	 */
 	public static function change_checkbox_display_format_args( $args, $method_args ) {
@@ -2225,6 +2607,7 @@ class FrmProFieldsController {
 	 * @since 5.4.2
 	 *
 	 * @param string $field_type
+	 *
 	 * @return void
 	 */
 	public static function before_create_field( $field_type ) {
@@ -2249,6 +2632,7 @@ class FrmProFieldsController {
 	 *
 	 * @param bool   $should_sanitize
 	 * @param string $opt
+	 *
 	 * @return bool
 	 */
 	public static function should_sanitize_field_opt_string( $should_sanitize, $opt ) {
@@ -2267,13 +2651,34 @@ class FrmProFieldsController {
 	 *
 	 * @param string $input_html Input HTML.
 	 * @param array  $args       Contains `field` array.
+	 *
 	 * @return string
 	 */
 	public static function add_show_password_html_to_backend_conf_input( $input_html, $args ) {
-		if ( 'password' === $args['field']['type'] ) {
-			$input_html = FrmProFieldsHelper::add_show_password_html( $input_html );
+		if ( 'password' === FrmField::get_field_type( $args['field'] ) ) {
+			return FrmProFieldsHelper::add_show_password_html( $input_html );
 		}
 		return $input_html;
+	}
+
+	/**
+	 * Renders the confirmation field preview in the form builder.
+	 *
+	 * @since 6.32
+	 *
+	 * @param array $args Contains `field` and `display` arrays.
+	 *
+	 * @return void
+	 */
+	public static function add_confirmation_field_preview( $args ) {
+		if ( empty( $args['display']['conf_field'] ) ) {
+			return;
+		}
+
+		$field   = $args['field'];
+		$display = $args['display'];
+
+		include FrmProAppHelper::plugin_path() . '/classes/views/frmpro-fields/back-end/confirmation-preview.php';
 	}
 
 	/**
@@ -2285,6 +2690,7 @@ class FrmProFieldsController {
 	 *
 	 * @param bool  $is_field_type
 	 * @param array $args
+	 *
 	 * @return bool
 	 */
 	public static function is_field_type( $is_field_type, $args ) {
@@ -2294,13 +2700,15 @@ class FrmProFieldsController {
 
 		$field      = $args['field'];
 		$field_type = FrmField::get_original_field_type( $field );
+
 		if ( ! in_array( $field_type, array( 'data', 'lookup', 'product' ), true ) ) {
 			return $is_field_type;
 		}
 
 		$data_type = FrmField::get_option( $field, 'data_type' );
+
 		if ( 'dropdown' === $data_type && 'select' === $args['is_type'] ) {
-			$is_field_type = true;
+			return true;
 		}
 
 		return $is_field_type;
@@ -2314,6 +2722,7 @@ class FrmProFieldsController {
 	 * @since 6.16.2
 	 *
 	 * @param array $field
+	 *
 	 * @return void
 	 */
 	public static function dropdown_field_after_no_placeholder_option( $field ) {
@@ -2324,6 +2733,7 @@ class FrmProFieldsController {
 		// Do an additional check if the first option has an empty value before adding a hidden empty option.
 		if ( ! empty( $field['options'] ) && is_array( $field['options'] ) ) {
 			$first_option = reset( $field['options'] );
+
 			if ( is_array( $first_option ) && isset( $first_option['value'] ) && '' === $first_option['value'] ) {
 				return;
 			}
@@ -2354,6 +2764,7 @@ class FrmProFieldsController {
 	 * @since 6.19
 	 *
 	 * @param array $args The arguments. Includes 'field', 'display', and 'values'.
+	 *
 	 * @return void
 	 */
 	public static function add_confirmation_placeholder( $args ) {
@@ -2366,8 +2777,38 @@ class FrmProFieldsController {
 	}
 
 	/**
+	 * Adds additional alignment options for fields when Pro is active.
+	 *
+	 * @since 6.32
+	 *
+	 * @param array $align_options The alignment options.
+	 *
+	 * @return array
+	 */
+	public static function add_additional_pro_align_options( $align_options ) {
+		return array_merge( $align_options, self::get_additional_pro_align_options() );
+	}
+
+	/**
+	 * Returns additional alignment options for fields when Pro is active.
+	 *
+	 * @since 6.32
+	 *
+	 * @return array
+	 */
+	private static function get_additional_pro_align_options() {
+		$align_options = self::get_align_setting_options();
+		unset( $align_options['inline'], $align_options['block'] );
+		return $align_options;
+	}
+
+	/**
 	 * @deprecated 3.0
+	 *
 	 * @codeCoverageIgnore
+	 *
+	 * @param mixed  $field
+	 * @param string $name
 	 */
 	public static function show( $field, $name = '' ) {
 		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldType::show_on_form_builder' );
@@ -2375,7 +2816,14 @@ class FrmProFieldsController {
 
 	/**
 	 * @deprecated 3.0
+	 *
 	 * @codeCoverageIgnore
+	 *
+	 * @param mixed  $field
+	 * @param string $field_name
+	 * @param array  $atts
+	 *
+	 * @return void
 	 */
 	public static function form_fields( $field, $field_name, $atts ) {
 		_deprecated_function( __FUNCTION__, '3.0', 'FrmFieldType Modals' );
@@ -2388,6 +2836,7 @@ class FrmProFieldsController {
 	 * @deprecated 6.3.3
 	 *
 	 * @param array $options The options.
+	 *
 	 * @return array
 	 */
 	public static function change_radio_display_format_options( $options ) {

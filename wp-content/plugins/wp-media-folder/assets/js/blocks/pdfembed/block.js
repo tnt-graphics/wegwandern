@@ -15,12 +15,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
     var registerBlockType = wpBlocks.registerBlockType;
     var InspectorControls = wpBlockEditor.InspectorControls,
         MediaUpload = wpBlockEditor.MediaUpload,
-        BlockControls = wpBlockEditor.BlockControls;
+        BlockControls = wpBlockEditor.BlockControls,
+        useBlockProps = wpBlockEditor.useBlockProps;
     var PanelBody = wpComponents.PanelBody,
         SelectControl = wpComponents.SelectControl,
         ToolbarGroup = wpComponents.ToolbarGroup,
         TextControl = wpComponents.TextControl,
         Button = wpComponents.Button,
+        ToolbarButton = wpComponents.ToolbarButton,
         IconButton = wpComponents.IconButton,
         Placeholder = wpComponents.Placeholder;
 
@@ -68,19 +70,35 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         }, {
             key: 'doPdfEmbed',
             value: function doPdfEmbed(id, embed, target, width, height, clientId) {
-                var $container = $('#block-' + clientId + ' .wpmf_block_pdf_wrap');
-                fetch(wpmf_pdf_blocks.vars.ajaxurl + ('?action=wpmf_load_pdf_embed&id=' + id + '&embed=' + embed + '&target=' + target + '&width=' + width + '&height=' + height + '&wpmf_nonce=' + wpmf_pdf_blocks.vars.wpmf_nonce)).then(function (res) {
-                    return res.json();
-                }).then(function (result) {
-                    if (result.status) {
-                        $container.html(result.html);
-                        if($container.find('.wpmf-pdfemb-viewer').length) {
-                            $container.find('.wpmf-pdfemb-viewer').pdfEmbedder();
+                const container = getIframeContainer(clientId);
+                if (container) {
+                    fetch(wpmf_pdf_blocks.vars.ajaxurl + ('?action=wpmf_load_pdf_embed&id=' + id + '&embed=' + embed + '&target=' + target + '&width=' + width + '&height=' + height + '&wpmf_nonce=' + wpmf_pdf_blocks.vars.wpmf_nonce))
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.status) {
+                            container.innerHTML = result.html;
+
+                            const viewer = container.querySelector('.wpmf-pdfemb-viewer');
+                            if (viewer && typeof jQuery !== 'undefined') {
+                                jQuery(viewer).pdfEmbedder();
+                            }
                         }
-                    }
-                },
-                // errors
-                function (error) {});
+                    })
+                    .catch(() => {});
+                } else {
+                    var $container = $('#block-' + clientId + ' .wpmf_block_pdf_wrap');
+                    fetch(wpmf_pdf_blocks.vars.ajaxurl + ('?action=wpmf_load_pdf_embed&id=' + id + '&embed=' + embed + '&target=' + target + '&width=' + width + '&height=' + height + '&wpmf_nonce=' + wpmf_pdf_blocks.vars.wpmf_nonce)).then(function (res) {
+                        return res.json();
+                    }).then(function (result) {
+                        if (result.status) {
+                            $container.html(result.html);
+                            if ($container.find('.wpmf-pdfemb-viewer').length) {
+                                $container.find('.wpmf-pdfemb-viewer').pdfEmbedder();
+                            }
+                        }
+                    },
+                    function (error) { });
+                }
             }
         }, {
             key: 'render',
@@ -94,6 +112,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     target = attributes.target,
                     width = attributes.width,
                     height = attributes.height;
+
+                var blockProps = this.props.blockProps;
 
                 var controls = React.createElement(
                     BlockControls,
@@ -109,11 +129,12 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                             allowedTypes: 'application/pdf',
                             render: function render(_ref) {
                                 var open = _ref.open;
-                                return React.createElement(IconButton, {
+                                return React.createElement(ToolbarButton, {
                                     className: 'components-toolbar__control wpmf-pdf-button',
                                     label: __('Edit', 'wpmf'),
                                     icon: 'edit',
-                                    onClick: open
+                                    onClick: open,
+                                    __next40pxDefaultSize: true,
                                 });
                             }
                         })
@@ -136,6 +157,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     return React.createElement(
                         Placeholder,
                         {
+                            __next40pxDefaultSize: true,
                             icon: 'pdf',
                             label: __('WP Media Folder PDF Embed', 'wpmf'),
                             instructions: __('Select a PDF file from your media library.', 'wpmf'),
@@ -168,7 +190,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                     null,
                     React.createElement(
                         'div',
-                        { className: 'wp-block-shortcode' },
+                        _extends({ className: 'wp-block-shortcode' }, blockProps),
                         id !== 0 && React.createElement(
                             'div',
                             { className: 'wpmf-pdf-block' },
@@ -179,6 +201,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                     PanelBody,
                                     { title: __('PDF Settings', 'wpmf') },
                                     React.createElement(SelectControl, {
+                                        __next40pxDefaultSize: true,
+                                        __nextHasNoMarginBottom: true,
                                         label: __('Embed', 'wpmf'),
                                         value: embed,
                                         options: [{ label: __('On', 'wpmf'), value: 1 }, { label: __('Off', 'wpmf'), value: 0 }],
@@ -187,6 +211,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                         }
                                     }),
                                     React.createElement(SelectControl, {
+                                        __next40pxDefaultSize: true,
+                                        __nextHasNoMarginBottom: true,
                                         label: __('Target', 'wpmf'),
                                         value: target,
                                         options: [{ label: __('Same Window', 'wpmf'), value: '' }, { label: __('New Window', 'wpmf'), value: '_blank' }],
@@ -195,6 +221,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                         }
                                     }),
                                     React.createElement(TextControl, {
+                                        __next40pxDefaultSize: true,
                                         label: __('Width', 'wpmf'),
                                         value: width,
                                         onChange: function onChange(value) {
@@ -202,6 +229,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                         }
                                     }),
                                     React.createElement(TextControl, {
+                                        __next40pxDefaultSize: true,
                                         className: 'wpmf_pdf_embed_shortcode_input',
                                         label: __('Height', 'wpmf'),
                                         value: height,
@@ -212,6 +240,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
                                 )
                             ),
                             React.createElement(TextControl, {
+                                __next40pxDefaultSize: true,
                                 value: pdf_shortcode,
                                 className: 'wpmf_pdf_value',
                                 autoComplete: 'off',
@@ -228,33 +257,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         return wpmfPdfEmbed;
     }(Component);
 
+    var wpmfPdfEmbedEdit = function wpmfPdfEmbedEdit(props) {
+        var blockProps = useBlockProps();
+        return React.createElement(wpmfPdfEmbed, Object.assign({}, props, { blockProps: blockProps }));
+    };
+
     registerBlockType('wpmf/pdfembed', {
-        title: wpmf_pdf_blocks.l18n.block_pdf_title,
-        icon: 'media-code',
-        category: 'wp-media-folder',
-        attributes: {
-            id: {
-                type: 'number',
-                default: 0
-            },
-            embed: {
-                type: 'number',
-                default: 1
-            },
-            target: {
-                type: 'string',
-                default: ''
-            },
-            width: {
-                type: 'string',
-                default: ''
-            },
-            height: {
-                type: 'string',
-                default: ''
-            }
-        },
-        edit: wpmfPdfEmbed,
+        edit: wpmfPdfEmbedEdit,
         save: function save(_ref3) {
             var attributes = _ref3.attributes;
             var id = attributes.id,
@@ -277,4 +286,13 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
             return pdf_shortcode;
         }
     });
+
+    function getIframeContainer(clientId) {
+        const iframe = document.querySelector('iframe[name="editor-canvas"]');
+        const iframeDoc = iframe?.contentDocument || iframe?.contentWindow?.document;
+
+        if (!iframeDoc) return null;
+
+        return iframeDoc.querySelector('#block-' + clientId + ' .wpmf_block_pdf_wrap');
+    }
 })(wp.i18n, wp.blocks, wp.element, wp.editor, wp.blockEditor, wp.components);

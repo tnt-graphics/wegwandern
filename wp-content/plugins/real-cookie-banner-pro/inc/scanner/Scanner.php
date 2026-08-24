@@ -286,6 +286,9 @@ class Scanner
      */
     public function resolve_blockables($blockables, $headlessContentBlocker)
     {
+        if (!$this->isActive()) {
+            return $blockables;
+        }
         global $wpdb;
         // Remove all known blockables because we want to show all found services (and label them with "Already created")
         foreach ($blockables as $key => $blockable) {
