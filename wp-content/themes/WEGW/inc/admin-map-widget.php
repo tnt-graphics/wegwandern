@@ -35,7 +35,11 @@ function wegwandern_admin_map_assets( $hook ) {
 		return;
 	}
 
-	// OpenLayers is loaded when "Open Map" is clicked.
+	wp_enqueue_style( 'wegw-admin-ol-css', get_template_directory_uri() . '/lib/ol@v7.1.0/ol.css', array(), _S_VERSION );
+	wp_enqueue_style( 'wegw-admin-ol-ext-css', get_template_directory_uri() . '/lib/ol-ext/ol-ext.css', array(), _S_VERSION );
+	wp_enqueue_script( 'wegw-admin-ol-js', get_template_directory_uri() . '/lib/ol@v7.1.0/ol.js', array(), _S_VERSION, true );
+	wp_enqueue_script( 'wegw-admin-ol-ext-js', get_template_directory_uri() . '/lib/ol-ext/ol-ext.min.js', array( 'wegw-admin-ol-js' ), _S_VERSION, true );
+	wp_enqueue_script( 'wegw-admin-ol-proj4-js', get_template_directory_uri() . '/lib/ol-ext/proj4.js', array( 'wegw-admin-ol-js' ), _S_VERSION, true );
 }
 
 /**
@@ -55,134 +59,66 @@ function wegwandern_map_custom_meta_box_markup() {
 		$current_hike_activity_taxonomy = "";
 	}
 
-	$overlay_waypoints = function_exists( 'wegw_get_admin_overlay_waypoints' )
-		? wegw_get_admin_overlay_waypoints( $current_hike_id )
-		: array();
+	$json_gpx_raw = $gpx_file ? get_field( 'json_gpx_file_data', $current_hike_id ) : null;
+	if ( empty( $json_gpx_raw ) ) {
+		$json_gpx_js = 'undefined';
+	} elseif ( is_string( $json_gpx_raw ) ) {
+		$json_gpx_decoded = json_decode( $json_gpx_raw, true );
+		$json_gpx_js      = ( JSON_ERROR_NONE === json_last_error() )
+			? wp_json_encode( $json_gpx_decoded )
+			: wp_json_encode( $json_gpx_raw );
+	} else {
+		$json_gpx_js = wp_json_encode( $json_gpx_raw );
+	}
 ?>
 	<script type="text/javascript">
 		var recalculateGpx = "<?php echo esc_js( $recalculate_gpx ); ?>";
-		var json_gpx_data = undefined;
-		var wegAdminGpxPostId = <?php echo (int) $current_hike_id; ?>;
-		var wegAdminGpxNonce = "<?php echo esc_js( wp_create_nonce( 'wegwandern_admin_gpx' ) ); ?>";
-		var wegAdminGpxHasFile = <?php echo $gpx_file ? 'true' : 'false'; ?>;
-		var wegAdminOverlayWaypoints = <?php echo wp_json_encode( $overlay_waypoints ); ?>;
+		var json_gpx_data = <?php echo $json_gpx_js; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>;
 		var wegAdminMap = null;
-		var wegAdminOlCss = <?php echo wp_json_encode( array( get_template_directory_uri() . '/lib/ol@v7.1.0/ol.css', get_template_directory_uri() . '/lib/ol-ext/ol-ext.css' ) ); ?>;
-		var wegAdminOlJs = <?php echo wp_json_encode( array( get_template_directory_uri() . '/lib/ol@v7.1.0/ol.js', get_template_directory_uri() . '/lib/ol-ext/ol-ext.min.js', get_template_directory_uri() . '/lib/ol-ext/proj4.js' ) ); ?>;
 
-		function wegwLoadCss(url) {
-			if (document.querySelector('link[href="' + url + '"]')) {
-				return;
+		jQuery(function() {
+			if (recalculateGpx == 1) {
+				try {
+					calculateGPX();
+				} catch (error) {
+					console.error('calculateGPX failed:', error);
+				}
 			}
-			var link = document.createElement('link');
-			link.rel = 'stylesheet';
-			link.href = url;
-			document.head.appendChild(link);
-		}
-		function wegwLoadJs(url, cb) {
-			var existing = document.querySelector('script[src="' + url + '"]');
-			if (existing) {
-				if (typeof ol !== 'undefined') {
-					cb();
-					return;
-				}
-				existing.addEventListener('load', cb);
-				return;
-			}
-			var script = document.createElement('script');
-			script.src = url;
-			script.onload = cb;
-			script.onerror = function() {
-				console.error('Failed to load', url);
-				cb();
-			};
-			document.head.appendChild(script);
-		}
-		function wegwEnsureOl(done) {
-			if (typeof ol !== 'undefined') {
-				done();
-				return;
-			}
-			wegAdminOlCss.forEach(wegwLoadCss);
-			wegwLoadJs(wegAdminOlJs[0], function() {
-				wegwLoadJs(wegAdminOlJs[1], function() {
-					wegwLoadJs(wegAdminOlJs[2], done);
-				});
-			});
-		}
-		function wegwFetchGpx(done) {
-			if (json_gpx_data !== undefined || !wegAdminGpxHasFile) {
-				done();
-				return;
-			}
-			jQuery.post(ajaxurl, {
-				action: 'wegwandern_admin_gpx_json',
-				post_id: wegAdminGpxPostId,
-				nonce: wegAdminGpxNonce
-			}).done(function(res) {
-				if (res && res.success && res.data) {
-					json_gpx_data = (typeof res.data === 'string') ? JSON.parse(res.data) : res.data;
-				} else {
-					json_gpx_data = false;
-				}
-			}).fail(function() {
-				json_gpx_data = false;
-			}).always(done);
-		}
-		function wegwPlotOverlayIcons(map) {
-			var pts = Array.isArray(wegAdminOverlayWaypoints) ? wegAdminOverlayWaypoints : [];
-			if (!pts.length && json_gpx_data && json_gpx_data.trk && json_gpx_data.trk.wpt) {
-				var raw = json_gpx_data.trk.wpt;
-				if (!Array.isArray(raw)) {
-					raw = [raw];
-				}
-				pts = raw.map(function(p) {
-					var attrs = (p && p['@attributes']) || {};
-					var icon = p.wptImage;
-					if (icon && typeof icon === 'object') {
-						icon = icon.url || '';
-					}
-					return { lat: attrs.lat, lon: attrs.lon, icon: icon, info: p.wpt_info };
-				});
-			}
-			pts.forEach(function(pt) {
-				var lat = parseFloat(pt.lat);
-				var lon = parseFloat(pt.lon);
-				var icon = pt.icon || '';
-				if (icon && icon.indexOf('/wp-content/') !== -1) {
-					try {
-						var parsed = new URL(icon, window.location.origin);
-						icon = window.location.origin + parsed.pathname + parsed.search;
-					} catch (e) {}
-				}
-				if (!lat || !lon) {
-					return;
-				}
-				if (!icon) {
-					icon = "<?php echo get_template_directory_uri(); ?>/img/icons/home.png";
-				}
-				var layer = new ol.layer.Vector({
-					source: new ol.source.Vector(),
-					style: new ol.style.Style({
-						image: new ol.style.Icon({
-							anchor: [0.5, 1],
-							src: icon,
-							width: 64,
-							height: 64
-						})
-					})
-				});
-				map.addLayer(layer);
-				layer.setZIndex(25);
-				layer.getSource().addFeature(new ol.Feature({
-					geometry: new ol.geom.Point(ol.proj.fromLonLat([lon, lat]))
-				}));
-			});
-		}
 
-		jQuery(document).on('click', '#ol_map_display_btn .acf-button-group label, #ol_map_display_btn input, [data-name="display_map"] .acf-button-group label, [data-name="display_map"] input', function() {
-			loadMap();
+			wegwBindDisplayMapButton();
 		});
+
+		if (typeof acf !== 'undefined') {
+			acf.addAction('ready', wegwBindDisplayMapButton);
+			acf.addAction('append', wegwBindDisplayMapButton);
+		}
+
+		/**
+		 * Bind the ACF "Display Map" button_group field.
+		 * ACF 6.x hides the radio input and handles clicks on the label instead.
+		 */
+		function wegwBindDisplayMapButton() {
+			jQuery('[data-name="display_map"], #ol_map_display_btn').each(function() {
+				var $field = jQuery(this);
+
+				if ($field.data('weg-map-bound')) {
+					return;
+				}
+
+				$field.data('weg-map-bound', true);
+
+				$field.on('click.wegwMap', '.acf-button-group label', function(event) {
+					event.preventDefault();
+					loadMap();
+				});
+
+				$field.on('change.wegwMap', 'input[type="radio"]', function() {
+					if (jQuery(this).is(':checked') && jQuery(this).val() === 'open_map') {
+						loadMap();
+					}
+				});
+			});
+		}
 
 		/**
 		 * The "Karte" meta box is a classic meta box that may be collapsed by default
@@ -419,26 +355,57 @@ function wegwandern_map_custom_meta_box_markup() {
 			wegwRevealKarteBox();
 
 			if (wegAdminMap) {
-				setTimeout(function() {
-					wegAdminMap.updateSize();
-				}, 300);
 				return;
 			}
 
-			wegwEnsureOl(function() {
-				wegwFetchGpx(function() {
-					wegwInitAdminMap();
+			function runWhenOpenLayersReady(callback) {
+				if (typeof ol !== 'undefined') {
+					callback();
+					return;
+				}
+
+				var cssURLs = [
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol@v7.1.0/ol.css' ); ?>",
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol-ext/ol-ext.css' ); ?>"
+				];
+				var jsURLs = [
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol@v7.1.0/ol.js' ); ?>",
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol-ext/ol-ext.min.js' ); ?>",
+					"<?php echo esc_url( get_template_directory_uri() . '/lib/ol-ext/proj4.js' ); ?>"
+				];
+
+				function insertCSS(url) {
+					var link = document.createElement("link");
+					link.rel = "stylesheet";
+					link.type = "text/css";
+					link.href = url;
+					document.head.appendChild(link);
+				}
+
+				function insertJS(url, onLoad) {
+					var script = document.createElement("script");
+					script.src = url;
+					script.onload = onLoad;
+					document.head.appendChild(script);
+				}
+
+				cssURLs.forEach(insertCSS);
+
+				var loadedScripts = 0;
+				function checkAllScriptsLoaded() {
+					loadedScripts++;
+					if (loadedScripts === jsURLs.length) {
+						callback();
+					}
+				}
+
+				jsURLs.forEach(function(url) {
+					insertJS(url, checkAllScriptsLoaded);
 				});
-			});
-		}
-
-		function wegwInitAdminMap() {
-			if (typeof ol === 'undefined') {
-				console.error('OpenLayers not loaded');
-				return;
 			}
 
-			try {
+			runWhenOpenLayersReady(function initializeMap() {
+				try {
 				/* Swisstopo Layer */
 				var swisstopo_layer = new ol.layer.Tile({
 					source: new ol.source.XYZ({
@@ -447,7 +414,7 @@ function wegwandern_map_custom_meta_box_markup() {
 				});
 
 				/* Check if GPX file is uploaded */
-				if ( json_gpx_data && json_gpx_data.trk && json_gpx_data.trk.trkseg && json_gpx_data.trk.trkseg.trkpt ) {
+				if( json_gpx_data !== undefined ) {
 					var gpx_trackpoints = json_gpx_data.trk.trkseg.trkpt;
 					var gpx_middle_cordinates = parseInt(gpx_trackpoints.length/2);
 					var lat = parseFloat(gpx_trackpoints[gpx_middle_cordinates]["@attributes"].lat);
@@ -465,12 +432,9 @@ function wegwandern_map_custom_meta_box_markup() {
 					var map = wegAdminMap;
 					
 					/* Get the longitude and latitude of the `Way Points(wpt)` to plot event icons */
-					var gpx_waypoints = json_gpx_data.trk && json_gpx_data.trk.wpt;
-					if (gpx_waypoints && !Array.isArray(gpx_waypoints)) {
-						gpx_waypoints = [gpx_waypoints];
-					}
+					var gpx_waypoints = json_gpx_data.trk.wpt;
 
-					if (gpx_waypoints !== undefined && !(Array.isArray(wegAdminOverlayWaypoints) && wegAdminOverlayWaypoints.length)) {
+					if (gpx_waypoints !== undefined) {
 						var wpt_length = parseFloat(gpx_waypoints.length);
 
 						if (wpt_length > 0) {
@@ -480,9 +444,6 @@ function wegwandern_map_custom_meta_box_markup() {
 
 								if (gpx_waypoints[i].wptImage) {
 									event_icon = gpx_waypoints[i].wptImage;
-									if (event_icon && typeof event_icon === 'object') {
-										event_icon = event_icon.url || '';
-									}
 								} else {
 									event_icon = "<?php echo get_template_directory_uri(); ?>/img/icons/home.png";
 								}
@@ -493,8 +454,7 @@ function wegwandern_map_custom_meta_box_markup() {
 										image: new ol.style.Icon({
 											anchor: [0.5, 1],
 											src: event_icon,
-											width: 64,
-											height: 64
+											scale: 0.5
 										})
 									})
 								});
@@ -585,8 +545,6 @@ function wegwandern_map_custom_meta_box_markup() {
 					var map = wegAdminMap;
 				}
 
-				wegwPlotOverlayIcons(map);
-
 				[100, 400, 800, 1500].forEach(function (delay) {
 					setTimeout(function () {
 						map.updateSize();
@@ -595,6 +553,7 @@ function wegwandern_map_custom_meta_box_markup() {
 				} catch (error) {
 					console.error('OpenLayers map init failed:', error);
 				}
+			});
 		}
 	</script>
 
@@ -761,6 +720,47 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
 				}
 			}
 
+			if ( have_rows( 'wpt-coordinates' ) ) :
+				$wpt_coordinates = array();
+				while ( have_rows( 'wpt-coordinates' ) ) :
+					the_row();
+					$wpt_latitude  = get_sub_field( 'latitude' );
+					$wpt_longitude = get_sub_field( 'longitude' );
+					$wpt_info      = get_sub_field( 'wegpunkt_info' );
+					// $wpt_elevation     = get_sub_field( 'elevation' );
+					$wpt_icon          = get_sub_field( 'icon' );
+					$wpt_image         = isset( $wpt_icon ) ? $wpt_icon : '';
+					$wpt_coordinates[] = array(
+						'@attributes' => array(
+							'lat' => $wpt_latitude,
+							'lon' => $wpt_longitude,
+						),
+						// "ele" => $wpt_elevation,
+						'name'        => '',
+						'wptImage'    => $wpt_image,
+						'wpt_info'    => $wpt_info,
+					);
+
+				endwhile;
+			endif;
+
+			if ( isset( $wpt_coordinates ) && $wpt_coordinates != '' ) {
+				/* set empty array $gpx_data_arr['trk']['wpt'] */
+				$gpx_data_arr['trk']['wpt'] = array();
+				foreach ( $wpt_coordinates as $wptc ) {
+					if ( isset( $gpx_data_arr['trk']['wpt'] ) && $gpx_data_arr['trk']['wpt'] != '' ) {
+						array_push( $gpx_data_arr['trk']['wpt'], $wptc );
+					} elseif ( isset( $gpx_data_arr['wpt'] ) && $gpx_data_arr['wpt'] != '' ) {
+						$already_exist_wpt = $gpx_data_arr['wpt'];
+						unset( $gpx_data_arr['wpt'] );
+						$gpx_data_arr['trk']['wpt'][] = $wptc;
+						array_push( $gpx_data_arr['trk']['wpt'], $already_exist_wpt );
+					} else {
+						array_push( $gpx_data_arr['trk']['wpt'], $wptc );
+					}
+				}
+			}
+
 			$dauer = number_format( $dauer, 2 );
 			$dauer_converted = wegwandern_convert_decimal_time( $dauer );
 			update_field( 'dauer', $dauer_converted, $post_id );
@@ -772,99 +772,6 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
 			wegw_gpx_fields_update_on_import( $post_id );
 		}
 	}
-
-	wegw_sync_overlay_waypoints_to_gpx_json( $post_id );
-}
-
-/**
- * Overlay icons live in ACF repeater `wpt-coordinates`.
- * The map reads `json_gpx_file_data.trk.wpt` — sync on every hike save, not only when GPX is recalculated.
- */
-function wegw_get_admin_overlay_waypoints( $post_id ) {
-	$waypoints = array();
-	$rows      = get_field( 'wpt-coordinates', $post_id );
-	if ( ! is_array( $rows ) ) {
-		return $waypoints;
-	}
-
-	foreach ( $rows as $row ) {
-		$lat = isset( $row['latitude'] ) ? $row['latitude'] : '';
-		$lon = isset( $row['longitude'] ) ? $row['longitude'] : '';
-		if ( $lat === '' || $lon === '' ) {
-			continue;
-		}
-		$waypoints[] = array(
-			'lat'  => $lat,
-			'lon'  => $lon,
-			'icon' => wegw_get_overlay_waypoint_icon_url( isset( $row['icon'] ) ? $row['icon'] : '' ),
-			'info' => isset( $row['wegpunkt_info'] ) ? $row['wegpunkt_info'] : '',
-		);
-	}
-
-	return $waypoints;
-}
-
-function wegw_get_overlay_waypoint_icon_url( $icon ) {
-	$url = '';
-	if ( is_array( $icon ) && ! empty( $icon['url'] ) ) {
-		$url = $icon['url'];
-	} elseif ( is_numeric( $icon ) ) {
-		$attachment_url = wp_get_attachment_url( (int) $icon );
-		$url            = $attachment_url ? $attachment_url : '';
-	} elseif ( is_string( $icon ) && $icon !== '' ) {
-		$url = $icon;
-	}
-
-	if ( $url === '' ) {
-		return '';
-	}
-
-	$path = wp_parse_url( $url, PHP_URL_PATH );
-	if ( is_string( $path ) && false !== strpos( $path, '/wp-content/' ) ) {
-		return $path;
-	}
-
-	return $url;
-}
-
-function wegw_sync_overlay_waypoints_to_gpx_json( $post_id ) {
-	if ( 'wanderung' !== get_post_type( $post_id ) ) {
-		return;
-	}
-
-	$raw = get_field( 'json_gpx_file_data', $post_id );
-	if ( empty( $raw ) ) {
-		return;
-	}
-
-	$gpx = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
-	if ( ! is_array( $gpx ) ) {
-		return;
-	}
-	if ( ! isset( $gpx['trk'] ) || ! is_array( $gpx['trk'] ) ) {
-		$gpx['trk'] = array();
-	}
-
-	$overlay = wegw_get_admin_overlay_waypoints( $post_id );
-	if ( empty( $overlay ) ) {
-		return;
-	}
-
-	$wpts = array();
-	foreach ( $overlay as $pt ) {
-		$wpts[] = array(
-			'@attributes' => array(
-				'lat' => $pt['lat'],
-				'lon' => $pt['lon'],
-			),
-			'name'     => '',
-			'wptImage' => $pt['icon'],
-			'wpt_info' => $pt['info'],
-		);
-	}
-
-	$gpx['trk']['wpt'] = $wpts;
-	update_field( 'json_gpx_file_data', wp_json_encode( $gpx, JSON_UNESCAPED_UNICODE ), $post_id );
 }
 
 /*
@@ -1041,26 +948,4 @@ function wegw_gpx_fields_update_on_import( $post_id ) {
 			update_field( 'hochster_punkt', $hochster_punkt, $post_id );
 		}
 	}
-}
-
-add_action( 'wp_ajax_wegwandern_admin_gpx_json', 'wegwandern_admin_gpx_json' );
-function wegwandern_admin_gpx_json() {
-	check_ajax_referer( 'wegwandern_admin_gpx', 'nonce' );
-
-	$post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
-	if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
-		wp_send_json_error();
-	}
-
-	$raw = get_field( 'json_gpx_file_data', $post_id );
-	if ( empty( $raw ) ) {
-		wp_send_json_success( null );
-	}
-
-	if ( is_string( $raw ) ) {
-		$decoded = json_decode( $raw, true );
-		wp_send_json_success( JSON_ERROR_NONE === json_last_error() ? $decoded : $raw );
-	}
-
-	wp_send_json_success( $raw );
 }

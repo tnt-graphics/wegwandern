@@ -32,31 +32,6 @@ if ( $gpx_file != 'undefined' ) {
 	$json_gpx_data = 'undefined';
 }
 
-$overlay_waypoints = function_exists( 'wegw_get_admin_overlay_waypoints' ) ? wegw_get_admin_overlay_waypoints( $wanderung_id ) : array();
-if ( $json_gpx_data !== 'undefined' && ! empty( $overlay_waypoints ) ) {
-	$gpx_arr = is_array( $json_gpx_data ) ? $json_gpx_data : json_decode( $json_gpx_data, true );
-	if ( is_array( $gpx_arr ) ) {
-		if ( ! isset( $gpx_arr['trk'] ) || ! is_array( $gpx_arr['trk'] ) ) {
-			$gpx_arr['trk'] = array();
-		}
-		$gpx_arr['trk']['wpt'] = array();
-		foreach ( $overlay_waypoints as $pt ) {
-			$gpx_arr['trk']['wpt'][] = array(
-				'@attributes' => array(
-					'lat' => $pt['lat'],
-					'lon' => $pt['lon'],
-				),
-				'name'     => '',
-				'wptImage' => $pt['icon'],
-				'wpt_info' => $pt['info'],
-			);
-		}
-		$json_gpx_data = wp_json_encode( $gpx_arr, JSON_UNESCAPED_UNICODE );
-	}
-} elseif ( is_array( $json_gpx_data ) ) {
-	$json_gpx_data = wp_json_encode( $json_gpx_data, JSON_UNESCAPED_UNICODE );
-}
-
 if ( have_rows( 'manage_ad_scripts', 'option' ) ) :
 	while ( have_rows( 'manage_ad_scripts', 'option' ) ) :
 		the_row();
@@ -400,9 +375,8 @@ if(is_plugin_active('wegwandern-summit-book/wegwandern-summit-book.php')) {
 </main><!-- #main -->
 
 <script type="text/javascript">
-	var json_gpx_data_single_hike_detail = <?php echo is_array( $json_gpx_data ) ? wp_json_encode( $json_gpx_data ) : $json_gpx_data; ?>;
+	var json_gpx_data_single_hike_detail = <?php echo $json_gpx_data; ?>; 
 	var gpx_file_single_hike_detail = '<?php echo $gpx_file; ?>';
-	var overlay_waypoints_single_hike = <?php echo wp_json_encode( isset( $overlay_waypoints ) ? $overlay_waypoints : array() ); ?>;
 </script>
 
 

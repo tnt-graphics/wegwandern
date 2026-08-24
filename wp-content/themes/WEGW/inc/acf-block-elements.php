@@ -30,10 +30,6 @@ function wegw_register_acf_block_types() {
 			'icon'            => '',
 			'align'           => false,
 			'mode'            => 'edit',
-			'supports'        => array(
-				'align' => false,
-				'mode'  => false,
-			),
 		)
 	);
 

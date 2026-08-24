@@ -1503,11 +1503,6 @@ var hikeDescriptionLetterCount = 197;
             });
         },
         _wayPoints: function(map, json_gpx_data, target, hikeID){
-            if (!markerLayer) {
-                markerLayer = new ol.layer.Vector({
-                    source: new ol.source.Vector(),
-                });
-            }
             /* Popup for hike detail page */
             const container = document.getElementById('detailPgPopup');
             if($('.ol-overlay-container').length === 0 && (map.getTarget() !== 'map_desktop' || map.getTarget() !== 'map-resp' )){
@@ -1538,19 +1533,7 @@ var hikeDescriptionLetterCount = 197;
                 popup_display_element = jQuery(popup.getElement());
             }
             
-            let gpx_waypoints = json_gpx_data.trk && json_gpx_data.trk.wpt;
-            if (gpx_waypoints && !Array.isArray(gpx_waypoints)) {
-                gpx_waypoints = [gpx_waypoints];
-            }
-            if (typeof overlay_waypoints_single_hike !== 'undefined' && overlay_waypoints_single_hike.length) {
-                gpx_waypoints = overlay_waypoints_single_hike.map(function(pt) {
-                    return {
-                        '@attributes': { lat: pt.lat, lon: pt.lon },
-                        wptImage: pt.icon,
-                        wpt_info: pt.info
-                    };
-                });
-            }
+            let gpx_waypoints = json_gpx_data.trk.wpt;
             /* Get the longitude and latitude of the `Way Points(wpt)` to plot event icons */
             if (gpx_waypoints !== undefined) {
                 let wpt_length = parseFloat(gpx_waypoints.length);
@@ -1558,17 +1541,6 @@ var hikeDescriptionLetterCount = 197;
                 let wpt_info   = gpx_waypoints[i].wpt_info;
                     if (gpx_waypoints[i].wptImage) {
                         event_icon = gpx_waypoints[i].wptImage;
-                        if (event_icon && typeof event_icon === 'object') {
-                            event_icon = event_icon.url || '';
-                        }
-                        if (event_icon && typeof event_icon === 'string') {
-                            try {
-                                var iconUrl = new URL(event_icon, window.location.origin);
-                                if (iconUrl.pathname.indexOf('/wp-content/') !== -1) {
-                                    event_icon = window.location.origin + iconUrl.pathname + iconUrl.search;
-                                }
-                            } catch (e) {}
-                        }
                     } else {
                         event_icon = url_path +"/home.png";
                     }
@@ -1585,8 +1557,7 @@ var hikeDescriptionLetterCount = 197;
                     var markerStyle = new ol.style.Style({
                     image: new ol.style.Icon({
                         src: event_icon,
-                        width: 64,
-                        height: 64
+                        scale: 0.3, // adjust the scale as needed
                     }),
                     });
                     
