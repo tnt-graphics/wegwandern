@@ -22,14 +22,24 @@ function wegw_register_acf_block_types() {
 
 	acf_register_block_type(
 		array(
-			'name'            => 'wegw-itinerary',
-			'title'           => _x( 'Wanderbeschrieb Accordion', 'wanderung-itinerary', 'wegwandern' ),
-			'description'     => __( 'Wanderung Itinerary', 'wegwandern' ),
-			'render_template' => get_template_directory() . '/template-parts/block/wanderung-itinerary/wanderung-itinerary.php',
-			'category'        => 'wegwandern-layout-category',
-			'icon'            => '',
-			'align'           => false,
-			'mode'            => 'edit',
+			'name'                         => 'wegw-itinerary',
+			'title'                        => _x( 'Wanderbeschrieb Accordion', 'wanderung-itinerary', 'wegwandern' ),
+			'description'                  => __( 'Wanderung Itinerary', 'wegwandern' ),
+			'render_template'              => get_template_directory() . '/template-parts/block/wanderung-itinerary/wanderung-itinerary.php',
+			'category'                     => 'wegwandern-layout-category',
+			'icon'                         => 'list-view',
+			'align'                        => false,
+			'mode'                         => 'preview',
+			'acf_block_version'            => 3,
+			'api_version'                  => 3,
+			'hide_fields_in_sidebar'       => false,
+			'expanded_editor_buttons'      => true,
+			'expanded_editor_button_text'  => __( 'Felder bearbeiten', 'wegwandern' ),
+			'supports'                     => array(
+				'align' => false,
+				'mode'  => false,
+				'jsx'   => false,
+			),
 		)
 	);
 
@@ -194,3 +204,90 @@ function wegw_register_acf_block_types() {
 if ( function_exists( 'acf_register_block_type' ) ) {
 	add_action( 'init', 'wegw_register_acf_block_types' );
 }
+
+/**
+ * Stack itinerary repeaters as boxes in WP 7.1 (table layout is clipped in the iframe sidebar).
+ */
+function wegw_itinerary_repeater_editor_layout( $field ) {
+	if ( is_admin() ) {
+		$field['layout'] = 'block';
+	}
+	return $field;
+}
+add_filter( 'acf/load_field/name=itinerary_details', 'wegw_itinerary_repeater_editor_layout' );
+add_filter( 'acf/load_field/name=itinerary_icons', 'wegw_itinerary_repeater_editor_layout' );
+
+/**
+ * WP 7.1 always iframes the canvas. ACF still styles `.edit-post-sidebar`, which
+ * no longer wraps the inspector — fields overflow and get clipped.
+ */
+function wegw_itinerary_block_editor_assets() {
+	$css = <<<'CSS'
+.editor-sidebar,
+.editor-sidebar__panel,
+.interface-complementary-area,
+.interface-interface-skeleton__sidebar {
+	overflow-x: auto;
+}
+.editor-sidebar .acf-block-panel,
+.editor-sidebar .acf-fields,
+.interface-complementary-area .acf-block-panel,
+.interface-complementary-area .acf-fields,
+.edit-post-sidebar .acf-block-panel,
+.edit-post-sidebar .acf-fields {
+	max-width: 100%;
+	min-width: 0;
+	overflow-x: auto;
+	box-sizing: border-box;
+}
+.editor-sidebar .acf-fields > .acf-field,
+.interface-complementary-area .acf-fields > .acf-field {
+	width: auto !important;
+	float: none !important;
+	min-width: 0;
+}
+.editor-sidebar .acf-repeater,
+.editor-sidebar .acf-table,
+.interface-complementary-area .acf-repeater,
+.interface-complementary-area .acf-table,
+.acf-block-form-modal .acf-repeater,
+.acf-block-form-modal .acf-table {
+	width: 100% !important;
+	max-width: 100%;
+	table-layout: auto;
+}
+.editor-sidebar .acf-repeater .acf-row-handle,
+.interface-complementary-area .acf-repeater .acf-row-handle {
+	width: 28px;
+}
+.acf-block-form-modal .components-modal__content {
+	overflow: auto;
+}
+.acf-block-form-modal .acf-modal-block-form-container,
+.acf-block-form-modal .acf-fields {
+	max-width: 100%;
+}
+.wegw-itinerary-editor-preview {
+	padding: 16px;
+	border: 1px solid #dcdcde;
+	background: #fff;
+	border-radius: 2px;
+}
+.wegw-itinerary-editor-preview p { margin: 0 0 8px; }
+.wegw-itinerary-editor-preview ol { margin: 0; padding-left: 1.25em; }
+CSS;
+
+	wp_register_style( 'wegw-acf-block-editor', false, array(), _S_VERSION );
+	wp_enqueue_style( 'wegw-acf-block-editor' );
+	wp_add_inline_style( 'wegw-acf-block-editor', $css );
+
+	$script_handle = ( wp_script_is( 'acf-blocks', 'registered' ) || wp_script_is( 'acf-blocks', 'enqueued' ) ) ? 'acf-blocks' : 'wp-edit-post';
+	if ( wp_script_is( $script_handle, 'registered' ) || wp_script_is( $script_handle, 'enqueued' ) ) {
+		wp_add_inline_script(
+			$script_handle,
+			'(function(){if(!window.wp||!wp.data){return;}var last="";function findBtn(){var b=document.querySelector(".acf-blocks-open-expanded-editor-btn");if(b){return b;}var buttons=document.querySelectorAll(".block-editor-block-toolbar button");for(var i=0;i<buttons.length;i++){if(buttons[i].querySelector(".dashicons-edit, .dashicon.dashicons-edit")){return buttons[i];}}return null;}function openEditor(){if(document.querySelector(".acf-block-form-modal")){return true;}var btn=findBtn();if(btn){btn.click();return true;}return false;}wp.data.subscribe(function(){try{var b=wp.data.select("core/block-editor").getSelectedBlock();var id=b&&b.clientId?b.clientId:"";if(id===last){return;}last=id;if(!b||b.name!=="acf/wegw-itinerary"){return;}var tries=0;var t=setInterval(function(){tries++;if(openEditor()||tries>15){clearInterval(t);}},150);}catch(e){}});})();',
+			'after'
+		);
+	}
+}
+add_action( 'enqueue_block_editor_assets', 'wegw_itinerary_block_editor_assets', 20 );

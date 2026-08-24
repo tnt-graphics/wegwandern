@@ -4,9 +4,29 @@
  */
 
 if ( ! empty( $is_preview ) ) {
-	echo '<div style="padding:12px;border:1px solid #dcdcde;background:#f6f7f7;">';
-	echo esc_html__( 'Wanderbeschrieb Accordion — im Editor die Felder rechts nutzen. Die Frontend-Ansicht erscheint auf der Website.', 'wegwandern' );
-	echo '</div>';
+	$choose = get_field( 'wegw_choose_section' );
+	?>
+	<div class="wegw-itinerary-editor-preview">
+		<p><strong><?php echo esc_html__( 'Wanderbeschrieb Accordion', 'wegwandern' ); ?></strong></p>
+		<p><?php echo esc_html__( 'Felder über den Stift in der Block-Leiste oder «Felder bearbeiten» öffnen.', 'wegwandern' ); ?></p>
+		<?php if ( is_array( $choose ) && in_array( 'routenverlauf', $choose, true ) && have_rows( 'itinerary_details' ) ) : ?>
+			<ol>
+				<?php
+				while ( have_rows( 'itinerary_details' ) ) :
+					the_row();
+					$std   = get_sub_field( 'itinerary_details_std' );
+					$titel = get_sub_field( 'itinerary_details_titel' );
+					$mum   = get_sub_field( 'itinerary_details_mum' );
+					$line  = trim( implode( ' — ', array_filter( array( $std, $titel, $mum ? $mum . ' m.ü.M.' : '' ) ) ) );
+					if ( $line ) {
+						echo '<li>' . esc_html( $line ) . '</li>';
+					}
+				endwhile;
+				?>
+			</ol>
+		<?php endif; ?>
+	</div>
+	<?php
 	return;
 }
 
