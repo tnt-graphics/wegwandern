@@ -61,7 +61,14 @@ function wegwandern_scripts() {
 
 	wp_enqueue_script( 'filter-script', get_template_directory_uri() . '/js/filter.js', array(), _S_VERSION, true );
 
-	wp_enqueue_script( 'wegw-map-scripts-json-js', get_template_directory_uri() . '/js/wegw-map-scripts-json.js', array(), _S_VERSION, true );
+	$map_json_js = get_template_directory() . '/js/wegw-map-scripts-json.js';
+	wp_enqueue_script(
+		'wegw-map-scripts-json-js',
+		get_template_directory_uri() . '/js/wegw-map-scripts-json.js',
+		array(),
+		file_exists( $map_json_js ) ? filemtime( $map_json_js ) : _S_VERSION,
+		true
+	);
 	$localize_args = array(
         'jsonUrl' => get_template_directory_uri() . '/json-data/hikes.json'
     );

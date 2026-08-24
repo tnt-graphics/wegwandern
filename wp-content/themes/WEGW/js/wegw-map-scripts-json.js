@@ -10,6 +10,18 @@ var close_map_popupCluster = () => { };
 var closeElementDetailPage = () => {};
 
 var hikeDescriptionLetterCount = 197;
+function wegwNormalizeIconUrl(icon) {
+    if (icon && typeof icon === 'object') {
+        icon = icon.url || '';
+    }
+    if (icon && typeof icon === 'string' && icon.indexOf('/wp-content/') !== -1) {
+        try {
+            var parsed = new URL(icon, window.location.origin);
+            icon = window.location.origin + parsed.pathname + parsed.search;
+        } catch (e) {}
+    }
+    return icon;
+}
 (function ($) {
     const swisstopo_layer = 'https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg';
     const transportLayer = 'https://wmts.geo.admin.ch/1.0.0/ch.bav.haltestellen-oev/default/current/3857/{z}/{x}/{y}.png';
@@ -1533,15 +1545,35 @@ var hikeDescriptionLetterCount = 197;
                 popup_display_element = jQuery(popup.getElement());
             }
             
-            let gpx_waypoints = json_gpx_data.trk.wpt;
+            let gpx_waypoints = json_gpx_data.trk && json_gpx_data.trk.wpt;
+            if (gpx_waypoints && !Array.isArray(gpx_waypoints)) {
+                gpx_waypoints = [gpx_waypoints];
+            }
+            if (typeof overlay_waypoints_single_hike !== 'undefined' && overlay_waypoints_single_hike.length) {
+                gpx_waypoints = overlay_waypoints_single_hike.map(function(pt) {
+                    return {
+                        '@attributes': { lat: pt.lat, lon: pt.lon },
+                        wptImage: pt.icon,
+                        wpt_info: pt.info
+                    };
+                });
+            }
+            if (!markerLayer) {
+                markerLayer = new ol.layer.Vector({
+                    source: new ol.source.Vector(),
+                });
+            }
             /* Get the longitude and latitude of the `Way Points(wpt)` to plot event icons */
             if (gpx_waypoints !== undefined) {
                 let wpt_length = parseFloat(gpx_waypoints.length);
                 for (let i = 0; i < wpt_length; i++) {
                 let wpt_info   = gpx_waypoints[i].wpt_info;
                     if (gpx_waypoints[i].wptImage) {
-                        event_icon = gpx_waypoints[i].wptImage;
+                        event_icon = wegwNormalizeIconUrl(gpx_waypoints[i].wptImage);
                     } else {
+                        event_icon = url_path +"/home.png";
+                    }
+                    if (!event_icon) {
                         event_icon = url_path +"/home.png";
                     }
                     let wpt_lat = parseFloat(gpx_waypoints[i]["@attributes"].lat);

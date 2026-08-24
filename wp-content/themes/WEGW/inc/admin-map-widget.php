@@ -432,7 +432,10 @@ function wegwandern_map_custom_meta_box_markup() {
 					var map = wegAdminMap;
 					
 					/* Get the longitude and latitude of the `Way Points(wpt)` to plot event icons */
-					var gpx_waypoints = json_gpx_data.trk.wpt;
+					var gpx_waypoints = json_gpx_data.trk && json_gpx_data.trk.wpt;
+					if (gpx_waypoints && !Array.isArray(gpx_waypoints)) {
+						gpx_waypoints = [gpx_waypoints];
+					}
 
 					if (gpx_waypoints !== undefined) {
 						var wpt_length = parseFloat(gpx_waypoints.length);
@@ -444,6 +447,15 @@ function wegwandern_map_custom_meta_box_markup() {
 
 								if (gpx_waypoints[i].wptImage) {
 									event_icon = gpx_waypoints[i].wptImage;
+									if (event_icon && typeof event_icon === 'object') {
+										event_icon = event_icon.url || '';
+									}
+									if (event_icon && event_icon.indexOf('/wp-content/') !== -1) {
+										try {
+											var parsedIcon = new URL(event_icon, window.location.origin);
+											event_icon = window.location.origin + parsedIcon.pathname + parsedIcon.search;
+										} catch (e) {}
+									}
 								} else {
 									event_icon = "<?php echo get_template_directory_uri(); ?>/img/icons/home.png";
 								}
@@ -729,7 +741,7 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
 					$wpt_info      = get_sub_field( 'wegpunkt_info' );
 					// $wpt_elevation     = get_sub_field( 'elevation' );
 					$wpt_icon          = get_sub_field( 'icon' );
-					$wpt_image         = isset( $wpt_icon ) ? $wpt_icon : '';
+					$wpt_image         = wegw_get_overlay_waypoint_icon_url( $wpt_icon );
 					$wpt_coordinates[] = array(
 						'@attributes' => array(
 							'lat' => $wpt_latitude,
@@ -772,6 +784,8 @@ function wegw_gpx_json_data_update_on_import( $post_id ) {
 			wegw_gpx_fields_update_on_import( $post_id );
 		}
 	}
+
+	wegw_sync_overlay_waypoints_to_gpx_json( $post_id );
 }
 
 /*
@@ -948,4 +962,91 @@ function wegw_gpx_fields_update_on_import( $post_id ) {
 			update_field( 'hochster_punkt', $hochster_punkt, $post_id );
 		}
 	}
+}
+
+function wegw_get_overlay_waypoint_icon_url( $icon ) {
+	$url = '';
+	if ( is_array( $icon ) && ! empty( $icon['url'] ) ) {
+		$url = $icon['url'];
+	} elseif ( is_numeric( $icon ) ) {
+		$attachment_url = wp_get_attachment_url( (int) $icon );
+		$url            = $attachment_url ? $attachment_url : '';
+	} elseif ( is_string( $icon ) && $icon !== '' ) {
+		$url = $icon;
+	}
+
+	if ( $url === '' ) {
+		return '';
+	}
+
+	$path = wp_parse_url( $url, PHP_URL_PATH );
+	if ( is_string( $path ) && false !== strpos( $path, '/wp-content/' ) ) {
+		return $path;
+	}
+
+	return $url;
+}
+
+function wegw_get_admin_overlay_waypoints( $post_id ) {
+	$waypoints = array();
+	$rows      = get_field( 'wpt-coordinates', $post_id );
+	if ( ! is_array( $rows ) ) {
+		return $waypoints;
+	}
+
+	foreach ( $rows as $row ) {
+		$lat = isset( $row['latitude'] ) ? $row['latitude'] : '';
+		$lon = isset( $row['longitude'] ) ? $row['longitude'] : '';
+		if ( $lat === '' || $lon === '' ) {
+			continue;
+		}
+		$waypoints[] = array(
+			'lat'  => $lat,
+			'lon'  => $lon,
+			'icon' => wegw_get_overlay_waypoint_icon_url( isset( $row['icon'] ) ? $row['icon'] : '' ),
+			'info' => isset( $row['wegpunkt_info'] ) ? $row['wegpunkt_info'] : '',
+		);
+	}
+
+	return $waypoints;
+}
+
+function wegw_sync_overlay_waypoints_to_gpx_json( $post_id ) {
+	if ( 'wanderung' !== get_post_type( $post_id ) ) {
+		return;
+	}
+
+	$overlay = wegw_get_admin_overlay_waypoints( $post_id );
+	if ( empty( $overlay ) ) {
+		return;
+	}
+
+	$raw = get_field( 'json_gpx_file_data', $post_id );
+	if ( empty( $raw ) ) {
+		return;
+	}
+
+	$gpx = is_string( $raw ) ? json_decode( $raw, true ) : $raw;
+	if ( ! is_array( $gpx ) ) {
+		return;
+	}
+	if ( ! isset( $gpx['trk'] ) || ! is_array( $gpx['trk'] ) ) {
+		$gpx['trk'] = array();
+	}
+
+	$wpts = array();
+	foreach ( $overlay as $pt ) {
+		$wpts[] = array(
+			'@attributes' => array(
+				'lat' => $pt['lat'],
+				'lon' => $pt['lon'],
+			),
+			'name'     => '',
+			'wptImage' => $pt['icon'],
+			'wpt_info' => $pt['info'],
+		);
+	}
+
+	$gpx['trk']['wpt'] = $wpts;
+	update_field( 'json_gpx_file_data', wp_json_encode( $gpx, JSON_UNESCAPED_UNICODE ), $post_id );
 }
