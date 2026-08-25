@@ -25,7 +25,7 @@ function wegw_acf_blocks_force_v3_preview( $block ) {
 	$block['api_version']             = 3;
 	$block['mode']                    = 'preview';
 	$block['expanded_editor_buttons'] = true;
-	$block['hide_fields_in_sidebar']  = false;
+	$block['hide_fields_in_sidebar']  = true;
 	if ( empty( $block['expanded_editor_button_text'] ) ) {
 		$block['expanded_editor_button_text'] = __( 'Felder bearbeiten', 'wegwandern' );
 	}
@@ -82,7 +82,7 @@ function wegw_register_acf_block_types() {
 			'mode'                         => 'preview',
 			'acf_block_version'            => 3,
 			'api_version'                  => 3,
-			'hide_fields_in_sidebar'       => false,
+			'hide_fields_in_sidebar'       => true,
 			'expanded_editor_buttons'      => true,
 			'expanded_editor_button_text'  => __( 'Felder bearbeiten', 'wegwandern' ),
 			'supports'                     => array(
@@ -256,16 +256,19 @@ if ( function_exists( 'acf_register_block_type' ) ) {
 }
 
 /**
- * Stack itinerary repeaters as boxes in WP 7.1 (table layout is clipped in the iframe sidebar).
+ * Table repeaters (Bild-Teaser, Accordion, …) do not fit the WP 7.1 inspector.
+ * Stack them as blocks in the expanded editor.
  */
-function wegw_itinerary_repeater_editor_layout( $field ) {
-	if ( is_admin() ) {
+function wegw_acf_repeater_editor_layout( $field ) {
+	if ( empty( $field['type'] ) || 'repeater' !== $field['type'] ) {
+		return $field;
+	}
+	if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
 		$field['layout'] = 'block';
 	}
 	return $field;
 }
-add_filter( 'acf/load_field/name=itinerary_details', 'wegw_itinerary_repeater_editor_layout' );
-add_filter( 'acf/load_field/name=itinerary_icons', 'wegw_itinerary_repeater_editor_layout' );
+add_filter( 'acf/load_field', 'wegw_acf_repeater_editor_layout' );
 
 /**
  * WP 7.1 always iframes the canvas. ACF still styles `.edit-post-sidebar`, which
@@ -310,12 +313,44 @@ function wegw_itinerary_block_editor_assets() {
 .interface-complementary-area .acf-repeater .acf-row-handle {
 	width: 28px;
 }
+.acf-block-form-modal .components-modal__frame {
+	width: min(960px, 94vw) !important;
+	max-width: 94vw !important;
+	max-height: 90vh !important;
+}
 .acf-block-form-modal .components-modal__content {
 	overflow: auto;
 }
 .acf-block-form-modal .acf-modal-block-form-container,
 .acf-block-form-modal .acf-fields {
 	max-width: 100%;
+}
+.editor-sidebar .acf-repeater table.acf-table,
+.interface-complementary-area .acf-repeater table.acf-table {
+	display: block;
+	width: 100% !important;
+}
+.editor-sidebar .acf-repeater table.acf-table thead {
+	display: none;
+}
+.editor-sidebar .acf-repeater table.acf-table tbody,
+.editor-sidebar .acf-repeater table.acf-table tr,
+.editor-sidebar .acf-repeater table.acf-table td {
+	display: block;
+	width: 100% !important;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+.editor-sidebar .acf-link,
+.editor-sidebar .acf-url,
+.editor-sidebar .acf-input,
+.editor-sidebar .acf-input input,
+.editor-sidebar .acf-input textarea,
+.interface-complementary-area .acf-link,
+.interface-complementary-area .acf-input input {
+	max-width: 100% !important;
+	min-width: 0 !important;
+	word-break: break-word;
 }
 .wegw-itinerary-editor-preview,
 .wegw-acf-editor-preview {
@@ -350,7 +385,7 @@ CSS;
 	if ( wp_script_is( $script_handle, 'registered' ) || wp_script_is( $script_handle, 'enqueued' ) ) {
 		wp_add_inline_script(
 			$script_handle,
-			'(function(){if(!window.wp||!wp.data){return;}var last="";function findBtn(){var b=document.querySelector(".acf-blocks-open-expanded-editor-btn");if(b){return b;}var buttons=document.querySelectorAll(".block-editor-block-toolbar button");for(var i=0;i<buttons.length;i++){if(buttons[i].querySelector(".dashicons-edit, .dashicon.dashicons-edit")){return buttons[i];}}return null;}function openEditor(){if(document.querySelector(".acf-block-form-modal")){return true;}var btn=findBtn();if(btn){btn.click();return true;}return false;}wp.data.subscribe(function(){try{var b=wp.data.select("core/block-editor").getSelectedBlock();var id=b&&b.clientId?b.clientId:"";if(id===last){return;}last=id;if(!b||b.name!=="acf/wegw-itinerary"){return;}var tries=0;var t=setInterval(function(){tries++;if(openEditor()||tries>15){clearInterval(t);}},150);}catch(e){}});})();',
+			'(function(){if(!window.wp||!wp.data){return;}var last="";function findBtn(){var b=document.querySelector(".acf-blocks-open-expanded-editor-btn");if(b){return b;}var buttons=document.querySelectorAll(".block-editor-block-toolbar button");for(var i=0;i<buttons.length;i++){if(buttons[i].querySelector(".dashicons-edit, .dashicon.dashicons-edit")){return buttons[i];}}return null;}function openEditor(){if(document.querySelector(".acf-block-form-modal")){return true;}var btn=findBtn();if(btn){btn.click();return true;}return false;}wp.data.subscribe(function(){try{var b=wp.data.select("core/block-editor").getSelectedBlock();var id=b&&b.clientId?b.clientId:"";if(id===last){return;}last=id;if(!b||!b.name||b.name.indexOf("acf/")!==0){return;}var tries=0;var t=setInterval(function(){tries++;if(openEditor()||tries>20){clearInterval(t);}},150);}catch(e){}});})();',
 			'after'
 		);
 	}
