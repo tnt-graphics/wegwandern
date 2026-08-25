@@ -2,6 +2,12 @@
 /**
  * Wanderung Grey Background Section
  */
+if ( ! empty( $is_preview ) ) {
+	$content = get_field( 'wegw_grey_background_section_content' );
+	$excerpt = $content ? wp_trim_words( wp_strip_all_tags( $content ), 28 ) : '';
+	wegw_acf_block_editor_card( __( 'Grauer Hintergrund mit Symbol', 'wegwandern' ), array( $excerpt ) );
+	return;
+}
 $wegw_grey_background_section_content = get_field( 'wegw_grey_background_section_content' );
 $wegw_grey_background_section_icon    = get_field( 'wegw_grey_background_section_icon' );
 $wegw_grey_background_section_color   = get_field( 'wegw_grey_background_section_color' );

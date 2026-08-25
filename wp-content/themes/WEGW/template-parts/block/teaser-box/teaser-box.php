@@ -2,6 +2,31 @@
 /**
  * Template for teaser box
  */
+if ( ! empty( $is_preview ) ) {
+	$titel     = get_field( 'titel' );
+	$sub_title = get_field( 'sub_title' );
+	$bild      = get_field( 'bild' );
+	$thumbs    = array();
+	$names     = array();
+	if ( is_array( $bild ) ) {
+		foreach ( $bild as $row ) {
+			if ( ! empty( $row['img_titel'] ) ) {
+				$names[] = $row['img_titel'];
+			}
+			if ( ! empty( $row['teaser_Image']['sizes']['thumbnail'] ) ) {
+				$thumbs[] = $row['teaser_Image']['sizes']['thumbnail'];
+			} elseif ( ! empty( $row['teaser_Image']['url'] ) ) {
+				$thumbs[] = $row['teaser_Image']['url'];
+			}
+		}
+	}
+	$lines = array( $titel, $sub_title );
+	if ( $names ) {
+		$lines[] = implode( ', ', $names );
+	}
+	wegw_acf_block_editor_card( __( 'Teaser box', 'wegwandern' ), $lines, $thumbs );
+	return;
+}
 global $post;
 $titel          = get_field( 'titel' );
 $sub_title      = get_field( 'sub_title' );

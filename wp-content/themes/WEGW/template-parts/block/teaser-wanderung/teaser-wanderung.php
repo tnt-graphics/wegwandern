@@ -2,6 +2,27 @@
 /**
  * Template for teaser wanderung
  */
+if ( ! empty( $is_preview ) ) {
+	$choose_wanderung = get_field( 'choose_wanderung' );
+	$titel            = get_field( 'titel' );
+	$names            = array();
+	$thumbs           = array();
+	if ( is_array( $choose_wanderung ) ) {
+		foreach ( $choose_wanderung as $wanderung ) {
+			$post_obj = is_array( $wanderung ) && isset( $wanderung['sel_wanderung'] ) ? $wanderung['sel_wanderung'] : null;
+			if ( is_object( $post_obj ) ) {
+				$names[]  = $post_obj->post_title;
+				$thumbs[] = get_the_post_thumbnail_url( $post_obj->ID, 'thumbnail' );
+			}
+		}
+	}
+	$lines = array( $titel );
+	if ( $names ) {
+		$lines[] = implode( ', ', $names );
+	}
+	wegw_acf_block_editor_card( __( 'Teaser Wanderung', 'wegwandern' ), $lines, $thumbs );
+	return;
+}
 $wanderung_layout = get_field( 'wanderung_layout' );
 $choose_wanderung = get_field( 'choose_wanderung' );
 

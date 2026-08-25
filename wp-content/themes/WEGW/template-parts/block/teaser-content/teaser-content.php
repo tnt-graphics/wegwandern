@@ -2,6 +2,24 @@
 /**
  * Template for teaser content
  **/
+if ( ! empty( $is_preview ) ) {
+	$content_teaser = get_field( 'content_teaser' );
+	$content_bild   = get_field( 'content_bild' );
+	$layout_option  = get_field( 'layout-option' );
+	$excerpt        = $content_teaser ? wp_trim_words( wp_strip_all_tags( $content_teaser ), 24 ) : '';
+	$thumb          = array();
+	if ( is_array( $content_bild ) && ! empty( $content_bild['sizes']['thumbnail'] ) ) {
+		$thumb[] = $content_bild['sizes']['thumbnail'];
+	} elseif ( is_array( $content_bild ) && ! empty( $content_bild['url'] ) ) {
+		$thumb[] = $content_bild['url'];
+	}
+	wegw_acf_block_editor_card(
+		__( 'Bild Text 2-spaltig', 'wegwandern' ),
+		array( $layout_option, $excerpt ),
+		$thumb
+	);
+	return;
+}
 $content_bild     = get_field( 'content_bild' );
 $content_bild_img = $content_bild['sizes']['teaser-twocol'];
 $content_teaser   = get_field( 'content_teaser' );

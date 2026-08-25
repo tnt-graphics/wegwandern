@@ -1,3 +1,15 @@
+<?php
+if ( ! empty( $is_preview ) ) {
+	wegw_acf_block_editor_card(
+		__( 'Community Teaser', 'wegwandern' ),
+		array(
+			get_field( 'community_teaser_heading' ),
+			get_field( 'community_teaser_left_side_text' ),
+		)
+	);
+	return;
+}
+?>
 <div class="community-teaser-container grey-back">
 <div class="community-teaser">
 	<?php

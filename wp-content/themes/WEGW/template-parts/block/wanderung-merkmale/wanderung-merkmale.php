@@ -2,6 +2,10 @@
 /**
  * Wanderung merkmale.
  */
+if ( ! empty( $is_preview ) ) {
+	wegw_acf_block_editor_card( __( 'Wandermerkmale', 'wegwandern' ), array( __( 'Zeigt Aktivität, Region, Angebot, Routenverlauf und Thema der Wanderung.', 'wegwandern' ) ) );
+	return;
+}
 global $post;
 
 $wanderung_id = $post->ID;

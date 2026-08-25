@@ -1,4 +1,35 @@
-<?php if ( is_plugin_active( 'wegw-b2b/wegw-b2b.php' ) ) {
+<?php
+if ( ! empty( $is_preview ) ) {
+	$select_category    = get_field( 'select_category' );
+	$select_hike_region = get_field( 'select_wanderregion' );
+	$subtitle           = get_field( 'subtitle_ads_slider' );
+	$lines              = array();
+	if ( $subtitle ) {
+		$lines[] = $subtitle;
+	}
+	if ( ! empty( $select_category ) ) {
+		$cat_names = array();
+		foreach ( (array) $select_category as $cat_id ) {
+			$term = get_term( $cat_id );
+			if ( $term && ! is_wp_error( $term ) ) {
+				$cat_names[] = $term->name;
+			}
+		}
+		if ( $cat_names ) {
+			$lines[] = implode( ', ', $cat_names );
+		}
+	}
+	if ( ! empty( $select_hike_region ) ) {
+		$reg = get_term( $select_hike_region );
+		if ( $reg && ! is_wp_error( $reg ) ) {
+			$lines[] = $reg->name;
+		}
+	}
+	wegw_acf_block_editor_card( __( 'B2B Integration', 'wegwandern' ), $lines );
+	return;
+}
+
+if ( is_plugin_active( 'wegw-b2b/wegw-b2b.php' ) ) {
 	$select_category    = get_field( 'select_category' );
 	$select_hike_region =  get_field( 'select_wanderregion' );
 	$select_ad          = get_field( 'select_ad' );

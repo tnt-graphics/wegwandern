@@ -2,6 +2,32 @@
 /**
  * Template for image lightbox gallery 
  */
+if ( ! empty( $is_preview ) ) {
+	$img_gal = get_field( 'build' );
+	$thumbs  = array();
+	if ( is_array( $img_gal ) ) {
+		foreach ( $img_gal as $gal ) {
+			if ( ! empty( $gal['light_gal']['sizes']['thumbnail'] ) ) {
+				$thumbs[] = $gal['light_gal']['sizes']['thumbnail'];
+			} elseif ( ! empty( $gal['light_gal']['url'] ) ) {
+				$thumbs[] = $gal['light_gal']['url'];
+			}
+		}
+	}
+	$count = is_array( $img_gal ) ? count( $img_gal ) : 0;
+	wegw_acf_block_editor_card(
+		__( 'Bildergalerie', 'wegwandern' ),
+		array(
+			sprintf(
+				/* translators: %d: number of images */
+				_n( '%d Bild', '%d Bilder', $count, 'wegwandern' ),
+				$count
+			),
+		),
+		$thumbs
+	);
+	return;
+}
 global $post;
 $img_gal = get_field( 'build' );
 

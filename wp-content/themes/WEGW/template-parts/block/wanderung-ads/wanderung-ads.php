@@ -2,6 +2,26 @@
 /**
  * Wanderung Ads Section
  **/
+if ( ! empty( $is_preview ) ) {
+	$positions = array();
+	if ( get_field( 'desktop_ad' ) ) {
+		$positions[] = __( 'Position 1', 'wegwandern' );
+	}
+	if ( get_field( 'ads_2' ) ) {
+		$positions[] = __( 'Position 2', 'wegwandern' );
+	}
+	if ( get_field( 'ads_3' ) ) {
+		$positions[] = __( 'Position 3', 'wegwandern' ) . ' (' . get_field( 'ads_3' ) . ')';
+	}
+	if ( get_field( 'ads_4' ) ) {
+		$positions[] = __( 'Position 4', 'wegwandern' ) . ' (' . get_field( 'ads_4' ) . ')';
+	}
+	if ( ! $positions ) {
+		$positions[] = __( 'Keine Position gewählt', 'wegwandern' );
+	}
+	wegw_acf_block_editor_card( __( 'Ad Server', 'wegwandern' ), $positions );
+	return;
+}
 
 if( get_field('desktop_ad') ) {
 	//if desktop ad is set, always execute this specific ad code ?>

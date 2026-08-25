@@ -2,6 +2,37 @@
 /**
  * Block for Regionen Content Map & Hike Listing Section
  */
+if ( ! empty( $is_preview ) ) {
+	$lines = array();
+	$map_fields = array(
+		'map_regionen'       => __( 'Regionen', 'wegwandern' ),
+		'map_thema'          => __( 'Themen', 'wegwandern' ),
+		'map_aktivitat'      => __( 'Aktivität', 'wegwandern' ),
+		'map_anforderung'    => __( 'Anforderung', 'wegwandern' ),
+		'map_saison'         => __( 'Saison', 'wegwandern' ),
+		'map_ausdauer'       => __( 'Ausdauer', 'wegwandern' ),
+		'map_angebot'        => __( 'Angebot', 'wegwandern' ),
+		'map_routenverlauf'  => __( 'Routenverlauf', 'wegwandern' ),
+	);
+	foreach ( $map_fields as $field_name => $label ) {
+		$value = get_field( $field_name );
+		if ( empty( $value ) ) {
+			continue;
+		}
+		$names = array();
+		foreach ( (array) $value as $term_id ) {
+			$term = is_object( $term_id ) ? $term_id : get_term( $term_id );
+			if ( $term && ! is_wp_error( $term ) && ! empty( $term->name ) ) {
+				$names[] = $term->name;
+			}
+		}
+		if ( $names ) {
+			$lines[] = $label . ': ' . implode( ', ', $names );
+		}
+	}
+	wegw_acf_block_editor_card( __( 'Wander-Karte & List', 'wegwandern' ), $lines );
+	return;
+}
 
 $t              = 0;
 $taxquery       = array();

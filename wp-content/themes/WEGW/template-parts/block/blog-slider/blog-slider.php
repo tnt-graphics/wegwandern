@@ -2,6 +2,32 @@
 /**
  * The template for displaying blog slider
  */
+if ( ! empty( $is_preview ) ) {
+	$select_post          = get_field( 'select_post' );
+	$darstellungsart_blog = get_field( 'darstellungsart_blog' );
+	$section_titel        = get_field( 'section_titel' );
+	$names                = array();
+	$thumbs               = array();
+	if ( is_array( $select_post ) ) {
+		foreach ( $select_post as $blog ) {
+			$post_obj = is_array( $blog ) && isset( $blog['blog'] ) ? $blog['blog'] : null;
+			if ( is_object( $post_obj ) ) {
+				$names[]  = $post_obj->post_title;
+				$thumbs[] = get_the_post_thumbnail_url( $post_obj->ID, 'thumbnail' );
+			}
+		}
+	}
+	$lines = array( $section_titel, $darstellungsart_blog );
+	if ( $names ) {
+		$lines[] = sprintf(
+			/* translators: %d: number of posts */
+			_n( '%d Beitrag', '%d Beiträge', count( $names ), 'wegwandern' ),
+			count( $names )
+		) . ': ' . implode( ', ', array_slice( $names, 0, 6 ) );
+	}
+	wegw_acf_block_editor_card( __( 'Blog Slider', 'wegwandern' ), $lines, $thumbs );
+	return;
+}
 
 $select_post          = get_field( 'select_post' );
 $all_blog_count       = count( $select_post );

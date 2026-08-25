@@ -2,6 +2,48 @@
 /**
  * Regionen menu
  **/
+if ( ! empty( $is_preview ) ) {
+	$region_type            = get_field( 'region_type' );
+	$slider_titel           = get_field( 'slider_titel' );
+	$slider_sub_titel       = get_field( 'slider_sub_titel' );
+	$verlinkungen_auswahlen = get_field( 'verlinkungen_auswahlen' );
+	$type_labels            = array(
+		'slider'        => __( 'Regionen-Slider', 'wegwandern' ),
+		'menu'          => __( 'Menü', 'wegwandern' ),
+		'menulinks'     => __( 'Menü-Links', 'wegwandern' ),
+		'wander-slider' => __( 'Wander-Slider', 'wegwandern' ),
+	);
+	$lines                  = array();
+	if ( ! empty( $type_labels[ $region_type ] ) ) {
+		$lines[] = $type_labels[ $region_type ];
+	}
+	if ( $slider_titel ) {
+		$lines[] = $slider_titel;
+	}
+	if ( $slider_sub_titel ) {
+		$lines[] = $slider_sub_titel;
+	}
+	$thumbs = array();
+	$names  = array();
+	if ( is_array( $verlinkungen_auswahlen ) ) {
+		$lines[] = sprintf(
+			/* translators: %d: number of selected items */
+			_n( '%d Eintrag', '%d Einträge', count( $verlinkungen_auswahlen ), 'wegwandern' ),
+			count( $verlinkungen_auswahlen )
+		);
+		foreach ( array_slice( $verlinkungen_auswahlen, 0, 8 ) as $item ) {
+			if ( is_object( $item ) && ! empty( $item->post_title ) ) {
+				$names[]  = $item->post_title;
+				$thumbs[] = get_the_post_thumbnail_url( $item->ID, 'thumbnail' );
+			}
+		}
+		if ( $names ) {
+			$lines[] = implode( ', ', $names );
+		}
+	}
+	wegw_acf_block_editor_card( __( 'Menüliste und Sliderversionen', 'wegwandern' ), $lines, $thumbs );
+	return;
+}
 global $post;
 $region_type                = get_field( 'region_type' );
 $wanderung_regionen         = get_field( 'wanderung_regionen' );

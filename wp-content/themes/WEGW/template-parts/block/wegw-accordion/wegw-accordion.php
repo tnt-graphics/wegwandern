@@ -2,6 +2,20 @@
 /**
  * Template for Accordion
  */
+if ( ! empty( $is_preview ) ) {
+	$accordion = get_field( 'accordion' );
+	$titles    = array();
+	if ( is_array( $accordion ) ) {
+		foreach ( $accordion as $acc ) {
+			if ( ! empty( $acc['accordion_title'] ) ) {
+				$titles[] = $acc['accordion_title'];
+			}
+		}
+	}
+	$lines = $titles ? array( implode( ', ', $titles ) ) : array();
+	wegw_acf_block_editor_card( __( 'Accordion', 'wegwandern' ), $lines );
+	return;
+}
 global $post;
 $accordion = get_field( 'accordion' );
 

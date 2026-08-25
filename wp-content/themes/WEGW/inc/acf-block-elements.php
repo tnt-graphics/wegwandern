@@ -16,6 +16,56 @@ function wegw_custom_block_category( $categories ) {
 add_filter( 'block_categories_all', 'wegw_custom_block_category', 10, 2 );
 
 /**
+ * WP 7.1 iframes the canvas. ACF V2 "edit" mode can no longer place fields there,
+ * so the frontend PHP dumps into the editor (huge images, unstyled sliders).
+ * Force V3 preview + expanded editor for every ACF block.
+ */
+function wegw_acf_blocks_force_v3_preview( $block ) {
+	$block['acf_block_version']       = 3;
+	$block['api_version']             = 3;
+	$block['mode']                    = 'preview';
+	$block['expanded_editor_buttons'] = true;
+	$block['hide_fields_in_sidebar']  = false;
+	if ( empty( $block['expanded_editor_button_text'] ) ) {
+		$block['expanded_editor_button_text'] = __( 'Felder bearbeiten', 'wegwandern' );
+	}
+	if ( ! isset( $block['supports'] ) || ! is_array( $block['supports'] ) ) {
+		$block['supports'] = array();
+	}
+	$block['supports']['mode'] = false;
+	return $block;
+}
+add_filter( 'acf/register_block_type_args', 'wegw_acf_blocks_force_v3_preview' );
+
+/**
+ * Compact Gutenberg card instead of the full frontend markup.
+ *
+ * @param string   $title  Block label.
+ * @param string[] $lines  Short facts (title, count, names).
+ * @param string[] $thumbs Optional thumbnail URLs.
+ */
+function wegw_acf_block_editor_card( $title, $lines = array(), $thumbs = array() ) {
+	$lines  = array_values( array_filter( array_map( 'strval', (array) $lines ), 'strlen' ) );
+	$thumbs = array_values( array_filter( (array) $thumbs ) );
+	?>
+	<div class="wegw-acf-editor-preview" style="padding:16px 18px;border:1px solid #dcdcde;background:#fff;border-radius:4px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;line-height:1.45;color:#1e1e1e;">
+		<p class="wegw-acf-editor-preview__type" style="margin:0 0 8px;font-weight:600;font-size:14px;"><?php echo esc_html( $title ); ?></p>
+		<?php if ( $thumbs ) : ?>
+			<div class="wegw-acf-editor-preview__thumbs" style="display:flex;gap:8px;margin:8px 0 10px;flex-wrap:wrap;">
+				<?php foreach ( array_slice( $thumbs, 0, 5 ) as $src ) : ?>
+					<img src="<?php echo esc_url( $src ); ?>" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:3px;" />
+				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+		<?php foreach ( $lines as $line ) : ?>
+			<p style="margin:0 0 6px;"><?php echo esc_html( $line ); ?></p>
+		<?php endforeach; ?>
+		<p class="wegw-acf-editor-preview__hint" style="margin:8px 0 0;color:#757575;font-size:12px;"><?php echo esc_html__( 'Felder über «Felder bearbeiten» oder den Stift in der Block-Leiste öffnen.', 'wegwandern' ); ?></p>
+	</div>
+	<?php
+}
+
+/**
  * Add or register ACF blocks
  */
 function wegw_register_acf_block_types() {
@@ -267,14 +317,29 @@ function wegw_itinerary_block_editor_assets() {
 .acf-block-form-modal .acf-fields {
 	max-width: 100%;
 }
-.wegw-itinerary-editor-preview {
-	padding: 16px;
+.wegw-itinerary-editor-preview,
+.wegw-acf-editor-preview {
+	padding: 16px 18px;
 	border: 1px solid #dcdcde;
 	background: #fff;
-	border-radius: 2px;
+	border-radius: 4px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-size: 13px;
+	line-height: 1.45;
+	color: #1e1e1e;
 }
-.wegw-itinerary-editor-preview p { margin: 0 0 8px; }
+.wegw-itinerary-editor-preview p,
+.wegw-acf-editor-preview p { margin: 0 0 6px; }
 .wegw-itinerary-editor-preview ol { margin: 0; padding-left: 1.25em; }
+.wegw-acf-editor-preview__type { margin: 0 0 8px; font-weight: 600; font-size: 14px; }
+.wegw-acf-editor-preview__hint { margin: 8px 0 0; color: #757575; font-size: 12px; }
+.wegw-acf-editor-preview__thumbs { display: flex; gap: 8px; margin: 8px 0 10px; flex-wrap: wrap; }
+.wegw-acf-editor-preview__thumbs img {
+	width: 72px;
+	height: 72px;
+	object-fit: cover;
+	border-radius: 3px;
+}
 CSS;
 
 	wp_register_style( 'wegw-acf-block-editor', false, array(), _S_VERSION );
