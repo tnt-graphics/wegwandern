@@ -673,9 +673,24 @@ function update_hike_json() {
 		'tablet'  => $ad_script_tablet,
 		'mobile'  => $ad_script_mobile,
 	);
-	$hike_json_data    = wp_json_encode( $all_data, JSON_PRETTY_PRINT );
-	$json_file         = get_template_directory() . '/json-data/hikes.json';
-	file_put_contents( $json_file, $hike_json_data, JSON_PRETTY_PRINT );
+	$hike_json_data = wp_json_encode( $all_data, JSON_PRETTY_PRINT );
+	$json_file      = get_template_directory() . '/json-data/hikes.json';
+	$lock_file      = $json_file . '.lock';
+	$lock_handle    = fopen( $lock_file, 'c' );
+	if ( ! $lock_handle || ! flock( $lock_handle, LOCK_EX | LOCK_NB ) ) {
+		if ( $lock_handle ) {
+			fclose( $lock_handle );
+		}
+		return;
+	}
+
+	$tmp_file = $json_file . '.tmp';
+	if ( false !== file_put_contents( $tmp_file, $hike_json_data, LOCK_EX ) ) {
+		rename( $tmp_file, $json_file );
+	}
+
+	flock( $lock_handle, LOCK_UN );
+	fclose( $lock_handle );
 	// echo 'Json Written with hikes - ' . count( $allwanderung );
 	// die;
 }
